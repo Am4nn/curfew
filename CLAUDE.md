@@ -16,12 +16,11 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**Phase 5 complete — Groups.** Phases 0-5 are done. Phase 5 adds group create,
-invite by email, accept/decline, leave (balance survives), the admin approvals
-screen, and the multi-group dashboard at `/` (check-in moved to /checkin, still
-forced dark). The auto solo-group was dropped; new users create or join a
-group. A second group works with no change to Phase 1-4 code. Do not start
-Phase 6 without being asked.
+**v1 complete — all phases done.** Phases 0-6 are built and verified. Phase 6
+adds the settings screen (personal and shared scopes, all changes effective
+tomorrow, shared changes owner-only and announced via config.shared.changed),
+the 30-day wake-time chart (inline SVG), and empty states. Do not start v2
+backlog work (PRD 9) without being asked.
 
 ## Invariants
 

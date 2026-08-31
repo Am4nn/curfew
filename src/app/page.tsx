@@ -38,12 +38,17 @@ export default async function Dashboard() {
         <header className="mb-7 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">CURFEW</h1>
           <span className="flex items-baseline gap-3 text-[12px] text-muted">
+            <Link href="/chart" className="underline">
+              chart
+            </Link>
+            <Link href="/settings" className="underline">
+              settings
+            </Link>
             {admin ? (
               <Link href="/admin" className="underline">
                 admin
               </Link>
             ) : null}
-            <span>{user.email}</span>
           </span>
         </header>
 

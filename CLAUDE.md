@@ -16,7 +16,8 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**Phase 0 — Scaffold.** Do not start the next phase without being asked.
+**Phase 1 complete — Domain core.** Phase 0 (scaffold) and Phase 1 (pure
+domain core, Vitest green) are done. Do not start Phase 2 without being asked.
 
 ## Invariants
 

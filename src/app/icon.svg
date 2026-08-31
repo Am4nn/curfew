@@ -1,13 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
   <style>
-    .ground { fill: #e8e6e1; }
     .mark { fill: #1a1917; }
     @media (prefers-color-scheme: dark) {
-      .ground { fill: #0b0a09; }
       .mark { fill: #f2f2f2; }
     }
   </style>
-  <rect class="ground" width="32" height="32"/>
   <rect class="mark" x="2" y="2" width="13" height="13"/>
   <rect class="mark" x="17" y="2" width="13" height="13"/>
   <rect class="mark" x="2" y="17" width="13" height="13"/>

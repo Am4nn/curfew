@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { ensureUserSetup } from "@/server/setup";
@@ -24,7 +25,12 @@ export default async function Home() {
       <main className="mx-auto flex min-h-screen max-w-[560px] flex-col px-5 py-7">
         <header className="flex items-baseline justify-between">
           <span className="text-[13px] font-semibold tracking-[0.14em]">CURFEW</span>
-          <span className="text-[12px] text-muted">{state.period}</span>
+          <span className="flex items-baseline gap-3 text-[12px] text-muted">
+            <Link href="/ledger" className="underline">
+              ledger
+            </Link>
+            {state.period}
+          </span>
         </header>
 
         <section className="flex flex-1 flex-col justify-center gap-[26px]">

@@ -20,6 +20,7 @@ import {
   resolveUserSleepConfigRow,
   resolveActivityRules,
 } from "./config";
+import { writeFines } from "./ledger";
 
 function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
@@ -211,7 +212,7 @@ export async function recomputeUser(
 export async function scoreUser(
   userId: string,
   opts: { from?: string; to?: string } = {},
-): Promise<{ scores: number; outcomes: number }> {
+): Promise<{ scores: number; outcomes: number; fines: number }> {
   const { scores, outcomes } = await recomputeUser(userId, opts);
 
   if (scores.length > 0) {
@@ -252,7 +253,11 @@ export async function scoreUser(
       });
   }
 
-  return { scores: scores.length, outcomes: outcomes.length };
+  // Fines are written from the outcomes in the same idempotent pass, so the
+  // daily cron does everything. The ledger unique index prevents duplicates.
+  const fines = await writeFines(outcomes);
+
+  return { scores: scores.length, outcomes: outcomes.length, fines };
 }
 
 // Score every user who belongs to a group. Used by the cron and the CLI.

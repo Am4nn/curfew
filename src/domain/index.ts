@@ -6,7 +6,7 @@ register(sleepActivity);
 
 export { periodStart } from "./period";
 export { resolveConfig, type EffectiveRow } from "./config";
-export { splitFine, type Share } from "./money";
+export { splitFine, formatMoney, minorUnitExponent, type Share } from "./money";
 export {
   fineFor,
   scoreChain,

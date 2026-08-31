@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { splitFine } from "./money";
+import { splitFine, minorUnitExponent, formatMoney } from "./money";
 
 describe("splitFine", () => {
   it("distributes the remainder one minor unit at a time, ordered by id", () => {
@@ -39,5 +39,19 @@ describe("splitFine", () => {
     expect(() => splitFine(-100, ["a"])).toThrow();
     expect(() => splitFine(100, [])).toThrow();
     expect(() => splitFine(100, ["a", "a"])).toThrow();
+  });
+});
+
+describe("money formatting", () => {
+  it("reads the exponent from the currency, not a hardcoded /100", () => {
+    expect(minorUnitExponent("INR")).toBe(2);
+    expect(minorUnitExponent("JPY")).toBe(0);
+    expect(minorUnitExponent("KWD")).toBe(3);
+  });
+
+  it("formats minor units as the currency string", () => {
+    // Non-breaking spaces and symbol placement vary by ICU; assert the digits.
+    expect(formatMoney(5000, "INR")).toContain("50.00");
+    expect(formatMoney(5000, "JPY").replace(/\D/g, "")).toBe("5000");
   });
 });

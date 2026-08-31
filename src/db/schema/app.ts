@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgView,
   text,
   boolean,
   timestamp,
@@ -174,3 +175,36 @@ export const activityOutcomes = pgTable(
   },
   (t) => [primaryKey({ columns: [t.activityId, t.userId, t.periodStart] })],
 );
+
+// Append-only, per group. Never update or delete: corrections are compensating
+// rows, settlements are rows. A failed period writes one fine row per other
+// active member; fine rows snapshot their own amount and currency and are never
+// recomputed. amounts are minor units.
+export const ledgerEntries = pgTable("ledger_entries", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  activityId: uuid("activity_id").references(() => activities.id), // null for settlements
+  fromUserId: text("from_user_id")
+    .notNull()
+    .references(() => users.id), // who owes
+  toUserId: text("to_user_id")
+    .notNull()
+    .references(() => users.id), // who is owed
+  amount: bigint("amount", { mode: "number" }).notNull(),
+  currency: char("currency", { length: 3 }).notNull().default("INR"),
+  kind: text("kind").notNull(), // fine | settlement | adjustment
+  periodStart: date("period_start", { mode: "string" }), // null for settlements
+  note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Per group, per currency. Mutual failures net to zero here. Created by
+// migration 0002; declared existing so Drizzle reads it but never manages it.
+export const balances = pgView("balances", {
+  groupId: uuid("group_id"),
+  userId: text("user_id"),
+  currency: char("currency", { length: 3 }),
+  netOwed: bigint("net_owed", { mode: "number" }),
+}).existing();

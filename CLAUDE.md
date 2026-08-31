@@ -16,11 +16,11 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**Phase 3 complete — Scoring.** Phases 0-3 are done: scaffold, domain core,
-check-in loop, and scoring (scoreUser/scoreAll, activity_scores +
-activity_outcomes, /api/cron/score, `bun run score`/`verify`, zero drift on a
-backfilled month). The diff-by-diff review gate ends here. Do not start Phase 4
-without being asked.
+**Phase 4 complete — Money.** Phases 0-4 are done. Phase 4 adds the ledger:
+fines written from outcomes inside the scoring job (idempotent), settlements as
+append-only rows, the balances view, and a /ledger screen with per-counterparty
+balances, the activity feed, and settle-up. Do not start Phase 5 without being
+asked.
 
 ## Invariants
 

@@ -12,6 +12,28 @@ export interface Share {
   amount: number;
 }
 
+// The decimal exponent for a currency's minor unit, from the currency itself
+// (2 for INR/USD, 0 for JPY, 3 for KWD). Never a hardcoded /100 (invariant 7).
+export function minorUnitExponent(currency: string): number {
+  return (
+    new Intl.NumberFormat("en", { style: "currency", currency })
+      .resolvedOptions().maximumFractionDigits ?? 2
+  );
+}
+
+// Format an integer minor-unit amount as its currency string, e.g.
+// (5000, "INR") -> "₹50.00".
+export function formatMoney(
+  amountMinor: number,
+  currency: string,
+  locale = "en-IN",
+): string {
+  const exp = minorUnitExponent(currency);
+  return new Intl.NumberFormat(locale, { style: "currency", currency }).format(
+    amountMinor / 10 ** exp,
+  );
+}
+
 export function splitFine(amount: number, recipientIds: string[]): Share[] {
   if (!Number.isInteger(amount) || amount <= 0) {
     throw new Error(

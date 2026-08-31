@@ -30,7 +30,9 @@ export async function getApprovalStatus(
   const row = await db.query.userApprovals.findFirst({
     where: eq(userApprovals.userId, userId),
   });
-  // No row is treated as pending: the create hook writes one, but a missing
-  // row must never read as approved.
+  // A disabled account is blocked whatever its approval status. No row is
+  // treated as pending: the create hook writes one, but a missing row must
+  // never read as approved.
+  if (row?.disabledAt) return "disabled";
   return (row?.status as ApprovalStatus) ?? "pending";
 }

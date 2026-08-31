@@ -29,6 +29,7 @@ export default async function AdminUsers() {
                     {u.status}
                   </span>
                   {u.role !== "member" ? <span className="ml-1 text-[11px] text-muted">· {u.role}</span> : null}
+                  {u.disabled ? <span className="ml-1 text-[11px] text-penalty">· removed</span> : null}
                 </td>
                 <td className="py-2 pr-3 tabular-nums">{u.groupCount}</td>
                 <td className="py-2 pr-3 text-[11px] tabular-nums text-muted">

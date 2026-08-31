@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGroupInspector } from "@/server/admin";
+import { getSessionUser } from "@/lib/session";
+import { getGroupInspector, can } from "@/server/admin";
 import { formatMoney } from "@/domain";
+import { ActionForm, SubmitButton, ConfirmButton } from "../../../ui";
+import { archiveGroupAction, restoreGroupAction } from "../../actions";
 
 export default async function GroupInspectorPage({
   params,
@@ -9,15 +12,43 @@ export default async function GroupInspectorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const data = await getGroupInspector(id);
+  const me = await getSessionUser();
+  const [data, canArchive] = await Promise.all([
+    getGroupInspector(id),
+    me ? can(me.id, "groups.archive") : Promise.resolve(false),
+  ]);
   if (!data) notFound();
 
   return (
     <>
       <div className="mb-6 flex items-baseline justify-between gap-3">
-        <h2 className="text-[15px] font-semibold">{data.name}</h2>
+        <h2 className="text-[15px] font-semibold">
+          {data.name}
+          {data.archived ? <span className="ml-2 text-[12px] text-penalty">archived</span> : null}
+        </h2>
         <Link href="/admin/groups" className="text-[12px] text-muted">‹ all groups</Link>
       </div>
+
+      {canArchive ? (
+        <div className="mb-6">
+          {data.archived ? (
+            <ActionForm action={restoreGroupAction}>
+              <input type="hidden" name="groupId" value={id} />
+              <SubmitButton pendingLabel="Restoring" className="border border-fg px-3 py-[6px] text-[13px]">
+                Restore group
+              </SubmitButton>
+            </ActionForm>
+          ) : (
+            <ConfirmButton
+              action={archiveGroupAction}
+              fields={{ groupId: id }}
+              label="Archive group"
+              message={`Archive ${data.name}? Tracking and scoring stop and it leaves everyone's dashboard. Members, balances and history are kept, and you can restore it.`}
+              confirmLabel="Archive"
+            />
+          )}
+        </div>
+      ) : null}
 
       <Panel title="MEMBERS">
         {data.members.map((m) => (

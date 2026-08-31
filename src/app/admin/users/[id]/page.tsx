@@ -5,7 +5,7 @@ import { getUserInspector, can } from "@/server/admin";
 import { formatMoney } from "@/domain";
 import { ROLES } from "@/lib/capabilities";
 import { ActionForm, SubmitButton, ConfirmButton } from "../../../ui";
-import { decideAction, setRoleAction } from "../../actions";
+import { decideAction, setRoleAction, disableUserAction, restoreUserAction } from "../../actions";
 
 export default async function UserInspectorPage({
   params,
@@ -14,10 +14,11 @@ export default async function UserInspectorPage({
 }) {
   const { id } = await params;
   const me = await getSessionUser();
-  const [data, canApprove, canSetRole] = await Promise.all([
+  const [data, canApprove, canSetRole, canDisable] = await Promise.all([
     getUserInspector(id),
     me ? can(me.id, "users.approve") : Promise.resolve(false),
     me ? can(me.id, "users.set_role") : Promise.resolve(false),
+    me ? can(me.id, "users.disable") : Promise.resolve(false),
   ]);
   if (!data) notFound();
   const { profile, recentCheckins, recentScores, recentOutcomes, balances } = data;
@@ -41,6 +42,7 @@ export default async function UserInspectorPage({
             </span>
           </span>
           <span className="text-[13px]">role: {profile.role}</span>
+          {profile.disabled ? <span className="text-[13px] text-penalty">removed</span> : null}
         </div>
 
         {canApprove && profile.status === "pending" ? (
@@ -78,6 +80,27 @@ export default async function UserInspectorPage({
               Save role
             </SubmitButton>
           </ActionForm>
+        ) : null}
+
+        {canDisable ? (
+          <div className="mt-4">
+            {profile.disabled ? (
+              <ActionForm action={restoreUserAction}>
+                <input type="hidden" name="userId" value={profile.userId} />
+                <SubmitButton pendingLabel="Restoring" className="border border-fg px-3 py-[6px] text-[13px]">
+                  Restore user
+                </SubmitButton>
+              </ActionForm>
+            ) : (
+              <ConfirmButton
+                action={disableUserAction}
+                fields={{ userId: profile.userId }}
+                label="Remove user"
+                message={`Remove ${profile.name}? They lose access and stop being scored. Their balances and debts stay and still need settling. You can restore them later.`}
+                confirmLabel="Remove"
+              />
+            )}
+          </div>
         ) : null}
       </section>
 

@@ -6,6 +6,10 @@ import {
   requireCapability,
   decideApproval,
   setRole,
+  disableUser,
+  restoreUser,
+  archiveGroup,
+  restoreGroup,
   runScoring,
   runVerify,
 } from "@/server/admin";
@@ -52,6 +56,66 @@ export async function setRoleAction(
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not change the role." };
+  }
+}
+
+export async function disableUserAction(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const user = await guard("users.disable");
+    await disableUser(user.id, String(formData.get("userId")));
+    revalidatePath("/admin/users");
+    revalidatePath(`/admin/users/${formData.get("userId")}`);
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not remove the user." };
+  }
+}
+
+export async function restoreUserAction(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const user = await guard("users.disable");
+    await restoreUser(user.id, String(formData.get("userId")));
+    revalidatePath("/admin/users");
+    revalidatePath(`/admin/users/${formData.get("userId")}`);
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not restore the user." };
+  }
+}
+
+export async function archiveGroupAction(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const user = await guard("groups.archive");
+    await archiveGroup(user.id, String(formData.get("groupId")));
+    revalidatePath("/admin/groups");
+    revalidatePath(`/admin/groups/${formData.get("groupId")}`);
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not archive the group." };
+  }
+}
+
+export async function restoreGroupAction(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const user = await guard("groups.archive");
+    await restoreGroup(user.id, String(formData.get("groupId")));
+    revalidatePath("/admin/groups");
+    revalidatePath(`/admin/groups/${formData.get("groupId")}`);
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not restore the group." };
   }
 }
 

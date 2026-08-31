@@ -8,7 +8,9 @@ export type Capability =
   | "users.view"
   | "users.approve"
   | "users.set_role"
+  | "users.disable"
   | "groups.view"
+  | "groups.archive"
   | "ledger.view"
   | "ledger.adjust"
   | "ops.score"
@@ -25,7 +27,9 @@ const CAPS: Record<Role, Capability[]> = {
     "users.view",
     "users.approve",
     "users.set_role",
+    "users.disable",
     "groups.view",
+    "groups.archive",
     "ledger.view",
     "ledger.adjust",
     "ops.score",

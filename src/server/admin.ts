@@ -155,6 +155,7 @@ export interface AdminUserRow {
   email: string;
   status: string;
   role: string;
+  disabled: boolean;
   groupCount: number;
   lastEventAt: Date | null;
 }
@@ -167,6 +168,7 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
       email: users.email,
       status: sql<string>`coalesce(${userApprovals.status}, 'pending')`,
       role: sql<string>`case when coalesce(${userApprovals.isAdmin}, false) then 'admin' else coalesce(${userApprovals.role}, 'member') end`,
+      disabled: sql<boolean>`(${userApprovals.disabledAt} is not null)`,
       groupCount: sql<number>`(select count(*) from group_members gm where gm.user_id = ${users.id} and gm.left_at is null)`,
       lastEventAt: sql<Date | null>`(select max(occurred_at) from events e where e.user_id = ${users.id})`,
     })
@@ -176,7 +178,7 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
 }
 
 export interface UserInspector {
-  profile: { userId: string; name: string; email: string; status: string; role: string };
+  profile: { userId: string; name: string; email: string; status: string; role: string; disabled: boolean };
   recentCheckins: { step: string; at: Date }[];
   recentScores: { periodStart: string; passed: boolean; detail: unknown }[];
   recentOutcomes: { periodStart: string; groupName: string; streakAfter: number; graceUsed: boolean; fineAmount: number; currency: string }[];
@@ -191,6 +193,7 @@ export async function getUserInspector(userId: string): Promise<UserInspector | 
       email: users.email,
       status: sql<string>`coalesce(${userApprovals.status}, 'pending')`,
       role: sql<string>`case when coalesce(${userApprovals.isAdmin}, false) then 'admin' else coalesce(${userApprovals.role}, 'member') end`,
+      disabled: sql<boolean>`(${userApprovals.disabledAt} is not null)`,
     })
     .from(users)
     .leftJoin(userApprovals, eq(userApprovals.userId, users.id))
@@ -281,13 +284,17 @@ export async function listAllGroups(): Promise<AdminGroupRow[]> {
 
 export interface GroupInspector {
   name: string;
+  archived: boolean;
   members: { userId: string; name: string; role: string; joinedAt: string; leftAt: string | null }[];
   rulesTimeline: { effectiveFrom: string; fineMode: string; fineAmount: number; currency: string; gracePerMonth: number }[];
   ledger: { id: number; fromName: string; toName: string; amount: number; currency: string; kind: string; periodStart: string | null; createdAt: Date }[];
 }
 
 export async function getGroupInspector(groupId: string): Promise<GroupInspector | null> {
-  const [g] = await db.select({ name: groups.name }).from(groups).where(eq(groups.id, groupId));
+  const [g] = await db
+    .select({ name: groups.name, archivedAt: groups.archivedAt })
+    .from(groups)
+    .where(eq(groups.id, groupId));
   if (!g) return null;
 
   const [members, act, ledger] = await Promise.all([
@@ -332,7 +339,7 @@ export async function getGroupInspector(groupId: string): Promise<GroupInspector
       .orderBy(desc(activityRules.effectiveFrom));
   }
 
-  return { name: g.name, members, rulesTimeline, ledger };
+  return { name: g.name, archived: g.archivedAt != null, members, rulesTimeline, ledger };
 }
 
 // ---- Writes ---------------------------------------------------------------
@@ -366,21 +373,10 @@ export async function setRole(
   role: Role,
 ): Promise<void> {
   const targetRole = await getRole(targetUserId);
-  if (targetRole === "admin" && role !== "admin") {
-    const [{ n }] = await db
-      .select({ n: sql<number>`count(*)` })
-      .from(userApprovals)
-      .where(
-        and(
-          eq(userApprovals.status, "approved"),
-          or(eq(userApprovals.role, "admin"), eq(userApprovals.isAdmin, true)),
-        ),
-      );
-    if (Number(n) <= 1) {
-      throw new Error(
-        "There must be at least one admin. Promote someone to admin before this change.",
-      );
-    }
+  if (targetRole === "admin" && role !== "admin" && (await approvedAdminCount()) <= 1) {
+    throw new Error(
+      "There must be at least one admin. Promote someone to admin before this change.",
+    );
   }
 
   await db
@@ -391,6 +387,87 @@ export async function setRole(
     userId: adminId,
     type: "admin.role.changed",
     payload: { target_user_id: targetUserId, role },
+  });
+}
+
+// Active (non-disabled) approved admins.
+async function approvedAdminCount(): Promise<number> {
+  return scalar(
+    db
+      .select({ n: sql`count(*)` })
+      .from(userApprovals)
+      .where(
+        and(
+          eq(userApprovals.status, "approved"),
+          isNull(userApprovals.disabledAt),
+          or(eq(userApprovals.role, "admin"), eq(userApprovals.isAdmin, true)),
+        ),
+      ),
+  );
+}
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Soft-delete a user: block access and stop scoring by marking their active
+// memberships left as of today (immutability-clean, balances survive). Nothing
+// is removed. Cannot disable the last admin.
+export async function disableUser(adminId: string, targetUserId: string): Promise<void> {
+  if ((await getRole(targetUserId)) === "admin" && (await approvedAdminCount()) <= 1) {
+    throw new Error("There must be at least one admin. Promote someone else first.");
+  }
+  await db
+    .update(userApprovals)
+    .set({ disabledAt: new Date() })
+    .where(eq(userApprovals.userId, targetUserId));
+  await db
+    .update(groupMembers)
+    .set({ leftAt: todayStr() })
+    .where(and(eq(groupMembers.userId, targetUserId), isNull(groupMembers.leftAt)));
+  await recordEvent({
+    userId: adminId,
+    type: "admin.user.disabled",
+    payload: { target_user_id: targetUserId },
+  });
+}
+
+// Restore access. Memberships stay left; the user rejoins groups fresh.
+export async function restoreUser(adminId: string, targetUserId: string): Promise<void> {
+  await db
+    .update(userApprovals)
+    .set({ disabledAt: null })
+    .where(eq(userApprovals.userId, targetUserId));
+  await recordEvent({
+    userId: adminId,
+    type: "admin.user.restored",
+    payload: { target_user_id: targetUserId },
+  });
+}
+
+// Soft-delete a group: archive it and its activities so tracking and scoring
+// stop. Members, balances and history survive. Reversible.
+export async function archiveGroup(adminId: string, groupId: string): Promise<void> {
+  const now = new Date();
+  await db.update(groups).set({ archivedAt: now }).where(eq(groups.id, groupId));
+  await db
+    .update(activities)
+    .set({ archivedAt: now })
+    .where(and(eq(activities.groupId, groupId), isNull(activities.archivedAt)));
+  await recordEvent({
+    userId: adminId,
+    type: "admin.group.archived",
+    payload: { group_id: groupId },
+  });
+}
+
+export async function restoreGroup(adminId: string, groupId: string): Promise<void> {
+  await db.update(groups).set({ archivedAt: null }).where(eq(groups.id, groupId));
+  await db.update(activities).set({ archivedAt: null }).where(eq(activities.groupId, groupId));
+  await recordEvent({
+    userId: adminId,
+    type: "admin.group.restored",
+    payload: { group_id: groupId },
   });
 }
 

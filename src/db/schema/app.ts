@@ -37,9 +37,10 @@ export const userApprovals = pgTable("user_approvals", {
     .defaultNow(),
   decidedAt: timestamp("decided_at", { withTimezone: true }),
   decidedBy: text("decided_by").references(() => users.id),
+  disabledAt: timestamp("disabled_at", { withTimezone: true }), // soft-delete; blocks access
 });
 
-export type ApprovalStatus = "pending" | "approved" | "rejected";
+export type ApprovalStatus = "pending" | "approved" | "rejected" | "disabled";
 
 export const groups = pgTable("groups", {
   id: uuid("id").primaryKey().defaultRandom(),

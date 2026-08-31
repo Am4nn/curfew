@@ -7,6 +7,7 @@ import {
   groupMembers,
   activityScores,
   activityOutcomes,
+  userApprovals,
 } from "@/db/schema";
 import {
   periodStart,
@@ -264,9 +265,13 @@ export async function scoreUser(
 export async function scoreAll(
   opts: { from?: string } = {},
 ): Promise<{ users: number }> {
+  // Skip disabled users: their memberships are already marked left, and they
+  // cannot check in, so there is nothing to score.
   const users = await db
     .selectDistinct({ userId: groupMembers.userId })
-    .from(groupMembers);
+    .from(groupMembers)
+    .leftJoin(userApprovals, eq(userApprovals.userId, groupMembers.userId))
+    .where(isNull(userApprovals.disabledAt));
   for (const u of users) {
     await scoreUser(u.userId, { from: opts.from });
   }

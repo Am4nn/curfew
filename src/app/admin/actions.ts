@@ -3,19 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/session";
 import {
-  isAdmin,
+  requireCapability,
   decideApproval,
-  setAdminFlag,
+  setRole,
   runScoring,
   runVerify,
 } from "@/server/admin";
+import { isRole, type Capability } from "@/lib/capabilities";
 import { formatMoney } from "@/domain";
 import type { FormState } from "../ui";
 
-async function requireAdmin() {
+async function guard(capability: Capability) {
   const user = await getSessionUser();
   if (!user) throw new Error("Please sign in again.");
-  if (!(await isAdmin(user.id))) throw new Error("You are not an admin.");
+  await requireCapability(user.id, capability);
   return user;
 }
 
@@ -24,7 +25,7 @@ export async function decideAction(
   formData: FormData,
 ): Promise<FormState> {
   try {
-    const user = await requireAdmin();
+    const user = await guard("users.approve");
     const userId = String(formData.get("userId"));
     const approve = String(formData.get("approve")) === "true";
     await decideApproval(user.id, userId, approve);
@@ -36,20 +37,21 @@ export async function decideAction(
   }
 }
 
-export async function setAdminAction(
+export async function setRoleAction(
   _state: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
-    const user = await requireAdmin();
+    const user = await guard("users.set_role");
     const targetUserId = String(formData.get("userId"));
-    const makeAdmin = String(formData.get("makeAdmin")) === "true";
-    await setAdminFlag(user.id, targetUserId, makeAdmin);
+    const role = String(formData.get("role"));
+    if (!isRole(role)) return { error: "Unknown role." };
+    await setRole(user.id, targetUserId, role);
     revalidatePath("/admin/users");
     revalidatePath(`/admin/users/${targetUserId}`);
     return { ok: true };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Could not change admin access." };
+    return { error: e instanceof Error ? e.message : "Could not change the role." };
   }
 }
 
@@ -58,7 +60,7 @@ export async function runScoringAction(
   formData: FormData,
 ): Promise<FormState> {
   try {
-    const user = await requireAdmin();
+    const user = await guard("ops.score");
     const from = String(formData.get("from") || "").trim() || undefined;
     const result = await runScoring(user.id, from);
     revalidatePath("/admin");
@@ -68,25 +70,17 @@ export async function runScoringAction(
   }
 }
 
-export async function runVerifyAction(
-  _state: FormState,
-): Promise<FormState> {
+export async function runVerifyAction(_state: FormState): Promise<FormState> {
   try {
-    const user = await requireAdmin();
+    const user = await guard("ops.verify");
     const drift = await runVerify(user.id);
     if (drift.length === 0) return { ok: true, note: "No drift. Stored rows match a fresh recompute." };
     const lines = drift
       .slice(0, 20)
       .map((d) => {
-        const stored =
-          d.field === "fine_amount" && typeof d.stored === "number"
-            ? formatMoney(d.stored, "INR")
-            : String(d.stored);
-        const computed =
-          d.field === "fine_amount" && typeof d.computed === "number"
-            ? formatMoney(d.computed, "INR")
-            : String(d.computed);
-        return `${d.kind} ${d.key} ${d.field}: stored=${stored} computed=${computed}`;
+        const fmt = (v: unknown) =>
+          d.field === "fine_amount" && typeof v === "number" ? formatMoney(v, "INR") : String(v);
+        return `${d.kind} ${d.key} ${d.field}: stored=${fmt(d.stored)} computed=${fmt(d.computed)}`;
       })
       .join("\n");
     return { error: `${drift.length} drift row(s):\n${lines}` };

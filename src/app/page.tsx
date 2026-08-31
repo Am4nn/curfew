@@ -6,7 +6,7 @@ import {
   listInvitesForEmail,
   userBalances,
 } from "@/server/groups";
-import { isAdmin } from "@/server/admin";
+import { hasAdminAccess } from "@/server/admin";
 import { getCheckinState } from "@/server/checkin";
 import { formatMoney } from "@/domain";
 import { SignOut } from "./sign-out";
@@ -26,7 +26,7 @@ export default async function Dashboard() {
     listUserGroups(user.id),
     listInvitesForEmail(user.email),
     userBalances(user.id),
-    isAdmin(user.id),
+    hasAdminAccess(user.id),
   ]);
   const netByGroup = new Map(balances.map((b) => [b.groupId, b]));
   const checkin = groups.length > 0 ? await getCheckinState(user.id) : null;

@@ -17,12 +17,50 @@ import { recordEvent } from "./events";
 import { userBalances } from "./groups";
 import { scoreAll } from "./scoring";
 import { verifyAll, type Drift } from "./verify";
+import {
+  roleCapabilities,
+  roleHas,
+  hasAdminAccess as roleHasAdminAccess,
+  isRole,
+  type Capability,
+  type Role,
+} from "@/lib/capabilities";
 
-export async function isAdmin(userId: string): Promise<boolean> {
+// The user's role. is_admin is honoured as 'admin' for any row not yet migrated
+// or seeded the old way.
+export async function getRole(userId: string): Promise<Role> {
   const row = await db.query.userApprovals.findFirst({
     where: eq(userApprovals.userId, userId),
   });
-  return row?.isAdmin === true;
+  if (!row) return "member";
+  if (isRole(row.role) && row.role !== "member") return row.role;
+  return row.isAdmin ? "admin" : "member";
+}
+
+export async function can(userId: string, capability: Capability): Promise<boolean> {
+  return roleHas(await getRole(userId), capability);
+}
+
+export async function requireCapability(
+  userId: string,
+  capability: Capability,
+): Promise<void> {
+  if (!(await can(userId, capability))) {
+    throw new Error("You do not have permission for that.");
+  }
+}
+
+export async function hasAdminAccess(userId: string): Promise<boolean> {
+  return roleHasAdminAccess(await getRole(userId));
+}
+
+export async function getCapabilities(userId: string): Promise<Capability[]> {
+  return roleCapabilities(await getRole(userId));
+}
+
+// Retained: 'admin' is the top role. Used where a plain admin check is clearer.
+export async function isAdmin(userId: string): Promise<boolean> {
+  return (await getRole(userId)) === "admin";
 }
 
 async function scalar(query: Promise<{ n: unknown }[]>): Promise<number> {
@@ -116,7 +154,7 @@ export interface AdminUserRow {
   name: string;
   email: string;
   status: string;
-  isAdmin: boolean;
+  role: string;
   groupCount: number;
   lastEventAt: Date | null;
 }
@@ -128,7 +166,7 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
       name: users.name,
       email: users.email,
       status: sql<string>`coalesce(${userApprovals.status}, 'pending')`,
-      isAdmin: sql<boolean>`coalesce(${userApprovals.isAdmin}, false)`,
+      role: sql<string>`case when coalesce(${userApprovals.isAdmin}, false) then 'admin' else coalesce(${userApprovals.role}, 'member') end`,
       groupCount: sql<number>`(select count(*) from group_members gm where gm.user_id = ${users.id} and gm.left_at is null)`,
       lastEventAt: sql<Date | null>`(select max(occurred_at) from events e where e.user_id = ${users.id})`,
     })
@@ -138,7 +176,7 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
 }
 
 export interface UserInspector {
-  profile: { userId: string; name: string; email: string; status: string; isAdmin: boolean };
+  profile: { userId: string; name: string; email: string; status: string; role: string };
   recentCheckins: { step: string; at: Date }[];
   recentScores: { periodStart: string; passed: boolean; detail: unknown }[];
   recentOutcomes: { periodStart: string; groupName: string; streakAfter: number; graceUsed: boolean; fineAmount: number; currency: string }[];
@@ -152,7 +190,7 @@ export async function getUserInspector(userId: string): Promise<UserInspector | 
       name: users.name,
       email: users.email,
       status: sql<string>`coalesce(${userApprovals.status}, 'pending')`,
-      isAdmin: sql<boolean>`coalesce(${userApprovals.isAdmin}, false)`,
+      role: sql<string>`case when coalesce(${userApprovals.isAdmin}, false) then 'admin' else coalesce(${userApprovals.role}, 'member') end`,
     })
     .from(users)
     .leftJoin(userApprovals, eq(userApprovals.userId, users.id))
@@ -315,22 +353,24 @@ export async function decideApproval(
   });
 }
 
-export async function setAdminFlag(
+// Only an admin (users.set_role) may call this; the action checks first. Keeps
+// is_admin in sync with role='admin' for backward compatibility.
+export async function setRole(
   adminId: string,
   targetUserId: string,
-  makeAdmin: boolean,
+  role: Role,
 ): Promise<void> {
-  if (adminId === targetUserId && !makeAdmin) {
-    throw new Error("you cannot remove your own admin access");
+  if (adminId === targetUserId && role !== "admin") {
+    throw new Error("you cannot lower your own role");
   }
   await db
     .update(userApprovals)
-    .set({ isAdmin: makeAdmin })
+    .set({ role, isAdmin: role === "admin" })
     .where(eq(userApprovals.userId, targetUserId));
   await recordEvent({
     userId: adminId,
     type: "admin.role.changed",
-    payload: { target_user_id: targetUserId, is_admin: makeAdmin },
+    payload: { target_user_id: targetUserId, role },
   });
 }
 

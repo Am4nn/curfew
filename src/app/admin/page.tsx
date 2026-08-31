@@ -1,10 +1,13 @@
 import Link from "next/link";
-import { getOverview, listPendingApprovals } from "@/server/admin";
+import { getSessionUser } from "@/lib/session";
+import { getOverview, listPendingApprovals, can } from "@/server/admin";
 import { formatMoney } from "@/domain";
 import { ActionForm, SubmitButton, ConfirmButton } from "../ui";
 import { decideAction } from "./actions";
 
 export default async function AdminOverview() {
+  const user = await getSessionUser();
+  const canApprove = user ? await can(user.id, "users.approve") : false;
   const [o, pending] = await Promise.all([getOverview(), listPendingApprovals()]);
 
   return (
@@ -36,22 +39,26 @@ export default async function AdminOverview() {
                 <div>{p.name}</div>
                 <div className="text-[12px] text-muted">{p.email}</div>
               </div>
-              <span className="flex items-center gap-2">
-                <ActionForm action={decideAction}>
-                  <input type="hidden" name="userId" value={p.userId} />
-                  <input type="hidden" name="approve" value="true" />
-                  <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
-                    Approve
-                  </SubmitButton>
-                </ActionForm>
-                <ConfirmButton
-                  action={decideAction}
-                  fields={{ userId: p.userId, approve: "false" }}
-                  label="Reject"
-                  message={`Reject ${p.name}?`}
-                  confirmLabel="Reject"
-                />
-              </span>
+              {canApprove ? (
+                <span className="flex items-center gap-2">
+                  <ActionForm action={decideAction}>
+                    <input type="hidden" name="userId" value={p.userId} />
+                    <input type="hidden" name="approve" value="true" />
+                    <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
+                      Approve
+                    </SubmitButton>
+                  </ActionForm>
+                  <ConfirmButton
+                    action={decideAction}
+                    fields={{ userId: p.userId, approve: "false" }}
+                    label="Reject"
+                    message={`Reject ${p.name}?`}
+                    confirmLabel="Reject"
+                  />
+                </span>
+              ) : (
+                <span className="text-[12px] text-muted">read-only</span>
+              )}
             </div>
           ))
         )}

@@ -28,7 +28,7 @@ export default async function AdminUsers() {
                   <span className={u.status === "approved" ? "text-pass" : u.status === "rejected" ? "text-penalty" : "text-muted"}>
                     {u.status}
                   </span>
-                  {u.isAdmin ? <span className="ml-1 text-[11px] text-muted">· admin</span> : null}
+                  {u.role !== "member" ? <span className="ml-1 text-[11px] text-muted">· {u.role}</span> : null}
                 </td>
                 <td className="py-2 pr-3 tabular-nums">{u.groupCount}</td>
                 <td className="py-2 pr-3 text-[11px] tabular-nums text-muted">

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getUserInspector } from "@/server/admin";
+import { getSessionUser } from "@/lib/session";
+import { getUserInspector, can } from "@/server/admin";
 import { formatMoney } from "@/domain";
+import { ROLES } from "@/lib/capabilities";
 import { ActionForm, SubmitButton, ConfirmButton } from "../../../ui";
-import { decideAction, setAdminAction } from "../../actions";
+import { decideAction, setRoleAction } from "../../actions";
 
 export default async function UserInspectorPage({
   params,
@@ -11,7 +13,12 @@ export default async function UserInspectorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const data = await getUserInspector(id);
+  const me = await getSessionUser();
+  const [data, canApprove, canSetRole] = await Promise.all([
+    getUserInspector(id),
+    me ? can(me.id, "users.approve") : Promise.resolve(false),
+    me ? can(me.id, "users.set_role") : Promise.resolve(false),
+  ]);
   if (!data) notFound();
   const { profile, recentCheckins, recentScores, recentOutcomes, balances } = data;
 
@@ -33,33 +40,40 @@ export default async function UserInspectorPage({
               {profile.status}
             </span>
           </span>
-          <span className="text-[13px]">admin: {profile.isAdmin ? "yes" : "no"}</span>
+          <span className="text-[13px]">role: {profile.role}</span>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {profile.status === "pending" ? (
-            <>
-              <ActionForm action={decideAction}>
-                <input type="hidden" name="userId" value={profile.userId} />
-                <input type="hidden" name="approve" value="true" />
-                <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
-                  Approve
-                </SubmitButton>
-              </ActionForm>
-              <ConfirmButton action={decideAction} fields={{ userId: profile.userId, approve: "false" }} label="Reject" message={`Reject ${profile.name}?`} confirmLabel="Reject" />
-            </>
-          ) : null}
-          {profile.isAdmin ? (
-            <ConfirmButton action={setAdminAction} fields={{ userId: profile.userId, makeAdmin: "false" }} label="Remove admin" message={`Remove admin access from ${profile.name}?`} confirmLabel="Remove admin" />
-          ) : (
-            <ActionForm action={setAdminAction}>
+
+        {canApprove && profile.status === "pending" ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <ActionForm action={decideAction}>
               <input type="hidden" name="userId" value={profile.userId} />
-              <input type="hidden" name="makeAdmin" value="true" />
-              <SubmitButton pendingLabel="Saving" className="border border-fg px-3 py-[6px] text-[13px]">
-                Make admin
+              <input type="hidden" name="approve" value="true" />
+              <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
+                Approve
               </SubmitButton>
             </ActionForm>
-          )}
-        </div>
+            <ConfirmButton action={decideAction} fields={{ userId: profile.userId, approve: "false" }} label="Reject" message={`Reject ${profile.name}?`} confirmLabel="Reject" />
+          </div>
+        ) : null}
+
+        {canSetRole ? (
+          <ActionForm action={setRoleAction} className="mt-3 flex items-center gap-2">
+            <input type="hidden" name="userId" value={profile.userId} />
+            <label className="text-[13px] text-muted">Role</label>
+            <select
+              name="role"
+              defaultValue={profile.role}
+              className="border border-fg bg-transparent px-2 py-[6px] text-[14px]"
+            >
+              {ROLES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+            <SubmitButton pendingLabel="Saving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
+              Save role
+            </SubmitButton>
+          </ActionForm>
+        ) : null}
       </section>
 
       <Panel title="BALANCES">

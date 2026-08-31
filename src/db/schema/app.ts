@@ -29,7 +29,9 @@ export const userApprovals = pgTable("user_approvals", {
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
   status: text("status").notNull().default("pending"), // pending | approved | rejected
-  isAdmin: boolean("is_admin").notNull().default(false),
+  isAdmin: boolean("is_admin").notNull().default(false), // kept in sync with role='admin'
+  role: text("role").notNull().default("member"), // member | auditor | ops | moderator | admin
+
   requestedAt: timestamp("requested_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

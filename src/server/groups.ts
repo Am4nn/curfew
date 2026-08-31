@@ -51,10 +51,15 @@ export async function inviteToGroup(
     .where(eq(groups.id, groupId));
   if (!group) return;
 
+  const [inviter] = await db
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, inviterId));
+
   await sendEmailBestEffort({
     actorId: inviterId,
     kind: "invite",
-    email: groupInviteEmail(clean, group.name),
+    email: groupInviteEmail(clean, inviter?.name ?? "Someone", group.name),
     payload: { group_id: groupId, invite_id: invite.id },
   });
 }

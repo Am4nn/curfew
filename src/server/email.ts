@@ -103,15 +103,20 @@ function mark(text: string): string {
   return `<span style="font-weight:700;background:${SURFACE};padding:1px 6px;color:${INK};">${text}</span>`;
 }
 
-export function groupInviteEmail(to: string, groupName: string): EmailInput {
+export function groupInviteEmail(
+  to: string,
+  inviterName: string,
+  groupName: string,
+): EmailInput {
   const url = dashboardUrl();
+  const safeInviter = escapeHtml(inviterName);
   const safeGroupName = escapeHtml(groupName);
   return {
     to,
     subject: "Curfew group invitation",
-    text: `${groupName} invited you to Curfew. Open ${url} and sign in with Google. Once your account is approved, accept the invite from your dashboard.`,
+    text: `${inviterName} invited you to ${groupName} on Curfew. Open ${url} and sign in with Google. Once your account is approved, accept the invite from your dashboard.`,
     html: layout(
-      line(`${mark(safeGroupName)} invited you to Curfew.`) +
+      line(`${mark(safeInviter)} invited you to ${safeGroupName} on Curfew.`) +
         button(url, "Open Curfew") +
         line("Sign in with Google. Once your account is approved, accept the invite from your dashboard.", true),
     ),

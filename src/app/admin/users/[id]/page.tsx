@@ -82,7 +82,11 @@ export default async function UserInspectorPage({
           </ActionForm>
         ) : null}
 
-        {canDisable ? (
+        {canDisable && me?.id === profile.userId ? (
+          <p className="mt-4 text-[12px] text-muted">This is you.</p>
+        ) : null}
+
+        {canDisable && me?.id !== profile.userId ? (
           <div className="mt-4">
             {profile.disabled ? (
               <ActionForm action={restoreUserAction}>

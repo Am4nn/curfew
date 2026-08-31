@@ -414,6 +414,9 @@ function todayStr(): string {
 // memberships left as of today (immutability-clean, balances survive). Nothing
 // is removed. Cannot disable the last admin.
 export async function disableUser(adminId: string, targetUserId: string): Promise<void> {
+  if (adminId === targetUserId) {
+    throw new Error("You cannot remove your own account. Ask another admin.");
+  }
   if ((await getRole(targetUserId)) === "admin" && (await approvedAdminCount()) <= 1) {
     throw new Error("There must be at least one admin. Promote someone else first.");
   }

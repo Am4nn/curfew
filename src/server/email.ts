@@ -57,6 +57,7 @@ function escapeHtml(value: string): string {
 // mail clients strip <style> and ignore modern CSS.
 const INK = "#1a1917";
 const PAPER = "#e8e6e1";
+const SURFACE = "#dcd8d0";
 const MUTED = "#5a5751";
 const RULE = "#c4c0b8";
 const MONO = "'IBM Plex Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace";
@@ -88,7 +89,9 @@ export function groupInviteEmail(to: string, groupName: string): EmailInput {
     subject: "Curfew group invitation",
     text: `${groupName} invited you to Curfew. Open ${url} and sign in with Google. Once your account is approved, accept the invite from your dashboard.`,
     html: layout(
-      line(`${safeGroupName} invited you to Curfew.`) +
+      line(
+        `<span style="font-weight:700;background:${SURFACE};padding:1px 6px;color:${INK};">${safeGroupName}</span> invited you to Curfew.`,
+      ) +
         button(url, "Open Curfew") +
         line("Sign in with Google. Once your account is approved, accept the invite from your dashboard.", true),
     ),

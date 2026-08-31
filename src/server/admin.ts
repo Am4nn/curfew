@@ -15,6 +15,7 @@ import {
   balances,
 } from "@/db/schema";
 import { recordEvent } from "./events";
+import { accountDisabledEmail, approvalEmail, sendEmailBestEffort } from "./email";
 import { userBalances } from "./groups";
 import { scoreAll } from "./scoring";
 import { verifyAll, type Drift } from "./verify";
@@ -350,17 +351,32 @@ export async function decideApproval(
   userId: string,
   approve: boolean,
 ): Promise<void> {
-  await db
+  const [changed] = await db
     .update(userApprovals)
     .set({ status: approve ? "approved" : "rejected", decidedAt: new Date(), decidedBy: adminId })
-    .where(and(eq(userApprovals.userId, userId), eq(userApprovals.status, "pending")));
+    .where(and(eq(userApprovals.userId, userId), eq(userApprovals.status, "pending")))
+    .returning({ userId: userApprovals.userId });
+  if (!changed) return;
+
   await recordEvent({
     userId: adminId,
     type: "admin.approval.decided",
     payload: { target_user_id: userId, approve },
   });
-}
 
+  const [target] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, userId));
+  if (!target) return;
+
+  await sendEmailBestEffort({
+    actorId: adminId,
+    kind: "approval",
+    email: approvalEmail(target.email, approve),
+    payload: { target_user_id: userId, approved: approve },
+  });
+}
 // Only an admin (users.set_role) may call this; the action checks first. Keeps
 // is_admin in sync with role='admin' for backward compatibility.
 //
@@ -421,10 +437,13 @@ export async function disableUser(adminId: string, targetUserId: string): Promis
   if ((await getRole(targetUserId)) === "admin" && (await approvedAdminCount()) <= 1) {
     throw new Error("There must be at least one admin. Promote someone else first.");
   }
-  await db
+  const [disabled] = await db
     .update(userApprovals)
     .set({ disabledAt: new Date() })
-    .where(eq(userApprovals.userId, targetUserId));
+    .where(and(eq(userApprovals.userId, targetUserId), isNull(userApprovals.disabledAt)))
+    .returning({ userId: userApprovals.userId });
+  if (!disabled) return;
+
   await db
     .update(groupMembers)
     .set({ leftAt: todayStr() })
@@ -438,8 +457,20 @@ export async function disableUser(adminId: string, targetUserId: string): Promis
     type: "admin.user.disabled",
     payload: { target_user_id: targetUserId },
   });
-}
 
+  const [target] = await db
+    .select({ email: users.email })
+    .from(users)
+    .where(eq(users.id, targetUserId));
+  if (!target) return;
+
+  await sendEmailBestEffort({
+    actorId: adminId,
+    kind: "disabled",
+    email: accountDisabledEmail(target.email),
+    payload: { target_user_id: targetUserId },
+  });
+}
 // Restore access. Memberships stay left; the user rejoins groups fresh.
 export async function restoreUser(adminId: string, targetUserId: string): Promise<void> {
   await db

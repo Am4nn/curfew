@@ -16,11 +16,13 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**v1 complete — all phases done.** Phases 0-6 are built and verified. Phase 6
-adds the settings screen (personal and shared scopes, all changes effective
-tomorrow, shared changes owner-only and announced via config.shared.changed),
-the 30-day wake-time chart (inline SVG), and empty states. Do not start v2
-backlog work (PRD 9) without being asked.
+**v2 in progress.** v1 (phases 0-6) is complete, verified, and deployed. The v2
+build order and per-phase spec live in `.planning/PLAN-v2.md` and
+`.planning/PLAN-v2-phases.md`. Done: Phase 1 (per-user sleep-window validation
+plus a settings info affordance) and Phase 2 (transactional email via Resend:
+invite, approval decision, and account-removed notices, best-effort and
+non-blocking, `email.*` events only). Next: Phase 3 (fuller analytics on the
+expanded /chart page). Do not start v2.5 or v3 work without being asked.
 
 ## Invariants
 
@@ -72,8 +74,8 @@ Do not build these even if you're already in the area:
 - Any payment integration (legal constraint — PRD §8)
 - Multiple leaderboards or rankings; there is one score
 - Retention or archival policy
-- Email sending
-- RLS
+- Email sending (shipped in v2 via Resend; the v1 ban no longer applies)
+- RLS (deferred to v3)
 
 ## Commands
 

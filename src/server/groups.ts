@@ -2,6 +2,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { groups, groupMembers, activities, groupInvites, balances, users } from "@/db/schema";
 import { assertMember } from "./membership";
+import { groupInviteEmail, sendEmailBestEffort } from "./email";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -37,12 +38,26 @@ export async function inviteToGroup(
   await assertMember(groupId, inviterId);
   const clean = email.trim().toLowerCase();
   if (!clean) throw new Error("email required");
-  await db
+  const [invite] = await db
     .insert(groupInvites)
     .values({ groupId, email: clean, invitedBy: inviterId })
-    .onConflictDoNothing();
-}
+    .onConflictDoNothing()
+    .returning({ id: groupInvites.id });
+  if (!invite) return;
 
+  const [group] = await db
+    .select({ name: groups.name })
+    .from(groups)
+    .where(eq(groups.id, groupId));
+  if (!group) return;
+
+  await sendEmailBestEffort({
+    actorId: inviterId,
+    kind: "invite",
+    email: groupInviteEmail(clean, group.name),
+    payload: { group_id: groupId, invite_id: invite.id },
+  });
+}
 export async function acceptInvite(
   inviteId: string,
   userId: string,

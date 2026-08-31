@@ -4,6 +4,7 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { listUserGroups } from "@/server/groups";
 import { getCheckinState } from "@/server/checkin";
 import { CheckinButton } from "../checkin-button";
+import { QuorumMark } from "../mark";
 
 // The check-in loop. Forced dark regardless of the theme choice: the night
 // screen must not be pleasant to open at 23:00 (PRD G4). A user with no group
@@ -22,7 +23,8 @@ export default async function Checkin() {
     <div data-theme="dark" className="min-h-dvh bg-bg text-fg">
       <main className="mx-auto flex min-h-dvh max-w-[560px] flex-col px-5 py-7">
         <header className="flex items-baseline justify-between">
-          <Link href="/" className="text-[13px] font-semibold tracking-[0.14em]">
+          <Link href="/" className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.14em]">
+            <QuorumMark size={14} />
             CURFEW
           </Link>
           <span className="text-[12px] text-muted">{state.period}</span>

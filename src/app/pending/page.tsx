@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { SignOut } from "../sign-out";
+import { QuorumMark } from "../mark";
 
 export default async function Pending() {
   const user = await getSessionUser();
@@ -19,7 +20,10 @@ export default async function Pending() {
   return (
     <main className="flex min-h-dvh flex-col justify-center px-5 py-7">
       <div className="mx-auto flex w-full max-w-[560px] flex-col gap-[26px]">
-        <div className="text-[30px] font-semibold tracking-[0.2em]">CURFEW</div>
+        <div className="flex items-center gap-3 text-[30px] font-semibold tracking-[0.2em]">
+          <QuorumMark size={26} />
+          CURFEW
+        </div>
         <p className="max-w-[40ch] text-[14px] text-muted">{message}</p>
         <p className="border-t border-rule pt-[14px] text-[12px] text-muted">
           Signed in as {user.email}

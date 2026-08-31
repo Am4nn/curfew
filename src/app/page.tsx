@@ -10,6 +10,7 @@ import { hasAdminAccess } from "@/server/admin";
 import { getCheckinState } from "@/server/checkin";
 import { formatMoney } from "@/domain";
 import { SignOut } from "./sign-out";
+import { QuorumMark } from "./mark";
 import { ActionForm, SubmitButton, ConfirmButton } from "./ui";
 import {
   createGroupAction,
@@ -35,7 +36,10 @@ export default async function Dashboard() {
     <main className="min-h-dvh px-5 pb-20 pt-7">
       <div className="mx-auto max-w-[560px]">
         <header className="mb-7 flex items-baseline justify-between gap-3 border-b-2 border-fg pb-[10px]">
-          <h1 className="text-[15px] font-semibold tracking-[0.14em]">CURFEW</h1>
+          <h1 className="flex items-center gap-2 text-[15px] font-semibold tracking-[0.14em]">
+            <QuorumMark size={15} />
+            CURFEW
+          </h1>
           <span className="flex items-baseline gap-3 text-[12px] text-muted">
             <Link href="/chart" className="text-muted">chart</Link>
             <Link href="/settings" className="text-muted">settings</Link>

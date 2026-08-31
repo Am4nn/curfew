@@ -1,12 +1,16 @@
 "use client";
 
 import { signIn } from "@/lib/auth-client";
+import { QuorumMark } from "../mark";
 
 export default function SignIn() {
   return (
     <main className="flex min-h-dvh flex-col justify-center px-5 py-7">
       <div className="mx-auto flex w-full max-w-[560px] flex-col gap-[26px]">
-        <div className="text-[30px] font-semibold tracking-[0.2em]">CURFEW</div>
+        <div className="flex items-center gap-3 text-[30px] font-semibold tracking-[0.2em]">
+          <QuorumMark size={26} />
+          CURFEW
+        </div>
         <p className="max-w-[34ch] text-[14px] text-muted">
           Three timed check-ins a night. Miss the window and the night does not
           count.

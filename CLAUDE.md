@@ -16,11 +16,12 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**Phase 4 complete — Money.** Phases 0-4 are done. Phase 4 adds the ledger:
-fines written from outcomes inside the scoring job (idempotent), settlements as
-append-only rows, the balances view, and a /ledger screen with per-counterparty
-balances, the activity feed, and settle-up. Do not start Phase 5 without being
-asked.
+**Phase 5 complete — Groups.** Phases 0-5 are done. Phase 5 adds group create,
+invite by email, accept/decline, leave (balance survives), the admin approvals
+screen, and the multi-group dashboard at `/` (check-in moved to /checkin, still
+forced dark). The auto solo-group was dropped; new users create or join a
+group. A second group works with no change to Phase 1-4 code. Do not start
+Phase 6 without being asked.
 
 ## Invariants
 

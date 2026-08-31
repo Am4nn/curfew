@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { userApprovals } from "@/db/schema";
 import { performCheckin } from "@/server/checkin";
+import { listUserGroups } from "@/server/groups";
 
 // A check-in is an explicit POST from a button press. It is never a GET: a GET
 // must be safe, and prefetch, tab restore and link previews all fire GETs
@@ -22,6 +23,11 @@ export async function POST() {
   });
   if (approval?.status !== "approved") {
     return NextResponse.json({ ok: false, reason: "not_approved" }, { status: 403 });
+  }
+
+  const groups = await listUserGroups(session.user.id);
+  if (groups.length === 0) {
+    return NextResponse.json({ ok: false, reason: "no_group" }, { status: 409 });
   }
 
   const result = await performCheckin(session.user.id, session.session.id);

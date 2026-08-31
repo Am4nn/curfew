@@ -65,6 +65,24 @@ export const groupMembers = pgTable(
   (t) => [primaryKey({ columns: [t.groupId, t.userId] })],
 );
 
+// No group is public or discoverable. An invite exists only because an owner
+// typed an email; it appears on the invitee's dashboard once they are approved.
+// email is citext in the DB. status: pending | accepted | revoked (revoked
+// covers both an owner revoking and an invitee declining).
+export const groupInvites = pgTable("group_invites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  invitedBy: text("invited_by")
+    .notNull()
+    .references(() => users.id),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  respondedAt: timestamp("responded_at", { withTimezone: true }),
+});
+
 export const activities = pgTable("activities", {
   id: uuid("id").primaryKey().defaultRandom(),
   groupId: uuid("group_id")

@@ -1,0 +1,5 @@
+# Normalize line endings: store LF in the repo, check out LF everywhere.
+* text=auto eol=lf
+
+# Binary/lock files git should not touch
+bun.lock -text

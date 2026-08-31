@@ -4,8 +4,8 @@ import { signIn } from "@/lib/auth-client";
 
 export default function SignIn() {
   return (
-    <main className="min-h-screen px-5 pb-20 pt-7">
-      <div className="mx-auto flex min-h-[calc(100vh-104px)] max-w-[560px] flex-col justify-center gap-[26px]">
+    <main className="flex min-h-dvh flex-col justify-center px-5 py-7">
+      <div className="mx-auto flex w-full max-w-[560px] flex-col gap-[26px]">
         <div className="text-[30px] font-semibold tracking-[0.2em]">CURFEW</div>
         <p className="max-w-[34ch] text-[14px] text-muted">
           Three timed check-ins a night. Miss the window and the night does not

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { listUserGroups } from "@/server/groups";
@@ -8,6 +9,8 @@ import {
   getGroupRules,
 } from "@/server/settings";
 import { minorUnitExponent } from "@/domain";
+import { ActionForm, SubmitButton } from "../ui";
+import { ThemeToggle } from "../theme-toggle";
 import {
   updateTimezoneAction,
   updateWindowsAction,
@@ -30,16 +33,27 @@ export default async function Settings() {
 
   const personal = await getPersonalSettings(user.id);
   const groups = await listUserGroups(user.id);
+  const theme =
+    (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
 
   return (
-    <main className="min-h-screen px-5 pb-20 pt-7">
+    <main className="min-h-dvh px-5 pb-20 pt-7">
       <div className="mx-auto max-w-[560px]">
         <header className="mb-7 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">SETTINGS</h1>
-          <Link href="/" className="text-[12px] text-muted underline">
-            dashboard
-          </Link>
+          <Link href="/" className="text-[12px] text-muted underline">dashboard</Link>
         </header>
+
+        <section className="mb-9">
+          <div className="border-b-2 border-fg pb-2">
+            <h2 className="text-[14px] font-semibold tracking-[0.08em]">APPEARANCE</h2>
+            <p className="mt-1 text-[12px] text-muted">Theme for this device.</p>
+          </div>
+          <div className="flex items-center justify-between py-3">
+            <span className="text-[14px]">Theme</span>
+            <ThemeToggle initial={theme} />
+          </div>
+        </section>
 
         {/* Personal scope: silent, applies to this person everywhere. */}
         <section className="mb-9">
@@ -50,7 +64,10 @@ export default async function Settings() {
             </p>
           </div>
 
-          <form action={updateTimezoneAction} className="flex items-center justify-between gap-3 border-b border-rule py-3">
+          <ActionForm
+            action={updateTimezoneAction}
+            className="flex items-center justify-between gap-3 border-b border-rule py-3"
+          >
             <label className="text-[14px]">
               Timezone
               <span className="block text-[12px] text-muted">IANA name, e.g. Asia/Kolkata</span>
@@ -58,39 +75,47 @@ export default async function Settings() {
             <span className="flex gap-2">
               <input
                 name="timezone"
+                required
                 defaultValue={personal.timezone}
                 className="w-44 border border-fg bg-transparent px-2 py-[6px] text-right text-[14px]"
               />
-              <button className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">Save</button>
+              <SubmitButton
+                pendingLabel="Saving"
+                className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg"
+              >
+                Save
+              </SubmitButton>
             </span>
-          </form>
+          </ActionForm>
 
-          <form action={updateWindowsAction} className="pt-3">
+          <ActionForm action={updateWindowsAction} className="pt-3">
             {WINDOW_FIELDS.map(([key, label]) => (
               <div key={key} className="flex items-center justify-between gap-3 border-b border-rule py-3">
                 <label className="text-[14px]">{label}</label>
                 <input
                   type="time"
                   name={key}
+                  required
                   defaultValue={personal.windows[key]}
                   className="border border-fg bg-transparent px-2 py-[6px] text-[14px]"
                 />
               </div>
             ))}
-            <button className="mt-3 border border-fg bg-fg px-4 py-[8px] text-[14px] text-bg">
+            <SubmitButton
+              pendingLabel="Saving"
+              className="mt-3 border border-fg bg-fg px-4 py-[8px] text-[14px] text-bg"
+            >
               Save windows
-            </button>
-          </form>
+            </SubmitButton>
+          </ActionForm>
         </section>
 
-        {/* Shared scope: affects everyone in the group, from tomorrow. */}
         {await Promise.all(
           groups.map(async (g) => {
             const act = await groupSleepActivity(g.groupId);
             if (!act) return null;
             const rules = await getGroupRules(act.activityId);
             const exp = minorUnitExponent(rules.currency);
-            const isOwner = g.role === "owner";
             return (
               <SharedScope
                 key={g.groupId}
@@ -100,7 +125,7 @@ export default async function Settings() {
                 fineMajor={(rules.fineAmount / 10 ** exp).toFixed(exp)}
                 currency={rules.currency}
                 grace={rules.gracePerMonth}
-                isOwner={isOwner}
+                isOwner={g.role === "owner"}
               />
             );
           }),
@@ -139,7 +164,7 @@ function SharedScope({
       </div>
 
       {isOwner ? (
-        <form action={updateGroupRulesAction} className="pt-3">
+        <ActionForm action={updateGroupRulesAction} className="pt-3">
           <input type="hidden" name="groupId" value={groupId} />
           <input type="hidden" name="activityId" value={activityId} />
           <div className="flex items-center justify-between gap-3 border-b border-rule py-3">
@@ -148,6 +173,7 @@ function SharedScope({
               <input
                 name="fineAmount"
                 inputMode="decimal"
+                required
                 defaultValue={fineMajor}
                 className="w-24 border border-fg bg-transparent px-2 py-[6px] text-right text-[14px]"
               />
@@ -162,12 +188,15 @@ function SharedScope({
           <div className="flex items-center justify-between gap-3 border-b border-rule py-3">
             <label className="text-[14px]">
               Grace tokens per month
-              <span className="block text-[12px] text-muted">Absorb a miss without breaking the streak. The fine still applies.</span>
+              <span className="block text-[12px] text-muted">
+                Absorb a miss without breaking the streak. The fine still applies.
+              </span>
             </label>
             <input
               name="gracePerMonth"
               type="number"
               min={0}
+              required
               defaultValue={grace}
               className="w-20 border border-fg bg-transparent px-2 py-[6px] text-right text-[14px]"
             />
@@ -175,10 +204,13 @@ function SharedScope({
           <p className="mt-3 border-l-[3px] border-penalty bg-surface py-[10px] pl-3 text-[13px]">
             Saving changes the stake for both people, starting tomorrow.
           </p>
-          <button className="mt-3 border border-penalty bg-penalty px-4 py-[8px] text-[14px] text-bg">
+          <SubmitButton
+            pendingLabel="Saving"
+            className="mt-3 border border-penalty bg-penalty px-4 py-[8px] text-[14px] text-bg"
+          >
             Save shared rules
-          </button>
-        </form>
+          </SubmitButton>
+        </ActionForm>
       ) : (
         <div className="pt-3 text-[14px]">
           <div className="flex justify-between border-b border-rule py-3">

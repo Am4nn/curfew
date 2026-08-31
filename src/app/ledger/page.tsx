@@ -18,7 +18,7 @@ export default async function Ledger() {
   const groups = await getUserGroups(user.id);
 
   return (
-    <main className="min-h-screen px-5 pb-20 pt-7">
+    <main className="min-h-dvh px-5 pb-20 pt-7">
       <div className="mx-auto max-w-[560px]">
         <header className="mb-7 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">LEDGER</h1>

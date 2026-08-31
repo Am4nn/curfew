@@ -19,8 +19,8 @@ export default async function Checkin() {
   const state = await getCheckinState(user.id);
 
   return (
-    <div data-theme="dark" className="min-h-screen bg-bg text-fg">
-      <main className="mx-auto flex min-h-screen max-w-[560px] flex-col px-5 py-7">
+    <div data-theme="dark" className="min-h-dvh bg-bg text-fg">
+      <main className="mx-auto flex min-h-dvh max-w-[560px] flex-col px-5 py-7">
         <header className="flex items-baseline justify-between">
           <Link href="/" className="text-[13px] font-semibold tracking-[0.14em]">
             CURFEW

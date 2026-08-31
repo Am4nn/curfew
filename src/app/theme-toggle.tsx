@@ -4,10 +4,10 @@ import { useState } from "react";
 
 type Theme = "dark" | "light";
 
-// Segmented text control. No icons: house style bans generic line icons, and
-// colour must not be the only carrier of meaning, so the state is spelled out.
-// The active theme is passed from the server (read from the cookie) so the
-// first paint already matches and nothing flips on hydration.
+// Inline segmented control for the Settings screen. No icons: house style bans
+// generic line icons, and colour must not be the only carrier of meaning, so
+// the state is spelled out. Writes a cookie and flips data-theme on <html> with
+// no reload; the server reads the cookie on the next load.
 export function ThemeToggle({ initial }: { initial: Theme }) {
   const [theme, setTheme] = useState<Theme>(initial);
 
@@ -18,15 +18,16 @@ export function ThemeToggle({ initial }: { initial: Theme }) {
   }
 
   return (
-    <div className="fixed right-3 top-3 z-20 flex border border-rule">
+    <div className="flex border border-fg">
       {(["dark", "light"] as Theme[]).map((t) => (
         <button
           key={t}
+          type="button"
           onClick={() => set(t)}
           aria-pressed={theme === t}
           aria-label={`${t} theme`}
           className={
-            "px-[9px] py-[5px] text-[11px] uppercase tracking-[0.12em] " +
+            "min-w-[64px] px-3 py-[7px] text-[13px] uppercase tracking-[0.12em] " +
             (theme === t ? "bg-fg text-bg" : "bg-transparent text-muted")
           }
         >

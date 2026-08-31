@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { settleAction } from "./actions";
+import { ActionForm, SubmitButton } from "../ui";
 
 // Payer settles a debt. Amount is in major units, defaulting to the full
 // outstanding balance but editable for a partial payment.
@@ -21,7 +22,7 @@ export function SettleForm({
   const [amount, setAmount] = useState(defaultMajor);
 
   return (
-    <form action={settleAction} className="mt-2 flex items-center gap-2">
+    <ActionForm action={settleAction} className="mt-2 flex items-center gap-2">
       <input type="hidden" name="groupId" value={groupId} />
       <input type="hidden" name="toUserId" value={toUserId} />
       <input type="hidden" name="currency" value={currency} />
@@ -33,12 +34,12 @@ export function SettleForm({
         aria-label={`Amount settled to ${toName}`}
         className="w-24 border border-fg bg-transparent px-2 py-[6px] text-right text-[14px] text-fg"
       />
-      <button
-        type="submit"
+      <SubmitButton
+        pendingLabel="Recording"
         className="border border-fg bg-fg px-3 py-[7px] text-[13px] text-bg"
       >
         Mark settled
-      </button>
-    </form>
+      </SubmitButton>
+    </ActionForm>
   );
 }

@@ -22,7 +22,7 @@ export default function GlobalError({
       <body
         style={{
           margin: 0,
-          minHeight: "100vh",
+          minHeight: "100dvh",
           background: "#0b0a09",
           color: "#f2f2f2",
           fontFamily: "'IBM Plex Mono', ui-monospace, monospace",

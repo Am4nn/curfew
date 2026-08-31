@@ -17,19 +17,23 @@ function hhmm(d: Date, tz: string): string {
 // Everything the read and write paths share: resolved timezone, the current
 // noon-to-noon period, and the step windows for this period and the next one
 // (the "next window" when idle can fall in the following period).
-async function context(userId: string) {
+// Resolve the timezone and current noon-to-noon period (one round trip).
+async function resolveContext(userId: string) {
   const tz = await resolveUserTimezone(userId, todayUtc());
   const now = new Date();
   const period = periodStart(now, tz);
+  return { tz, now, period };
+}
+
+// The step windows for this period and the next one (the idle "next window" can
+// fall in the following period). Reads the sleep config.
+async function windowsFor(userId: string, period: string, tz: string) {
   const config = await resolveUserSleepConfig(userId, period);
   const sleep = getActivityType("sleep");
   const nextPeriod = DateTime.fromISO(period, { zone: tz })
     .plus({ days: 1 })
     .toFormat("yyyy-MM-dd");
   return {
-    tz,
-    now,
-    period,
     thisWindows: sleep.windows(config, period, tz),
     nextWindows: sleep.windows(config, nextPeriod, tz),
   };
@@ -103,8 +107,12 @@ function nextView(w: CheckinWindow | undefined, tz: string): NextWindowView | nu
 }
 
 export async function getCheckinState(userId: string): Promise<CheckinState> {
-  const { tz, now, period, thisWindows, nextWindows } = await context(userId);
-  const done = await doneStepsForPeriod(userId, period);
+  const { tz, now, period } = await resolveContext(userId);
+  // The config read and the check-in read are independent; run them together.
+  const [{ thisWindows, nextWindows }, done] = await Promise.all([
+    windowsFor(userId, period, tz),
+    doneStepsForPeriod(userId, period),
+  ]);
 
   const steps: StepView[] = thisWindows.map((w) => {
     const at = done.get(w.step);
@@ -144,7 +152,8 @@ export async function performCheckin(
   userId: string,
   sessionId: string | null,
 ): Promise<CheckinResult> {
-  const { tz, now, period, thisWindows } = await context(userId);
+  const { tz, now, period } = await resolveContext(userId);
+  const { thisWindows } = await windowsFor(userId, period, tz);
   const open = openNow(thisWindows, now);
   if (!open) return { ok: false, reason: "closed" };
 

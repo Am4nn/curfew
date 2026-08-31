@@ -62,12 +62,28 @@ const MUTED = "#5a5751";
 const RULE = "#c4c0b8";
 const MONO = "'IBM Plex Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace";
 
+// The 3a Quorum mark built from table cells: three ink squares, the
+// bottom-right seat left empty. Cells, not an image, so it renders in every
+// mail client with no image-blocking and no SVG support needed.
+function quorumMark(): string {
+  const cell = (filled: boolean) =>
+    `<td width="9" height="9" style="width:9px;height:9px;font-size:1px;line-height:1px;background:${filled ? INK : "transparent"};">&nbsp;</td>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:2px;">`
+    + `<tr>${cell(true)}${cell(true)}</tr>`
+    + `<tr>${cell(true)}${cell(false)}</tr></table>`;
+}
+
 function layout(bodyHtml: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:${PAPER};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};"><tr><td align="center" style="padding:32px 16px;">
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:460px;max-width:100%;font-family:${MONO};">
-<tr><td style="border-bottom:2px solid ${INK};padding-bottom:10px;font-family:${MONO};font-size:15px;font-weight:700;letter-spacing:0.18em;color:${INK};">CURFEW</td></tr>
+<tr><td style="border-bottom:2px solid ${INK};padding-bottom:10px;">
+  <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+    <td valign="middle" style="padding-right:10px;">${quorumMark()}</td>
+    <td valign="middle" style="font-family:${MONO};font-size:15px;font-weight:700;letter-spacing:0.18em;color:${INK};">CURFEW</td>
+  </tr></table>
+</td></tr>
 <tr><td style="padding:22px 0 0 0;font-family:${MONO};font-size:14px;line-height:22px;color:${INK};">${bodyHtml}</td></tr>
 <tr><td style="padding:24px 0 0 0;"><div style="border-top:1px solid ${RULE};padding-top:14px;font-family:${MONO};font-size:11px;line-height:18px;color:${MUTED};">Curfew is an invite-only accountability contract. You received this because someone entered your address.</div></td></tr>
 </table></td></tr></table></body></html>`;

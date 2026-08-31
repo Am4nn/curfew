@@ -4,17 +4,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Theme tokens. Dark is the default (no data-theme, or data-theme="dark").
+  Light overrides under data-theme="light". The rules are written so they apply
+  at ANY scope, not just :root: a nested [data-theme="dark"] inside a light page
+  re-declares the dark values for its subtree. That is how the night check-in
+  screen (Phase 2) will stay black even when the app is in light mode.
+
+  penalty/pass carry per-theme values: the light red and green are unreadable on
+  black, so dark uses lighter variants.
+*/
+:root,
+[data-theme="dark"] {
+  --bg: #0b0a09;
+  --surface: #17150f;
+  --fg: #f2f2f2;
+  --muted: #8c8c8c;
+  --rule: #2e2c28;
+  --penalty: #e4574b;
+  --pass: #6ba17f;
+  --accent: #7fa8ff;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #e8e6e1;
+  --surface: #dcd8d0;
+  --fg: #1a1917;
+  --muted: #5a5751;
+  --rule: #c4c0b8;
+  --penalty: #a3251c;
+  --pass: #2f5d3f;
+  --accent: #7fa8ff;
+  color-scheme: light;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-paper text-ink font-mono;
+    @apply bg-bg text-fg font-mono;
     font-size: 15px;
     line-height: 1.5;
   }
   :focus-visible {
-    outline: 3px solid theme("colors.focus");
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
 }

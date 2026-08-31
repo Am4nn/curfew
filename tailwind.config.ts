@@ -11,15 +11,20 @@ const config: Config = {
       DEFAULT: "0",
     },
     extend: {
+      // Semantic tokens backed by CSS variables so the same class works in both
+      // themes. Values live in globals.css: dark is the default (:root), light
+      // overrides under [data-theme="light"]. A nested [data-theme="dark"]
+      // re-forces dark for its subtree, which is how the night check-in screen
+      // stays black regardless of the global choice.
       colors: {
-        paper: "#E8E6E1",
-        ink: "#1A1917",
-        dim: "#5A5751",
-        rule: "#C4C0B8",
-        penalty: "#A3251C",
-        pass: "#2F5D3F",
-        void: "#000000",
-        focus: "#7FA8FF",
+        bg: "var(--bg)",
+        surface: "var(--surface)",
+        fg: "var(--fg)",
+        muted: "var(--muted)",
+        rule: "var(--rule)",
+        penalty: "var(--penalty)",
+        pass: "var(--pass)",
+        accent: "var(--accent)",
       },
       fontFamily: {
         // IBM Plex Mono throughout. No system-sans anywhere.

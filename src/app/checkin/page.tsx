@@ -22,9 +22,9 @@ export default async function Checkin() {
   return (
     <div data-theme="dark" className="min-h-dvh bg-bg text-fg">
       <main className="mx-auto flex min-h-dvh max-w-[560px] flex-col px-5 py-7">
-        <header className="flex items-baseline justify-between">
-          <Link href="/" className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.14em]">
-            <QuorumMark size={14} />
+        <header className="mb-7 flex items-baseline justify-between gap-3 border-b-2 border-fg pb-[10px]">
+          <Link href="/" className="flex items-center gap-2 text-[15px] font-semibold tracking-[0.14em]">
+            <QuorumMark size={15} />
             CURFEW
           </Link>
           <span className="text-[12px] text-muted">{state.period}</span>

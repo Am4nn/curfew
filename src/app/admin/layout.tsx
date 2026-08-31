@@ -6,6 +6,7 @@ import type { Capability } from "@/lib/capabilities";
 
 const TABS: [string, string, Capability | null][] = [
   ["/admin", "Overview", null],
+  ["/admin/insights", "Insights", "insights.view"],
   ["/admin/users", "Users", "users.view"],
   ["/admin/groups", "Groups", "groups.view"],
   ["/admin/ops", "Ops", "ops.score"],

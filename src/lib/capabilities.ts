@@ -13,6 +13,7 @@ export type Capability =
   | "groups.archive"
   | "ledger.view"
   | "ledger.adjust"
+  | "insights.view"
   | "ops.score"
   | "ops.verify";
 
@@ -32,16 +33,17 @@ const CAPS: Record<Role, Capability[]> = {
     "groups.archive",
     "ledger.view",
     "ledger.adjust",
+    "insights.view",
     "ops.score",
     "ops.verify",
   ],
   // Moderator gates accounts and reads people/groups, but never touches money
   // or roles and cannot run jobs.
-  moderator: ["users.view", "users.approve", "groups.view", "ledger.view"],
+  moderator: ["users.view", "users.approve", "groups.view", "ledger.view", "insights.view"],
   // Ops runs the derivable jobs and reads data, but cannot approve or set roles.
-  ops: ["users.view", "groups.view", "ledger.view", "ops.score", "ops.verify"],
+  ops: ["users.view", "groups.view", "ledger.view", "insights.view", "ops.score", "ops.verify"],
   // Auditor is read-only across the console.
-  auditor: ["users.view", "groups.view", "ledger.view"],
+  auditor: ["users.view", "groups.view", "ledger.view", "insights.view"],
   // Member has no admin access.
   member: [],
 };

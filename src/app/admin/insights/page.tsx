@@ -4,12 +4,14 @@ import { can } from "@/server/admin";
 import {
   checkinsPerDay,
   passRateOverTime,
+  passRateByWeekday,
   finesPerDay,
   wakeTrend,
   outstandingBalances,
 } from "@/server/insights";
 import { formatMoney } from "@/domain";
-import { TimeChart, BalanceBars } from "./charts";
+import { TimeChart } from "../../charts";
+import { BalanceBars } from "./charts";
 
 const DAYS = 30;
 
@@ -23,9 +25,10 @@ export default async function Insights() {
   if (!user) redirect("/signin");
   if (!(await can(user.id, "insights.view"))) redirect("/admin");
 
-  const [checkins, passRate, fines, wake, balances] = await Promise.all([
+  const [checkins, passRate, weekday, fines, wake, balances] = await Promise.all([
     checkinsPerDay(DAYS),
     passRateOverTime(DAYS),
+    passRateByWeekday(84),
     finesPerDay(DAYS),
     wakeTrend(DAYS),
     outstandingBalances(),
@@ -45,6 +48,14 @@ export default async function Insights() {
         suffix="% of scored periods"
         data={passRate}
         kind="line"
+        color="var(--pass)"
+        fmt={(v) => `${v}%`}
+      />
+      <TimeChart
+        title="PASS RATE BY DAY"
+        suffix="last 12 weeks"
+        data={weekday}
+        kind="bar"
         color="var(--pass)"
         fmt={(v) => `${v}%`}
       />

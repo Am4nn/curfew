@@ -60,6 +60,28 @@ export async function passRateOverTime(days = 30): Promise<Point[]> {
   }));
 }
 
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// Pass rate by weekday (Mon..Sun), as a percentage, across users. A longer
+// window than the other charts so each weekday has enough scored periods.
+// Weekday comes from the period, resolved in that period's own boundary.
+export async function passRateByWeekday(days = 84): Promise<Point[]> {
+  const rows = await db
+    .select({ periodStart: activityScores.periodStart, passed: activityScores.passed })
+    .from(activityScores)
+    .where(gte(activityScores.periodStart, startDate(days)));
+  const agg = WEEKDAYS.map(() => ({ pass: 0, total: 0 }));
+  for (const r of rows) {
+    const idx = DateTime.fromISO(r.periodStart).weekday - 1; // 1=Mon..7=Sun
+    agg[idx].total += 1;
+    if (r.passed) agg[idx].pass += 1;
+  }
+  return WEEKDAYS.map((label, i) => ({
+    date: label,
+    value: agg[i].total === 0 ? 0 : Math.round((agg[i].pass / agg[i].total) * 100),
+  }));
+}
+
 // Total fines per period, in minor units.
 export async function finesPerDay(days = 30): Promise<Point[]> {
   const rows = await db

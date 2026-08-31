@@ -16,13 +16,15 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**v2 in progress.** v1 (phases 0-6) is complete, verified, and deployed. The v2
-build order and per-phase spec live in `.planning/PLAN-v2.md` and
-`.planning/PLAN-v2-phases.md`. Done: Phase 1 (per-user sleep-window validation
-plus a settings info affordance) and Phase 2 (transactional email via Resend:
-invite, approval decision, and account-removed notices, best-effort and
-non-blocking, `email.*` events only). Next: Phase 3 (fuller analytics on the
-expanded /chart page). Do not start v2.5 or v3 work without being asked.
+**v2 complete.** v1 (phases 0-6) and all three v2 phases are built, verified,
+and deployed. v2 added: per-user sleep-window validation plus a settings info
+affordance (Phase 1); transactional email via Resend (invite, approval
+decision, account-removed, best-effort, `email.*` events only) (Phase 2); and
+fuller analytics (Phase 3): personal stats on the expanded /chart page (rolling
+wake time, pass rate by weekday, streak per group) plus a group-level pass-rate
+by weekday on the admin Insights tab. Charts live in `src/app/charts.tsx`,
+shared by both surfaces. Spec: `.planning/PLAN-v2-phases.md`. Do not start v2.5
+or v3 work without being asked.
 
 ## Invariants
 

@@ -3,13 +3,14 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { listUserGroups } from "@/server/groups";
 import { getWakeChart, type WakeChart } from "@/server/chart";
+import { getPersonalStats } from "@/server/stats";
+import { TimeChart } from "../charts";
 
 const SERIES_STROKE = ["var(--fg)", "var(--accent)"];
 
 function hhmm(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  const m = Math.max(0, minutes);
+  return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 }
 
 export default async function Chart() {
@@ -17,18 +18,71 @@ export default async function Chart() {
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const groups = await listUserGroups(user.id);
+  const [groups, stats] = await Promise.all([
+    listUserGroups(user.id),
+    getPersonalStats(user.id, 30),
+  ]);
+
+  const noData = !stats.hasWake && !stats.hasScores && stats.streaks.length === 0;
 
   return (
     <main className="min-h-dvh px-5 pb-20 pt-7">
       <div className="mx-auto max-w-[560px]">
         <header className="mb-7 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
-          <h1 className="text-[15px] font-semibold tracking-[0.14em]">WAKE TIMES</h1>
+          <h1 className="text-[15px] font-semibold tracking-[0.14em]">CHARTS</h1>
           <Link href="/" className="text-[12px] text-muted">
             ‹ dashboard
           </Link>
         </header>
 
+        <section className="mb-10">
+          <h2 className="mb-4 text-[12px] font-semibold tracking-[0.14em] text-muted">
+            YOUR STATS
+          </h2>
+          {noData ? (
+            <p className="text-[13px] text-muted">
+              Nothing to show yet. Stats appear once your nights are scored.
+            </p>
+          ) : (
+            <>
+              {stats.hasWake ? (
+                <TimeChart
+                  title="YOUR WAKE TIME"
+                  suffix="7-day average"
+                  data={stats.wakeRolling}
+                  kind="line"
+                  color="var(--accent)"
+                  baseZero={false}
+                  fmt={(v) => hhmm(v)}
+                />
+              ) : null}
+              {stats.hasScores ? (
+                <TimeChart
+                  title="PASS RATE BY DAY"
+                  suffix="last 12 weeks"
+                  data={stats.weekdayPass}
+                  kind="bar"
+                  color="var(--pass)"
+                  fmt={(v) => `${v}%`}
+                />
+              ) : null}
+              {stats.streaks.map((s) => (
+                <TimeChart
+                  key={s.groupId}
+                  title={`STREAK · ${s.name}`}
+                  suffix="nights"
+                  data={s.points}
+                  kind="line"
+                  fmt={(v) => String(v)}
+                />
+              ))}
+            </>
+          )}
+        </section>
+
+        <h2 className="mb-4 text-[12px] font-semibold tracking-[0.14em] text-muted">
+          GROUP WAKE TIMES
+        </h2>
         {groups.length === 0 ? (
           <p className="text-[14px] text-muted">No groups yet.</p>
         ) : (

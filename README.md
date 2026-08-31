@@ -60,11 +60,15 @@ Nothing works until an admin approves your account. Sign in once with Google
 
 ```sql
 UPDATE user_approvals
-   SET status = 'approved', is_admin = true, decided_at = now()
+   SET status = 'approved', is_admin = true, role = 'admin', decided_at = now()
  WHERE user_id = (SELECT id FROM users WHERE email = '125aryaaman@gmail.com');
 ```
 
 Reload and you land on the empty dashboard. That is the Phase 0 "done when".
+
+The app refuses to demote its last admin, so you cannot lock yourself out
+through the UI. If the admin role is ever lost some other way (a direct DB
+edit), the same statement above restores it.
 
 ## Commands
 

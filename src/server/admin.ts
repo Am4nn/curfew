@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNull, like, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, like, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   userApprovals,
@@ -355,14 +355,34 @@ export async function decideApproval(
 
 // Only an admin (users.set_role) may call this; the action checks first. Keeps
 // is_admin in sync with role='admin' for backward compatibility.
+//
+// Invariant: the app must never be left with zero admins. Demoting the last
+// admin is rejected regardless of who does it, so a sole admin has to promote a
+// replacement before stepping down. Recovery from an accidental zero-admin
+// state is the same manual SQL that bootstrapped the first admin (see README).
 export async function setRole(
   adminId: string,
   targetUserId: string,
   role: Role,
 ): Promise<void> {
-  if (adminId === targetUserId && role !== "admin") {
-    throw new Error("you cannot lower your own role");
+  const targetRole = await getRole(targetUserId);
+  if (targetRole === "admin" && role !== "admin") {
+    const [{ n }] = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(userApprovals)
+      .where(
+        and(
+          eq(userApprovals.status, "approved"),
+          or(eq(userApprovals.role, "admin"), eq(userApprovals.isAdmin, true)),
+        ),
+      );
+    if (Number(n) <= 1) {
+      throw new Error(
+        "There must be at least one admin. Promote someone to admin before this change.",
+      );
+    }
   }
+
   await db
     .update(userApprovals)
     .set({ role, isAdmin: role === "admin" })

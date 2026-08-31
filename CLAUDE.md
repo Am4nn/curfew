@@ -16,9 +16,11 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**Phase 2 complete — Check-in loop.** Phases 0 (scaffold), 1 (domain core) and
-2 (check-in loop: POST /api/checkin, window-aware `/`, auto-setup) are done. Do
-not start Phase 3 without being asked.
+**Phase 3 complete — Scoring.** Phases 0-3 are done: scaffold, domain core,
+check-in loop, and scoring (scoreUser/scoreAll, activity_scores +
+activity_outcomes, /api/cron/score, `bun run score`/`verify`, zero drift on a
+backfilled month). The diff-by-diff review gate ends here. Do not start Phase 4
+without being asked.
 
 ## Invariants
 

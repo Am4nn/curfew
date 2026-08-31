@@ -8,6 +8,9 @@ import {
   jsonb,
   serial,
   bigserial,
+  bigint,
+  integer,
+  char,
   primaryKey,
 } from "drizzle-orm/pg-core";
 import { users, sessions } from "./auth";
@@ -107,3 +110,67 @@ export const events = pgTable("events", {
     .notNull()
     .defaultNow(),
 });
+
+// Group's stake for one activity: fine policy, currency, grace. Insert-only and
+// effective-dated; null activity_id is the default. amounts are minor units.
+export const activityRules = pgTable("activity_rules", {
+  version: serial("version").primaryKey(),
+  activityId: uuid("activity_id").references(() => activities.id, {
+    onDelete: "cascade",
+  }), // null = default
+  fineMode: text("fine_mode").notNull().default("flat"), // flat | escalating
+  fineAmount: bigint("fine_amount", { mode: "number" }).notNull(),
+  fineStep: bigint("fine_step", { mode: "number" }).notNull().default(0),
+  fineCap: bigint("fine_cap", { mode: "number" }),
+  currency: char("currency", { length: 3 }).notNull().default("INR"),
+  gracePerMonth: integer("grace_per_month").notNull().default(2),
+  config: jsonb("config").notNull().default({}),
+  effectiveFrom: date("effective_from", { mode: "string" }).notNull(),
+  changedBy: text("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Did this person meet THEIR OWN targets this period? Keyed by type, not
+// activity: evaluated once per user per type per period, group-independent.
+// Rebuildable from events.
+export const activityScores = pgTable(
+  "activity_scores",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    typeKey: text("type_key").notNull(),
+    periodStart: date("period_start", { mode: "string" }).notNull(),
+    periodEnd: date("period_end", { mode: "string" }).notNull(),
+    passed: boolean("passed").notNull(),
+    detail: jsonb("detail").notNull().default({}),
+    userConfigVersion: integer("user_config_version")
+      .notNull()
+      .references(() => userActivityConfig.version),
+    computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.typeKey, t.periodStart] })],
+);
+
+// The consequences of that period, per group activity: same pass/fail, but
+// different money, streak and grace per group. Rebuildable from scores + rules.
+export const activityOutcomes = pgTable(
+  "activity_outcomes",
+  {
+    activityId: uuid("activity_id")
+      .notNull()
+      .references(() => activities.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    typeKey: text("type_key").notNull(),
+    periodStart: date("period_start", { mode: "string" }).notNull(),
+    graceUsed: boolean("grace_used").notNull().default(false),
+    streakAfter: integer("streak_after").notNull().default(0),
+    fineAmount: bigint("fine_amount", { mode: "number" }).notNull().default(0),
+    currency: char("currency", { length: 3 }).notNull().default("INR"),
+    rulesVersion: integer("rules_version")
+      .notNull()
+      .references(() => activityRules.version),
+    computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.activityId, t.userId, t.periodStart] })],
+);

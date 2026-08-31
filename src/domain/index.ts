@@ -7,6 +7,13 @@ register(sleepActivity);
 export { periodStart } from "./period";
 export { resolveConfig, type EffectiveRow } from "./config";
 export { splitFine, type Share } from "./money";
+export {
+  fineFor,
+  scoreChain,
+  type FineRules,
+  type ChainPeriod,
+  type ChainOutcome,
+} from "./scoring";
 export { getActivityType, registeredKeys, register } from "./registry";
 export type {
   ActivityType,

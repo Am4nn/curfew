@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "migrate": "bun run scripts/migrate.ts",
+    "score": "bun run scripts/score.ts",
+    "verify": "bun run scripts/verify.ts",
     "auth:generate": "bun x @better-auth/cli generate"
   },
   "dependencies": {

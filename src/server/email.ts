@@ -51,14 +51,47 @@ function escapeHtml(value: string): string {
   })[character]!);
 }
 
+// House style, made email-safe: light paper, ink text, IBM Plex Mono falling
+// back to the system monospace (email clients do not load web fonts), zero
+// border radius, ruled header. Layout is table-based with inline styles because
+// mail clients strip <style> and ignore modern CSS.
+const INK = "#1a1917";
+const PAPER = "#e8e6e1";
+const MUTED = "#5a5751";
+const RULE = "#c4c0b8";
+const MONO = "'IBM Plex Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace";
+
+function layout(bodyHtml: string): string {
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:${PAPER};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAPER};"><tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:460px;max-width:100%;font-family:${MONO};">
+<tr><td style="border-bottom:2px solid ${INK};padding-bottom:10px;font-family:${MONO};font-size:15px;font-weight:700;letter-spacing:0.18em;color:${INK};">CURFEW</td></tr>
+<tr><td style="padding:22px 0 0 0;font-family:${MONO};font-size:14px;line-height:22px;color:${INK};">${bodyHtml}</td></tr>
+<tr><td style="padding:24px 0 0 0;"><div style="border-top:1px solid ${RULE};padding-top:14px;font-family:${MONO};font-size:11px;line-height:18px;color:${MUTED};">Curfew is an invite-only accountability contract. You received this because someone entered your address.</div></td></tr>
+</table></td></tr></table></body></html>`;
+}
+
+function button(href: string, label: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:18px 0;"><tr><td style="border:1px solid ${INK};"><a href="${href}" style="display:inline-block;padding:10px 18px;font-family:${MONO};font-size:13px;font-weight:600;color:${INK};text-decoration:none;">${label}</a></td></tr></table>`;
+}
+
+function line(text: string, muted = false): string {
+  return `<p style="margin:0 0 10px 0;color:${muted ? MUTED : INK};">${text}</p>`;
+}
+
 export function groupInviteEmail(to: string, groupName: string): EmailInput {
   const url = dashboardUrl();
   const safeGroupName = escapeHtml(groupName);
   return {
     to,
     subject: "Curfew group invitation",
-    text: `${groupName} invited you to Curfew. Sign in with Google at ${url}. Once your account is approved, accept the invite from your dashboard.`,
-    html: `<p>${safeGroupName} invited you to Curfew.</p><p>Sign in with Google at <a href="${url}">Curfew</a>. Once your account is approved, accept the invite from your dashboard.</p>`,
+    text: `${groupName} invited you to Curfew. Open ${url} and sign in with Google. Once your account is approved, accept the invite from your dashboard.`,
+    html: layout(
+      line(`${safeGroupName} invited you to Curfew.`) +
+        button(url, "Open Curfew") +
+        line("Sign in with Google. Once your account is approved, accept the invite from your dashboard.", true),
+    ),
   };
 }
 
@@ -68,15 +101,19 @@ export function approvalEmail(to: string, approved: boolean): EmailInput {
     return {
       to,
       subject: "Curfew account approved",
-      text: `Your Curfew account has been approved. Sign in with Google at ${url}.`,
-      html: `<p>Your Curfew account has been approved.</p><p>Sign in with Google at <a href="${url}">Curfew</a>.</p>`,
+      text: `Your Curfew account has been approved. Open ${url} and sign in with Google.`,
+      html: layout(
+        line("Your Curfew account has been approved.") +
+          button(url, "Open Curfew") +
+          line("Sign in with Google to continue.", true),
+      ),
     };
   }
   return {
     to,
     subject: "Curfew account decision",
     text: "Your Curfew account request was not approved.",
-    html: "<p>Your Curfew account request was not approved.</p>",
+    html: layout(line("Your Curfew account request was not approved.")),
   };
 }
 
@@ -85,6 +122,9 @@ export function accountDisabledEmail(to: string): EmailInput {
     to,
     subject: "Curfew access ended",
     text: "Your access to Curfew has ended. Any balance recorded before removal still stands.",
-    html: "<p>Your access to Curfew has ended.</p><p>Any balance recorded before removal still stands.</p>",
+    html: layout(
+      line("Your access to Curfew has ended.") +
+        line("Any balance recorded before removal still stands.", true),
+    ),
   };
 }

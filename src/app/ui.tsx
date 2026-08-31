@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 
-export type FormState = { ok?: boolean; error?: string };
+export type FormState = { ok?: boolean; error?: string; note?: string };
 export type FormAction = (state: FormState, formData: FormData) => Promise<FormState>;
 
 // Submit button that reflects the form's pending state: disabled and relabelled
@@ -78,6 +78,9 @@ function ActionFormInner({
       {children}
       {state.error ? (
         <p className="mt-2 text-[13px] text-penalty">{state.error}</p>
+      ) : null}
+      {state.note ? (
+        <p className="mt-2 whitespace-pre-wrap text-[13px] text-pass">{state.note}</p>
       ) : null}
     </form>
   );

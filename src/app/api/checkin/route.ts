@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { db } from "@/db";
-import { eq } from "drizzle-orm";
-import { userApprovals } from "@/db/schema";
+import { getApprovalStatus } from "@/lib/session";
 import { performCheckin } from "@/server/checkin";
 import { listUserGroups } from "@/server/groups";
 
@@ -18,10 +16,8 @@ export async function POST() {
     return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
   }
 
-  const approval = await db.query.userApprovals.findFirst({
-    where: eq(userApprovals.userId, session.user.id),
-  });
-  if (approval?.status !== "approved") {
+  if ((await getApprovalStatus(session.user.id)) !== "approved") {
+    // Covers pending, rejected and disabled.
     return NextResponse.json({ ok: false, reason: "not_approved" }, { status: 403 });
   }
 

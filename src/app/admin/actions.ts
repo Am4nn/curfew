@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getSessionUser } from "@/lib/session";
+import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import {
   requireCapability,
   decideApproval,
@@ -20,6 +20,11 @@ import type { FormState } from "../ui";
 async function guard(capability: Capability) {
   const user = await getSessionUser();
   if (!user) throw new Error("Please sign in again.");
+  // A disabled account has no access, even if its role still carries the
+  // capability. This is the server-action path that bypasses the layout gate.
+  if ((await getApprovalStatus(user.id)) !== "approved") {
+    throw new Error("Your account is not active.");
+  }
   await requireCapability(user.id, capability);
   return user;
 }

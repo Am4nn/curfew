@@ -3,6 +3,7 @@ import { db } from "@/db";
 import {
   userApprovals,
   users,
+  sessions,
   groups,
   groupMembers,
   activities,
@@ -428,6 +429,10 @@ export async function disableUser(adminId: string, targetUserId: string): Promis
     .update(groupMembers)
     .set({ leftAt: todayStr() })
     .where(and(eq(groupMembers.userId, targetUserId), isNull(groupMembers.leftAt)));
+  // Kill their live sessions so access ends immediately, not just on the next
+  // gated navigation. events.session_id is ON DELETE SET NULL, so history is
+  // preserved.
+  await db.delete(sessions).where(eq(sessions.userId, targetUserId));
   await recordEvent({
     userId: adminId,
     type: "admin.user.disabled",

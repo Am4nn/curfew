@@ -43,3 +43,5 @@ jobs:
           GOOGLE_CLIENT_ID: ci-google-client-id
           GOOGLE_CLIENT_SECRET: ci-google-client-secret
           CRON_SECRET: ci-cron-secret
+          RESEND_API_KEY: ci-resend-key
+          EMAIL_FROM: "Curfew <notices@example.com>"

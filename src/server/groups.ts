@@ -1,6 +1,6 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { groups, groupMembers, activities, groupInvites, balances } from "@/db/schema";
+import { groups, groupMembers, activities, groupInvites, balances, users } from "@/db/schema";
 import { assertMember } from "./membership";
 
 function today(): string {
@@ -134,6 +134,84 @@ export async function listInvitesForEmail(email: string): Promise<PendingInvite[
     .from(groupInvites)
     .innerJoin(groups, eq(groups.id, groupInvites.groupId))
     .where(and(eq(groupInvites.email, email.toLowerCase()), eq(groupInvites.status, "pending")));
+}
+
+export async function getGroupName(groupId: string): Promise<string | null> {
+  const [g] = await db.select({ name: groups.name }).from(groups).where(eq(groups.id, groupId));
+  return g?.name ?? null;
+}
+
+export interface MemberDetail {
+  userId: string;
+  name: string;
+  role: string;
+  joinedAt: string;
+  leftAt: string | null;
+}
+
+// Every membership row for the group, including people who have left (their
+// history and balance survive). Ordered active-first, then by name.
+export async function listGroupMembersDetailed(groupId: string): Promise<MemberDetail[]> {
+  const rows = await db
+    .select({
+      userId: users.id,
+      name: users.name,
+      role: groupMembers.role,
+      joinedAt: groupMembers.joinedAt,
+      leftAt: groupMembers.leftAt,
+    })
+    .from(groupMembers)
+    .innerJoin(users, eq(users.id, groupMembers.userId))
+    .where(eq(groupMembers.groupId, groupId));
+  return rows.sort((a, b) => {
+    if ((a.leftAt === null) !== (b.leftAt === null)) return a.leftAt === null ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+export async function listGroupPendingInvites(
+  groupId: string,
+): Promise<{ id: string; email: string }[]> {
+  return db
+    .select({ id: groupInvites.id, email: groupInvites.email })
+    .from(groupInvites)
+    .where(and(eq(groupInvites.groupId, groupId), eq(groupInvites.status, "pending")));
+}
+
+// Owner-only: withdraw a pending invite.
+export async function revokeInvite(inviteId: string, byUserId: string): Promise<void> {
+  const [inv] = await db.select().from(groupInvites).where(eq(groupInvites.id, inviteId));
+  if (!inv || inv.status !== "pending") return;
+  const [m] = await db
+    .select({ role: groupMembers.role })
+    .from(groupMembers)
+    .where(
+      and(
+        eq(groupMembers.groupId, inv.groupId),
+        eq(groupMembers.userId, byUserId),
+        isNull(groupMembers.leftAt),
+      ),
+    );
+  if (m?.role !== "owner") throw new Error("only the group owner can revoke invites");
+  await db
+    .update(groupInvites)
+    .set({ status: "revoked", respondedAt: new Date() })
+    .where(eq(groupInvites.id, inviteId));
+}
+
+// Every member's net in one group, from the balances view. Positive means owes.
+export async function groupBalances(
+  groupId: string,
+): Promise<Map<string, { currency: string; netOwed: number }>> {
+  const rows = await db
+    .select({ userId: balances.userId, currency: balances.currency, netOwed: balances.netOwed })
+    .from(balances)
+    .where(eq(balances.groupId, groupId));
+  const m = new Map<string, { currency: string; netOwed: number }>();
+  for (const r of rows) {
+    if (r.userId) m.set(r.userId, { currency: r.currency ?? "INR", netOwed: Number(r.netOwed ?? 0) });
+  }
+  return m;
 }
 
 // Per-group net for a user, from the balances view. Positive means owes.

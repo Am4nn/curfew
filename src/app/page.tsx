@@ -13,10 +13,8 @@ import { SignOut } from "./sign-out";
 import { ActionForm, SubmitButton, ConfirmButton } from "./ui";
 import {
   createGroupAction,
-  inviteAction,
   acceptInviteAction,
   declineInviteAction,
-  leaveGroupAction,
 } from "./actions";
 
 export default async function Dashboard() {
@@ -97,9 +95,12 @@ export default async function Dashboard() {
             groups.map((g) => {
               const bal = netByGroup.get(g.groupId);
               return (
-                <div key={g.groupId} className="border-b border-rule py-4">
+                <Link
+                  href={`/group/${g.groupId}`}
+                  className="block border-b border-rule py-4"
+                >
                   <div className="flex items-baseline justify-between gap-3">
-                    <div className="text-[15px]">{g.name}</div>
+                    <div className="text-[15px] underline">{g.name}</div>
                     <div className="text-[12px] text-muted">
                       {g.memberCount} member{g.memberCount === 1 ? "" : "s"} · {g.role}
                     </div>
@@ -117,35 +118,8 @@ export default async function Dashboard() {
                     ) : (
                       <span className="text-muted">Settled</span>
                     )}
-                    <Link href="/ledger" className="ml-3 text-muted underline">ledger</Link>
                   </div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <ActionForm action={inviteAction} resetOnSuccess className="flex items-center gap-2">
-                      <input type="hidden" name="groupId" value={g.groupId} />
-                      <input
-                        name="email"
-                        type="email"
-                        required
-                        placeholder="invite email"
-                        className="w-40 border border-fg bg-transparent px-2 py-[6px] text-[13px]"
-                      />
-                      <SubmitButton
-                        pendingLabel="Inviting"
-                        className="border border-fg px-3 py-[6px] text-[13px]"
-                      >
-                        Invite
-                      </SubmitButton>
-                    </ActionForm>
-                    <ConfirmButton
-                      action={leaveGroupAction}
-                      fields={{ groupId: g.groupId }}
-                      label="Leave"
-                      message={`Leave ${g.name}? Your balance and history stay.`}
-                      confirmLabel="Leave"
-                    />
-                  </div>
-                </div>
+                </Link>
               );
             })
           )}

@@ -36,6 +36,13 @@ export default async function Settings() {
   const theme =
     (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
 
+  // Full IANA list for the timezone search dropdown. Available in modern Node
+  // and browsers; falls back to a couple of common zones if not.
+  const intl = Intl as unknown as { supportedValuesOf?: (k: string) => string[] };
+  const zones = intl.supportedValuesOf
+    ? intl.supportedValuesOf("timeZone")
+    : ["Asia/Kolkata", "Europe/London", "America/New_York", "UTC"];
+
   return (
     <main className="min-h-dvh px-5 pb-20 pt-7">
       <div className="mx-auto max-w-[560px]">
@@ -76,9 +83,16 @@ export default async function Settings() {
               <input
                 name="timezone"
                 required
+                list="tz-list"
                 defaultValue={personal.timezone}
+                placeholder="search zones"
                 className="w-44 border border-fg bg-transparent px-2 py-[6px] text-right text-[14px]"
               />
+              <datalist id="tz-list">
+                {zones.map((z) => (
+                  <option key={z} value={z} />
+                ))}
+              </datalist>
               <SubmitButton
                 pendingLabel="Saving"
                 className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg"

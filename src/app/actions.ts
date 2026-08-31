@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import {
   createGroup,
@@ -8,6 +9,7 @@ import {
   acceptInvite,
   declineInvite,
   leaveGroup,
+  revokeInvite,
 } from "@/server/groups";
 import type { FormState } from "./ui";
 
@@ -94,9 +96,27 @@ export async function leaveGroupAction(
   try {
     const user = await approvedUser();
     await leaveGroup(String(formData.get("groupId")), user.id);
-    revalidatePath("/");
-    return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not leave the group." };
+  }
+  // Left the group: send them back to the dashboard. redirect() throws, so it
+  // must sit outside the try/catch above.
+  revalidatePath("/");
+  redirect("/");
+}
+
+export async function revokeInviteAction(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const user = await approvedUser();
+    const inviteId = String(formData.get("inviteId"));
+    const groupId = String(formData.get("groupId"));
+    await revokeInvite(inviteId, user.id);
+    revalidatePath(`/group/${groupId}`);
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not revoke the invite." };
   }
 }

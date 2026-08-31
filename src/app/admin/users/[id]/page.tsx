@@ -60,15 +60,20 @@ export default async function UserInspectorPage({
           <ActionForm action={setRoleAction} className="mt-3 flex items-center gap-2">
             <input type="hidden" name="userId" value={profile.userId} />
             <label className="text-[13px] text-muted">Role</label>
-            <select
-              name="role"
-              defaultValue={profile.role}
-              className="border border-fg bg-transparent px-2 py-[6px] text-[14px]"
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+            <span className="relative inline-block">
+              <select
+                name="role"
+                defaultValue={profile.role}
+                className="appearance-none border border-fg bg-bg py-[7px] pl-2 pr-8 text-[14px] text-fg"
+              >
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted">
+                ▾
+              </span>
+            </span>
             <SubmitButton pendingLabel="Saving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
               Save role
             </SubmitButton>

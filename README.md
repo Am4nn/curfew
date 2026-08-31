@@ -1,10 +1,21 @@
-# Curfew
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/curfew-mark-dark.svg">
+    <img alt="Curfew" src="docs/curfew-mark-light.svg" width="76" height="76">
+  </picture>
+</p>
 
-A group accountability contract engine. See `.planning/PRD.md` for what and
-why, `.planning/PLAN.md` for build order, `.planning/schema.sql` for the data
-model, and `CLAUDE.md` for the invariants and voice.
+<h1 align="center">Curfew</h1>
 
-Current phase: **Phase 0 — Scaffold.**
+<p align="center">A group accountability contract engine for nightly sleep check-ins.<br>People form private groups, commit to a routine, and pay each other when they miss.</p>
+
+---
+
+See `.planning/PRD.md` for what and why, `.planning/PLAN.md` for build order,
+`.planning/schema.sql` for the data model, and `CLAUDE.md` for the invariants
+and voice.
+
+Status: **v1 and v2 complete, deployed.**
 
 ## Stack
 
@@ -78,6 +89,6 @@ bun run build       production build
 bun run typecheck   tsc --noEmit
 bun run migrate     apply migrations/*.sql over DIRECT_URL
 bun run auth:generate   regenerate Better Auth's table SQL (then reconcile)
+bun run test        Vitest, the domain core
+bun run verify      recompute a date range and diff the stored rows
 ```
-
-`test` and `verify` scripts arrive in Phase 1 and Phase 3.

@@ -100,9 +100,9 @@ export default async function Dashboard() {
                   className="block border-b border-rule py-4"
                 >
                   <div className="flex items-baseline justify-between gap-3">
-                    <div className="text-[15px] underline">{g.name}</div>
+                    <div className="text-[15px]">{g.name}</div>
                     <div className="text-[12px] text-muted">
-                      {g.memberCount} member{g.memberCount === 1 ? "" : "s"} · {g.role}
+                      {g.memberCount} member{g.memberCount === 1 ? "" : "s"} · {g.role} ›
                     </div>
                   </div>
 

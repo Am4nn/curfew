@@ -1,0 +1,151 @@
+erDiagram
+    USERS ||--o| USER_APPROVALS : "gated by"
+    USERS ||--o{ SESSIONS : "has"
+    USERS ||--o{ ACCOUNTS : "oauth link"
+    USERS ||--o{ EVENTS : "generates"
+    SESSIONS ||--o{ EVENTS : "context for"
+    USERS ||--o{ GROUP_MEMBERS : "belongs to"
+    GROUPS ||--o{ GROUP_MEMBERS : "has"
+    GROUPS ||--o{ GROUP_INVITES : "gates entry by"
+    GROUPS ||--o{ ACTIVITIES : "tracks"
+    ACTIVITIES ||--o{ ACTIVITY_RULES : "staked under"
+    ACTIVITIES ||--o{ ACTIVITY_OUTCOMES : "produces"
+    USERS ||--o{ USER_SETTINGS : "timezone"
+    USERS ||--o{ USER_ACTIVITY_CONFIG : "own targets"
+    USER_ACTIVITY_CONFIG ||--o{ ACTIVITY_SCORES : "evaluated under"
+    USERS ||--o{ ACTIVITY_SCORES : "scored"
+    ACTIVITY_SCORES ||--o{ ACTIVITY_OUTCOMES : "one eval, N outcomes"
+    ACTIVITY_OUTCOMES ||--o{ LEDGER_ENTRIES : "may produce fines"
+    GROUPS ||--o{ LEDGER_ENTRIES : "scoped to"
+
+    USERS {
+        text id PK "BETTER AUTH - text, not uuid"
+        text name
+        text email UK
+        boolean email_verified
+        timestamptz created_at
+    }
+
+    USER_APPROVALS {
+        text user_id PK, FK
+        text status "pending | approved | rejected"
+        boolean is_admin
+        timestamptz decided_at
+        text decided_by FK
+    }
+
+    SESSIONS {
+        text id PK "BETTER AUTH"
+        text user_id FK
+        timestamptz expires_at
+        text ip_address
+    }
+
+    ACCOUNTS {
+        text id PK "BETTER AUTH - google tokens"
+        text user_id FK
+        text provider_id "google"
+    }
+
+    GROUPS {
+        uuid id PK
+        text name
+        text created_by FK
+        timestamptz archived_at
+    }
+
+    GROUP_MEMBERS {
+        uuid group_id PK, FK
+        text user_id PK, FK
+        text role "owner | member"
+        date joined_at "scoring starts"
+        date left_at "scoring stops, balance survives"
+    }
+
+    GROUP_INVITES {
+        uuid id PK
+        uuid group_id FK
+        citext email "no self-serve join links"
+        text status "pending | accepted | revoked"
+        text invited_by FK
+    }
+
+    ACTIVITIES {
+        uuid id PK
+        uuid group_id FK
+        text type_key "registry key - 'sleep' in v1"
+        text period "day | week | month"
+        text name "optional label"
+        timestamptz archived_at
+    }
+
+    USER_SETTINGS {
+        serial version PK
+        text user_id FK "NULL = default"
+        text timezone "per user, global, versioned"
+        date effective_from
+    }
+
+    USER_ACTIVITY_CONFIG {
+        serial version PK
+        text user_id FK "NULL = default"
+        text type_key "keyed by TYPE, not activity"
+        jsonb config "module-validated - sleep windows"
+        date effective_from "must be in the future"
+    }
+
+    ACTIVITY_RULES {
+        serial version PK
+        uuid activity_id FK "NULL = default"
+        text fine_mode "flat | escalating"
+        bigint fine_amount "5000 minor units"
+        bigint fine_step
+        bigint fine_cap
+        char currency "INR"
+        int grace_per_month
+        jsonb config "group knobs per type"
+        date effective_from "must be in the future"
+    }
+
+    EVENTS {
+        bigserial id PK
+        text user_id FK "no group_id, no activity_id"
+        text session_id FK
+        text type "checkin.sleep.night, login, fine.applied"
+        jsonb payload "type_key, period_start, evidence"
+        timestamptz occurred_at "server clock, never client"
+    }
+
+    ACTIVITY_SCORES {
+        text user_id PK, FK
+        text type_key PK "evaluated ONCE per type"
+        date period_start PK "resolved in that period tz"
+        date period_end
+        boolean passed
+        jsonb detail "module output, never interpreted"
+        int user_config_version FK
+    }
+
+    ACTIVITY_OUTCOMES {
+        uuid activity_id PK, FK
+        text user_id PK, FK
+        date period_start PK
+        text type_key FK
+        boolean grace_used
+        int streak_after
+        bigint fine_amount
+        char currency
+        int rules_version FK
+    }
+
+    LEDGER_ENTRIES {
+        bigserial id PK
+        uuid group_id FK
+        uuid activity_id FK "null for settlements"
+        text from_user_id FK "who owes"
+        text to_user_id FK "who is owed"
+        bigint amount "positive, minor units"
+        char currency
+        text kind "fine | settlement | adjustment"
+        date period_start
+    }

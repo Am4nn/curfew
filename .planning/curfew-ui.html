@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curfew — UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E8E6E1; --ink:#1A1917; --dim:#5A5751; --rule:#C4C0B8;
+  --penalty:#A3251C; --pass:#2F5D3F; --void:#000000; --focus:#7FA8FF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'IBM Plex Mono',ui-monospace,monospace;background:var(--paper);
+  color:var(--ink);font-size:15px;line-height:1.5}
+.screen{display:none;min-height:100vh;padding:26px 20px 78px}
+.screen.on{display:block}
+.wrap{max-width:560px;margin:0 auto}
+button:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* demo switcher */
+.switch{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;
+  background:var(--ink);overflow-x:auto}
+.switch button{flex:1 0 auto;font:inherit;font-size:11px;padding:11px 9px;
+  background:var(--ink);color:var(--paper);border:0;border-right:1px solid #3A3835;
+  cursor:pointer;white-space:nowrap}
+.switch button[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
+
+/* dark screens */
+.dark{background:var(--void);color:#F2F2F2}
+.dark .wrap{min-height:calc(100vh-104px);display:flex;flex-direction:column;
+  justify-content:center;gap:38px}
+.closes{font-size:14px;color:#8C8C8C}
+.closes b{color:#F2F2F2;font-weight:500}
+.punchbtn{display:block;width:100%;font:inherit;font-size:19px;font-weight:500;
+  letter-spacing:.04em;padding:34px 20px;background:#F2F2F2;color:var(--void);
+  border:0;cursor:pointer}
+.punchbtn:active{background:#C9C9C9}
+.note{font-size:13px;color:#8C8C8C}
+.stamp{border:1px solid #4A4A4A;padding:22px}
+.stamp .k{font-size:13px;color:#8C8C8C}
+.stamp .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:3px}
+.nextup{font-size:13px;color:#8C8C8C;margin-top:16px;padding-top:14px;
+  border-top:1px solid #3A3A3A}
+.nextup b{color:#F2F2F2;font-weight:500}
+
+/* light screens */
+.mast{display:flex;justify-content:space-between;align-items:baseline;
+  padding-bottom:10px;border-bottom:2px solid var(--ink);margin-bottom:26px}
+.mast h1{font-size:15px;font-weight:600;letter-spacing:.14em}
+.mast span{font-size:13px;color:var(--dim)}
+
+.bar-label{font-size:13px;color:var(--dim);margin-bottom:22px}
+.bar{position:relative;height:46px;border:1px solid var(--rule);
+  background:repeating-linear-gradient(90deg,transparent 0 3px,#DEDBD5 3px 4px);
+  margin-bottom:8px}
+.win{position:absolute;top:0;bottom:0;background:#D6D2CA;
+  border-left:1px solid var(--ink);border-right:1px solid var(--ink)}
+.punch{position:absolute;top:0;bottom:0;width:3px;background:var(--ink)}
+.punch.miss{background:var(--penalty);width:2px}
+.punch::after{content:attr(data-t);position:absolute;top:-19px;left:50%;
+  transform:translateX(-50%);font-size:11px;white-space:nowrap;color:var(--ink)}
+.punch.miss::after{color:var(--penalty)}
+.ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--dim)}
+
+.act{margin:30px 0 14px}
+.big{font-size:29px;font-weight:600;letter-spacing:-.01em}
+.big.fail{color:var(--penalty)}
+.act p{font-size:14px;color:var(--dim);margin-top:6px}
+
+.cta{width:100%;font:inherit;font-size:16px;padding:22px;background:var(--ink);
+  color:var(--paper);border:0;cursor:pointer}
+.cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink);
+  font-size:14px;padding:15px}
+
+.rows{border-top:1px solid var(--rule);margin-top:8px}
+.row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;
+  border-bottom:1px solid var(--rule);font-size:14px}
+.row .who{color:var(--dim);font-size:12px;margin-top:2px}
+.amt{white-space:nowrap;font-variant-numeric:tabular-nums}
+.amt.owed{color:var(--penalty)}
+.amt.paid{color:var(--pass)}
+
+.balance{border:2px solid var(--ink);padding:18px;margin-bottom:8px}
+.balance .t{font-size:13px;color:var(--dim);margin-bottom:4px}
+.balance .n{font-size:32px;font-weight:600;font-variant-numeric:tabular-nums}
+h2{font-size:13px;font-weight:600;letter-spacing:.1em;margin:32px 0 12px}
+.chart{width:100%;height:150px;display:block}
+.legend{font-size:12px;color:var(--dim);margin-top:7px}
+
+/* sign in */
+#signin .wrap{min-height:calc(100vh - 104px);display:flex;flex-direction:column;
+  justify-content:center;gap:26px}
+.logo{font-size:30px;font-weight:600;letter-spacing:.2em}
+.tagline{font-size:14px;color:var(--dim);max-width:34ch}
+.google{display:flex;align-items:center;justify-content:center;gap:11px;
+  width:100%;font:inherit;font-size:15px;padding:19px;background:#fff;
+  color:var(--ink);border:1px solid var(--ink);cursor:pointer}
+.gate{font-size:12px;color:var(--dim);border-top:1px solid var(--rule);padding-top:14px}
+
+
+/* settings */
+.scope{margin-bottom:34px}
+.scope-head{border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:2px}
+.scope-head h3{font-size:14px;font-weight:600;letter-spacing:.08em}
+.scope-head p{font-size:12px;color:var(--dim);margin-top:4px}
+.scope.shared .scope-head{border-bottom-color:var(--penalty)}
+.scope.shared .scope-head h3{color:var(--penalty)}
+.field{display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:13px 0;border-bottom:1px solid var(--rule)}
+.field label{font-size:14px}
+.field .hint{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+.field input,.field select{font:inherit;font-size:14px;padding:7px 9px;
+  border:1px solid var(--ink);background:#fff;color:var(--ink);
+  min-width:118px;text-align:right;border-radius:0}
+.warn{border-left:3px solid var(--penalty);padding:11px 0 11px 13px;
+  font-size:13px;color:var(--ink);margin:16px 0 4px;background:#DFDCD6}
+.eff{font-size:12px;color:var(--dim);margin-top:12px}
+
+
+/* dashboard + groups + admin */
+.hello{font-size:13px;color:var(--dim);margin-bottom:2px}
+.today{font-size:26px;font-weight:600;letter-spacing:-.01em;margin-bottom:24px}
+.card{border:1px solid var(--ink);padding:15px;margin-bottom:9px}
+.card.flag{border-left:4px solid var(--penalty)}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.card .gname{font-size:15px;font-weight:500}
+.card .meta{font-size:12px;color:var(--dim);margin-top:5px}
+.card .bal{font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bal.owed{color:var(--penalty)}
+.bal.paid{color:var(--pass)}
+.bal.flat{color:var(--dim)}
+.pill{display:inline-block;font-size:11px;font-weight:500;padding:2px 7px;
+  border:1px solid var(--dim);color:var(--dim);margin-left:7px;vertical-align:1px}
+.pill.hot{border-color:var(--penalty);color:var(--penalty)}
+.invite{border:1px dashed var(--ink);padding:15px;margin-bottom:9px}
+.invite .who{font-size:12px;color:var(--dim);margin-top:4px}
+.btnrow{display:flex;gap:8px;margin-top:12px}
+.btnrow button{flex:1;font:inherit;font-size:13px;padding:11px;cursor:pointer;
+  border:1px solid var(--ink);background:transparent;color:var(--ink)}
+.btnrow button.pri{background:var(--ink);color:var(--paper)}
+.empty{border:1px dashed var(--rule);padding:26px 18px;text-align:center;
+  font-size:14px;color:var(--dim)}
+.center{min-height:calc(100vh - 150px);display:flex;flex-direction:column;
+  justify-content:center;gap:20px}
+.waitmark{font-size:15px;font-weight:600;letter-spacing:.1em}
+.waittext{font-size:15px;max-width:38ch}
+.waitsub{font-size:13px;color:var(--dim);max-width:38ch}
+.inline-form{display:flex;gap:8px;margin-top:10px}
+.inline-form input{flex:1;font:inherit;font-size:14px;padding:11px;
+  border:1px solid var(--ink);background:#fff;border-radius:0;min-width:0}
+.inline-form button{font:inherit;font-size:14px;padding:11px 15px;
+  background:var(--ink);color:var(--paper);border:0;cursor:pointer}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ══ 1. SIGN IN ══ -->
+<section class="screen on" id="signin">
+  <div class="wrap">
+    <div>
+      <div class="logo">CURFEW</div>
+      <p class="tagline" style="margin-top:10px">Two people, one bedtime, and a
+        running tab for whoever misses it.</p>
+    </div>
+    <button class="google">
+      <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24c0-1.6-.1-2.7-.4-3.9H24v7.1h12c-.2 1.9-1.5 4.7-4.4 6.6l6.7 5.2C42.2 35.6 45 30.3 45 24z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-6.9-5.3c-1.8 1.3-4.3 2.2-7.6 2.2-5.8 0-10.8-3.8-12.5-9.1l-7.1 5.5C8.1 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.5 28.5c-.5-1.3-.7-2.8-.7-4.5s.3-3.2.7-4.5l-7.1-5.5C2.9 17 2 20.4 2 24s.9 7 2.4 10z"/><path fill="#EA4335" d="M24 9.5c4.1 0 6.9 1.8 8.5 3.3l6.2-6C34.9 3.4 29.9 1 24 1 15.4 1 8.1 5.9 4.4 14l7.1 5.5C13.2 14.2 18.2 9.5 24 9.5z"/></svg>
+      Continue with Google
+    </button>
+    <p class="gate">Invite only. Sign-ins from any other address are rejected.</p>
+  </div>
+</section>
+
+<!-- ══ 2. NIGHT — window open ══ -->
+<section class="screen dark" id="night">
+  <div class="wrap">
+    <p class="closes">Night check-in closes <b>22:45</b></p>
+    <button class="punchbtn">Check in</button>
+    <p class="note">11 minutes left. Then put the phone down.</p>
+  </div>
+</section>
+
+<!-- ══ 3. NIGHT — already checked in ══ -->
+<section class="screen dark" id="done">
+  <div class="wrap">
+    <div class="stamp">
+      <div class="k">Night check-in recorded</div>
+      <div class="v">22:41</div>
+      <p class="nextup">Next: wake check-in, <b>06:00–07:00</b></p>
+    </div>
+    <p class="note">That's everything. Close this.</p>
+  </div>
+</section>
+
+<!-- ══ 4. BETWEEN WINDOWS ══ -->
+<section class="screen" id="idle">
+  <div class="wrap">
+    <div class="mast"><h1>CURFEW</h1><span>Mon 31 Aug</span></div>
+    <div class="act" style="margin-top:44px">
+      <div class="big">Nothing to do</div>
+      <p>Night check-in opens at 22:00, in 6h 12m.</p>
+    </div>
+    <div class="rows" style="margin-top:38px">
+      <div class="row"><span>Streak</span><span class="amt">9 nights</span></div>
+      <div class="row"><span>Grace left this month</span><span class="amt">1 of 2</span></div>
+      <div class="row"><span>Rahul owes you</span><span class="amt owed">₹150.00</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5. MORNING — confirm ══ -->
+<section class="screen" id="morning">
+  <div class="wrap">
+    <div class="mast"><h1>CURFEW</h1><span>Mon 31 Aug</span></div>
+
+    <p class="bar-label">Last night</p>
+    <div class="bar">
+      <div class="win" style="left:0%;width:18%"></div>
+      <div class="win" style="left:62%;width:24%"></div>
+      <div class="win" style="left:92%;width:8%"></div>
+      <div class="punch" style="left:14%" data-t="22:41"></div>
+      <div class="punch" style="left:79%" data-t="06:52"></div>
+    </div>
+    <div class="ticks"><span>22:00</span><span>02:00</span><span>06:00</span><span>07:45</span></div>
+
+    <div class="act">
+      <div class="big">Confirm you're up</div>
+      <p>Window closes 07:45. Miss it and last night doesn't count.</p>
+    </div>
+    <button class="cta">Confirm</button>
+
+    <h2>STREAK</h2>
+    <div class="rows">
+      <div class="row"><span>Current</span><span class="amt">9 nights</span></div>
+      <div class="row"><span>Grace left this month</span><span class="amt">1 of 2</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 6. LEDGER ══ -->
+<section class="screen" id="ledger">
+  <div class="wrap">
+    <div class="mast"><h1>CURFEW</h1><span>Us Two · Ledger</span></div>
+
+    <div class="balance">
+      <div class="t">Rahul owes you</div>
+      <div class="n">₹150.00</div>
+    </div>
+    <button class="cta ghost" style="margin-bottom:8px">Record a settlement</button>
+
+    <h2>ACTIVITY</h2>
+    <div class="rows">
+      <div class="row"><div>Missed wake check-in<div class="who">Rahul · Fri 28 Aug</div></div><span class="amt owed">₹50.00</span></div>
+      <div class="row"><div>Missed confirm<div class="who">Rahul · Wed 26 Aug</div></div><span class="amt owed">₹50.00</span></div>
+      <div class="row"><div>Settled by UPI<div class="who">Aman · Mon 24 Aug</div></div><span class="amt paid">₹100.00</span></div>
+      <div class="row"><div>Missed night check-in<div class="who">Aman · Sun 23 Aug</div></div><span class="amt owed">₹50.00</span></div>
+    </div>
+
+    <h2>WAKE TIME, LAST 30 DAYS</h2>
+    <svg class="chart" viewBox="0 0 560 150" preserveAspectRatio="none" role="img"
+         aria-label="Wake times trending earlier over the last 30 days">
+      <line x1="0" y1="42" x2="560" y2="42" stroke="#C4C0B8" stroke-dasharray="3 3"/>
+      <line x1="0" y1="149" x2="560" y2="149" stroke="#1A1917"/>
+      <g fill="#1A1917">
+        <circle cx="10" cy="122" r="3"/><circle cx="29" cy="98" r="3"/>
+        <circle cx="48" cy="130" r="3"/><circle cx="67" cy="106" r="3"/>
+        <circle cx="86" cy="88" r="3"/><circle cx="105" cy="115" r="3"/>
+        <circle cx="124" cy="94" r="3"/><circle cx="143" cy="79" r="3"/>
+        <circle cx="162" cy="101" r="3"/><circle cx="181" cy="72" r="3"/>
+        <circle cx="200" cy="86" r="3"/><circle cx="219" cy="64" r="3"/>
+        <circle cx="238" cy="91" r="3"/><circle cx="257" cy="58" r="3"/>
+        <circle cx="276" cy="70" r="3"/><circle cx="295" cy="52" r="3"/>
+        <circle cx="314" cy="66" r="3"/><circle cx="333" cy="48" r="3"/>
+        <circle cx="352" cy="60" r="3"/><circle cx="371" cy="44" r="3"/>
+        <circle cx="390" cy="55" r="3"/><circle cx="409" cy="40" r="3"/>
+        <circle cx="428" cy="51" r="3"/><circle cx="447" cy="38" r="3"/>
+        <circle cx="466" cy="46" r="3"/><circle cx="485" cy="36" r="3"/>
+        <circle cx="504" cy="43" r="3"/><circle cx="523" cy="34" r="3"/>
+        <circle cx="542" cy="40" r="3"/>
+      </g>
+      <text x="4" y="34" font-size="11" font-family="IBM Plex Mono" fill="#5A5751">07:00 target</text>
+    </svg>
+    <p class="legend">Each dot is one morning. Lower is earlier.</p>
+  </div>
+</section>
+
+
+<!-- ══ 7. SETTINGS ══ -->
+<section class="screen" id="settings">
+  <div class="wrap">
+    <div class="mast"><h1>CURFEW</h1><span>Settings</span></div>
+
+    <div class="scope">
+      <div class="scope-head">
+        <h3>YOURS</h3>
+        <p>Only affects you, in every group. Takes effect tomorrow.</p>
+      </div>
+      <div class="field">
+        <label for="tz">Timezone<span class="hint">Sets when your night starts</span></label>
+        <select id="tz"><option>Asia/Kolkata</option><option>Europe/London</option><option>America/New_York</option></select>
+      </div>
+      <div class="field">
+        <label for="w1">Night check-in<span class="hint">Opens 45 min before close</span></label>
+        <input id="w1" type="time" value="22:45">
+      </div>
+      <div class="field">
+        <label for="w2">Wake by<span class="hint">Window opens 06:00</span></label>
+        <input id="w2" type="time" value="07:00">
+      </div>
+      <div class="field">
+        <label for="w3">Confirm by<span class="hint">Proves you stayed up</span></label>
+        <input id="w3" type="time" value="07:45">
+      </div>
+      <p class="eff">These are your windows in every group you're in. Rahul's are his own.</p>
+    </div>
+
+    <div class="scope shared">
+      <div class="scope-head">
+        <h3>SHARED · US TWO · SLEEP</h3>
+        <p>Changing these changes them for everyone in this group.</p>
+      </div>
+      <div class="field">
+        <label for="amt">Fine per failed night</label>
+        <input id="amt" type="text" value="₹50.00">
+      </div>
+      <div class="field">
+        <label for="mode">How it's charged<span class="hint">Flat is recommended</span></label>
+        <select id="mode"><option>Flat</option><option>Escalating</option></select>
+      </div>
+      <div class="field">
+        <label for="cur">Currency</label>
+        <select id="cur"><option>INR</option><option>GBP</option><option>USD</option></select>
+      </div>
+      <div class="field">
+        <label for="grace">Grace nights per month<span class="hint">Absorbs a miss so the streak survives. You still pay.</span></label>
+        <input id="grace" type="number" value="2" style="min-width:70px">
+      </div>
+      <div class="warn">Shared changes apply from tomorrow. Nights already
+        scored keep the old rate — a fine charged at ₹50 stays ₹50.</div>
+    </div>
+
+    <button class="cta">Save changes</button>
+    <p class="eff">Everyone in the group sees a note that you changed the shared rules.</p>
+  </div>
+</section>
+
+
+<!-- ══ WAITING FOR APPROVAL ══ -->
+<section class="screen" id="pending">
+  <div class="wrap center">
+    <div class="waitmark">CURFEW</div>
+    <p class="waittext">Your account is waiting for approval.</p>
+    <p class="waitsub">Curfew is invite-only. Someone has to let you in by hand.
+      You'll get nothing here until they do.</p>
+    <p class="waitsub" style="border-top:1px solid var(--rule);padding-top:14px">
+      Signed in as aman@example.com · <a href="#" style="color:var(--ink)">Sign out</a></p>
+  </div>
+</section>
+
+<!-- ══ DASHBOARD ══ -->
+<section class="screen" id="dash">
+  <div class="wrap">
+    <div class="mast"><h1>CURFEW</h1><span>Mon 31 Aug</span></div>
+
+    <p class="hello">Good evening, Aman</p>
+    <div class="today">Night check-in opens in 2h 14m</div>
+
+    <h2>INVITATIONS</h2>
+    <div class="invite">
+      <div class="top">
+        <span class="gname">Early Risers</span>
+      </div>
+      <p class="who">Priya invited you · Sleep · ₹100 a miss · 4 members</p>
+      <div class="btnrow">
+        <button class="pri">Join</button>
+        <button>Decline</button>
+      </div>
+    </div>
+
+    <h2>YOUR GROUPS</h2>
+
+    <div class="card">
+      <div class="top">
+        <span class="gname">Us Two</span>
+        <span class="bal paid">+₹150.00</span>
+      </div>
+      <p class="meta">Sleep · 9-night streak · 2 members · ₹50 a miss</p>
+    </div>
+
+    <div class="card flag">
+      <div class="top">
+        <span class="gname">Cricket Boys<span class="pill hot">both defaulted</span></span>
+        <span class="bal flat">₹0.00</span>
+      </div>
+      <p class="meta">Sleep · streak broken Fri · 5 members · ₹200 a miss</p>
+    </div>
+
+    <div class="card">
+      <div class="top">
+        <span class="gname">Kaushik &amp; me</span>
+        <span class="bal owed">−₹400.00</span>
+      </div>
+      <p class="meta">Sleep · 3-night streak · 2 members · ₹100 a miss</p>
+    </div>
+
+    <button class="cta ghost" style="margin-top:16px">Create a group</button>
+  </div>
+</section>
+
+<!-- ══ GROUP: CREATE / INVITE ══ -->
+<section class="screen" id="group">
+  <div class="wrap">
+    <div class="mast"><h1>CURFEW</h1><span>Us Two</span></div>
+
+    <h2 style="margin-top:0">MEMBERS</h2>
+    <div class="rows">
+      <div class="row"><div>Aman<div class="who">Owner · joined 12 Aug · Asia/Kolkata</div></div><span class="amt paid">+₹150.00</span></div>
+      <div class="row"><div>Rahul<div class="who">Joined 12 Aug · Europe/London</div></div><span class="amt owed">−₹150.00</span></div>
+    </div>
+
+    <h2>INVITE SOMEONE</h2>
+    <p style="font-size:13px;color:var(--dim)">They can only join if you enter
+      their email here. There is no link that works on its own.</p>
+    <div class="inline-form">
+      <input type="email" placeholder="name@example.com" aria-label="Email to invite">
+      <button>Invite</button>
+    </div>
+
+    <h2>PENDING INVITES</h2>
+    <div class="rows">
+      <div class="row"><div>kaushik@example.com<div class="who">Sent 29 Aug · not yet accepted</div></div><span class="amt" style="color:var(--penalty)">Revoke</span></div>
+    </div>
+
+    <h2>ACTIVITY · SLEEP</h2>
+    <div class="rows">
+      <div class="row"><span>Fine per failed night</span><span class="amt">₹50.00</span></div>
+      <div class="row"><span>Charged</span><span class="amt">Flat</span></div>
+      <div class="row"><span>Grace nights per month</span><span class="amt">2</span></div>
+    </div>
+    <p class="eff">Split equally among everyone else in the group. Changing
+      these changes them for all members, from tomorrow.</p>
+    <p class="eff">Each group tracks one activity in this version.</p>
+  </div>
+</section>
+
+<!-- ══ ADMIN ══ -->
+<section class="screen" id="admin">
+  <div class="wrap">
+    <div class="mast"><h1>CURFEW</h1><span>Admin</span></div>
+
+    <h2 style="margin-top:0">WAITING FOR APPROVAL</h2>
+    <div class="card">
+      <div class="top"><span class="gname">priya@example.com</span></div>
+      <p class="meta">Signed in 31 Aug, 09:12 · Priya Nair</p>
+      <div class="btnrow">
+        <button class="pri">Approve</button>
+        <button>Reject</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="top"><span class="gname">unknown@example.com</span></div>
+      <p class="meta">Signed in 30 Aug, 23:47 · no name on account</p>
+      <div class="btnrow">
+        <button class="pri">Approve</button>
+        <button>Reject</button>
+      </div>
+    </div>
+
+    <h2>APPROVED</h2>
+    <div class="rows">
+      <div class="row"><div>rahul@example.com<div class="who">Approved 12 Aug · 2 groups</div></div><span class="amt" style="color:var(--penalty)">Revoke</span></div>
+      <div class="row"><div>kaushik@example.com<div class="who">Approved 24 Aug · 1 group</div></div><span class="amt" style="color:var(--penalty)">Revoke</span></div>
+    </div>
+  </div>
+</section>
+
+<nav class="switch" aria-label="Preview screens">
+  <button aria-pressed="true" data-s="signin">Sign in</button>
+  <button aria-pressed="false" data-s="pending">Pending</button>
+  <button aria-pressed="false" data-s="dash">Dashboard</button>
+  <button aria-pressed="false" data-s="night">Night</button>
+  <button aria-pressed="false" data-s="done">Done</button>
+  <button aria-pressed="false" data-s="idle">Idle</button>
+  <button aria-pressed="false" data-s="morning">Morning</button>
+  <button aria-pressed="false" data-s="ledger">Ledger</button>
+  <button aria-pressed="false" data-s="group">Group</button>
+  <button aria-pressed="false" data-s="admin">Admin</button>
+  <button aria-pressed="false" data-s="settings">Settings</button>
+</nav>
+
+<script>
+document.querySelectorAll('.switch button').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on')});
+    document.getElementById(b.dataset.s).classList.add('on');
+    document.querySelectorAll('.switch button').forEach(function(x){
+      x.setAttribute('aria-pressed', String(x===b));
+    });
+    window.scrollTo(0,0);
+  });
+});
+</script>
+</body>
+</html>

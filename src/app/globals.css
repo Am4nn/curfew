@@ -1,0 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-mono;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  :focus-visible {
+    outline: 3px solid theme("colors.focus");
+    outline-offset: 2px;
+  }
+}

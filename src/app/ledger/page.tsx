@@ -22,8 +22,8 @@ export default async function Ledger() {
       <div className="mx-auto max-w-[560px]">
         <header className="mb-7 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">LEDGER</h1>
-          <Link href="/" className="text-[12px] text-muted underline">
-            dashboard
+          <Link href="/" className="text-[12px] text-muted">
+            ‹ dashboard
           </Link>
         </header>
 

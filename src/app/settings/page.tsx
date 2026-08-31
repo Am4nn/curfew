@@ -11,6 +11,7 @@ import {
 import { minorUnitExponent } from "@/domain";
 import { ActionForm, SubmitButton } from "../ui";
 import { ThemeToggle } from "../theme-toggle";
+import { TimezoneSelect } from "./timezone-select";
 import {
   updateTimezoneAction,
   updateWindowsAction,
@@ -48,7 +49,7 @@ export default async function Settings() {
       <div className="mx-auto max-w-[560px]">
         <header className="mb-7 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">SETTINGS</h1>
-          <Link href="/" className="text-[12px] text-muted underline">dashboard</Link>
+          <Link href="/" className="text-[12px] text-muted">‹ dashboard</Link>
         </header>
 
         <section className="mb-9">
@@ -73,33 +74,21 @@ export default async function Settings() {
 
           <ActionForm
             action={updateTimezoneAction}
-            className="flex items-center justify-between gap-3 border-b border-rule py-3"
+            className="border-b border-rule py-3"
           >
             <label className="text-[14px]">
               Timezone
               <span className="block text-[12px] text-muted">IANA name, e.g. Asia/Kolkata</span>
             </label>
-            <span className="flex gap-2">
-              <input
-                name="timezone"
-                required
-                list="tz-list"
-                defaultValue={personal.timezone}
-                placeholder="search zones"
-                className="w-44 border border-fg bg-transparent px-2 py-[6px] text-right text-[14px]"
-              />
-              <datalist id="tz-list">
-                {zones.map((z) => (
-                  <option key={z} value={z} />
-                ))}
-              </datalist>
+            <div className="mt-2 flex items-start gap-2">
+              <TimezoneSelect zones={zones} defaultValue={personal.timezone} />
               <SubmitButton
                 pendingLabel="Saving"
-                className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg"
+                className="border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg"
               >
                 Save
               </SubmitButton>
-            </span>
+            </div>
           </ActionForm>
 
           <ActionForm action={updateWindowsAction} className="pt-3">

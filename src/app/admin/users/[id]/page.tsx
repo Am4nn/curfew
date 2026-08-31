@@ -29,7 +29,7 @@ export default async function UserInspectorPage({
           <h2 className="text-[15px] font-semibold">{profile.name}</h2>
           <div className="text-[12px] text-muted">{profile.email}</div>
         </div>
-        <Link href="/admin/users" className="text-[12px] text-muted underline">all users</Link>
+        <Link href="/admin/users" className="text-[12px] text-muted">‹ all users</Link>
       </div>
 
       <section className="mb-7">

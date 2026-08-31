@@ -37,9 +37,9 @@ export default async function Dashboard() {
         <header className="mb-7 flex items-baseline justify-between gap-3 border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">CURFEW</h1>
           <span className="flex items-baseline gap-3 text-[12px] text-muted">
-            <Link href="/chart" className="underline">chart</Link>
-            <Link href="/settings" className="underline">settings</Link>
-            {admin ? <Link href="/admin" className="underline">admin</Link> : null}
+            <Link href="/chart" className="text-muted">chart</Link>
+            <Link href="/settings" className="text-muted">settings</Link>
+            {admin ? <Link href="/admin" className="text-muted">admin</Link> : null}
           </span>
         </header>
 

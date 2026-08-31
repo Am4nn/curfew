@@ -16,14 +16,14 @@ export default async function GroupInspectorPage({
     <>
       <div className="mb-6 flex items-baseline justify-between gap-3">
         <h2 className="text-[15px] font-semibold">{data.name}</h2>
-        <Link href="/admin/groups" className="text-[12px] text-muted underline">all groups</Link>
+        <Link href="/admin/groups" className="text-[12px] text-muted">‹ all groups</Link>
       </div>
 
       <Panel title="MEMBERS">
         {data.members.map((m) => (
           <Row key={m.userId}>
-            <Link href={`/admin/users/${m.userId}`} className="underline">
-              {m.name} <span className="text-[11px] text-muted">{m.role}</span>
+            <Link href={`/admin/users/${m.userId}`}>
+              {m.name} <span className="text-[11px] text-muted">{m.role}</span> ›
             </Link>
             <span className="text-[11px] tabular-nums text-muted">
               joined {m.joinedAt}{m.leftAt ? ` · left ${m.leftAt}` : ""}

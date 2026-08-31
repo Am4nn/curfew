@@ -28,7 +28,7 @@ export default async function AdminOverview() {
       <section>
         <div className="mb-2 flex items-baseline justify-between">
           <h2 className="text-[13px] font-semibold tracking-[0.1em]">PENDING APPROVALS</h2>
-          <Link href="/admin/users" className="text-[12px] text-muted underline">all users</Link>
+          <Link href="/admin/users" className="text-[12px] text-muted">all users ›</Link>
         </div>
         {pending.length === 0 ? (
           <p className="text-[14px] text-muted">No accounts waiting.</p>

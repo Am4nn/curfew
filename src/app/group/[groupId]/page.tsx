@@ -45,9 +45,9 @@ export default async function GroupDetail({
         <header className="mb-7 flex items-baseline justify-between gap-3 border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">{name}</h1>
           <span className="flex items-baseline gap-3 text-[12px] text-muted">
-            <Link href="/ledger" className="underline">ledger</Link>
-            <Link href="/settings" className="underline">rules</Link>
-            <Link href="/" className="underline">dashboard</Link>
+            <Link href="/ledger" className="text-muted">ledger</Link>
+            <Link href="/settings" className="text-muted">rules</Link>
+            <Link href="/" className="text-muted">‹ dashboard</Link>
           </span>
         </header>
 

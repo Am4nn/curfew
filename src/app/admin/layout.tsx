@@ -29,11 +29,11 @@ export default async function AdminLayout({
       <div className="mx-auto max-w-[720px]">
         <header className="mb-4 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">ADMIN</h1>
-          <Link href="/" className="text-[12px] text-muted underline">dashboard</Link>
+          <Link href="/" className="text-[12px] text-muted">‹ dashboard</Link>
         </header>
         <nav className="mb-7 flex flex-wrap gap-4 text-[13px]">
           {tabs.map(([href, label]) => (
-            <Link key={href} href={href} className="text-muted underline">{label}</Link>
+            <Link key={href} href={href} className="text-muted">{label}</Link>
           ))}
         </nav>
         {children}

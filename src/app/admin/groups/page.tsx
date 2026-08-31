@@ -24,7 +24,7 @@ export default async function AdminGroups() {
               {groups.map((g) => (
                 <tr key={g.groupId} className="border-b border-rule">
                   <td className="py-2 pr-3">
-                    <Link href={`/admin/groups/${g.groupId}`} className="underline">{g.name}</Link>
+                    <Link href={`/admin/groups/${g.groupId}`}>{g.name} ›</Link>
                     {g.archived ? <span className="ml-1 text-[11px] text-muted">· archived</span> : null}
                   </td>
                   <td className="py-2 pr-3 tabular-nums">{g.memberCount}</td>

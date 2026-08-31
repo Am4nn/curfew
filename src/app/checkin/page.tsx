@@ -41,8 +41,8 @@ export default async function Checkin() {
               </span>
             ))}
           </p>
-          <Link href="/ledger" className="text-[12px] text-muted underline">
-            ledger
+          <Link href="/ledger" className="text-[12px] text-muted">
+            ledger ›
           </Link>
         </footer>
       </main>

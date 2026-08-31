@@ -21,7 +21,7 @@ export default async function AdminUsers() {
             {users.map((u) => (
               <tr key={u.userId} className="border-b border-rule align-top">
                 <td className="py-2 pr-3">
-                  <Link href={`/admin/users/${u.userId}`} className="underline">{u.name}</Link>
+                  <Link href={`/admin/users/${u.userId}`}>{u.name} ›</Link>
                   <div className="text-[11px] text-muted">{u.email}</div>
                 </td>
                 <td className="py-2 pr-3">

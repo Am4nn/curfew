@@ -9,7 +9,7 @@ import {
   getGroupRules,
 } from "@/server/settings";
 import { minorUnitExponent } from "@/domain";
-import { ActionForm, SubmitButton } from "../ui";
+import { ActionForm, InfoHint, SubmitButton } from "../ui";
 import { ThemeToggle } from "../theme-toggle";
 import { TimezoneSelect } from "./timezone-select";
 import {
@@ -66,7 +66,14 @@ export default async function Settings() {
         {/* Personal scope: silent, applies to this person everywhere. */}
         <section className="mb-9">
           <div className="border-b-2 border-fg pb-2">
-            <h2 className="text-[14px] font-semibold tracking-[0.08em]">PERSONAL</h2>
+            <h2 className="text-[14px] font-semibold tracking-[0.08em]">
+              PERSONAL
+              <InfoHint label="How personal windows work">
+                Set the night check-in, wake check-in, and confirm check-in windows.
+                A check-in counts only when you press its button inside that window.
+                Window changes take effect tomorrow, not today.
+              </InfoHint>
+            </h2>
             <p className="mt-1 text-[12px] text-muted">
               Yours only. Changes take effect tomorrow.
             </p>

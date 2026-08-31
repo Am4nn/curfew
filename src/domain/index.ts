@@ -28,6 +28,7 @@ export {
   sleepActivity,
   sleepConfigSchema,
   sleepEvidenceSchema,
+  validateSleepWindows,
   type SleepConfig,
   type SleepEvidence,
 } from "./sleep";

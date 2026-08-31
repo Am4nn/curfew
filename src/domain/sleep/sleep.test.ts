@@ -3,6 +3,7 @@ import {
   sleepActivity,
   sleepConfigSchema,
   type SleepConfig,
+  validateSleepWindows,
 } from "./index";
 import type { Checkin } from "../types";
 
@@ -115,5 +116,29 @@ describe("sleepConfigSchema", () => {
   });
   it("rejects unknown keys", () => {
     expect(sleepConfigSchema.safeParse({ ...config, extra: "1" }).success).toBe(false);
+  });
+});
+
+describe("validateSleepWindows", () => {
+  it("accepts an ordered set of non-overlapping windows", () => {
+    expect(validateSleepWindows(config, IST, PERIOD)).toEqual([]);
+  });
+
+  it("rejects a window that closes before it opens", () => {
+    expect(
+      validateSleepWindows({ ...config, night_open: "22:45", night_close: "22:00" }, IST, PERIOD),
+    ).toContain("Night window closes before it opens.");
+  });
+
+  it("rejects a wake window that overlaps the night window", () => {
+    expect(
+      validateSleepWindows({ ...config, wake_open: "22:30" }, IST, PERIOD),
+    ).toContain("Wake window overlaps the night window.");
+  });
+
+  it("rejects a confirm window that overlaps the wake window", () => {
+    expect(
+      validateSleepWindows({ ...config, confirm_open: "06:30" }, IST, PERIOD),
+    ).toContain("Confirm window overlaps the wake window.");
   });
 });

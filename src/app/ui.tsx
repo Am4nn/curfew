@@ -30,6 +30,43 @@ export function SubmitButton({
   );
 }
 
+// A touch-friendly inline explanation. The marker itself toggles the content,
+// and a separate close control makes dismissal explicit on small screens.
+export function InfoHint({ children, label = "More information" }: {
+  children: React.ReactNode;
+  label?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex align-middle">
+      <button
+        type="button"
+        aria-label={label}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="ml-2 inline-flex h-4 w-4 items-center justify-center border border-muted text-[11px] leading-none text-muted"
+      >
+        i
+      </button>
+      {open ? (
+        <span
+          role="dialog"
+          aria-label={label}
+          className="absolute left-0 top-6 z-10 w-72 border border-fg bg-bg p-3 text-left text-[12px] font-normal leading-5 tracking-normal text-fg shadow-none"
+        >
+          <span className="block">{children}</span>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="mt-2 border border-fg px-2 py-1 text-[11px]"
+          >
+            Close
+          </button>
+        </span>
+      ) : null}
+    </span>
+  );
+}
 // A form wired to a server action that returns { error } instead of throwing,
 // so validation and failures render inline rather than crashing the route.
 export function ActionForm({

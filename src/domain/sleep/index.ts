@@ -52,6 +52,44 @@ function instantWithin(
   return day.set({ hour: h, minute: m, second: 0, millisecond: 0 });
 }
 
+// Validate a complete nightly schedule against the same absolute instants used
+// for check-ins and scoring. Wall-clock ordering is insufficient because the
+// wake and confirm windows belong to the following calendar morning.
+export function validateSleepWindows(
+  config: SleepConfig,
+  timezone: string,
+  forPeriodStart: string,
+): string[] {
+  const resolved = STEPS.map((step) => ({
+    ...step,
+    opensAt: instantWithin(forPeriodStart, timezone, config[step.open]),
+    closesAt: instantWithin(forPeriodStart, timezone, config[step.close]),
+  }));
+  const periodOpensAt = DateTime.fromISO(forPeriodStart, { zone: timezone })
+    .startOf("day")
+    .set({ hour: 12 });
+  const periodClosesAt = periodOpensAt.plus({ days: 1 });
+  const errors: string[] = [];
+
+  for (const window of resolved) {
+    if (window.opensAt >= window.closesAt) {
+      errors.push(`${window.label} window closes before it opens.`);
+    }
+    if (window.opensAt < periodOpensAt || window.closesAt >= periodClosesAt) {
+      errors.push(`${window.label} window must stay within the noon-to-noon day.`);
+    }
+  }
+
+  const [night, wake, confirm] = resolved;
+  if (night.closesAt > wake.opensAt) {
+    errors.push("Wake window overlaps the night window.");
+  }
+  if (wake.closesAt > confirm.opensAt) {
+    errors.push("Confirm window overlaps the wake window.");
+  }
+
+  return errors;
+}
 export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   key: "sleep",
   period: "day",

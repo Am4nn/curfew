@@ -8,7 +8,11 @@ import {
   activities,
   groupMembers,
 } from "@/db/schema";
-import { sleepConfigSchema, type SleepConfig } from "@/domain";
+import {
+  sleepConfigSchema,
+  validateSleepWindows,
+  type SleepConfig,
+} from "@/domain";
 import {
   resolveUserTimezone,
   resolveUserSleepConfigRow,
@@ -54,9 +58,13 @@ export async function updateSleepWindows(
   windows: unknown,
 ): Promise<void> {
   const config = sleepConfigSchema.parse(windows);
+  const effectiveFrom = tomorrow();
+  const timezone = await resolveUserTimezone(userId, effectiveFrom);
+  const errors = validateSleepWindows(config, timezone, effectiveFrom);
+  if (errors.length > 0) throw new Error(errors[0]);
   await db
     .insert(userActivityConfig)
-    .values({ userId, typeKey: "sleep", config, effectiveFrom: tomorrow() })
+    .values({ userId, typeKey: "sleep", config, effectiveFrom })
     .onConflictDoUpdate({
       target: [
         userActivityConfig.userId,

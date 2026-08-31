@@ -81,6 +81,12 @@ function line(text: string, muted = false): string {
   return `<p style="margin:0 0 10px 0;color:${muted ? MUTED : INK};">${text}</p>`;
 }
 
+// Subtle monochrome emphasis for the one word or name that carries the message:
+// a surface-tone box and bold weight, no colour.
+function mark(text: string): string {
+  return `<span style="font-weight:700;background:${SURFACE};padding:1px 6px;color:${INK};">${text}</span>`;
+}
+
 export function groupInviteEmail(to: string, groupName: string): EmailInput {
   const url = dashboardUrl();
   const safeGroupName = escapeHtml(groupName);
@@ -89,9 +95,7 @@ export function groupInviteEmail(to: string, groupName: string): EmailInput {
     subject: "Curfew group invitation",
     text: `${groupName} invited you to Curfew. Open ${url} and sign in with Google. Once your account is approved, accept the invite from your dashboard.`,
     html: layout(
-      line(
-        `<span style="font-weight:700;background:${SURFACE};padding:1px 6px;color:${INK};">${safeGroupName}</span> invited you to Curfew.`,
-      ) +
+      line(`${mark(safeGroupName)} invited you to Curfew.`) +
         button(url, "Open Curfew") +
         line("Sign in with Google. Once your account is approved, accept the invite from your dashboard.", true),
     ),
@@ -106,7 +110,7 @@ export function approvalEmail(to: string, approved: boolean): EmailInput {
       subject: "Curfew account approved",
       text: `Your Curfew account has been approved. Open ${url} and sign in with Google.`,
       html: layout(
-        line("Your Curfew account has been approved.") +
+        line(`Your Curfew account has been ${mark("approved")}.`) +
           button(url, "Open Curfew") +
           line("Sign in with Google to continue.", true),
       ),
@@ -116,7 +120,7 @@ export function approvalEmail(to: string, approved: boolean): EmailInput {
     to,
     subject: "Curfew account decision",
     text: "Your Curfew account request was not approved.",
-    html: layout(line("Your Curfew account request was not approved.")),
+    html: layout(line(`Your Curfew account request was ${mark("not approved")}.`)),
   };
 }
 
@@ -126,7 +130,7 @@ export function accountDisabledEmail(to: string): EmailInput {
     subject: "Curfew access ended",
     text: "Your access to Curfew has ended. Any balance recorded before removal still stands.",
     html: layout(
-      line("Your access to Curfew has ended.") +
+      line(`Your access to Curfew has ${mark("ended")}.`) +
         line("Any balance recorded before removal still stands.", true),
     ),
   };

@@ -1,0 +1,33 @@
+import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { eq } from "drizzle-orm";
+import { userApprovals } from "@/db/schema";
+import { performCheckin } from "@/server/checkin";
+
+// A check-in is an explicit POST from a button press. It is never a GET: a GET
+// must be safe, and prefetch, tab restore and link previews all fire GETs
+// (PRD 6b). The window and the step are decided server-side from the resolved
+// config and the server clock; the client sends no step, so it cannot check in
+// out of window or for the wrong step.
+export async function POST() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
+  }
+
+  const approval = await db.query.userApprovals.findFirst({
+    where: eq(userApprovals.userId, session.user.id),
+  });
+  if (approval?.status !== "approved") {
+    return NextResponse.json({ ok: false, reason: "not_approved" }, { status: 403 });
+  }
+
+  const result = await performCheckin(session.user.id, session.session.id);
+  if (!result.ok) {
+    // closed window or duplicate: not a server fault, so 409.
+    return NextResponse.json(result, { status: 409 });
+  }
+  return NextResponse.json(result);
+}

@@ -95,6 +95,15 @@ describe("sleep.evaluate", () => {
       "confirm",
     ]);
   });
+
+  it("resolves windows to absolute instants, morning steps on the next day", () => {
+    const wins = sleepActivity.windows(config, PERIOD, IST);
+    const night = wins.find((w) => w.step === "night")!;
+    const wake = wins.find((w) => w.step === "wake")!;
+    // Night 22:00 IST on the sleep_date; wake 06:00 IST the next morning.
+    expect(night.opensAt.toISOString()).toBe(new Date("2026-08-31T22:00:00+05:30").toISOString());
+    expect(wake.opensAt.toISOString()).toBe(new Date("2026-09-01T06:00:00+05:30").toISOString());
+  });
 });
 
 describe("sleepConfigSchema", () => {

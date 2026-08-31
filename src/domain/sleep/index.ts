@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { DateTime } from "luxon";
-import type { ActivityType, CheckinStep, EvaluateInput } from "../types";
+import type {
+  ActivityType,
+  CheckinStep,
+  CheckinWindow,
+} from "../types";
 
 // The sleep activity type. This module is the ONLY place that knows sleep has a
 // night, a wake and a confirm step, and the only place `night_ok` and friends
@@ -48,21 +52,6 @@ function instantWithin(
   return day.set({ hour: h, minute: m, second: 0, millisecond: 0 });
 }
 
-function stepPassed(
-  input: EvaluateInput<SleepConfig, SleepEvidence>,
-  stepKey: string,
-  openField: keyof SleepConfig,
-  closeField: keyof SleepConfig,
-): boolean {
-  const open = instantWithin(input.periodStart, input.timezone, input.config[openField]).toMillis();
-  const close = instantWithin(input.periodStart, input.timezone, input.config[closeField]).toMillis();
-  return input.checkins.some((c) => {
-    if (c.step !== stepKey) return false;
-    const at = c.at.getTime();
-    return at >= open && at <= close;
-  });
-}
-
 export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   key: "sleep",
   period: "day",
@@ -78,10 +67,28 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
     }));
   },
 
+  windows(config, periodStart, timezone): CheckinWindow[] {
+    return STEPS.map((s) => ({
+      step: s.key,
+      label: s.label,
+      opensAt: instantWithin(periodStart, timezone, config[s.open]).toJSDate(),
+      closesAt: instantWithin(periodStart, timezone, config[s.close]).toJSDate(),
+    }));
+  },
+
   evaluate(input) {
-    const night_ok = stepPassed(input, "night", "night_open", "night_close");
-    const wake_ok = stepPassed(input, "wake", "wake_open", "wake_close");
-    const confirm_ok = stepPassed(input, "confirm", "confirm_open", "confirm_close");
+    const wins = this.windows(input.config, input.periodStart, input.timezone);
+    const ok = (step: string) => {
+      const w = wins.find((x) => x.step === step)!;
+      const open = w.opensAt.getTime();
+      const close = w.closesAt.getTime();
+      return input.checkins.some(
+        (c) => c.step === step && c.at.getTime() >= open && c.at.getTime() <= close,
+      );
+    };
+    const night_ok = ok("night");
+    const wake_ok = ok("wake");
+    const confirm_ok = ok("confirm");
     return {
       passed: night_ok && wake_ok && confirm_ok,
       detail: { night_ok, wake_ok, confirm_ok },

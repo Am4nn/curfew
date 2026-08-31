@@ -11,6 +11,17 @@ export interface CheckinStep {
   close: string;
 }
 
+// A step's window resolved to absolute instants for a specific period. Drives
+// both "which window is open now" on the check-in page and the server-side
+// validation of a POST. The engine gets these without knowing what the steps
+// mean.
+export interface CheckinWindow {
+  step: string;
+  label: string;
+  opensAt: Date;
+  closesAt: Date;
+}
+
 // One recorded check-in the engine hands to a module for evaluation. `at` is
 // the server-stamped instant the check-in happened; `step` is the namespaced
 // step it satisfied; `evidence` is the module's own payload (empty for sleep).
@@ -50,5 +61,7 @@ export interface ActivityType<Config, Evidence> {
   userConfigSchema: ZodType<Config>;
   evidenceSchema: ZodType<Evidence>;
   steps(config: Config, periodStart: string): CheckinStep[];
+  // Resolve every step's window to absolute instants for the given period.
+  windows(config: Config, periodStart: string, timezone: string): CheckinWindow[];
   evaluate(input: EvaluateInput<Config, Evidence>): EvaluateResult;
 }

@@ -11,6 +11,7 @@ export { getActivityType, registeredKeys, register } from "./registry";
 export type {
   ActivityType,
   CheckinStep,
+  CheckinWindow,
   Checkin,
   EvaluateInput,
   EvaluateResult,

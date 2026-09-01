@@ -128,8 +128,29 @@ export async function declineInvite(
     .where(eq(groupInvites.id, inviteId));
 }
 
-// Leaving sets left_at; the membership row and the balance both survive.
+// Leaving sets left_at; the membership row and the balance both survive. The
+// owner controls the group's rules and stakes, so the last owner cannot walk
+// out on a group that still has members and leave it ownerless. They can leave
+// once they are the only one left (the group empties out).
 export async function leaveGroup(groupId: string, userId: string): Promise<void> {
+  const active = await db
+    .select({ userId: groupMembers.userId, role: groupMembers.role })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)));
+
+  const me = active.find((m) => m.userId === userId);
+  if (!me) return; // not an active member; nothing to do
+
+  if (me.role === "owner") {
+    const others = active.filter((m) => m.userId !== userId);
+    const anotherOwner = others.some((m) => m.role === "owner");
+    if (others.length > 0 && !anotherOwner) {
+      throw new Error(
+        "You are the group owner. You cannot leave while other members remain.",
+      );
+    }
+  }
+
   await db
     .update(groupMembers)
     .set({ leftAt: today() })
@@ -137,6 +158,37 @@ export async function leaveGroup(groupId: string, userId: string): Promise<void>
       and(
         eq(groupMembers.groupId, groupId),
         eq(groupMembers.userId, userId),
+        isNull(groupMembers.leftAt),
+      ),
+    );
+}
+
+// Promote another active member to owner. Owner-only. The group can then have
+// several owners; each controls the rules and can leave while another remains.
+export async function makeOwner(
+  groupId: string,
+  byUserId: string,
+  targetUserId: string,
+): Promise<void> {
+  const active = await db
+    .select({ userId: groupMembers.userId, role: groupMembers.role })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)));
+
+  if (active.find((m) => m.userId === byUserId)?.role !== "owner") {
+    throw new Error("Only an owner can add another owner.");
+  }
+  const target = active.find((m) => m.userId === targetUserId);
+  if (!target) throw new Error("That person is not a member of this group.");
+  if (target.role === "owner") return; // already an owner
+
+  await db
+    .update(groupMembers)
+    .set({ role: "owner" })
+    .where(
+      and(
+        eq(groupMembers.groupId, groupId),
+        eq(groupMembers.userId, targetUserId),
         isNull(groupMembers.leftAt),
       ),
     );

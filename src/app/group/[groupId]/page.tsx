@@ -11,7 +11,7 @@ import { getGroupLedgerRows } from "@/server/ledger";
 import { groupMemberStreaks } from "@/server/streak";
 import { formatMoney } from "@/domain";
 import { ConfirmButton } from "../../ui";
-import { leaveGroupAction, revokeInviteAction } from "../../actions";
+import { leaveGroupAction, revokeInviteAction, makeOwnerAction } from "../../actions";
 import { InviteForm } from "./invite-form";
 
 export default async function GroupOverview({
@@ -70,27 +70,43 @@ export default async function GroupOverview({
           const you = m.userId === user.id;
           const streak = streaks.get(m.userId);
           const p = pair.get(m.userId);
+          const canPromote = isOwner && !you && !m.leftAt && m.role !== "owner";
           return (
-            <div key={m.userId} className="flex items-baseline justify-between gap-3 border-b border-rule py-[11px]">
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[14px]">
-                  {you ? "You" : m.name}
-                  {m.leftAt ? <span className="text-muted"> (left)</span> : null}
-                </span>
-                <span className="text-[12px] text-muted">
-                  {typeof streak === "number" ? `streak ${streak}` : "no streak yet"}
-                </span>
-              </div>
-              <div className="text-[13px] tabular-nums">
-                {you ? (
-                  <span className="text-muted">{m.role}</span>
-                ) : p && p.amount > 0 ? (
-                  <span className="text-penalty">you owe {formatMoney(p.amount, p.currency)}</span>
-                ) : p && p.amount < 0 ? (
-                  <span className="text-pass">owes you {formatMoney(-p.amount, p.currency)}</span>
-                ) : (
-                  <span className="text-muted">settled</span>
-                )}
+            <div key={m.userId} className="border-b border-rule py-[11px]">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[14px]">
+                    {you ? "You" : m.name}
+                    {m.role === "owner" ? <span className="ml-2 text-[11px] text-muted">owner</span> : null}
+                    {m.leftAt ? <span className="text-muted"> (left)</span> : null}
+                  </span>
+                  <span className="text-[12px] text-muted">
+                    {typeof streak === "number" ? `streak ${streak}` : "no streak yet"}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="text-[13px] tabular-nums">
+                    {you ? (
+                      <span className="text-muted">{m.role}</span>
+                    ) : p && p.amount > 0 ? (
+                      <span className="text-penalty">you owe {formatMoney(p.amount, p.currency)}</span>
+                    ) : p && p.amount < 0 ? (
+                      <span className="text-pass">owes you {formatMoney(-p.amount, p.currency)}</span>
+                    ) : (
+                      <span className="text-muted">settled</span>
+                    )}
+                  </div>
+                  {canPromote ? (
+                    <ConfirmButton
+                      action={makeOwnerAction}
+                      fields={{ groupId, targetUserId: m.userId }}
+                      label="Make owner"
+                      message={`Make ${m.name} an owner? They will be able to change the group's rules and stakes. This cannot be undone here.`}
+                      confirmLabel="Make owner"
+                      tone="neutral"
+                    />
+                  ) : null}
+                </div>
               </div>
             </div>
           );

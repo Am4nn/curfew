@@ -123,20 +123,24 @@ function ActionFormInner({
   );
 }
 
-// Destructive action: a red button that opens a confirmation modal before it
-// submits. Used for leave, decline, reject and any other irreversible action.
+// An action gated behind a confirmation modal. `danger` (the default) is red,
+// for leave, decline, reject and other irreversible removals. `neutral` is the
+// house filled style, for significant but non-destructive actions like adding
+// an owner.
 export function ConfirmButton({
   action,
   fields,
   label,
   message,
   confirmLabel = "Confirm",
+  tone = "danger",
 }: {
   action: FormAction;
   fields: Record<string, string>;
   label: string;
   message: string;
   confirmLabel?: string;
+  tone?: "danger" | "neutral";
 }) {
   const [state, formAction] = useActionState(action, {});
   const [open, setOpen] = useState(false);
@@ -145,16 +149,21 @@ export function ConfirmButton({
     if (state.ok) setOpen(false);
   }, [state]);
 
+  const triggerClass =
+    tone === "danger"
+      ? "border border-penalty px-3 py-[6px] text-[13px] text-penalty"
+      : "border border-rule px-3 py-[6px] text-[13px]";
+  const confirmClass =
+    tone === "danger"
+      ? "border border-penalty bg-penalty px-3 py-[8px] text-[13px] text-bg"
+      : "border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg";
+
   return (
     <form action={formAction}>
       {Object.entries(fields).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="border border-penalty px-3 py-[6px] text-[13px] text-penalty"
-      >
+      <button type="button" onClick={() => setOpen(true)} className={triggerClass}>
         {label}
       </button>
 
@@ -169,7 +178,7 @@ export function ConfirmButton({
             className="w-full max-w-[360px] border border-fg bg-bg p-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-[14px]">{message}</p>
+            <p className="text-[14px] leading-relaxed">{message}</p>
             {state.error ? (
               <p className="mt-2 text-[13px] text-penalty">{state.error}</p>
             ) : null}
@@ -181,10 +190,7 @@ export function ConfirmButton({
               >
                 Cancel
               </button>
-              <SubmitButton
-                pendingLabel="Working"
-                className="border border-penalty bg-penalty px-3 py-[8px] text-[13px] text-bg"
-              >
+              <SubmitButton pendingLabel="Working" className={confirmClass}>
                 {confirmLabel}
               </SubmitButton>
             </div>

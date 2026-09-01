@@ -10,6 +10,7 @@ import {
   declineInvite,
   leaveGroup,
   revokeInvite,
+  makeOwner,
 } from "@/server/groups";
 import type { FormState } from "./ui";
 
@@ -104,6 +105,22 @@ export async function leaveGroupAction(
   // must sit outside the try/catch above.
   revalidatePath("/");
   redirect("/");
+}
+
+export async function makeOwnerAction(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const user = await approvedUser();
+    const groupId = String(formData.get("groupId"));
+    const targetUserId = String(formData.get("targetUserId"));
+    await makeOwner(groupId, user.id, targetUserId);
+    revalidatePath(`/group/${groupId}`);
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not update ownership." };
+  }
 }
 
 export async function revokeInviteAction(

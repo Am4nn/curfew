@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
+import { previewEnabled } from "@/lib/preview";
 
 // Optimistic gate only. This checks for the presence of a session cookie to
 // keep unauthenticated traffic off protected routes without a DB round trip on
@@ -7,6 +8,11 @@ import { getSessionCookie } from "better-auth/cookies";
 // user. The approval status is read server-side in the page (see
 // src/lib/session.ts requireApproved), because it needs the database.
 export function middleware(request: NextRequest) {
+  // Preview mode is sign-in-free (double-gated, inert in production). The pages
+  // resolve a fixed preview identity server-side, so the cookie gate must step
+  // aside or every route would bounce to /signin.
+  if (previewEnabled()) return NextResponse.next();
+
   const session = getSessionCookie(request);
   if (!session) {
     const url = new URL("/signin", request.url);

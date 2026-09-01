@@ -1,30 +1,22 @@
 import { DateTime } from "luxon";
-import { and, eq, gte, isNull, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { events, activityScores, activityOutcomes, activities } from "@/db/schema";
+import { events, activityScores } from "@/db/schema";
 import { resolveUserTimezone } from "./config";
-import { listUserGroups } from "./groups";
 import { nowUTC } from "@/lib/clock";
 
 // Personal analytics for a member, over their own data only. Everything here is
-// derivable from events and the scores/outcomes rebuilt from them (invariant 1),
-// and reads only checkin.* events (invariant 2). It is scoped to one user id;
-// the streak series come from listUserGroups, itself the membership-scoped
-// source (invariant 10), so a member never sees another group's numbers.
+// derivable from events and the scores rebuilt from them (invariant 1), and
+// reads only checkin.* events (invariant 2). Scoped to one user id.
 
 export interface StatPoint {
   date: string; // yyyy-MM-dd, or a weekday label
   value: number;
 }
-export interface GroupStreak {
-  groupId: string;
-  name: string;
-  points: StatPoint[];
-}
 export interface PersonalStats {
   wakeRolling: StatPoint[]; // 7-sample trailing average wake minutes, per period
   weekdayPass: StatPoint[]; // pass % per weekday, Mon..Sun
-  streaks: GroupStreak[];
+  monthPassRate: number | null; // % of scored nights passed over the window, null if none
   hasWake: boolean;
   hasScores: boolean;
 }
@@ -100,54 +92,34 @@ async function weekdayPass(
   };
 }
 
-// Streak over time per group the user belongs to.
-async function groupStreaks(userId: string, days: number): Promise<GroupStreak[]> {
-  const groups = await listUserGroups(userId);
-  const from = await startDate(days);
-  const out: GroupStreak[] = [];
-  for (const g of groups) {
-    const [activity] = await db
-      .select({ id: activities.id })
-      .from(activities)
-      .where(
-        and(
-          eq(activities.groupId, g.groupId),
-          eq(activities.typeKey, "sleep"),
-          isNull(activities.archivedAt),
-        ),
-      );
-    if (!activity) continue;
-    const rows = await db
-      .select({ periodStart: activityOutcomes.periodStart, streakAfter: activityOutcomes.streakAfter })
-      .from(activityOutcomes)
-      .where(
-        and(
-          eq(activityOutcomes.userId, userId),
-          eq(activityOutcomes.activityId, activity.id),
-          gte(activityOutcomes.periodStart, from),
-        ),
-      )
-      .orderBy(activityOutcomes.periodStart);
-    if (rows.length === 0) continue;
-    out.push({
-      groupId: g.groupId,
-      name: g.name,
-      points: rows.map((r) => ({ date: r.periodStart, value: r.streakAfter })),
-    });
-  }
-  return out;
+// Overall pass rate over the window: share of the user's own scored nights that
+// passed. Group-independent, from activity_scores.
+async function monthPassRate(userId: string, days: number): Promise<number | null> {
+  const rows = await db
+    .select({ passed: activityScores.passed })
+    .from(activityScores)
+    .where(
+      and(
+        eq(activityScores.userId, userId),
+        eq(activityScores.typeKey, "sleep"),
+        gte(activityScores.periodStart, await startDate(days)),
+      ),
+    );
+  if (rows.length === 0) return null;
+  const passed = rows.filter((r) => r.passed).length;
+  return Math.round((passed / rows.length) * 100);
 }
 
 export async function getPersonalStats(userId: string, days = 30): Promise<PersonalStats> {
-  const [wakeRolling, weekday, streaks] = await Promise.all([
+  const [wakeRolling, weekday, monthRate] = await Promise.all([
     rollingWake(userId, days),
     weekdayPass(userId, 84),
-    groupStreaks(userId, days),
+    monthPassRate(userId, days),
   ]);
   return {
     wakeRolling,
     weekdayPass: weekday.points,
-    streaks,
+    monthPassRate: monthRate,
     hasWake: wakeRolling.length > 0,
     hasScores: weekday.has,
   };

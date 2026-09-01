@@ -41,7 +41,9 @@ export async function settleAction(
       amount,
       currency,
     });
-    revalidatePath("/ledger");
+    revalidatePath(`/group/${groupId}/ledger`);
+    revalidatePath(`/group/${groupId}`);
+    revalidatePath("/");
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not record the settlement." };

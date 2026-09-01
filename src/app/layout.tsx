@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { previewEnabled } from "@/lib/preview";
 import { PreviewBar } from "./preview-bar";
+import { TabBar } from "./nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default async function RootLayout({
     <html lang="en" data-theme={theme} suppressHydrationWarning>
       <body>
         {children}
+        <TabBar />
         {previewEnabled() ? <PreviewBar /> : null}
       </body>
     </html>

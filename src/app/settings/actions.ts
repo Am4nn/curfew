@@ -78,7 +78,7 @@ export async function updateGroupRulesAction(
       currency,
       gracePerMonth,
     });
-    revalidatePath("/settings");
+    revalidatePath(`/group/${groupId}/rules`);
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not save the shared rules." };

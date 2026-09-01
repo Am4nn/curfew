@@ -36,6 +36,7 @@ Thumbs.db
 # agent tooling
 .agents/
 .claude/
+.design/
 
 # drizzle
 drizzle/meta/

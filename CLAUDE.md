@@ -16,15 +16,20 @@ groups, commit to an activity, and pay each other when they miss. V1 tracks
 ## Current phase
 
 <!-- update this line after each phase -->
-**v2 complete.** v1 (phases 0-6) and all three v2 phases are built, verified,
-and deployed. v2 added: per-user sleep-window validation plus a settings info
-affordance (Phase 1); transactional email via Resend (invite, approval
-decision, account-removed, best-effort, `email.*` events only) (Phase 2); and
-fuller analytics (Phase 3): personal stats on the expanded /chart page (rolling
-wake time, pass rate by weekday, streak per group) plus a group-level pass-rate
-by weekday on the admin Insights tab. Charts live in `src/app/charts.tsx`,
-shared by both surfaces. Spec: `.planning/PLAN-v2-phases.md`. Do not start v2.5
-or v3 work without being asked.
+**v2.5 in progress.** v1, all of v2, and the v2.5 UI/UX redesign are built. v2.5
+reshapes the app without touching the engine (no schema, no scoring change):
+one persistent bottom nav (Home / Groups / Stats / Settings) in `src/app/nav.tsx`,
+Admin a header link for admins only. Home (`src/app/page.tsx`) is the command
+center: a personal, group-independent streak (`src/server/streak.ts`, from
+`activity_scores`, no grace), one-tap check-in for every window (the dedicated
+forced-dark `/checkin` screen is retired, so **PRD G4 is deliberately relaxed**;
+the boring register survives in the hero copy), a balances summary, and a groups
+summary, with new-user and new-user+invite empty states. The global `/ledger`
+and the per-group shared-rules block in Settings folded into a tabbed group hub
+(`src/app/group/[groupId]/{,ledger,rules,wake}`); `/ledger` and `/checkin` are
+now redirects. Stats (`/chart`) drops its group-wake and streak-history sections
+(group-wake moved to the hub Wake tab). Approved mocks: `.design/`. Do not start
+v3 work without being asked.
 
 ## Invariants
 

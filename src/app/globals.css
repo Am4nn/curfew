@@ -63,6 +63,28 @@
     }
   }
 
+  /* The streak flame on Home: a slow flicker, no motion for reduced-motion. */
+  @keyframes flicker {
+    0%,
+    100% {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.08) translateY(-0.5px);
+      opacity: 0.82;
+    }
+  }
+  .flame {
+    transform-origin: 50% 90%;
+    animation: flicker 1.7s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flame {
+      animation: none;
+    }
+  }
+
   /* Custom scrollbar, themed, in both engines. */
   * {
     scrollbar-width: thin;

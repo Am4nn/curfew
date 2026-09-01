@@ -38,6 +38,30 @@ export async function inviteToGroup(
   await assertMember(groupId, inviterId);
   const clean = email.trim().toLowerCase();
   if (!clean) throw new Error("email required");
+
+  // If this email already belongs to an account, guard the two nonsense cases:
+  // inviting yourself, and inviting someone already in the group.
+  const [existingUser] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(sql`lower(${users.email})`, clean));
+  if (existingUser) {
+    if (existingUser.id === inviterId) {
+      throw new Error("You cannot invite yourself.");
+    }
+    const [member] = await db
+      .select({ userId: groupMembers.userId })
+      .from(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, groupId),
+          eq(groupMembers.userId, existingUser.id),
+          isNull(groupMembers.leftAt),
+        ),
+      );
+    if (member) throw new Error("That person is already in this group.");
+  }
+
   const [invite] = await db
     .insert(groupInvites)
     .values({ groupId, email: clean, invitedBy: inviterId })

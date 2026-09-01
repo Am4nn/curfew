@@ -72,6 +72,9 @@ export function InviteForm({ groupId, inviterName }: { groupId: string; inviterN
               ) : null}{" "}
               as the inviter.
             </p>
+            {state.error ? (
+              <p className="mt-3 text-[13px] text-penalty">{state.error}</p>
+            ) : null}
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"

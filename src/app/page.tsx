@@ -100,6 +100,7 @@ export default async function Dashboard() {
               const bal = netByGroup.get(g.groupId);
               return (
                 <Link
+                  key={g.groupId}
                   href={`/group/${g.groupId}`}
                   className="block border-b border-rule py-4"
                 >

@@ -54,6 +54,7 @@ export async function inviteAction(
       return { error: "That does not look like an email." };
     }
     await inviteToGroup(groupId, user.id, email);
+    revalidatePath(`/group/${groupId}`);
     revalidatePath("/");
     return { ok: true };
   } catch (e) {

@@ -23,9 +23,11 @@ export default async function Balances() {
   return (
     <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto max-w-[560px]">
-        <header className="-mx-5 mb-6 flex items-center gap-2 border-b border-rule px-5 pb-[10px]">
-          <Link href="/" className="text-[13px] text-muted">‹</Link>
-          <h1 className="text-[15px] font-semibold tracking-[0.14em]">BALANCES</h1>
+        <header className="-mx-5 mb-6 border-b border-rule px-5 pb-[10px]">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-[13px] text-muted">‹</span>
+            <h1 className="text-[15px] font-semibold tracking-[0.14em]">BALANCES</h1>
+          </Link>
         </header>
 
         {settledEverywhere ? (

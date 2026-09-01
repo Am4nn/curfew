@@ -10,8 +10,9 @@ import {
 import { getGroupLedgerRows } from "@/server/ledger";
 import { groupMemberStreaks } from "@/server/streak";
 import { formatMoney } from "@/domain";
-import { ActionForm, SubmitButton, ConfirmButton } from "../../ui";
-import { inviteAction, leaveGroupAction, revokeInviteAction } from "../../actions";
+import { ConfirmButton } from "../../ui";
+import { leaveGroupAction, revokeInviteAction } from "../../actions";
+import { InviteForm } from "./invite-form";
 
 export default async function GroupOverview({
   params,
@@ -105,22 +106,7 @@ export default async function GroupOverview({
 
       <section className="mb-8">
         <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">INVITE</div>
-        <ActionForm action={inviteAction} resetOnSuccess className="flex items-center gap-2">
-          <input type="hidden" name="groupId" value={groupId} />
-          <input
-            name="email"
-            type="email"
-            required
-            placeholder="email address"
-            className="flex-1 border border-rule bg-transparent px-3 py-[10px] text-[14px]"
-          />
-          <SubmitButton
-            pendingLabel="Sending"
-            className="border border-rule bg-surface px-4 py-[10px] text-[14px]"
-          >
-            Send
-          </SubmitButton>
-        </ActionForm>
+        <InviteForm groupId={groupId} inviterName={user.name} />
         {invites.map((inv) => (
           <div key={inv.id} className="mt-3 flex items-center justify-between gap-3 text-[12px] text-muted">
             <span className="break-all">{inv.email} · pending</span>

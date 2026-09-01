@@ -28,14 +28,16 @@ import { nowUTC } from "@/lib/clock";
 async function tomorrow(): Promise<string> {
   return (await nowUTC()).plus({ days: 1 }).toFormat("yyyy-MM-dd");
 }
-async function today(): Promise<string> {
-  return (await nowUTC()).toFormat("yyyy-MM-dd");
-}
 
+// The settings editor shows the config as it will stand going forward, i.e. as
+// of tomorrow, since every change is effective-dated to tomorrow (invariant 4).
+// Resolving as of today would always show the pre-save value and make a just-
+// saved change look lost. Scoring and check-in resolve per period separately and
+// are unaffected by this.
 export async function getPersonalSettings(
   userId: string,
 ): Promise<{ timezone: string; windows: SleepConfig }> {
-  const t = await today();
+  const t = await tomorrow();
   const timezone = await resolveUserTimezone(userId, t);
   const { config } = await resolveUserSleepConfigRow(userId, t);
   return { timezone, windows: config };
@@ -93,8 +95,10 @@ export async function groupSleepActivity(
   return a ? { activityId: a.id } : null;
 }
 
+// Same as getPersonalSettings: the shared-rules editor shows the going-forward
+// (tomorrow) rules so a just-saved change is visible. Scoring resolves per period.
 export async function getGroupRules(activityId: string): Promise<ResolvedRules> {
-  return resolveActivityRules(activityId, await today());
+  return resolveActivityRules(activityId, await tomorrow());
 }
 
 async function isOwner(groupId: string, userId: string): Promise<boolean> {

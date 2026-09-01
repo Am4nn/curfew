@@ -1,44 +1,81 @@
-# Curfew v3 — backlog
+# PLAN-v3.md — Curfew as a habit tracker
 
-A holding file for work deferred past v2 and v2.5. Nothing here is scoped or
-scheduled. It exists so ideas stop getting re-derived. The v1 invariants in
-`../CLAUDE.md` still govern anything built from this list.
+Scope decisions taken by Aman on 2026-09-01. Companion to `PRD.md` and the v1
+invariants in `../CLAUDE.md` (none relaxed here). RLS and DB-backed roles moved
+to `BACKLOG.md`; v3 is now the reshape below.
 
-## Carried over
+## The reframe
 
-1. **Postgres RLS** — defence in depth, after the query-layer `assertMember()`
-   scoping (invariant 10) is long-proven. No user-visible change. Neon connection
-   pooling can silently return unscoped rows if policies and the session role are
-   not wired exactly right, so this is high-care, low-visibility work.
-2. **DB-backed roles/capabilities** — move roles from the code map to data, with
-   an admin UI to create/adjust/delete roles. Design already agreed: roles as
-   data, capabilities as code, an undeletable admin role, and a
-   delete-a-role-with-users guardrail. Deferred from v2 twice; do not start
-   without an explicit go-ahead.
+Curfew is a **personal habit tracker**. A user tracks their own habits and keeps
+a streak per habit. **Groups are an opt-in accountability layer**, not the point:
+a group tracks a chosen set of activity types, and members opt in to be held to
+them together.
 
-## New ideas
+- **Solo works with zero groups.** A new user is enrolled in **no** activities.
+  They opt into activities for themselves, keep streaks, and get value before any
+  group exists.
+- **Groups are opt-in on both sides.** A user enables an activity for themselves;
+  a group declares which activity types it tracks; the overlap is what the group
+  holds you to.
+- **Reputation first, money optional.** Groups are reputation-based by default.
+  A group may **opt in to money** (fines) on chosen activities. Money is part of
+  v3, not deferred, but it is never the default and never required.
+- **Evidence is per activity, often none.** The app is for being true to
+  yourself, so most activities are trust-based. Evidence scales by activity:
+  none, a number, a photo, or a timed window.
 
-3. **"Awake past curfew" mechanic.** Today nothing penalises being active late at
-   night, and it must stay that way for sleep: invariant 2 forbids ambient
-   telemetry from affecting a fine, because otherwise the app rewards not opening
-   the site. If a "you were clearly awake past curfew" consequence is ever wanted,
-   it is a **separate activity type with its own evidence rule**, not a change to
-   sleep. Its signal must come from an **explicit action** (a deliberate press,
-   the same discipline as invariant 9), never from "user was seen at 3am" session
-   or `last_seen` data. Open question if pursued: what explicit action could
-   honestly stand in for "awake" without becoming ambient tracking. Likely hard to
-   make fair, captured mainly so the reasoning is not lost.
+## Activities (opt-in catalog)
 
-4. **More transactional emails on more events.** v2 ships three (invite,
-   approval decision, account-removed) through the `sendEmailBestEffort` +
-   `mark()` layout in `src/server/email.ts`. Candidate further events, all
-   driven by an explicit action or a committed state change, never ambient
-   telemetry: invite accepted/declined (tell the inviter), shared-rules change
-   (`config.shared.changed`, tell the group), a settlement recorded, a fine
-   incurred for a missed period, and a role change. Constraints carry over from
-   v2: each send is a side effect that never blocks or reverses the action and is
-   recorded as an `email.*` event that scoring never reads (invariant 2); copy
-   stays in the clerk voice. Watch total volume so Curfew does not become noisy;
-   per-user email preferences may be needed before adding recurring or
-   activity-driven mail. A weekly digest belongs here only if volume stays low
-   and it is opt-out.
+Each activity is a module: its own **period**, **evidence rule**, and
+**pass test**. Nothing outside the module knows what it means (invariant 6); the
+engine consumes `{ passed, detail }`. Launch set:
+
+| Activity | Period | Evidence | Pass test (first cut) |
+|---|---|---|---|
+| Timely Sleep (exists) | daily, noon-to-noon | timed windows | three window check-ins |
+| Gym | weekly | none (trust) | N sessions logged in the week |
+| Steps | daily | number (self-reported) | steps ≥ personal target |
+| Go to Office | weekdays only | none (trust) | marked in on a work day |
+| Study | daily | none, or minutes | logged / minutes ≥ target |
+| Food + calories | daily | photo + calorie figure | **logged**, not the number (see open decision) |
+
+More types are meant to be cheap to add later; the table is a starting set, not a
+closed list.
+
+## What v3 must build
+
+1. **Engine: non-daily periods.** v1 assumes noon-to-noon daily everywhere
+   (`periodStart()`, scoring, config/rules resolution, check-in state). Gym
+   (weekly) and Office (weekdays) force this open. Do this first; it is the real
+   work, and the first non-daily module will reveal what the `ActivityType`
+   interface got wrong.
+2. **Activity modules** in build order: Gym → Steps → Office → Study → Food.
+   Gym first (weekly, trust-based, cheapest proof of a non-daily period). Food
+   last (needs blob storage for the image, and an open scoring decision).
+3. **Per-user opt-in.** A user enables/disables activities for themselves; a new
+   user starts with none. Streak is per activity.
+4. **Group activity types.** A group declares which activity types it tracks
+   (replacing the v1 "one sleep activity per group"), and members opt in.
+5. **Money opt-in.** A group (or a per-activity setting within it) can turn on
+   fines; off by default. Reputation-only groups carry no ledger.
+6. **Blob storage** (Food only): image upload. Vercel Blob is the clean fit.
+
+## Open decisions
+
+- **Food scoring rule.** Recommendation stands: the photo is evidence that a meal
+  was **logged**; scoring is logging-consistency (logged yes/no), and the calorie
+  figure is recorded and shown to the user only, never scored or ranked. Settle
+  when Food is picked up.
+- **Cross-activity streak.** Per-activity streaks are the source of truth. A
+  single "overall" streak is murky (does missing the gym break your sleep
+  streak?) and stays a later, optional view, not a v3 commitment.
+- **Money-with-no-evidence tension.** A fine gives a reason to fib when there is
+  no evidence. Keep money opt-in and, where a group turns it on for a trust-based
+  activity, treat the stakes as social. Not resolved by design; resolved by
+  keeping money deliberate and rare.
+
+## Not in v3
+
+- RLS, DB-backed roles/capabilities (`BACKLOG.md`).
+- Native health integrations (Apple Health / Google Fit) — Steps stays manual.
+- A cross-activity aggregate streak as the primary metric.

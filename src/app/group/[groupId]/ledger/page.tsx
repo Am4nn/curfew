@@ -38,92 +38,86 @@ export default async function GroupLedgerTab({
       net.set(k, (net.get(k) ?? 0) - r.amount);
     }
   }
-
-  const owed = [...net.entries()]
+  const positions = [...net.entries()]
     .map(([k, amount]) => {
       const [other, currency] = k.split("|");
-      return { other, currency, amount };
+      return { other, name: nameById.get(other) ?? other, currency, amount };
     })
-    .filter((b) => b.amount !== 0);
-
-  const hasFines = rows.some((r) => r.kind === "fine");
+    .filter((p) => p.amount !== 0);
 
   return (
     <>
-      {owed.length === 0 ? (
-        <div className="mb-6 border-2 border-fg p-[18px]">
-          <div className="text-[13px] text-muted">Balance</div>
-          <div className="mt-1 text-[18px]">Settled.</div>
-          {hasFines ? (
-            <div className="mt-1 text-[12px] text-muted">Fines were recorded. See the feed.</div>
-          ) : null}
-        </div>
-      ) : (
-        owed.map((b) => {
-          const other = nameById.get(b.other) ?? b.other;
-          const exp = minorUnitExponent(b.currency);
-          if (b.amount > 0) {
-            const major = (b.amount / 10 ** exp).toFixed(exp);
+      <section className="mb-8">
+        <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">WHO OWES WHOM</div>
+        {positions.length === 0 ? (
+          <p className="text-[13px] text-muted">Settled.</p>
+        ) : (
+          positions.map((p) => {
+            const exp = minorUnitExponent(p.currency);
+            const major = (p.amount / 10 ** exp).toFixed(exp);
+            const youOwe = p.amount > 0;
             return (
-              <div key={b.other + b.currency} className="mb-3 border-2 border-fg p-[18px]">
-                <div className="text-[13px] text-muted">You owe {other}</div>
-                <div className="mt-1 text-[32px] font-semibold tabular-nums text-penalty">
-                  {formatMoney(b.amount, b.currency)}
+              <div key={p.other + p.currency} className="mb-3 border border-rule p-3">
+                <div className="text-[14px]">
+                  {youOwe ? (
+                    <>
+                      You owe <span className="text-penalty">{p.name}</span>{" "}
+                      {formatMoney(p.amount, p.currency)}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-pass">{p.name}</span> owes you{" "}
+                      {formatMoney(-p.amount, p.currency)}
+                    </>
+                  )}
                 </div>
-                <SettleForm
-                  groupId={groupId}
-                  toUserId={b.other}
-                  toName={other}
-                  currency={b.currency}
-                  defaultMajor={major}
-                />
+                {youOwe ? (
+                  <SettleForm
+                    groupId={groupId}
+                    toUserId={p.other}
+                    toName={p.name}
+                    currency={p.currency}
+                    defaultMajor={major}
+                  />
+                ) : null}
               </div>
             );
-          }
-          return (
-            <div key={b.other + b.currency} className="mb-3 border-2 border-fg p-[18px]">
-              <div className="text-[13px] text-muted">{other} owes you</div>
-              <div className="mt-1 text-[32px] font-semibold tabular-nums text-pass">
-                {formatMoney(-b.amount, b.currency)}
-              </div>
-            </div>
-          );
-        })
-      )}
+          })
+        )}
+      </section>
 
-      <Feed rows={rows} />
+      <section>
+        <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">HISTORY</div>
+        {rows.length === 0 ? (
+          <p className="text-[13px] text-muted">Nothing yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {rows.map((r) => (
+              <Entry key={r.id} row={r} />
+            ))}
+          </div>
+        )}
+      </section>
     </>
   );
 }
 
-function Feed({ rows }: { rows: LedgerRow[] }) {
-  if (rows.length === 0) {
-    return <p className="mt-4 text-[13px] text-muted">Nothing yet.</p>;
-  }
+function Entry({ row: r }: { row: LedgerRow }) {
+  const title = r.kind === "fine" ? "Fine" : r.kind === "settlement" ? "Settlement" : "Adjustment";
+  const sub =
+    r.kind === "settlement" ? `${r.toName} → ${r.fromName}` : `${r.fromName} → ${r.toName}`;
+  const date = r.periodStart ?? r.createdAt.toISOString().slice(0, 10);
   return (
-    <div className="mt-6 border-t border-rule">
-      {rows.map((r) => (
-        <div
-          key={r.id}
-          className="flex items-baseline justify-between gap-3 border-b border-rule py-[11px] text-[14px]"
-        >
-          <div>
-            <div>
-              {r.kind === "fine"
-                ? `Fine: ${r.fromName} → ${r.toName}`
-                : r.kind === "settlement"
-                  ? `Settled: ${r.toName} → ${r.fromName}`
-                  : `Adjustment: ${r.fromName} → ${r.toName}`}
-            </div>
-            <div className="text-[12px] text-muted">
-              {r.periodStart ?? r.createdAt.toISOString().slice(0, 10)}
-            </div>
-          </div>
-          <div className={"tabular-nums " + (r.kind === "settlement" ? "text-pass" : "text-penalty")}>
-            {formatMoney(r.amount, r.currency)}
-          </div>
-        </div>
-      ))}
+    <div className="flex items-baseline justify-between gap-3 border border-rule px-3 py-[11px]">
+      <div className="flex flex-col gap-[2px]">
+        <span className="text-[13px]">
+          {title} · {sub}
+        </span>
+        <span className="text-[12px] text-muted">{date}</span>
+      </div>
+      <span className={"text-[14px] tabular-nums " + (r.kind === "settlement" ? "text-pass" : "text-penalty")}>
+        {formatMoney(r.amount, r.currency)}
+      </span>
     </div>
   );
 }

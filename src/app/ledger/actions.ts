@@ -43,6 +43,7 @@ export async function settleAction(
     });
     revalidatePath(`/group/${groupId}/ledger`);
     revalidatePath(`/group/${groupId}`);
+    revalidatePath("/balances");
     revalidatePath("/");
     return { ok: true };
   } catch (e) {

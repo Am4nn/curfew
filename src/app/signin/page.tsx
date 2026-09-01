@@ -11,18 +11,17 @@ export default function SignIn() {
           <QuorumMark size={26} />
           CURFEW
         </div>
-        <p className="max-w-[34ch] text-[14px] text-muted">
-          Three timed check-ins a night. Miss the window and the night does not
-          count.
+        <p className="max-w-[40ch] text-[14px] leading-relaxed text-muted">
+          A group accountability contract for nightly sleep. Invite only.
         </p>
         <button
           onClick={() => signIn.social({ provider: "google", callbackURL: "/" })}
-          className="flex w-full items-center justify-center gap-[11px] border border-rule bg-white px-5 py-[19px] text-[15px] text-[#1a1917]"
+          className="flex h-[50px] w-full items-center justify-center border border-fg bg-fg text-[15px] font-semibold text-bg"
         >
-          Continue with Google
+          Sign in with Google
         </button>
-        <p className="border-t border-rule pt-[14px] text-[12px] text-muted">
-          Invite only. New accounts wait for admin approval.
+        <p className="text-[12px] text-muted">
+          New accounts wait for an admin to approve before anything works.
         </p>
       </div>
     </main>

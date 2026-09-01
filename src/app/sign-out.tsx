@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 
-export function SignOut() {
+export function SignOut({ className }: { className?: string }) {
   const router = useRouter();
   return (
     <button
@@ -11,7 +11,7 @@ export function SignOut() {
         await signOut();
         router.push("/signin");
       }}
-      className="border border-fg bg-transparent px-[15px] py-[15px] text-[14px] text-fg"
+      className={className ?? "border border-fg bg-transparent px-[15px] py-[15px] text-[14px] text-fg"}
     >
       Sign out
     </button>

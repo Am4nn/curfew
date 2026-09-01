@@ -22,9 +22,9 @@ export default async function Stats() {
   const noData = !stats.hasWake && !stats.hasScores && stats.monthPassRate === null;
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-7">
+    <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto max-w-[560px]">
-        <header className="mb-7 border-b-2 border-fg pb-[10px]">
+        <header className="-mx-5 mb-7 border-b border-rule px-5 pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">YOUR STATS</h1>
         </header>
 
@@ -34,13 +34,25 @@ export default async function Stats() {
           </p>
         ) : (
           <>
+            {stats.monthPassRate !== null ? (
+              <p className="mb-[6px] text-[15px] leading-relaxed">
+                You hit your window <span className="text-pass">{stats.monthPassRate}%</span> of nights this month.
+              </p>
+            ) : null}
             <p className="mb-7 text-[15px] leading-relaxed">
-              {stats.monthPassRate !== null ? (
-                <>
-                  You hit your window <span className="text-pass">{stats.monthPassRate}%</span> of nights this month.{" "}
-                </>
-              ) : null}
-              Current streak <span className="text-fg">{streak.current}</span>.
+              Current streak{" "}
+              <span
+                className="font-semibold"
+                style={{
+                  backgroundImage: "linear-gradient(95deg, #ffd23f, #ff7a2f, #e4574b)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {streak.current}
+              </span>
+              .
             </p>
 
             {stats.hasWake ? (

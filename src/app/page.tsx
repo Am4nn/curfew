@@ -32,7 +32,7 @@ export default async function Home() {
   ]);
 
   const header = (
-    <header className="mb-7 flex items-center justify-between gap-3 border-b-2 border-fg pb-[10px]">
+    <header className="-mx-5 mb-7 flex items-center justify-between gap-3 border-b border-rule px-5 pb-[10px]">
       <h1 className="flex items-center gap-2 text-[15px] font-semibold tracking-[0.14em]">
         <QuorumMark size={15} />
         CURFEW
@@ -86,7 +86,7 @@ export default async function Home() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-7">
+    <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto max-w-[560px]">{children}</div>
     </main>
   );
@@ -237,7 +237,7 @@ function BalanceTile({
   color: string;
 }) {
   return (
-    <Link href="/groups" className="flex flex-col gap-[6px] border border-rule p-3">
+    <Link href="/balances" className="flex flex-col gap-[6px] border border-rule p-3">
       <div className="text-[11px] text-muted">{label}</div>
       <div className={"text-[18px] tabular-nums " + color}>{formatMoney(amount, currency)}</div>
       <div className="text-[12px] text-muted">see who ›</div>

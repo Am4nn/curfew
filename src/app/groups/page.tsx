@@ -21,9 +21,9 @@ export default async function Groups() {
   const byGroup = new Map(balances.map((b) => [b.groupId, b]));
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-7">
+    <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto max-w-[560px]">
-        <header className="mb-7 border-b-2 border-fg pb-[10px]">
+        <header className="-mx-5 mb-7 border-b border-rule px-5 pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">GROUPS</h1>
         </header>
 

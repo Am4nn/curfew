@@ -155,6 +155,65 @@ export interface LedgerRow {
   createdAt: Date;
 }
 
+export interface Debt {
+  otherId: string;
+  otherName: string;
+  groupId: string;
+  groupName: string;
+  currency: string;
+  amount: number; // minor units, always positive
+}
+
+// Every pairwise debt the user has, across all their groups. `owe` are debts the
+// user owes (settleable from here); `owed` are debts owed to the user
+// (informational: the other person settles from their own screen). A debt is
+// per person, per group, per currency, because settlements post to one group's
+// ledger. Membership is implicit: getUserGroups only returns the user's groups.
+export async function getUserDebts(
+  userId: string,
+): Promise<{ owe: Debt[]; owed: Debt[] }> {
+  const groups = await getUserGroups(userId);
+  const owe: Debt[] = [];
+  const owed: Debt[] = [];
+
+  for (const g of groups) {
+    const [members, rows] = await Promise.all([
+      listGroupMembers(g.groupId),
+      getGroupLedgerRows(g.groupId),
+    ]);
+    const nameById = new Map(members.map((m) => [m.userId, m.name]));
+
+    // Positive net means the user owes that person, in that currency.
+    const net = new Map<string, number>();
+    for (const r of rows) {
+      if (r.fromUserId === userId) {
+        const k = `${r.toUserId}|${r.currency}`;
+        net.set(k, (net.get(k) ?? 0) + r.amount);
+      } else if (r.toUserId === userId) {
+        const k = `${r.fromUserId}|${r.currency}`;
+        net.set(k, (net.get(k) ?? 0) - r.amount);
+      }
+    }
+
+    for (const [k, amount] of net) {
+      if (amount === 0) continue;
+      const [otherId, currency] = k.split("|");
+      const debt: Debt = {
+        otherId,
+        otherName: nameById.get(otherId) ?? otherId,
+        groupId: g.groupId,
+        groupName: g.name,
+        currency,
+        amount: Math.abs(amount),
+      };
+      if (amount > 0) owe.push(debt);
+      else owed.push(debt);
+    }
+  }
+
+  return { owe, owed };
+}
+
 export async function getGroupLedgerRows(groupId: string): Promise<LedgerRow[]> {
   const uf = alias(users, "uf");
   const ut = alias(users, "ut");

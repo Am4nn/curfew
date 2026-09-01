@@ -15,7 +15,7 @@ const TABS: Tab[] = [
   {
     href: "/",
     label: "Home",
-    match: (p) => p === "/",
+    match: (p) => p === "/" || p === "/balances",
     icon: (
       <path d="M3 10.5 12 3l9 7.5M5 9.5V20h14V9.5" />
     ),

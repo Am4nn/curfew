@@ -28,6 +28,7 @@ export async function updateTimezoneAction(
     const tz = String(formData.get("timezone") || "").trim();
     if (!tz) return { error: "Enter a timezone." };
     await updateTimezone(user.id, tz);
+    revalidatePath("/settings/personal");
     revalidatePath("/settings");
     return { ok: true };
   } catch (e) {
@@ -50,7 +51,7 @@ export async function updateWindowsAction(
       confirm_open: f("confirm_open"),
       confirm_close: f("confirm_close"),
     });
-    revalidatePath("/settings");
+    revalidatePath("/settings/personal");
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Those window times are not valid." };

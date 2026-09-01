@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { getCapabilities, hasAdminAccess } from "@/server/admin";
 import type { Capability } from "@/lib/capabilities";
+import { AdminNav } from "./admin-nav";
 
 const TABS: [string, string, Capability | null][] = [
   ["/admin", "Overview", null],
@@ -26,17 +27,13 @@ export default async function AdminLayout({
   const tabs = TABS.filter(([, , cap]) => cap === null || caps.has(cap));
 
   return (
-    <main className="min-h-dvh px-5 pb-20 pt-7">
+    <main className="min-h-dvh px-5 pb-20 pt-5">
       <div className="mx-auto max-w-[720px]">
-        <header className="mb-4 flex items-baseline justify-between border-b-2 border-fg pb-[10px]">
+        <header className="-mx-5 mb-4 flex items-baseline justify-between border-b-2 border-fg px-5 pb-[10px]">
           <h1 className="text-[15px] font-semibold tracking-[0.14em]">ADMIN</h1>
           <Link href="/" className="text-[12px] text-muted">‹ dashboard</Link>
         </header>
-        <nav className="mb-7 flex flex-wrap gap-4 text-[13px]">
-          {tabs.map(([href, label]) => (
-            <Link key={href} href={href} className="text-muted">{label}</Link>
-          ))}
-        </nav>
+        <AdminNav tabs={tabs.map(([href, label]) => [href, label])} />
         {children}
       </div>
     </main>

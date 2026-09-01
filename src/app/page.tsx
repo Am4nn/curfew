@@ -212,7 +212,6 @@ function Balances({ balances }: { balances: Balance[] }) {
   const currency = balances.find((b) => b.currency)?.currency ?? "INR";
   const owe = balances.reduce((s, b) => s + Math.max(b.netOwed, 0), 0);
   const owed = balances.reduce((s, b) => s + Math.max(-b.netOwed, 0), 0);
-  if (owe === 0 && owed === 0) return null;
 
   return (
     <section className="mb-7">

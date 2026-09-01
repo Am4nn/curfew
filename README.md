@@ -92,3 +92,44 @@ bun run auth:generate   regenerate Better Auth's table SQL (then reconcile)
 bun run test        Vitest, the domain core
 bun run verify      recompute a date range and diff the stored rows
 ```
+
+## Preview mode (local, no sign-in)
+
+A way to run the whole app against mock data with no Google sign-in, for UI/UX
+work. It is double-gated (`NODE_ENV !== "production"` **and** `PREVIEW_MODE=1`),
+so it can never run on Vercel, and it talks to a local Postgres, never Neon.
+
+1. **Local Postgres** (Docker):
+
+   ```
+   docker run --name local-postgres -e POSTGRES_PASSWORD=<pw> -p 5432:5432 -d postgres
+   ```
+
+2. **Env** — copy the template and set the same password:
+
+   ```
+   cp .env.preview.example .env.preview
+   ```
+
+   This file is isolated from `.env.local` (loaded via dotenv-cli), and it sets
+   the local DB for all three connection vars so preview cannot resolve to a
+   real database.
+
+3. **Migrate, seed, run**:
+
+   ```
+   bun install            # first time: pulls pg + dotenv-cli
+   bun run preview:migrate
+   bun run preview:seed   # wipes and rebuilds mock users, groups, check-ins, scores
+   bun run preview:dev
+   ```
+
+Open http://localhost:3000 signed in as the seeded **Preview Admin**. The seed
+covers approved/pending/removed users, multiple groups, an incoming invite,
+streaks, fines and grace. Re-run `preview:seed` any time to reset.
+
+A **PREVIEW** bar is pinned to the bottom of every page. It drives a mock clock
+(a `mock_now` cookie the server reads instead of the real time), so you can
+scrub to any instant and jump straight to the night / wake / confirm windows
+(times are IST, the seeded user's timezone) to see every check-in state. "real
+now" clears it.

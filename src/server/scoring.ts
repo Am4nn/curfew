@@ -22,10 +22,8 @@ import {
   resolveActivityRules,
 } from "./config";
 import { writeFines } from "./ledger";
+import { now } from "@/lib/clock";
 
-function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 function nextDay(d: string): string {
   return DateTime.fromISO(d, { zone: "utc" }).plus({ days: 1 }).toFormat("yyyy-MM-dd");
 }
@@ -69,13 +67,13 @@ async function memberships(userId: string): Promise<Membership[]> {
 // periods are scorable. A skipped cron run must not lose a night, so callers
 // score every unscored date up to here, not just yesterday.
 export async function lastClosedPeriod(userId: string): Promise<string> {
-  const tz = await resolveUserTimezone(userId, todayUtc());
-  const now = new Date();
-  const candidate = periodStart(now, tz);
+  const nowDate = await now();
+  const tz = await resolveUserTimezone(userId, nowDate.toISOString().slice(0, 10));
+  const candidate = periodStart(nowDate, tz);
   const { config } = await resolveUserSleepConfigRow(userId, candidate);
   const wins = getActivityType("sleep").windows(config, candidate, tz);
   const maxClose = Math.max(...wins.map((w) => w.closesAt.getTime()));
-  return maxClose < now.getTime()
+  return maxClose < nowDate.getTime()
     ? candidate
     : DateTime.fromISO(candidate, { zone: "utc" }).minus({ days: 1 }).toFormat("yyyy-MM-dd");
 }

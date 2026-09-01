@@ -9,10 +9,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-
-// Bun and Node 22 expose a global WebSocket; the Neon Pool needs it.
-neonConfig.webSocketConstructor = globalThis.WebSocket;
+import { Pool as NeonPool, neonConfig } from "@neondatabase/serverless";
+import { Pool as PgPool } from "pg";
 
 // Migrations run over the DIRECT (non-pooled) endpoint. Accept DIRECT_URL, or
 // fall back to DATABASE_URL (Neon's own export names the direct string that).
@@ -28,7 +26,18 @@ const files = readdirSync(migrationsDir)
   .filter((f) => f.endsWith(".sql"))
   .sort();
 
-const pool = new Pool({ connectionString: DIRECT_URL });
+// Preview runs against a local Postgres over node-postgres. Production/Neon
+// uses the serverless Pool (which needs a global WebSocket). Both expose the
+// same query/connect/end API.
+// Both drivers expose the same query/connect/end API used below; type against
+// node-postgres and cast the Neon pool to it.
+let pool: PgPool;
+if (process.env.PREVIEW_MODE === "1") {
+  pool = new PgPool({ connectionString: DIRECT_URL });
+} else {
+  neonConfig.webSocketConstructor = globalThis.WebSocket;
+  pool = new NeonPool({ connectionString: DIRECT_URL }) as unknown as PgPool;
+}
 
 try {
   await pool.query(`

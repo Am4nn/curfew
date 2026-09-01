@@ -3,6 +3,7 @@ import { and, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { events, groupMembers, users } from "@/db/schema";
 import { resolveUserTimezone } from "./config";
+import { nowUTC } from "@/lib/clock";
 
 export interface WakePoint {
   dayIndex: number; // 0..days-1 within the window
@@ -23,7 +24,8 @@ export interface WakeChart {
 // Actual wake times over the last N days for a group's members, each in their
 // own timezone. Descriptive only: PRD says the chart never ranks anyone.
 export async function getWakeChart(groupId: string, days = 30): Promise<WakeChart> {
-  const start = DateTime.utc().minus({ days: days - 1 }).toFormat("yyyy-MM-dd");
+  const base = await nowUTC();
+  const start = base.minus({ days: days - 1 }).toFormat("yyyy-MM-dd");
 
   const members = await db
     .select({ userId: groupMembers.userId, name: users.name })
@@ -50,7 +52,7 @@ export async function getWakeChart(groupId: string, days = 30): Promise<WakeChar
 
   const tzByUser = new Map<string, string>();
   for (const uid of uniq.keys()) {
-    tzByUser.set(uid, await resolveUserTimezone(uid, DateTime.utc().toFormat("yyyy-MM-dd")));
+    tzByUser.set(uid, await resolveUserTimezone(uid, base.toFormat("yyyy-MM-dd")));
   }
 
   const byUser = new Map<string, WakePoint[]>();

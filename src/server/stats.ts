@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { events, activityScores, activityOutcomes, activities } from "@/db/schema";
 import { resolveUserTimezone } from "./config";
 import { listUserGroups } from "./groups";
+import { nowUTC } from "@/lib/clock";
 
 // Personal analytics for a member, over their own data only. Everything here is
 // derivable from events and the scores/outcomes rebuilt from them (invariant 1),
@@ -30,17 +31,17 @@ export interface PersonalStats {
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-function startDate(days: number): string {
-  return DateTime.utc().minus({ days: days - 1 }).toFormat("yyyy-MM-dd");
+async function startDate(days: number): Promise<string> {
+  return (await nowUTC()).minus({ days: days - 1 }).toFormat("yyyy-MM-dd");
 }
-function startInstant(days: number): Date {
-  return DateTime.utc().minus({ days: days - 1 }).startOf("day").toJSDate();
+async function startInstant(days: number): Promise<Date> {
+  return (await nowUTC()).minus({ days: days - 1 }).startOf("day").toJSDate();
 }
 
 // Rolling average of the user's own wake time (minutes after local midnight).
 // The raw wake instant is the evidence; there is no wake-time column.
 async function rollingWake(userId: string, days: number): Promise<StatPoint[]> {
-  const from = startDate(days);
+  const from = await startDate(days);
   const rows = await db
     .select({ at: events.occurredAt, period: sql<string>`${events.payload}->>'period_start'` })
     .from(events)
@@ -48,10 +49,10 @@ async function rollingWake(userId: string, days: number): Promise<StatPoint[]> {
       and(
         eq(events.type, "checkin.sleep.wake"),
         eq(events.userId, userId),
-        gte(events.occurredAt, startInstant(days)),
+        gte(events.occurredAt, await startInstant(days)),
       ),
     );
-  const tz = await resolveUserTimezone(userId, DateTime.utc().toFormat("yyyy-MM-dd"));
+  const tz = await resolveUserTimezone(userId, (await nowUTC()).toFormat("yyyy-MM-dd"));
   const perPeriod = new Map<string, { sum: number; n: number }>();
   for (const r of rows) {
     if (!r.period || r.period < from) continue;
@@ -83,7 +84,7 @@ async function weekdayPass(
   const rows = await db
     .select({ periodStart: activityScores.periodStart, passed: activityScores.passed })
     .from(activityScores)
-    .where(and(eq(activityScores.userId, userId), gte(activityScores.periodStart, startDate(days))));
+    .where(and(eq(activityScores.userId, userId), gte(activityScores.periodStart, await startDate(days))));
   const agg = WEEKDAYS.map(() => ({ pass: 0, total: 0 }));
   for (const r of rows) {
     const idx = DateTime.fromISO(r.periodStart).weekday - 1;
@@ -102,7 +103,7 @@ async function weekdayPass(
 // Streak over time per group the user belongs to.
 async function groupStreaks(userId: string, days: number): Promise<GroupStreak[]> {
   const groups = await listUserGroups(userId);
-  const from = startDate(days);
+  const from = await startDate(days);
   const out: GroupStreak[] = [];
   for (const g of groups) {
     const [activity] = await db

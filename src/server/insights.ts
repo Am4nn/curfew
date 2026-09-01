@@ -3,17 +3,18 @@ import { and, eq, gte, like, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { events, activityScores, ledgerEntries, balances, users } from "@/db/schema";
 import { resolveUserTimezone } from "./config";
+import { nowUTC } from "@/lib/clock";
 
 export interface Point {
   date: string; // yyyy-MM-dd
   value: number;
 }
 
-function startDate(days: number): string {
-  return DateTime.utc().minus({ days: days - 1 }).toFormat("yyyy-MM-dd");
+async function startDate(days: number): Promise<string> {
+  return (await nowUTC()).minus({ days: days - 1 }).toFormat("yyyy-MM-dd");
 }
-function startInstant(days: number): Date {
-  return DateTime.utc().minus({ days: days - 1 }).startOf("day").toJSDate();
+async function startInstant(days: number): Promise<Date> {
+  return (await nowUTC()).minus({ days: days - 1 }).startOf("day").toJSDate();
 }
 function dayList(from: string, days: number): string[] {
   const out: string[] = [];
@@ -25,8 +26,7 @@ function dayList(from: string, days: number): string[] {
   return out;
 }
 // Fill missing days with zero so a bar chart has a slot per day.
-function fill(rows: { d: string; n: number }[], days: number): Point[] {
-  const from = startDate(days);
+function fill(rows: { d: string; n: number }[], from: string, days: number): Point[] {
   const map = new Map(rows.map((r) => [r.d, Number(r.n)]));
   return dayList(from, days).map((date) => ({ date, value: map.get(date) ?? 0 }));
 }
@@ -37,9 +37,9 @@ export async function checkinsPerDay(days = 30): Promise<Point[]> {
   const rows = await db
     .select({ d: dexpr, n: sql<number>`count(*)` })
     .from(events)
-    .where(and(like(events.type, "checkin.%"), gte(events.occurredAt, startInstant(days))))
+    .where(and(like(events.type, "checkin.%"), gte(events.occurredAt, await startInstant(days))))
     .groupBy(dexpr);
-  return fill(rows, days);
+  return fill(rows, await startDate(days), days);
 }
 
 // Pass rate per period, as a percentage. Only days that were scored appear.
@@ -51,7 +51,7 @@ export async function passRateOverTime(days = 30): Promise<Point[]> {
       passed: sql<number>`sum(case when ${activityScores.passed} then 1 else 0 end)`,
     })
     .from(activityScores)
-    .where(gte(activityScores.periodStart, startDate(days)))
+    .where(gte(activityScores.periodStart, await startDate(days)))
     .groupBy(activityScores.periodStart)
     .orderBy(activityScores.periodStart);
   return rows.map((r) => ({
@@ -69,7 +69,7 @@ export async function passRateByWeekday(days = 84): Promise<Point[]> {
   const rows = await db
     .select({ periodStart: activityScores.periodStart, passed: activityScores.passed })
     .from(activityScores)
-    .where(gte(activityScores.periodStart, startDate(days)));
+    .where(gte(activityScores.periodStart, await startDate(days)));
   const agg = WEEKDAYS.map(() => ({ pass: 0, total: 0 }));
   for (const r of rows) {
     const idx = DateTime.fromISO(r.periodStart).weekday - 1; // 1=Mon..7=Sun
@@ -90,14 +90,14 @@ export async function finesPerDay(days = 30): Promise<Point[]> {
       n: sql<number>`coalesce(sum(${ledgerEntries.amount}), 0)`,
     })
     .from(ledgerEntries)
-    .where(and(eq(ledgerEntries.kind, "fine"), gte(ledgerEntries.periodStart, startDate(days))))
+    .where(and(eq(ledgerEntries.kind, "fine"), gte(ledgerEntries.periodStart, await startDate(days))))
     .groupBy(ledgerEntries.periodStart);
-  return fill(rows, days);
+  return fill(rows, await startDate(days), days);
 }
 
 // Average wake time (minutes after local midnight) per period, across users.
 export async function wakeTrend(days = 30): Promise<Point[]> {
-  const from = startDate(days);
+  const from = await startDate(days);
   const rows = await db
     .select({
       userId: events.userId,
@@ -105,13 +105,13 @@ export async function wakeTrend(days = 30): Promise<Point[]> {
       period: sql<string>`${events.payload}->>'period_start'`,
     })
     .from(events)
-    .where(and(eq(events.type, "checkin.sleep.wake"), gte(events.occurredAt, startInstant(days))));
+    .where(and(eq(events.type, "checkin.sleep.wake"), gte(events.occurredAt, await startInstant(days))));
 
   const tzByUser = new Map<string, string>();
   async function tzOf(userId: string): Promise<string> {
     let tz = tzByUser.get(userId);
     if (!tz) {
-      tz = await resolveUserTimezone(userId, DateTime.utc().toFormat("yyyy-MM-dd"));
+      tz = await resolveUserTimezone(userId, (await nowUTC()).toFormat("yyyy-MM-dd"));
       tzByUser.set(userId, tz);
     }
     return tz;

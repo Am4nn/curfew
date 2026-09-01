@@ -20,21 +20,22 @@ import {
   type ResolvedRules,
 } from "./config";
 import { recordEvent } from "./events";
+import { nowUTC } from "@/lib/clock";
 
 // Config is insert-only and effective-dated. A change never touches history: it
 // takes effect tomorrow, never today (invariant 4). Editing again the same day
 // replaces the still-future, not-yet-applied row.
-function tomorrow(): string {
-  return DateTime.utc().plus({ days: 1 }).toFormat("yyyy-MM-dd");
+async function tomorrow(): Promise<string> {
+  return (await nowUTC()).plus({ days: 1 }).toFormat("yyyy-MM-dd");
 }
-function today(): string {
-  return DateTime.utc().toFormat("yyyy-MM-dd");
+async function today(): Promise<string> {
+  return (await nowUTC()).toFormat("yyyy-MM-dd");
 }
 
 export async function getPersonalSettings(
   userId: string,
 ): Promise<{ timezone: string; windows: SleepConfig }> {
-  const t = today();
+  const t = await today();
   const timezone = await resolveUserTimezone(userId, t);
   const { config } = await resolveUserSleepConfigRow(userId, t);
   return { timezone, windows: config };
@@ -46,7 +47,7 @@ export async function updateTimezone(userId: string, timezone: string): Promise<
   }
   await db
     .insert(userSettings)
-    .values({ userId, timezone, effectiveFrom: tomorrow() })
+    .values({ userId, timezone, effectiveFrom: await tomorrow() })
     .onConflictDoUpdate({
       target: [userSettings.userId, userSettings.effectiveFrom],
       set: { timezone },
@@ -58,7 +59,7 @@ export async function updateSleepWindows(
   windows: unknown,
 ): Promise<void> {
   const config = sleepConfigSchema.parse(windows);
-  const effectiveFrom = tomorrow();
+  const effectiveFrom = await tomorrow();
   const timezone = await resolveUserTimezone(userId, effectiveFrom);
   const errors = validateSleepWindows(config, timezone, effectiveFrom);
   if (errors.length > 0) throw new Error(errors[0]);
@@ -93,7 +94,7 @@ export async function groupSleepActivity(
 }
 
 export async function getGroupRules(activityId: string): Promise<ResolvedRules> {
-  return resolveActivityRules(activityId, today());
+  return resolveActivityRules(activityId, await today());
 }
 
 async function isOwner(groupId: string, userId: string): Promise<boolean> {
@@ -129,7 +130,7 @@ export async function updateGroupRules(
     throw new Error("grace must be a non-negative integer");
   }
 
-  const effectiveFrom = tomorrow();
+  const effectiveFrom = await tomorrow();
   await db
     .insert(activityRules)
     .values({

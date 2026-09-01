@@ -5,10 +5,7 @@ import { events } from "@/db/schema";
 import { periodStart, getActivityType, type CheckinWindow } from "@/domain";
 import { resolveUserTimezone, resolveUserSleepConfig } from "./config";
 import { recordEvent } from "./events";
-
-function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+import { now } from "@/lib/clock";
 
 function hhmm(d: Date, tz: string): string {
   return DateTime.fromJSDate(d, { zone: tz }).toFormat("HH:mm");
@@ -19,10 +16,11 @@ function hhmm(d: Date, tz: string): string {
 // (the "next window" when idle can fall in the following period).
 // Resolve the timezone and current noon-to-noon period (one round trip).
 async function resolveContext(userId: string) {
-  const tz = await resolveUserTimezone(userId, todayUtc());
-  const now = new Date();
-  const period = periodStart(now, tz);
-  return { tz, now, period };
+  const nowDate = await now();
+  const todayUtc = nowDate.toISOString().slice(0, 10);
+  const tz = await resolveUserTimezone(userId, todayUtc);
+  const period = periodStart(nowDate, tz);
+  return { tz, now: nowDate, period };
 }
 
 // The step windows for this period and the next one (the idle "next window" can

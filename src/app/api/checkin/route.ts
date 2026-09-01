@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getApprovalStatus } from "@/lib/session";
+import { previewEnabled, PREVIEW_USER } from "@/lib/preview";
 import { performCheckin } from "@/server/checkin";
 import { listUserGroups } from "@/server/groups";
 
@@ -11,22 +12,31 @@ import { listUserGroups } from "@/server/groups";
 // config and the server clock; the client sends no step, so it cannot check in
 // out of window or for the wrong step.
 export async function POST() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
+  let userId: string;
+  let sessionId: string | null;
+  if (previewEnabled()) {
+    userId = PREVIEW_USER.id;
+    sessionId = null;
+  } else {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+      return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
+    }
+    userId = session.user.id;
+    sessionId = session.session.id;
   }
 
-  if ((await getApprovalStatus(session.user.id)) !== "approved") {
+  if ((await getApprovalStatus(userId)) !== "approved") {
     // Covers pending, rejected and disabled.
     return NextResponse.json({ ok: false, reason: "not_approved" }, { status: 403 });
   }
 
-  const groups = await listUserGroups(session.user.id);
+  const groups = await listUserGroups(userId);
   if (groups.length === 0) {
     return NextResponse.json({ ok: false, reason: "no_group" }, { status: 409 });
   }
 
-  const result = await performCheckin(session.user.id, session.session.id);
+  const result = await performCheckin(userId, sessionId);
   if (!result.ok) {
     // closed window or duplicate: not a server fault, so 409.
     return NextResponse.json(result, { status: 409 });

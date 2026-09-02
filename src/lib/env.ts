@@ -4,15 +4,18 @@ import { z } from "zod";
 // value comes from.
 //
 // Connection strings: the app queries over the POOLED endpoint and migrations
-// use the DIRECT one. Neon's own env export names these DATABASE_URL_POOLED
-// (pooled, host contains -pooler) and DATABASE_URL (direct), so both naming
-// schemes are accepted:
+// use the DIRECT one. v3 settles on one pair of names, DATABASE_URL_POOLED and
+// DATABASE_URL_DIRECT, and Vercel already carries those. The older names stay
+// as fallbacks so a local .env from before the rename still works:
 //   pooled  <- DATABASE_URL_POOLED, else DATABASE_URL
-//   direct  <- DIRECT_URL,          else DATABASE_URL
+//   direct  <- DATABASE_URL_DIRECT, else DIRECT_URL, else DATABASE_URL
 const raw = {
   DATABASE_URL:
     process.env.DATABASE_URL_POOLED ?? process.env.DATABASE_URL,
-  DIRECT_URL: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
+  DIRECT_URL:
+    process.env.DATABASE_URL_DIRECT ??
+    process.env.DIRECT_URL ??
+    process.env.DATABASE_URL,
   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,

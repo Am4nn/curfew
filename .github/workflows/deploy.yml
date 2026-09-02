@@ -5,9 +5,14 @@ name: Deploy
 # Branch setting points at a branch nobody pushes. Pushes to main are Preview
 # deployments, which Vercel makes on its own.
 #
-# The build runs here, not on Vercel: `vercel pull` fetches the environment,
-# `vercel build` compiles against it, and `--prebuilt` uploads the result. So
-# the secrets stay in Vercel and GitHub needs only the three below.
+# The build runs ON VERCEL, not here. Vercel marks environment variables as
+# sensitive, and sensitive values are never returned by `vercel pull`: they come
+# back empty, so a local `vercel build` fails on the first variable it reads.
+# Uploading the source and letting Vercel build is the only path with real
+# values, and it keeps the secrets where they belong.
+#
+# Typecheck and test still gate the deploy here. A Vercel build that fails is
+# never promoted, so production keeps serving the previous deployment either way.
 #
 # Two ways in:
 #   a v* tag        deploys to PRODUCTION
@@ -65,11 +70,7 @@ jobs:
           fi
           echo "shipping $pkg"
 
-      - name: Pull the $TARGET environment
-        run: bunx vercel pull --yes --environment=$TARGET --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Build
-        run: bunx vercel build $PROD --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy
-        run: bunx vercel deploy --prebuilt $PROD --token=${{ secrets.VERCEL_TOKEN }}
+      # No --prebuilt: the source goes up and Vercel builds it, with the real
+      # values of its own environment variables.
+      - name: Deploy to $TARGET
+        run: bunx vercel deploy $PROD --yes --token=${{ secrets.VERCEL_TOKEN }}

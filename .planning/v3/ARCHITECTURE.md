@@ -103,9 +103,9 @@ module describes only what is specific to it.
 | Kind | Used by | What the engine draws |
 |---|---|---|
 | `tap` | Gym, Office | One button. Optional photo slot if the type asks for one |
-| `counter` | Water, Food | A +1 that repeats within the period, showing progress |
+| `counter` | Water | A +1 that repeats within the period, showing progress |
 | `number` | Steps, Screen, Study, Reading | A numeric field against the target, with the rule's direction |
-| `camera` | Food, Supplements, Sleep | The check-in page with a photo slot that blocks Send when required |
+| `camera` | Food, Supplements, Sleep | The check-in page with a photo slot that blocks Send when required. Food's meal carries its calorie figure in the same check-in (decision 85) |
 | `declare` | Nightfast, Sugar-free | Two answers: it held, or I slipped |
 
 The engine consumes `{ passed, detail }` and never inspects `detail`

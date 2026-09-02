@@ -117,10 +117,10 @@ can change.
 | Food | day | every day | 3 check-ins, calories under target when set | required, live, **and the calorie figure with it** |
 | Supplements | day | every day | 1 check-in a day, **no window** | required, live |
 | Office | day | Mon to Fri, 10 AM to 2 PM | 1 check-in on a scheduled day | optional, live |
-| Study | day | every day | 1 check-in, or minutes at or above target | **required**, live |
+| Study | day | every day | minutes at or above target when set, otherwise one check-in (decision 86) | **required**, live |
 | Steps | day | every day | step count at or above target | optional, gallery allowed |
 | Water | day | every day | glasses at or above target | none |
-| Reading | day | every day | minutes or pages at or above target | optional, live |
+| Reading | day | every day | minutes **or** pages, one unit chosen on configure, at or above target (decision 87) | optional, live |
 | Screen | day | every day | screen time **at or below** the limit | optional, gallery allowed |
 | Nightfast | day | chosen days | declared clean in the morning window | none |
 | Sugar-free | day | every day | declared clean in the evening window | none |

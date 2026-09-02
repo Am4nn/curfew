@@ -174,6 +174,9 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 82 | **"+ Add a type" is dropped from admin Controls.** A type is code, not data, and `sync:activities` already guarantees a row for every registered module, so the list is complete by construction. The button promised something the architecture cannot do | 2026-09-03 |
 | 83 | A user's activity **settings** stay scoring config, future-dated in `user_activity_config` (invariant 4), but the **on/off switch** is operational and immediate, in `user_activities` with `effective_at`. A future-dated switch-off would score the day you quit as a miss, which is exactly the retroactive miss decision 59 forbids | 2026-09-03 |
 | 84 | **Config timestamps are stamped by the application, never by the database's `now()`.** Neon in Singapore measured ~400ms ahead of a local machine, so a database-stamped row is briefly in the future and `resolveAt` skips it: an admin who saved a switch and reloaded would see nothing happen. One clock for the write and the read, and it is the app server's (invariant 8) | 2026-09-03 |
+| 85 | **One Food check-in is a meal: a photo and its calorie figure, sent together.** Three of them make the day. The count comes from how many check-ins exist, so there is no separate counter and the photo and the number can never disagree. `ARCHITECTURE.md` listing Food under both `counter` and `camera` was a contradiction; it is `camera` | 2026-09-03 |
+| 86 | **Study passes on its minutes target when one is set, and on a single check-in when it is not.** The "or" in `ACTIVITIES.md` describes two configurations, not two ways to pass one. Either-always would make the target decorative | 2026-09-03 |
+| 87 | **Reading measures minutes or pages, one or the other**, chosen on the configure screen with a single target beside it. Tracking both and passing on either would leave the check-in asking for two numbers, one of them always blank | 2026-09-03 |
 
 ## Invariants
 

@@ -1,40 +1,46 @@
-import Link from "next/link";
-import { listAllGroups } from "@/server/admin";
-import { formatMoney } from "@/domain";
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/session";
+import { can, listAllGroups } from "@/server/admin";
+import { moneyOverrides } from "@/server/group-controls";
+import { GroupRow } from "./group-row";
 
 export default async function AdminGroups() {
-  const groups = await listAllGroups();
+  const user = await getSessionUser();
+  if (!user) redirect("/signin");
+  if (!(await can(user.id, "groups.view"))) redirect("/admin");
+
+  const [groups, overrides, canWrite, canArchive] = await Promise.all([
+    listAllGroups(),
+    moneyOverrides(),
+    can(user.id, "settings.write"),
+    can(user.id, "groups.archive"),
+  ]);
 
   return (
-    <section>
-      <h2 className="mb-3 text-[13px] font-semibold tracking-[0.1em]">GROUPS</h2>
+    <section className="flex flex-col gap-[10px]">
+      <span className="text-[10px] tracking-[0.16em] text-muted">GROUPS</span>
+
       {groups.length === 0 ? (
         <p className="text-[14px] text-muted">No groups.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b border-fg text-left text-[11px] uppercase tracking-[0.08em] text-muted">
-                <th className="py-2 pr-3">Name</th>
-                <th className="py-2 pr-3">Members</th>
-                <th className="py-2 pr-3">Total fined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((g) => (
-                <tr key={g.groupId} className="border-b border-rule">
-                  <td className="py-2 pr-3">
-                    <Link href={`/admin/groups/${g.groupId}`}>{g.name} ›</Link>
-                    {g.archived ? <span className="ml-1 text-[11px] text-muted">· archived</span> : null}
-                  </td>
-                  <td className="py-2 pr-3 tabular-nums">{g.memberCount}</td>
-                  <td className="py-2 pr-3 tabular-nums">{formatMoney(g.totalFined, "INR")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex flex-col">
+          {groups.map((group) => (
+            <GroupRow
+              key={group.groupId}
+              group={group}
+              override={overrides.get(group.groupId) ?? null}
+              canWrite={canWrite}
+              canArchive={canArchive}
+            />
+          ))}
         </div>
       )}
+
+      <span className="text-[11.5px] leading-[1.55] text-muted">
+        Money set here beats the app-wide switch for one group, and the group owner still
+        decides within what it allows. Archiving takes a group out of circulation and
+        deletes nothing: money already owed is still owed.
+      </span>
     </section>
   );
 }

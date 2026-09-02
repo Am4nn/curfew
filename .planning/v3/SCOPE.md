@@ -172,6 +172,8 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 80 | A notice applies only to **accounts that existed when it was published**. Somebody who joins later never knew the old behaviour, so blocking their first screen with news about it is noise | 2026-09-03 |
 | 81 | Notices are **merged per user at read time**, never queued and never merged as rows. One overlay carries every item that user has not acknowledged, and one "Got it" clears all of them. A row-level merge would be wrong the moment one user has acknowledged a notice and another has not. An admin is never blocked from publishing | 2026-09-03 |
 | 82 | **"+ Add a type" is dropped from admin Controls.** A type is code, not data, and `sync:activities` already guarantees a row for every registered module, so the list is complete by construction. The button promised something the architecture cannot do | 2026-09-03 |
+| 83 | A user's activity **settings** stay scoring config, future-dated in `user_activity_config` (invariant 4), but the **on/off switch** is operational and immediate, in `user_activities` with `effective_at`. A future-dated switch-off would score the day you quit as a miss, which is exactly the retroactive miss decision 59 forbids | 2026-09-03 |
+| 84 | **Config timestamps are stamped by the application, never by the database's `now()`.** Neon in Singapore measured ~400ms ahead of a local machine, so a database-stamped row is briefly in the future and `resolveAt` skips it: an admin who saved a switch and reloaded would see nothing happen. One clock for the write and the read, and it is the app server's (invariant 8) | 2026-09-03 |
 
 ## Invariants
 

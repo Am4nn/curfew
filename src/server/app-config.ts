@@ -96,9 +96,19 @@ export const getAppConfig = unstable_cache(readAppConfig, ["app-config"], {
   revalidate: 60,
 });
 
-/** Call after every admin save. Without it, "immediate" waits out the TTL. */
+/**
+ * Call after every admin save. Without it, "immediate" waits out the TTL.
+ *
+ * revalidateTag only works inside a request, and throws outside one. Scripts,
+ * seeds and the nightly job all write settings legitimately and have no cache
+ * to invalidate, so outside a request this is a no-op rather than a crash.
+ */
 export function invalidateAppConfig(): void {
-  revalidateTag(APP_CONFIG_TAG);
+  try {
+    revalidateTag(APP_CONFIG_TAG);
+  } catch {
+    // No request context. Nothing is cached, so nothing needs clearing.
+  }
 }
 
 // ---------------------------------------------------------------------------

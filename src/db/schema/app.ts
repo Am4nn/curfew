@@ -318,3 +318,19 @@ export const noticeAcks = pgTable(
   },
   (t) => [primaryKey({ columns: [t.noticeId, t.userId] })],
 );
+
+// Whether a user tracks a type, as distinct from how they have it set up. The
+// settings are scoring config and stay future-dated in user_activity_config
+// (invariant 4); the switch is operational and takes effect at once, because a
+// future-dated switch-off would score the day you quit as a miss, which is the
+// retroactive miss decision 59 forbids. See migrations/0008.
+export const userActivities = pgTable("user_activities", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  typeKey: text("type_key").notNull(),
+  enabled: boolean("enabled").notNull(),
+  effectiveAt: timestamp("effective_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

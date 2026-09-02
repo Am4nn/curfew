@@ -247,3 +247,74 @@ export const activityTypes = pgTable("activity_types", {
     .notNull()
     .defaultNow(),
 });
+
+// v3, decisions 64 to 67. Operational state an admin changes at runtime. Every
+// table here is append-only and resolved as of an instant, because admin
+// switches take effect immediately (decision 65). See migrations/0007.
+export const appSettings = pgTable("app_settings", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  key: text("key").notNull(),
+  value: jsonb("value").notNull(),
+  effectiveAt: timestamp("effective_at", { withTimezone: true }).notNull().defaultNow(),
+  changedBy: text("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Per-group overrides an admin sets. Money is a property of a group, not of a
+// group's relationship to one activity type, so it lives here rather than on
+// group_activity_types.
+export const groupSettings = pgTable("group_settings", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  key: text("key").notNull(),
+  value: jsonb("value").notNull(),
+  effectiveAt: timestamp("effective_at", { withTimezone: true }).notNull().defaultNow(),
+  changedBy: text("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Which activity types a group accepts. A member can only share a type the
+// group accepts.
+export const groupActivityTypes = pgTable("group_activity_types", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  typeKey: text("type_key").notNull(),
+  accepted: boolean("accepted").notNull(),
+  effectiveAt: timestamp("effective_at", { withTimezone: true }).notNull().defaultNow(),
+  changedBy: text("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// What an admin announced. A notice is a blocking overlay on every route: the
+// app does nothing until it is acknowledged, one at a time, and acknowledging
+// is final (decision 58). There is no dismiss, only "Got it", so an ack row is
+// the whole state.
+export const notices = pgTable("notices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  body: text("body").notNull(),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  retiredAt: timestamp("retired_at", { withTimezone: true }),
+});
+
+export const noticeAcks = pgTable(
+  "notice_acks",
+  {
+    noticeId: uuid("notice_id")
+      .notNull()
+      .references(() => notices.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    acknowledgedAt: timestamp("acknowledged_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.noticeId, t.userId] })],
+);

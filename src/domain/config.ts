@@ -36,3 +36,58 @@ export function resolveConfig<T extends EffectiveRow>(
 
   return applicable[0];
 }
+
+// ---------------------------------------------------------------------------
+// Operational state, resolved as of an INSTANT rather than a period date.
+//
+// Scoring config (a user's windows, a group's fines) is future-dated and
+// resolved by date: resolveConfig above, invariant 4. App and group settings
+// are operational, take effect immediately, and are resolved by instant
+// (decision 65). Both are append-only, so history stays intact either way.
+//
+// The rule that makes "immediate" workable: a period is judged against the
+// settings as they stood WHEN THE PERIOD CLOSED. One lookup at scoring time, no
+// partial periods, no arithmetic about fractions of a day.
+
+export interface EffectiveAtRow {
+  effectiveAt: Date;
+  // Tie-break for two rows written in the same transaction. Higher wins.
+  id: number;
+}
+
+export function resolveAt<T extends EffectiveAtRow>(
+  rows: T[],
+  instant: Date,
+): T | null {
+  const at = instant.getTime();
+  let best: T | null = null;
+  for (const row of rows) {
+    if (row.effectiveAt.getTime() > at) continue;
+    if (
+      best === null ||
+      row.effectiveAt.getTime() > best.effectiveAt.getTime() ||
+      (row.effectiveAt.getTime() === best.effectiveAt.getTime() && row.id > best.id)
+    ) {
+      best = row;
+    }
+  }
+  return best;
+}
+
+// Money resolves in a fixed order (decision 66):
+//
+//   1. app-wide sets the default
+//   2. a per-group override set by an admin wins for that group
+//   3. the group owner's own toggle decides within what the first two allow
+//
+// An owner can never turn money on where an admin has it off. That asymmetry is
+// the whole point of the order, so it is a single expression rather than a
+// chain of ifs that could be reordered by accident.
+export function resolveMoney(input: {
+  appWide: boolean;
+  groupOverride?: boolean | null;
+  ownerToggle: boolean;
+}): boolean {
+  const allowed = input.groupOverride ?? input.appWide;
+  return allowed && input.ownerToggle;
+}

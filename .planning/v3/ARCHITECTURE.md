@@ -32,7 +32,9 @@ get right:
 | `user_activities` | Replaces per-user activity opt-in. Type key, enabled, effective-dated config as JSON validated by the module's schema |
 | `activity_scores` | Gains the period unit and the schedule that produced it, so a weekly row is distinguishable from a daily one |
 | `activity_outcomes` | Per group. Gains the settling flag, so a period inside the 7 days is scored but excluded from reputation |
-| `group_activity_types` | New. Which types a group accepts, plus the per-group money override |
+| `group_activity_types` | New. Which types a group accepts, append-only |
+| `group_settings` | New. Per-group overrides an admin sets, money first. Money is a property of a group, not of a group's relationship to one type, so it is not a column on `group_activity_types` |
+| `notices`, `notice_acks` | New. What an admin announced and who acknowledged it. Acknowledging is final, so an ack row is the whole state |
 | `group_shares` | New. Per member, per type: shared, and evidence shared |
 | `reputation_daily` | New. One row a user a group a day, derived and rebuildable |
 | `evidence` | New. Owner, activity, period, window, storage key, bytes, mime, `delete_after` |

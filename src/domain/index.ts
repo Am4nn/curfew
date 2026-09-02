@@ -43,7 +43,13 @@ export {
   type CountRule,
   type ThresholdRule,
 } from "./pass";
-export { resolveConfig, type EffectiveRow } from "./config";
+export {
+  resolveConfig,
+  resolveAt,
+  resolveMoney,
+  type EffectiveRow,
+  type EffectiveAtRow,
+} from "./config";
 export { splitFine, formatMoney, minorUnitExponent, type Share } from "./money";
 export {
   fineFor,

@@ -108,6 +108,19 @@ module describes only what is specific to it.
 | `camera` | Food, Supplements, Sleep | The check-in page with a photo slot that blocks Send when required. Food's meal carries its calorie figure in the same check-in (decision 85) |
 | `declare` | Nightfast, Sugar-free | Two answers: it held, or I slipped |
 
+**Idempotency is a key the press carries** (decision 92). One check-in a period
+was true when the app tracked only sleep; Water is eight glasses, Food is three
+meals, Study and Reading add up sittings, and a declaration can be corrected. So
+uniqueness in the database is on `(user, type, period, idem)`, where `idem` is
+generated once per press. A retry or a replay carries the key it already used and
+records nothing; a second deliberate press carries a new one and is kept. Steps
+that must not repeat, like arriving at the office, declare `repeats: false` and
+the write path refuses the second one.
+
+A step also carries its own words (decision 90): the question a `declare` step
+asks, the line under its fields, and what answering costs. One screen serves
+twelve types, so anything on it specific to a type has to come from the type.
+
 The engine consumes `{ passed, detail }` and never inspects `detail`
 (invariant 6). Nothing outside a module knows what its type means, and no
 `switch` on a type key exists outside the registry.
@@ -173,9 +186,14 @@ Consequences that matter:
 
 ## Rate limiting
 
-Upstash Redis (decision 75), sliding window, on check-in writes and on upload-URL
-requests. Two limits worth naming now: presigned URLs per user per hour, and
-check-ins per activity per period, since a `counter` type invites repeat taps.
+Upstash Redis (decision 75), a fixed window, on check-in writes and on
+upload-URL requests. It fails open: losing a check-in because a rate limiter was
+down would punish a user for our outage.
+
+The check-in ceilings are **50 a period and 20 a minute**, per user per type
+(decision 92). Both are abuse ceilings rather than quotas: fifty clears eight
+glasses of water several times over, and twenty a minute stops a button that has
+got stuck. Presigned URLs per user per hour is set in Phase 5.
 
 ## Validation and errors
 

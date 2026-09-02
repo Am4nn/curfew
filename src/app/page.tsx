@@ -8,7 +8,7 @@ import {
   type PendingInvite,
 } from "@/server/groups";
 import { hasAdminAccess } from "@/server/admin";
-import { getCheckinState, type CheckinState } from "@/server/checkin";
+import { getCheckinState, type ActivityCheckinState } from "@/server/checkin";
 import { getPersonalStreak } from "@/server/streak";
 import { formatMoney } from "@/domain";
 import { QuorumMark } from "./mark";
@@ -57,7 +57,7 @@ export default async function Home() {
 
   const [balances, checkin, streak] = await Promise.all([
     userBalances(user.id),
-    getCheckinState(user.id),
+    getCheckinState(user.id, "sleep"),
     getPersonalStreak(user.id),
   ]);
 
@@ -77,7 +77,7 @@ export default async function Home() {
       ) : null}
 
       <StreakBlock current={streak.current} best={streak.best} />
-      <CheckinHero state={checkin} />
+      {checkin ? <CheckinHero state={checkin} /> : null}
       <Balances balances={balances} />
       <GroupsList groups={groups} balances={balances} />
     </Shell>
@@ -136,57 +136,59 @@ function StreakBlock({ current, best }: { current: number; best: number }) {
   );
 }
 
-// The one-tap check-in, on Home for every window. Tonight's three steps read as
+// The one-tap check-in, on Home for every window. Tonight's steps read as
 // status, not buttons; only the open window shows a press.
-function CheckinHero({ state }: { state: CheckinState }) {
-  const { action, steps } = state;
-  const done = steps.filter((s) => s.at !== null).length;
+//
+// Home still shows sleep alone. Phase 8 rebuilds it around every activity a
+// person tracks; this keeps the v2.5 hero working against the generic state.
+function CheckinHero({ state }: { state: ActivityCheckinState }) {
+  const { steps } = state;
+  const done = steps.filter((s) => s.count > 0).length;
+  const open = steps.find((s) => s.open && s.count === 0);
+  const recorded = steps.find((s) => s.open && s.count > 0);
+  const next = steps.find((s) => !s.open && s.count === 0);
 
   return (
     <section className="mb-7 border border-rule bg-surface p-4">
       <div className="flex items-baseline justify-between gap-3">
-        <div className={"text-[11px] tracking-[0.14em] " + (action.kind === "open" ? "text-pass" : "text-muted")}>
-          {action.kind === "open" ? "CHECK-IN OPEN" : action.kind === "waiting" ? "RECORDED" : "NO WINDOW OPEN"}
+        <div className={"text-[11px] tracking-[0.14em] " + (open ? "text-pass" : "text-muted")}>
+          {open ? "CHECK-IN OPEN" : recorded ? "RECORDED" : "NO WINDOW OPEN"}
         </div>
-        <div className="text-[11px] tabular-nums text-muted">{done} of 3 recorded</div>
+        <div className="text-[11px] tabular-nums text-muted">
+          {done} of {steps.length} recorded
+        </div>
       </div>
 
-      {action.kind === "open" ? (
+      {open ? (
         <div className="mt-3">
-          <div className="text-[16px] font-medium">{action.label} check-in</div>
+          <div className="text-[16px] font-medium">{open.label} check-in</div>
           <div className="mt-1 text-[13px] text-muted">
-            Window closes {action.closesLabel}. Miss it and last night does not count.
+            Window closes {open.closesLabel}. Miss it and last night does not count.
           </div>
         </div>
-      ) : action.kind === "waiting" ? (
+      ) : recorded ? (
         <div className="mt-3">
-          <div className="text-[16px] font-medium">{action.label} check-in</div>
+          <div className="text-[16px] font-medium">{recorded.label} check-in</div>
           <div className="mt-1 text-[13px] text-muted">
-            Recorded {action.recordedLabel}.
-            {action.next ? ` Next: ${action.next.label} ${action.next.opensLabel}.` : ""}
+            Recorded.{next ? ` Next: ${next.label} ${next.opensLabel}.` : ""}
           </div>
         </div>
       ) : (
         <div className="mt-3 text-[13px] text-muted">
-          {action.next
-            ? `Next: ${action.next.label}, ${action.next.opensLabel}–${action.next.closesLabel}.`
+          {next
+            ? `Next: ${next.label}, ${next.opensLabel}–${next.closesLabel}.`
             : "Nothing more tonight."}
         </div>
       )}
 
       <div className="mt-3 flex items-center gap-[18px] py-[2px]">
         {steps.map((s) => {
-          const isOpen = action.kind === "open" && action.step === s.key;
-          const cls =
-            s.at !== null
-              ? "bg-pass"
-              : isOpen
-                ? "bg-fg"
-                : "border border-muted";
+          const isOpen = open?.key === s.key;
+          const cls = s.count > 0 ? "bg-pass" : isOpen ? "bg-fg" : "border border-muted";
           return (
             <span key={s.key} className="flex items-center gap-[7px]">
               <span className={"h-2 w-2 " + cls} />
-              <span className={"text-[12px] " + (s.at !== null || isOpen ? "text-fg" : "text-muted")}>
+              <span className={"text-[12px] " + (s.count > 0 || isOpen ? "text-fg" : "text-muted")}>
                 {s.label}
               </span>
             </span>
@@ -194,10 +196,12 @@ function CheckinHero({ state }: { state: CheckinState }) {
         })}
       </div>
 
-      {action.kind === "open" ? (
+      {open ? (
         <div className="mt-3">
           <CheckinButton
             label="Check in"
+            typeKey={state.typeKey}
+            step={open.key}
             className="h-12 w-full border border-fg bg-fg text-[15px] font-semibold tracking-[0.04em] text-bg disabled:opacity-60"
           />
         </div>

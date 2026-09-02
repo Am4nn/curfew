@@ -54,6 +54,17 @@ export function oneWindow(
 /** A window covering the whole day, for types that accept a check-in any time. */
 export const ALL_DAY: Window = { open: "00:00", close: "00:00" };
 
+/**
+ * "20:00" as "8:00 PM". Times are 12-hour with AM or PM everywhere in the UI
+ * (CLAUDE.md voice), and the stored value stays 24-hour.
+ */
+export function clockLabel(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const suffix = h < 12 ? "AM" : "PM";
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
 /** Was this check-in inside its window? */
 export function within(at: Date, window: { opensAt: Date; closesAt: Date }): boolean {
   const t = at.getTime();

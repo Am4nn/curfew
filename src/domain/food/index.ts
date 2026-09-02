@@ -66,7 +66,42 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
   ],
 
   steps() {
-    return [{ key: FOOD_STEP, label: "Meal", open: "00:00", close: "23:59" }];
+    return [
+      {
+        key: FOOD_STEP,
+        label: "Meal",
+        open: "00:00",
+        close: "23:59",
+        repeats: true,
+        fields: [
+          {
+            kind: "number",
+            key: "calories",
+            label: "Calories",
+            min: 0,
+            max: 20000,
+            step: 10,
+            unit: "cal",
+          },
+        ],
+      },
+    ];
+  },
+
+  hint(input) {
+    const meals = input.checkins.filter((c) => c.step === FOOD_STEP);
+    const calories = sumField(meals, "calories");
+    const limit = input.config.calorieLimit;
+    const pending = input.pending?.calories ?? null;
+
+    if (limit === null) {
+      return pending === null
+        ? `${calories} so far today. No limit set.`
+        : `${calories + pending} today once this is sent. No limit set.`;
+    }
+    return pending === null
+      ? `${calories} so far today. The limit is ${limit}.`
+      : `${calories + pending} of ${limit} once this is sent.`;
   },
 
   windows(_config, periodStart, timezone) {

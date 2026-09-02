@@ -55,7 +55,37 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
   ],
 
   steps() {
-    return [{ key: SCREEN_STEP, label: "Screen time", open: "00:00", close: "23:59" }];
+    return [
+      {
+        key: SCREEN_STEP,
+        label: "Screen time",
+        open: "00:00",
+        close: "23:59",
+        repeats: true,
+        fields: [
+          {
+            kind: "number",
+            key: "minutes",
+            label: "Minutes on the phone",
+            min: 0,
+            max: 1440,
+            unit: "min",
+          },
+        ],
+      },
+    ];
+  },
+
+  hint(input) {
+    const limit = input.config.limitMinutes;
+    const latest = latestField(
+      input.checkins.filter((c) => c.step === SCREEN_STEP),
+      "minutes",
+    );
+    if (latest === undefined) {
+      return `The limit is ${limit} min. Anything at or below counts.`;
+    }
+    return `${latest} min recorded. The limit is ${limit}.`;
   },
 
   windows(_config, periodStart, timezone) {

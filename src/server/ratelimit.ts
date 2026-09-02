@@ -25,13 +25,14 @@ export async function rateLimit(options: {
   windowSeconds: number;
 }): Promise<{ ok: boolean; remaining: number }> {
   const { key, limit, windowSeconds } = options;
-  const url = required("UPSTASH_REDIS_REST_URL");
-  const token = required("UPSTASH_REDIS_REST_TOKEN");
-
   const window = Math.floor(Date.now() / 1000 / windowSeconds);
   const counter = `rl:${key}:${window}`;
 
   try {
+    // Inside the try: an unconfigured environment (a local database, a script)
+    // fails open like an unreachable one rather than refusing every write.
+    const url = required("UPSTASH_REDIS_REST_URL");
+    const token = required("UPSTASH_REDIS_REST_TOKEN");
     const response = await fetch(`${url}/pipeline`, {
       method: "POST",
       headers: {

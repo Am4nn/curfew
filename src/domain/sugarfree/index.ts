@@ -9,4 +9,7 @@ export const sugarfreeActivity = abstinenceActivity({
   icon: "sugarfree",
   label: "Confirm",
   window: { open: "20:00", close: "23:59" },
+  cutoff: null,
+  prompt: () => "No sugar today. Did it hold?",
+  windowHint: "End of the day you say whether it held.",
 });

@@ -54,7 +54,42 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
   ],
 
   steps() {
-    return [{ key: STUDY_STEP, label: "Session", open: "00:00", close: "23:59" }];
+    return [
+      {
+        key: STUDY_STEP,
+        label: "Session",
+        open: "00:00",
+        close: "23:59",
+        // Sittings add up, so the day can take several.
+        repeats: true,
+        fields: [
+          {
+            kind: "number",
+            key: "minutes",
+            label: "Minutes studied",
+            min: 0,
+            max: 1440,
+            unit: "min",
+          },
+        ],
+      },
+    ];
+  },
+
+  hint(input) {
+    const minutes = sumField(
+      input.checkins.filter((c) => c.step === STUDY_STEP),
+      "minutes",
+    );
+    const target = input.config.minutesTarget;
+    if (target === null) return "No target set. One check-in is enough.";
+    const pending = input.pending?.minutes ?? null;
+    if (minutes === 0 && pending === null) {
+      return `Target is ${target}. Anything at or above counts.`;
+    }
+    return pending === null
+      ? `${minutes} of ${target} so far today.`
+      : `${minutes + pending} of ${target} once this is sent.`;
   },
 
   windows(_config, periodStart, timezone) {

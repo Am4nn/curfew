@@ -44,7 +44,15 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
   ],
 
   steps() {
-    return [{ key: WATER_STEP, label: "Glass", open: "00:00", close: "23:59" }];
+    // The one step in the catalog that is meant to be pressed all day.
+    return [
+      { key: WATER_STEP, label: "Glass", open: "00:00", close: "23:59", repeats: true },
+    ];
+  },
+
+  hint(input) {
+    const glasses = input.checkins.filter((c) => c.step === WATER_STEP).length;
+    return `${glasses} of ${input.config.glasses} today.`;
   },
 
   windows(_config, periodStart, timezone) {

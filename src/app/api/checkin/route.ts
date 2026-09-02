@@ -4,14 +4,16 @@ import { auth } from "@/lib/auth";
 import { getApprovalStatus } from "@/lib/session";
 import { previewEnabled, PREVIEW_USER } from "@/lib/preview";
 import { performCheckin } from "@/server/checkin";
-import { listUserGroups } from "@/server/groups";
 
 // A check-in is an explicit POST from a button press. It is never a GET: a GET
 // must be safe, and prefetch, tab restore and link previews all fire GETs
-// (PRD 6b). The window and the step are decided server-side from the resolved
-// config and the server clock; the client sends no step, so it cannot check in
-// out of window or for the wrong step.
-export async function POST() {
+// (PRD 6b, invariant 9).
+//
+// The body names the type, the step and the press's own idempotency key. The
+// WINDOW is still decided server-side from the resolved config and the server
+// clock, so a client cannot check in out of window; the key only decides
+// whether this press is the same one as the last.
+export async function POST(request: Request) {
   let userId: string;
   let sessionId: string | null;
   if (previewEnabled()) {
@@ -31,14 +33,10 @@ export async function POST() {
     return NextResponse.json({ ok: false, reason: "not_approved" }, { status: 403 });
   }
 
-  const groups = await listUserGroups(userId);
-  if (groups.length === 0) {
-    return NextResponse.json({ ok: false, reason: "no_group" }, { status: 409 });
-  }
-
-  const result = await performCheckin(userId, sessionId);
+  const body = await request.json().catch(() => null);
+  const result = await performCheckin(userId, sessionId, body);
   if (!result.ok) {
-    // closed window or duplicate: not a server fault, so 409.
+    // A closed window, a duplicate or a bad entry is not a server fault.
     return NextResponse.json(result, { status: 409 });
   }
   return NextResponse.json(result);

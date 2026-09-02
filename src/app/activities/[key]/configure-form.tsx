@@ -206,6 +206,22 @@ function FieldControl({
     );
   }
 
+  // A single time, for the "nothing after" cut-off an abstinence type can have.
+  if (field.kind === "time") {
+    return (
+      <div className="flex items-center gap-3 border-b border-rule py-[13px]">
+        <span className="flex-1 text-[13px]">{field.label}</span>
+        <input
+          type="time"
+          value={String(get(config, field.key) ?? "")}
+          onChange={(e) => onChange(set(config, field.key, e.target.value))}
+          aria-label={field.label}
+          className="border border-rule bg-transparent px-2 py-[6px] text-[13px] text-fg"
+        />
+      </div>
+    );
+  }
+
   const raw = get(config, field.key);
   const off = raw === null || raw === undefined;
 

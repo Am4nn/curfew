@@ -47,7 +47,37 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
   ],
 
   steps() {
-    return [{ key: STEPS_STEP, label: "Steps", open: "00:00", close: "23:59" }];
+    return [
+      {
+        key: STEPS_STEP,
+        label: "Steps",
+        open: "00:00",
+        close: "23:59",
+        // A later reading corrects an earlier one; the latest is what counts.
+        repeats: true,
+        fields: [
+          {
+            kind: "number",
+            key: "steps",
+            label: "Steps today",
+            min: 0,
+            max: 200000,
+            step: 100,
+            unit: "steps",
+          },
+        ],
+      },
+    ];
+  },
+
+  hint(input) {
+    const target = input.config.target.toLocaleString("en-US");
+    const latest = latestField(
+      input.checkins.filter((c) => c.step === STEPS_STEP),
+      "steps",
+    );
+    if (latest === undefined) return `Target is ${target}. Anything at or above counts.`;
+    return `${latest.toLocaleString("en-US")} recorded so far. The target is ${target}.`;
   },
 
   windows(_config, periodStart, timezone) {

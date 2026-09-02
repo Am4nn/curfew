@@ -1,7 +1,15 @@
 import { z } from "zod";
 import type { ActivityType, EvaluateInput } from "./types";
 import { EVERY_DAY } from "./schedule";
-import { windowSchema, oneWindow, windowInstants, within, type Window } from "./windows";
+import {
+  windowSchema,
+  oneWindow,
+  windowInstants,
+  within,
+  clockLabel,
+  HHMM,
+  type Window,
+} from "./windows";
 
 // Abstinence types pass by NOT doing something, which inverts the whole engine:
 // every other type treats silence as failure, and abstinence would treat it as
@@ -21,7 +29,12 @@ import { windowSchema, oneWindow, windowInstants, within, type Window } from "./
 
 export const DECLARE_STEP = "declare";
 
-export const abstinenceConfigSchema = z.object({ window: windowSchema }).strict();
+// The window is when you CONFIRM. The cut-off is the time the abstinence
+// starts, which only some of these types have: nightfast has a "nothing after"
+// time, sugar-free is simply the whole day.
+export const abstinenceConfigSchema = z
+  .object({ window: windowSchema, cutoff: HHMM.nullable() })
+  .strict();
 export type AbstinenceConfig = z.infer<typeof abstinenceConfigSchema>;
 
 // The whole payload: did it hold. There is nothing else to record.
@@ -35,6 +48,12 @@ export function abstinenceActivity(spec: {
   icon: string;
   label: string;
   window: Window;
+  /** The "nothing after" time, when the type has one. */
+  cutoff: { label: string; default: string } | null;
+  /** The question the check-in screen asks, in this type's own words. */
+  prompt: (config: AbstinenceConfig) => string;
+  /** The line under the confirm window on the configure screen. */
+  windowHint: string;
 }): ActivityType<AbstinenceConfig, AbstinenceEvidence> {
   return {
     key: spec.key,
@@ -46,7 +65,7 @@ export function abstinenceActivity(spec: {
       schedule: EVERY_DAY,
       dayBoundary: "midnight",
       grace: 2,
-      config: { window: spec.window },
+      config: { window: spec.window, cutoff: spec.cutoff?.default ?? null },
     },
 
     configSchema: abstinenceConfigSchema,
@@ -56,11 +75,15 @@ export function abstinenceActivity(spec: {
     checkin: { kind: "declare" },
     chart: "binary",
     fields: [
+      ...(spec.cutoff
+        ? [{ kind: "time" as const, key: "cutoff", label: spec.cutoff.label }]
+        : []),
       {
         kind: "timeRange",
-        label: "Confirm between",
+        label: "Confirm window",
         openKey: "window.open",
         closeKey: "window.close",
+        hint: spec.windowHint,
       },
     ],
 
@@ -71,6 +94,14 @@ export function abstinenceActivity(spec: {
           label: spec.label,
           open: config.window.open,
           close: config.window.close,
+          // A correction is allowed: someone who taps "It held" and then
+          // corrects themselves is telling the truth the second time.
+          repeats: true,
+          prompt: spec.prompt(config),
+          aside:
+            "Nobody can check this one. The record is only worth what your answer is worth.",
+          consequence:
+            "A slip breaks the streak and costs your standing in any group you share this with. It costs nothing else.",
         },
       ];
     },

@@ -24,18 +24,34 @@ Money is optional and can be switched off entirely.
 
 ## Current phase
 
-**v3, Phase 0 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
+**v3, Phases 0 to 4 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
 designed and specified: twelve activity types with per-user schedules and
 thresholds, photo evidence, a 0 to 1000 reputation per group with six ranks,
 group stats, an admin console that can switch whole systems off, and a fresh
 start on data. Every screen is mocked in `.design/` and listed in
 `.planning/v3/SCREENS.md`.
 
-Phase 0 is complete: the APAC Neon project is migrated from empty,
-`activity_types` exists, `bun run sync:activities` reconciles the registry and
-gates CI, Vercel functions are pinned to `sin1`, and the R2 and Upstash modules
-are in place with no callers. **Next is Phase 1, the engine.** Do not begin a
-phase whose predecessor is unticked.
+- **Phase 0** ground: APAC Neon migrated from empty, `activity_types`,
+  `bun run sync:activities` gating CI, `sin1`, R2 and Upstash in place.
+- **Phase 1** the engine: periods, schedules, streaks, grace, the module
+  interface and the registry.
+- **Phase 2** config and control: app settings resolved as-of, the cached read,
+  admin Controls and Groups, the blocking notice.
+- **Phase 3** the twelve modules and one configure screen drawn from their
+  declared fields.
+- **Phase 4** check-in: one screen for all twelve, idempotent on a key the press
+  carries, rate limited, nothing recorded on a GET.
+
+**Next is Phase 5, evidence.** Do not begin a phase whose predecessor is
+unticked. The check-in screen currently states that photos arrive in the next
+release and lets a camera type send without one; Phase 5 turns the slot on and
+Send starts blocking.
+
+**The Configure and Check-in rows in `SCREENS.md` are unticked on purpose.**
+Ticking one means a person has opened the screen beside its artboard. The
+configure screens are known to differ from their mocks: the controls, the
+header, the streak row and the evidence block were built before the artboards
+were read closely.
 
 **The cutover has not happened.** Production still serves v2.5 from the old Neon
 project, and `.env.production` is the only file pointing at it. At the cutover

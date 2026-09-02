@@ -22,6 +22,9 @@ const config: Config = {
         fg: "var(--fg)",
         muted: "var(--muted)",
         rule: "var(--rule)",
+        // The dashed edge of an empty photo slot: a step lighter than a rule,
+        // and the only place it is used.
+        dash: "var(--dash)",
         penalty: "var(--penalty)",
         pass: "var(--pass)",
         accent: "var(--accent)",

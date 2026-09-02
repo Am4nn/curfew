@@ -3,11 +3,30 @@ import type { DayBoundary, Schedule } from "./schedule";
 
 // One check-in the UI can render for a period. open/close are wall-clock
 // "HH:mm" in the user's timezone.
+//
+// A step carries its own words and its own fields (decision 90). The check-in
+// screen is drawn once for all twelve types, so every sentence on it that is
+// specific to a type has to come from the type: the engine cannot write
+// "Nothing after 8:00 PM last night" without knowing what nightfast is.
 export interface CheckinStep {
   key: string;
   label: string;
   open: string;
   close: string;
+  /**
+   * Whether this step can be checked in more than once a period. Water's glass
+   * repeats, Office's arrival does not. A second check-in against a step that
+   * does not repeat is refused.
+   */
+  repeats?: boolean;
+  /** The numbers this check-in carries, drawn with the configure screen's controls. */
+  fields?: ConfigField[];
+  /** The question a `declare` step asks. */
+  prompt?: string;
+  /** The small grey line under the prompt. */
+  aside?: string;
+  /** What answering costs, stated as a fact at the foot of the screen. */
+  consequence?: string;
 }
 
 // A step's window resolved to absolute instants for a specific period. Drives
@@ -36,6 +55,12 @@ export interface EvaluateInput<Config, Evidence> {
   timezone: string;
   config: Config;
   checkins: Checkin<Evidence>[];
+}
+
+export interface HintInput<Config, Evidence> extends EvaluateInput<Config, Evidence> {
+  step: string;
+  /** What is typed into the fields right now, not yet recorded. */
+  pending?: Partial<Evidence> | null;
 }
 
 export interface EvaluateResult {
@@ -74,7 +99,12 @@ export type ChartKind = "windowed" | "numeric" | "weekly" | "binary";
 //
 // `key` is a dot path into the config, so a nested { window: { open, close } }
 // and a flat night_open both render through the same control.
-export type ConfigField =
+export type ConfigField = ConfigFieldShape & {
+  /** One line under the control, in the module's words. */
+  hint?: string;
+};
+
+type ConfigFieldShape =
   | {
       kind: "number";
       key: string;
@@ -93,6 +123,11 @@ export type ConfigField =
       label: string;
       openKey: string;
       closeKey: string;
+    }
+  | {
+      kind: "time";
+      key: string;
+      label: string;
     }
   | {
       kind: "segmented";
@@ -137,6 +172,15 @@ export interface ActivityType<Config, Evidence> {
   fields: ConfigField[];
 
   steps(config: Config, periodStart: string): CheckinStep[];
+  /**
+   * One line under a step's fields, in the module's own words (decision 90).
+   *
+   * The engine prints it verbatim and never composes it, because "1180 so far
+   * today. The limit is 2000." is a sentence only the module can write.
+   * `pending` is what the user has typed and not sent, which is what turns that
+   * line into "1700 of 2000 once this is sent."
+   */
+  hint?(input: HintInput<Config, Evidence>): string | null;
   // Resolve every step's window to absolute instants for the given period.
   windows(config: Config, periodStart: string, timezone: string): CheckinWindow[];
   evaluate(input: EvaluateInput<Config, Evidence>): EvaluateResult;

@@ -60,8 +60,42 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
     { kind: "number", key: "target", label: "Target a day", min: 1, max: 5000 },
   ],
 
-  steps() {
-    return [{ key: READING_STEP, label: "Reading", open: "00:00", close: "23:59" }];
+  steps(config) {
+    return [
+      {
+        key: READING_STEP,
+        label: "Reading",
+        open: "00:00",
+        close: "23:59",
+        repeats: true,
+        fields: [
+          {
+            kind: "number",
+            key: "amount",
+            // The config says what the number means, so the field says it too.
+            label: config.unit === "pages" ? "Pages read" : "Minutes read",
+            min: 0,
+            max: 5000,
+            unit: config.unit === "pages" ? "pages" : "min",
+          },
+        ],
+      },
+    ];
+  },
+
+  hint(input) {
+    const amount = sumField(
+      input.checkins.filter((c) => c.step === READING_STEP),
+      "amount",
+    );
+    const { target, unit } = input.config;
+    const pending = input.pending?.amount ?? null;
+    if (amount === 0 && pending === null) {
+      return `Target is ${target} ${unit}. Anything at or above counts.`;
+    }
+    return pending === null
+      ? `${amount} of ${target} ${unit} so far today.`
+      : `${amount + pending} of ${target} ${unit} once this is sent.`;
   },
 
   windows(_config, periodStart, timezone) {

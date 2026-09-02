@@ -41,7 +41,14 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
   ],
 
   steps() {
-    return [{ key: SUPPLEMENTS_STEP, label: "Dose", open: "00:00", close: "23:59" }];
+    return [
+      { key: SUPPLEMENTS_STEP, label: "Dose", open: "00:00", close: "23:59", repeats: true },
+    ];
+  },
+
+  hint(input) {
+    const doses = input.checkins.filter((c) => c.step === SUPPLEMENTS_STEP).length;
+    return `${doses} of ${input.config.dosesPerDay} today.`;
   },
 
   windows(_config, periodStart, timezone) {

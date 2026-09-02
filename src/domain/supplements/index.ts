@@ -36,6 +36,9 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
   evidence: { level: "required", source: "live" },
   checkin: { kind: "camera" },
   chart: "binary",
+  fields: [
+    { kind: "number", key: "dosesPerDay", label: "Doses a day", min: 1, max: 6 },
+  ],
 
   steps() {
     return [{ key: SUPPLEMENTS_STEP, label: "Dose", open: "00:00", close: "23:59" }];

@@ -177,6 +177,8 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 85 | **One Food check-in is a meal: a photo and its calorie figure, sent together.** Three of them make the day. The count comes from how many check-ins exist, so there is no separate counter and the photo and the number can never disagree. `ARCHITECTURE.md` listing Food under both `counter` and `camera` was a contradiction; it is `camera` | 2026-09-03 |
 | 86 | **Study passes on its minutes target when one is set, and on a single check-in when it is not.** The "or" in `ACTIVITIES.md` describes two configurations, not two ways to pass one. Either-always would make the target decorative | 2026-09-03 |
 | 87 | **Reading measures minutes or pages, one or the other**, chosen on the configure screen with a single target beside it. Tracking both and passing on either would leave the check-in asking for two numbers, one of them always blank | 2026-09-03 |
+| 88 | A module declares its **renderable fields** beside its `configSchema`. The schema says what is valid; the fields say what it looks like. Zod cannot be introspected into a form without guessing, and a guessed control is a configure screen that does not match its mock. Three kinds cover twelve types: number, time range, segmented | 2026-09-03 |
+| 89 | **A first setup lands today; a later change lands tomorrow.** Invariant 4 future-dates config so a period already being judged is not rewritten mid-flight, and a brand new activity has no such period. Future-dating the first row would mean adding an activity that does nothing until tomorrow | 2026-09-03 |
 
 ## Invariants
 

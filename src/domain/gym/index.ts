@@ -55,6 +55,9 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   evidence: { level: "required", source: "live" },
   checkin: { kind: "tap" },
   chart: "weekly",
+  // Nothing of its own. "Any 3 a week" is the engine's schedule, drawn by the
+  // day picker, so a second control here would be the same number twice.
+  fields: [],
 
   // No windows. A session counts whenever it happens, so the step spans the
   // whole day rather than pretending to a schedule nobody set.

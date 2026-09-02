@@ -121,6 +121,16 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   evidence: { level: "required", source: "live", steps: ["confirm"] },
   checkin: { kind: "camera" },
   chart: "windowed",
+  fields: [
+    { kind: "timeRange", label: "Night", openKey: "night_open", closeKey: "night_close" },
+    { kind: "timeRange", label: "Wake", openKey: "wake_open", closeKey: "wake_close" },
+    {
+      kind: "timeRange",
+      label: "Confirm",
+      openKey: "confirm_open",
+      closeKey: "confirm_close",
+    },
+  ],
 
   steps(config: SleepConfig): CheckinStep[] {
     return STEPS.map((s) => ({

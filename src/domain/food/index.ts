@@ -50,6 +50,20 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
   evidence: { level: "required", source: "live" },
   checkin: { kind: "camera" },
   chart: "numeric",
+  fields: [
+    { kind: "number", key: "meals", label: "Meals a day", min: 1, max: 10 },
+    {
+      kind: "number",
+      key: "calorieLimit",
+      label: "Calorie limit",
+      min: 500,
+      max: 20000,
+      step: 50,
+      unit: "kcal",
+      nullable: true,
+      offLabel: "Not tracked",
+    },
+  ],
 
   steps() {
     return [{ key: FOOD_STEP, label: "Meal", open: "00:00", close: "23:59" }];

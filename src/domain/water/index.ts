@@ -39,6 +39,9 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
   evidence: { level: "none", source: "live" },
   checkin: { kind: "counter" },
   chart: "numeric",
+  fields: [
+    { kind: "number", key: "glasses", label: "Glasses a day", min: 1, max: 30 },
+  ],
 
   steps() {
     return [{ key: WATER_STEP, label: "Glass", open: "00:00", close: "23:59" }];

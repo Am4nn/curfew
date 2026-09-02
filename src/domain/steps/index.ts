@@ -42,6 +42,9 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
   evidence: { level: "optional", source: "gallery" },
   checkin: { kind: "number" },
   chart: "numeric",
+  fields: [
+    { kind: "number", key: "target", label: "Steps a day", min: 1000, max: 100000, step: 500 },
+  ],
 
   steps() {
     return [{ key: STEPS_STEP, label: "Steps", open: "00:00", close: "23:59" }];

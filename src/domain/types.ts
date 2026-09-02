@@ -64,6 +64,43 @@ export type CheckinKind = "tap" | "counter" | "number" | "camera" | "declare";
 // check-in affordance.
 export type ChartKind = "windowed" | "numeric" | "weekly" | "binary";
 
+// How the engine draws a module's own settings (decision 88).
+//
+// configSchema says what is VALID; this says what it LOOKS LIKE. Zod cannot be
+// introspected into a form without guessing, and guessing is what produces a
+// configure screen that does not match its mock. A module therefore declares
+// its fields, and the engine draws the same controls for every type: one
+// stepper, one time range, one segmented switch, drawn once.
+//
+// `key` is a dot path into the config, so a nested { window: { open, close } }
+// and a flat night_open both render through the same control.
+export type ConfigField =
+  | {
+      kind: "number";
+      key: string;
+      label: string;
+      min: number;
+      max: number;
+      step?: number;
+      unit?: string;
+      // A nullable number is a target the user can switch off entirely. Study's
+      // minutes and Food's calorie limit both work this way.
+      nullable?: boolean;
+      offLabel?: string;
+    }
+  | {
+      kind: "timeRange";
+      label: string;
+      openKey: string;
+      closeKey: string;
+    }
+  | {
+      kind: "segmented";
+      key: string;
+      label: string;
+      options: { value: string; label: string }[];
+    };
+
 // What the engine owns for every activity, whatever its type (decision 79).
 // The period unit is derived from the schedule, never stored beside it.
 export interface ScheduleDefaults {
@@ -96,6 +133,8 @@ export interface ActivityType<Config, Evidence> {
   evidence: EvidenceRule;
   checkin: { kind: CheckinKind };
   chart: ChartKind;
+  /** How the configure screen draws this module's own settings. */
+  fields: ConfigField[];
 
   steps(config: Config, periodStart: string): CheckinStep[];
   // Resolve every step's window to absolute instants for the given period.

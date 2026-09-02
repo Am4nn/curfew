@@ -42,6 +42,17 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
   evidence: { level: "optional", source: "gallery" },
   checkin: { kind: "number" },
   chart: "numeric",
+  fields: [
+    {
+      kind: "number",
+      key: "limitMinutes",
+      label: "Daily limit",
+      min: 15,
+      max: 1440,
+      step: 15,
+      unit: "min",
+    },
+  ],
 
   steps() {
     return [{ key: SCREEN_STEP, label: "Screen time", open: "00:00", close: "23:59" }];

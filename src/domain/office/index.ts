@@ -35,6 +35,9 @@ export const officeActivity: ActivityType<OfficeConfig, OfficeEvidence> = {
   evidence: { level: "optional", source: "live" },
   checkin: { kind: "tap" },
   chart: "binary",
+  fields: [
+    { kind: "timeRange", label: "In by", openKey: "window.open", closeKey: "window.close" },
+  ],
 
   steps(config) {
     return [

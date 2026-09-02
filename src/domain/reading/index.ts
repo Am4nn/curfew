@@ -47,6 +47,18 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
   evidence: { level: "optional", source: "live" },
   checkin: { kind: "number" },
   chart: "numeric",
+  fields: [
+    {
+      kind: "segmented",
+      key: "unit",
+      label: "Measure",
+      options: [
+        { value: "minutes", label: "Minutes" },
+        { value: "pages", label: "Pages" },
+      ],
+    },
+    { kind: "number", key: "target", label: "Target a day", min: 1, max: 5000 },
+  ],
 
   steps() {
     return [{ key: READING_STEP, label: "Reading", open: "00:00", close: "23:59" }];

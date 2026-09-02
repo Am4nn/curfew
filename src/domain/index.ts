@@ -89,6 +89,7 @@ export type {
   EvaluateInput,
   EvaluateResult,
   EvidenceRule,
+  ConfigField,
   CheckinKind,
   ChartKind,
   ScheduleDefaults,

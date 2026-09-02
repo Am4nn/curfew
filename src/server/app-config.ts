@@ -91,10 +91,27 @@ async function readAppConfig(): Promise<AppConfig> {
   return { settings, enabledTypes };
 }
 
-export const getAppConfig = unstable_cache(readAppConfig, ["app-config"], {
+const cachedAppConfig = unstable_cache(readAppConfig, ["app-config"], {
   tags: [APP_CONFIG_TAG],
   revalidate: 60,
 });
+
+/**
+ * The whole resolved config, cached inside a request and read directly outside
+ * one.
+ *
+ * unstable_cache needs Next's request store and throws without it, so scripts,
+ * seeds and jobs would crash on a read that is perfectly legitimate. There is
+ * no cache to consult outside a request anyway: falling back to the query is
+ * the same answer, one round trip slower, in a context where that is free.
+ */
+export async function getAppConfig(): Promise<AppConfig> {
+  try {
+    return await cachedAppConfig();
+  } catch {
+    return readAppConfig();
+  }
+}
 
 /**
  * Call after every admin save. Without it, "immediate" waits out the TTL.

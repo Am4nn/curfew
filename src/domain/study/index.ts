@@ -39,6 +39,19 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
   evidence: { level: "required", source: "live" },
   checkin: { kind: "number" },
   chart: "numeric",
+  fields: [
+    {
+      kind: "number",
+      key: "minutesTarget",
+      label: "Minutes a day",
+      min: 5,
+      max: 1440,
+      step: 5,
+      unit: "min",
+      nullable: true,
+      offLabel: "Just check in",
+    },
+  ],
 
   steps() {
     return [{ key: STUDY_STEP, label: "Session", open: "00:00", close: "23:59" }];

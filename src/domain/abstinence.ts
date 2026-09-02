@@ -55,6 +55,14 @@ export function abstinenceActivity(spec: {
     evidence: { level: "none", source: "live" },
     checkin: { kind: "declare" },
     chart: "binary",
+    fields: [
+      {
+        kind: "timeRange",
+        label: "Confirm between",
+        openKey: "window.open",
+        closeKey: "window.close",
+      },
+    ],
 
     steps(config) {
       return [

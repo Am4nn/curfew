@@ -47,6 +47,10 @@ Production ships on a version tag, never on a push. `main` is a Vercel Preview
 deployment against the APAC database. Vercel's production branch is
 `production`, which nobody pushes.
 
+`package.json` carries `3.0.0-dev` while v3 is being built, so the admin header
+reads `v3.0.0-dev` on every deployment of `main` and `v2.5.2` on the live site.
+The suffix comes off in the commit that gets tagged.
+
 To release: bump `version` in `package.json`, commit, then
 `git tag vX.Y.Z && git push origin vX.Y.Z`. That runs
 `.github/workflows/deploy.yml`, which typechecks, tests, checks the tag against

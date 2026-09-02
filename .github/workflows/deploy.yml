@@ -5,25 +5,32 @@ name: Deploy
 # Branch setting points at a branch nobody pushes. Pushes to main are Preview
 # deployments, which Vercel makes on its own.
 #
-# The build runs here, not on Vercel: `vercel pull` fetches the production
-# environment, `vercel build --prod` compiles against it, and `--prebuilt`
-# uploads the result. So the secrets stay in Vercel and GitHub needs only the
-# three below.
+# The build runs here, not on Vercel: `vercel pull` fetches the environment,
+# `vercel build` compiles against it, and `--prebuilt` uploads the result. So
+# the secrets stay in Vercel and GitHub needs only the three below.
+#
+# Two ways in:
+#   a v* tag        deploys to PRODUCTION
+#   Run workflow    deploys a PREVIEW, to prove the pipeline without touching
+#                   the live site. Use this first, and after any edit here.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 concurrency:
-  group: deploy-production
+  group: deploy-${{ github.event_name == 'push' && 'production' || 'preview' }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # A tag is the real thing. A manual run is a dry run against Preview.
+      TARGET: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      PROD: ${{ github.event_name == 'push' && '--prod' || '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -44,11 +51,11 @@ jobs:
       - name: Test
         run: bun run test
 
-      - name: Pull the production environment
-        run: bunx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Pull the $TARGET environment
+        run: bunx vercel pull --yes --environment=$TARGET --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build
-        run: bunx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: bunx vercel build $PROD --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy
-        run: bunx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: bunx vercel deploy --prebuilt $PROD --token=${{ secrets.VERCEL_TOKEN }}

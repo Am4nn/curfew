@@ -120,7 +120,7 @@ different module spec, which is the point of the declarative model.
 | Users | `/admin/users` | Search, filters, directory, the never-reads note | [ ] |
 | Groups | `/admin/groups` | Per-group money override, archive | [ ] |
 | Insights | `/admin/insights` | Counted behaviour only, abandonment rates | [ ] |
-| Controls | `/admin/controls` | Unsaved tags, save bar, app switches, types, retention | [ ] |
+| Controls | `/admin/controls` | Unsaved tags, save bar, app switches, types, retention. No add-a-type button (decision 82) | [ ] |
 | Controls: confirm | `/admin/controls` | Generic sheet built from pending changes, notify checkbox | [ ] |
 | Ops | `/admin/ops` | Verify and rebuild, drift list, evidence sweep | [ ] |
 

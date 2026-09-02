@@ -169,6 +169,9 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 77 | A frequency streak **counts up live and is taken back**. Each session day adds 1 immediately; a week that misses its minimum resets to 0, or holds at the week's opening value when grace covers it. The number can go down | 2026-09-03 |
 | 78 | The module interface keeps `evaluate(input)` and gains a **declarative envelope** around it: name, icon, defaults, evidence rule, check-in kind, chart kind. `ARCHITECTURE.md`'s `pass(periods, config)` sketch is withdrawn: it carries no timezone, period or steps, so sleep cannot score three windows from it | 2026-09-03 |
 | 79 | **The engine owns the schedule**, the module owns its own numbers. Schedule, day boundary and grace are engine fields with one shared schema; windows, targets and thresholds live in the module's `configSchema`. The period unit is derived from the schedule rather than stored beside it, so the two can never disagree | 2026-09-03 |
+| 80 | A notice applies only to **accounts that existed when it was published**. Somebody who joins later never knew the old behaviour, so blocking their first screen with news about it is noise | 2026-09-03 |
+| 81 | Notices are **merged per user at read time**, never queued and never merged as rows. One overlay carries every item that user has not acknowledged, and one "Got it" clears all of them. A row-level merge would be wrong the moment one user has acknowledged a notice and another has not. An admin is never blocked from publishing | 2026-09-03 |
+| 82 | **"+ Add a type" is dropped from admin Controls.** A type is code, not data, and `sync:activities` already guarantees a row for every registered module, so the list is complete by construction. The button promised something the architecture cannot do | 2026-09-03 |
 
 ## Invariants
 

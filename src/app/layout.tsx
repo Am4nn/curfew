@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { previewEnabled } from "@/lib/preview";
+import { NoticeOverlay } from "./notice-overlay";
 import { PreviewBar } from "./preview-bar";
 import { TabBar } from "./nav";
 import "./globals.css";
@@ -36,6 +37,7 @@ export default async function RootLayout({
       <body>
         {children}
         <TabBar />
+        <NoticeOverlay />
         {previewEnabled() ? <PreviewBar /> : null}
       </body>
     </html>

@@ -12,6 +12,7 @@ import {
 import {
   periodStart,
   getActivityType,
+  periodUnit,
   scoreChain,
   type Checkin,
   type ChainPeriod,
@@ -69,9 +70,13 @@ async function memberships(userId: string): Promise<Membership[]> {
 export async function lastClosedPeriod(userId: string): Promise<string> {
   const nowDate = await now();
   const tz = await resolveUserTimezone(userId, nowDate.toISOString().slice(0, 10));
-  const candidate = periodStart(nowDate, tz);
+  const sleepType = getActivityType("sleep");
+  const candidate = periodStart(nowDate, tz, {
+    unit: periodUnit(sleepType.defaults.schedule),
+    boundary: sleepType.defaults.dayBoundary,
+  });
   const { config } = await resolveUserSleepConfigRow(userId, candidate);
-  const wins = getActivityType("sleep").windows(config, candidate, tz);
+  const wins = sleepType.windows(config, candidate, tz);
   const maxClose = Math.max(...wins.map((w) => w.closesAt.getTime()));
   return maxClose < nowDate.getTime()
     ? candidate

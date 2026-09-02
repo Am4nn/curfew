@@ -75,6 +75,13 @@ Worked example, Gym at 3 per week, starting streak 12:
 
 The number always answers "how many days have I done this", which is the point.
 
+**Mid-week it counts up live** (decision 77). Monday's session shows 22 straight
+away, Tuesday's 23. If the week then misses its minimum those days are taken
+back: 0, or the week's opening 21 when grace covers it. The streak can therefore
+go down, which is the honest reading of a number that means days completed. The
+alternative, holding at last week's value until Sunday, leaves it stale for six
+days out of seven and shows no progress for a week going well.
+
 ## Grace
 
 - Grace is **per activity, per calendar month**, a small integer the user sets.

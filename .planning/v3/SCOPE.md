@@ -166,6 +166,9 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 74 | Drift is prevented by a **screen inventory and a review gate** (`SCREENS.md`), not by screenshot tests | 2026-09-03 |
 | 75 | Rate limiting on check-ins and upload URLs through **Upstash Redis** | 2026-09-03 |
 | 76 | Runtime is **Vercel, Neon, R2, Vercel Cron, Upstash** | 2026-09-03 |
+| 77 | A frequency streak **counts up live and is taken back**. Each session day adds 1 immediately; a week that misses its minimum resets to 0, or holds at the week's opening value when grace covers it. The number can go down | 2026-09-03 |
+| 78 | The module interface keeps `evaluate(input)` and gains a **declarative envelope** around it: name, icon, defaults, evidence rule, check-in kind, chart kind. `ARCHITECTURE.md`'s `pass(periods, config)` sketch is withdrawn: it carries no timezone, period or steps, so sleep cannot score three windows from it | 2026-09-03 |
+| 79 | **The engine owns the schedule**, the module owns its own numbers. Schedule, day boundary and grace are engine fields with one shared schema; windows, targets and thresholds live in the module's `configSchema`. The period unit is derived from the schedule rather than stored beside it, so the two can never disagree | 2026-09-03 |
 
 ## Invariants
 

@@ -2,7 +2,12 @@ import { DateTime } from "luxon";
 import { and, eq, like, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { events } from "@/db/schema";
-import { periodStart, getActivityType, type CheckinWindow } from "@/domain";
+import {
+  periodStart,
+  periodUnit,
+  getActivityType,
+  type CheckinWindow,
+} from "@/domain";
 import { resolveUserTimezone, resolveUserSleepConfig } from "./config";
 import { recordEvent } from "./events";
 import { now } from "@/lib/clock";
@@ -19,7 +24,14 @@ async function resolveContext(userId: string) {
   const nowDate = await now();
   const todayUtc = nowDate.toISOString().slice(0, 10);
   const tz = await resolveUserTimezone(userId, todayUtc);
-  const period = periodStart(nowDate, tz);
+  // The period spec comes from the type, not from this file. v1 hardcoded noon
+  // to noon here; the engine now takes it from the activity, and Phase 4
+  // replaces this path with the per-user one.
+  const { schedule, dayBoundary } = getActivityType("sleep").defaults;
+  const period = periodStart(nowDate, tz, {
+    unit: periodUnit(schedule),
+    boundary: dayBoundary,
+  });
   return { tz, now: nowDate, period };
 }
 

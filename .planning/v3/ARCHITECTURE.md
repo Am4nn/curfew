@@ -44,7 +44,8 @@ interface, the check-in state machine. These are the parts v3 outgrew.
 ## Activity modules: a declarative spec
 
 A module is one file with no React in it (decision 73). It declares what the type
-is; the engine renders every screen from that declaration.
+is; the engine renders every screen from that declaration and calls `evaluate` to
+score a period (decision 78).
 
 ```ts
 export const gym = {
@@ -54,14 +55,46 @@ export const gym = {
   icon: "gym",
   defaults: {
     schedule: { kind: "minimum", perWeek: 3 },
+    dayBoundary: "midnight",
     grace: 2,
+    config: { ... },
   },
   configSchema: z.object({ ... }),
+  evidenceSchema: z.object({ ... }),
   evidence: { level: "required", source: "live" },
   checkin: { kind: "tap" },
-  pass: (periods, config) => ({ passed, detail }),
+  chart: "weekly",
+  steps(config, periodStart) { ... },
+  windows(config, periodStart, timezone) { ... },
+  evaluate(input) { return { passed, detail }; },
 }
 ```
+
+**Why `evaluate` and not a bare `pass(periods, config)`.** Scoring a period needs
+the period's start, the user's timezone and the check-ins tagged by the step they
+satisfied. Sleep judges three named windows, and windows are wall-clock times
+that only resolve against a date and a zone. A signature without them forces the
+engine to reconstruct windows it is not allowed to understand, which breaks
+invariant 6. `evaluate` is also what lets `bun run verify` recompute a period
+truthfully from events alone.
+
+### What the engine owns, and what the module owns
+
+Decision 79. The split is what keeps twelve modules from redeclaring the same
+form.
+
+| Owned by | Fields |
+|---|---|
+| **Engine** | `schedule` (named days, or a minimum a week), `dayBoundary`, `grace` |
+| **Module** | windows, targets, thresholds and their direction, and anything else its `configSchema` declares |
+
+The **period unit is derived**, never stored: a named-day schedule is judged by
+the day, a minimum-a-week schedule by the week. Storing both invites a row that
+says weekly and Mondays at once.
+
+The engine draws the day picker with its ANY cell once, decides which days
+produce periods, and applies grace, all without asking a module anything. A
+module describes only what is specific to it.
 
 `checkin.kind` is the whole UI contract. Five shapes cover the twelve types:
 

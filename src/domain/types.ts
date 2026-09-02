@@ -1,6 +1,5 @@
 import type { ZodType } from "zod";
-
-export type Period = "day" | "week" | "month";
+import type { DayBoundary, Schedule } from "./schedule";
 
 // One check-in the UI can render for a period. open/close are wall-clock
 // "HH:mm" in the user's timezone.
@@ -24,7 +23,7 @@ export interface CheckinWindow {
 
 // One recorded check-in the engine hands to a module for evaluation. `at` is
 // the server-stamped instant the check-in happened; `step` is the namespaced
-// step it satisfied; `evidence` is the module's own payload (empty for sleep).
+// step it satisfied; `evidence` is the module's own payload.
 export interface Checkin<Evidence> {
   step: string;
   at: Date;
@@ -32,7 +31,7 @@ export interface Checkin<Evidence> {
 }
 
 export interface EvaluateInput<Config, Evidence> {
-  // The period's sleep_date as "yyyy-MM-dd", already resolved in `timezone`.
+  // The period's start as "yyyy-MM-dd", already resolved in `timezone`.
   periodStart: string;
   timezone: string;
   config: Config;
@@ -42,24 +41,62 @@ export interface EvaluateInput<Config, Evidence> {
 export interface EvaluateResult {
   passed: boolean;
   // The module's own detail. The engine stores it verbatim and never inspects
-  // it (invariant 6). For sleep: { night_ok, wake_ok, confirm_ok }.
+  // it (invariant 6).
   detail: Record<string, unknown>;
 }
 
-// The contract every activity type implements. This refines the sketch in
-// PRD 6 in two deliberate ways, both noted where they occur:
-//   - evaluate takes the sleep_date as a string plus the timezone, not a Date
-//     pair. A period is a date, and the windows are wall-clock, so a bare
-//     instant would force every caller to reconstruct the zone.
-//   - evaluate receives Checkin[] (step + timestamp + evidence), not the raw
-//     Evidence[] the PRD lists. Sleep's evidence is empty, so without the step
-//     and timestamp there is nothing to score. Recomputing windows from the
-//     timestamps is what lets /verify recompute truthfully from events.
+// Whether a photo is off, optional or required, and where it may come from,
+// belongs to the TYPE and not the user (decision 6). Two people's Food streak
+// therefore mean the same thing in the same group. `steps` narrows a
+// requirement to named windows: sleep requires one on confirm and nowhere else.
+export interface EvidenceRule {
+  level: "none" | "optional" | "required";
+  source: "live" | "gallery";
+  steps?: string[];
+}
+
+// The whole UI contract for checking in. Five shapes cover twelve types
+// (decision 73); a genuinely new shape extends the engine rather than living
+// in a module.
+export type CheckinKind = "tap" | "counter" | "number" | "camera" | "declare";
+
+// A module names its chart and the engine draws it, the same way it draws the
+// check-in affordance.
+export type ChartKind = "windowed" | "numeric" | "weekly" | "binary";
+
+// What the engine owns for every activity, whatever its type (decision 79).
+// The period unit is derived from the schedule, never stored beside it.
+export interface ScheduleDefaults {
+  schedule: Schedule;
+  dayBoundary: DayBoundary;
+  grace: number;
+}
+
+// The contract every activity type implements.
+//
+// It is a declarative envelope around one behavioural method (decision 78). The
+// engine renders every screen from the declaration and calls `evaluate` to
+// score a period. `evaluate` keeps the period start, timezone and step-tagged
+// check-ins because sleep judges three named windows, and a window is a
+// wall-clock time that only resolves against a date and a zone. Recomputing
+// windows from timestamps is also what lets `bun run verify` recompute a period
+// truthfully from events alone.
 export interface ActivityType<Config, Evidence> {
   key: string;
-  period: Period;
-  userConfigSchema: ZodType<Config>;
+  // One word, with a one-line description, used wherever a type is offered
+  // (decision 36).
+  name: string;
+  description: string;
+  icon: string;
+
+  defaults: ScheduleDefaults & { config: Config };
+  configSchema: ZodType<Config>;
   evidenceSchema: ZodType<Evidence>;
+
+  evidence: EvidenceRule;
+  checkin: { kind: CheckinKind };
+  chart: ChartKind;
+
   steps(config: Config, periodStart: string): CheckinStep[];
   // Resolve every step's window to absolute instants for the given period.
   windows(config: Config, periodStart: string, timezone: string): CheckinWindow[];

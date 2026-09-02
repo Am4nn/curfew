@@ -5,6 +5,7 @@ import type {
   CheckinStep,
   CheckinWindow,
 } from "../types";
+import { EVERY_DAY } from "../schedule";
 
 // The sleep activity type. This module is the ONLY place that knows sleep has a
 // night, a wake and a confirm step, and the only place `night_ok` and friends
@@ -92,9 +93,34 @@ export function validateSleepWindows(
 }
 export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   key: "sleep",
-  period: "day",
-  userConfigSchema: sleepConfigSchema,
+  name: "Sleep",
+  description: "Three timed check-ins a night",
+  icon: "sleep",
+
+  // Sleep is the reason dayBoundary exists: a 00:30 press belongs to the night
+  // that just ended, so its day runs noon to noon.
+  defaults: {
+    schedule: EVERY_DAY,
+    dayBoundary: "noon",
+    grace: 2,
+    config: {
+      night_open: "22:00",
+      night_close: "00:30",
+      wake_open: "06:30",
+      wake_close: "07:45",
+      confirm_open: "07:45",
+      confirm_close: "11:00",
+    },
+  },
+
+  configSchema: sleepConfigSchema,
   evidenceSchema: sleepEvidenceSchema,
+
+  // Required on the confirm window only (decision 45). Proving you woke is the
+  // one moment a photo says anything; a photo at 22:00 says nothing.
+  evidence: { level: "required", source: "live", steps: ["confirm"] },
+  checkin: { kind: "camera" },
+  chart: "windowed",
 
   steps(config: SleepConfig): CheckinStep[] {
     return STEPS.map((s) => ({

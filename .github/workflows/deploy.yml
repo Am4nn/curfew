@@ -11,11 +11,17 @@ name: Deploy
 # Uploading the source and letting Vercel build is the only path with real
 # values, and it keeps the secrets where they belong.
 #
-# Typecheck and test still gate the deploy here. A Vercel build that fails is
-# never promoted, so production keeps serving the previous deployment either way.
+# A production deployment is STAGED until it is promoted. Vercel keeps the live
+# domains on the previous build until then, which is why deploying alone changed
+# nothing the first time. The tag is the release gesture, so the promote step
+# finishes the job. Rolling back is Instant Rollback in the dashboard, or a
+# promote of the previous deployment.
+#
+# Typecheck and test gate all of it. A Vercel build that fails is never promoted,
+# so production keeps serving the previous deployment either way.
 #
 # Two ways in:
-#   a v* tag        deploys to PRODUCTION
+#   a v* tag        deploys to PRODUCTION and promotes it
 #   Run workflow    deploys a PREVIEW, to prove the pipeline without touching
 #                   the live site. Use this first, and after any edit here.
 on:
@@ -33,6 +39,7 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       # A tag is the real thing. A manual run is a dry run against Preview.
       TARGET: ${{ github.event_name == 'push' && 'production' || 'preview' }}
       PROD: ${{ github.event_name == 'push' && '--prod' || '' }}
@@ -71,6 +78,20 @@ jobs:
           echo "shipping $pkg"
 
       # No --prebuilt: the source goes up and Vercel builds it, with the real
-      # values of its own environment variables.
+      # values of its own environment variables. The CLI prints the deployment
+      # URL on stdout and its progress on stderr, so capturing stdout is enough.
       - name: Deploy to $TARGET
-        run: bunx vercel deploy $PROD --yes --token=${{ secrets.VERCEL_TOKEN }}
+        id: deploy
+        run: |
+          url="$(bunx vercel deploy $PROD --yes --token="$VERCEL_TOKEN")"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "deployed $url"
+
+      # Until this runs, the live domains still point at the previous build.
+      # Preview deployments have no domains to take, so this is tag-only.
+      - name: Promote to the production domains
+        if: github.event_name == 'push'
+        run: |
+          bunx vercel promote "${{ steps.deploy.outputs.url }}" \
+            --yes --token="$VERCEL_TOKEN"
+          echo "promoted ${{ steps.deploy.outputs.url }}"

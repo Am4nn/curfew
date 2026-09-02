@@ -140,9 +140,9 @@ Not a phase, but the list that must not be improvised on the day.
 1. Point Vercel Production's `DATABASE_URL_POOLED` and `DATABASE_URL_DIRECT` at
    the APAC project.
 2. `bun run migrate:production` against it.
-3. Add `"regions": ["sin1"]` back to `vercel.json`. It was removed after Phase 0
-   because production sat in `us-east-2` and a tag would have moved the
-   functions away from their database.
+3. `vercel.json` already pins `sin1`. Check it is still there: it is only
+   correct once step 1 has moved the database to APAC, and until then the pin
+   is the reason no tag may be cut.
 4. Bump `package.json`, tag, push. The workflow deploys and promotes.
 5. Delete the old Neon project after a week of nobody complaining.
 

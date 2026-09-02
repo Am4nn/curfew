@@ -59,10 +59,11 @@ and promotes. Three things about it are not obvious:
 - **A production deployment is staged until promoted.** Deploying alone leaves
   the live domains on the previous build. The promote step is what makes a
   release live; Instant Rollback is the way back.
-- **`regions` is deliberately absent from `vercel.json`.** `sin1` belongs next
-  to the APAC database, and production still runs on `us-east-2`. Both move in
-  the cutover commit, together, or a tag would put the functions an ocean away
-  from their database.
+- **`vercel.json` pins `sin1`, and production's database is still in
+  `us-east-2`.** That pairing is wrong, and it is safe only because no tag is
+  cut until v3 is code complete. A tag before the cutover would put every
+  production request across the Pacific. If you ever need to ship a v2.5 fix
+  before then, drop `regions` in that commit.
 
 ## Invariants
 

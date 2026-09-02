@@ -1,4 +1,7 @@
 {
+  "regions": [
+    "sin1"
+  ],
   "git": {
     "deploymentEnabled": {
       "production": false

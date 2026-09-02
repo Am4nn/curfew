@@ -11,11 +11,13 @@
 
 ---
 
-See `.planning/PRD.md` for what and why, `.planning/PLAN.md` for build order,
-`.planning/schema.sql` for the data model, and `CLAUDE.md` for the invariants
-and voice.
+See `.planning/v3/SCOPE.md` for what and why, `.planning/v3/PLAN.md` for build
+order, `.planning/schema.sql` for the data model, and `CLAUDE.md` for the
+invariants and voice. `.planning/PRD.md` and `.planning/PLAN.md` are v1's, kept
+for the reasoning behind the invariants and superseded on scope.
 
-Status: **v1 and v2 complete, deployed.**
+Status: **v2.5 deployed. v3 in progress on `main`, Phase 0 done.** Production
+serves the latest version tag, so `main` moving does not move the live site.
 
 ## Stack
 

@@ -1,5 +1,9 @@
 # PLAN.md — building Curfew
 
+**Superseded by `v3/PLAN.md`.** Kept as the record of how v1 was built. Details
+here have moved on: the connection strings are now `DATABASE_URL_POOLED` and
+`DATABASE_URL_DIRECT`, and the build order is v3's nine phases.
+
 Companion to `PRD.md` (what and why) and `schema.sql` (the data model).
 This file is the build order.
 

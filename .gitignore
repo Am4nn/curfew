@@ -7,11 +7,13 @@ out/
 build/
 
 # env
+# The three environment files. All gitignored, all hold live secrets.
 .env
 .env.local
-.env.*.local
 .env.preview
-!.env.preview.example
+.env.production
+.env.*.local
+!.env.example
 
 # vercel
 .vercel

@@ -84,19 +84,25 @@ edit), the same statement above restores it.
 ## Commands
 
 ```
-bun run dev         start the dev server
+bun run dev         dev server against .env.preview (the APAC database)
+bun run local       dev server against .env.local (docker Postgres, mock data)
 bun run build       production build
 bun run typecheck   tsc --noEmit
-bun run migrate     apply migrations/*.sql over DIRECT_URL
+bun run migrate     apply migrations/*.sql, then sync the activity registry
 bun run auth:generate   regenerate Better Auth's table SQL (then reconcile)
 bun run test        Vitest, the domain core
 bun run verify      recompute a date range and diff the stored rows
 ```
 
-## Preview mode (local, no sign-in)
+Three env files, all gitignored, all with the same keys in the same order:
+`.env.local` (docker, mock data), `.env.preview` (the APAC database, and Vercel
+Preview), `.env.production` (the live database). `.env.example` is the key list.
+Only the values differ, so a key must exist in all three.
+
+## Local mode (no sign-in)
 
 A way to run the whole app against mock data with no Google sign-in, for UI/UX
-work. It is double-gated (`NODE_ENV !== "production"` **and** `PREVIEW_MODE=1`),
+work. It is double-gated (`NODE_ENV !== "production"` **and** `LOCAL_MODE=1`),
 so it can never run on Vercel, and it talks to a local Postgres, never Neon.
 
 1. **Local Postgres** (Docker):
@@ -105,28 +111,28 @@ so it can never run on Vercel, and it talks to a local Postgres, never Neon.
    docker run --name local-postgres -e POSTGRES_PASSWORD=<pw> -p 5432:5432 -d postgres
    ```
 
-2. **Env** — copy the template and set the same password:
+2. **Env** — copy the key list into `.env.local` and set the same password in
+   both connection strings:
 
    ```
-   cp .env.preview.example .env.preview
+   cp .env.example .env.local
    ```
 
-   This file is isolated from `.env.local` (loaded via dotenv-cli), and it sets
-   the local DB for all three connection vars so preview cannot resolve to a
-   real database.
+   Set `LOCAL_MODE=1`. Leave the R2 and Upstash values blank: uploads are
+   disabled locally and the rate limiter is off.
 
 3. **Migrate, seed, run**:
 
    ```
    bun install            # first time: pulls pg + dotenv-cli
-   bun run preview:migrate
-   bun run preview:seed   # wipes and rebuilds mock users, groups, check-ins, scores
-   bun run preview:dev
+   bun run local:migrate
+   bun run local:seed     # wipes and rebuilds mock users, groups, check-ins, scores
+   bun run local
    ```
 
 Open http://localhost:3000 signed in as the seeded **Preview Admin**. The seed
 covers approved/pending/removed users, multiple groups, an incoming invite,
-streaks, fines and grace. Re-run `preview:seed` any time to reset.
+streaks, fines and grace. Re-run `local:seed` any time to reset.
 
 A **PREVIEW** bar is pinned to the bottom of every page. It drives a mock clock
 (a `mock_now` cookie the server reads instead of the real time), so you can

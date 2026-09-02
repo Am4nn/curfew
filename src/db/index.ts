@@ -7,7 +7,7 @@ import { previewEnabled } from "@/lib/preview";
 import * as schema from "./schema";
 
 // Production talks to Neon over its pooled HTTP endpoint (serverless functions
-// open a connection per invocation, so never the direct URL: that is migrations
+// open a connection per invocation, so never DATABASE_URL_DIRECT: that is migrations
 // only, see PRD 6a). Preview mode talks to a local Postgres over node-postgres
 // instead, since the Neon HTTP driver cannot speak to a plain Postgres. The
 // Drizzle query API is identical across both drivers, and the app uses no
@@ -15,7 +15,7 @@ import * as schema from "./schema";
 // one. previewEnabled() is false in production, so pg is imported but never
 // connected there (kept out of the bundle via serverExternalPackages).
 export const db: NeonHttpDatabase<typeof schema> = previewEnabled()
-  ? (drizzlePg(new Pool({ connectionString: env.DATABASE_URL }), {
+  ? (drizzlePg(new Pool({ connectionString: env.DATABASE_URL_POOLED }), {
       schema,
     }) as unknown as NeonHttpDatabase<typeof schema>)
-  : drizzleHttp(neon(env.DATABASE_URL), { schema });
+  : drizzleHttp(neon(env.DATABASE_URL_POOLED), { schema });

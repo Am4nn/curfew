@@ -2,7 +2,7 @@
 // order over the DIRECT (non-pooled) Neon connection, tracking applied files in
 // a _migrations table. Idempotent: an already-applied file is skipped.
 //
-// Run with `bun run migrate`. Reads DIRECT_URL from the environment (bun loads
+// Run with `bun run migrate`. Reads DATABASE_URL_DIRECT from the environment (bun loads
 // .env.local automatically). This script deliberately does NOT import
 // src/lib/env.ts, so it can run before the auth secrets exist.
 
@@ -12,12 +12,21 @@ import { fileURLToPath } from "node:url";
 import { Pool as NeonPool, neonConfig } from "@neondatabase/serverless";
 import { Pool as PgPool } from "pg";
 
-// Migrations run over the DIRECT (non-pooled) endpoint. Accept DIRECT_URL, or
-// fall back to DATABASE_URL (Neon's own export names the direct string that).
-const DIRECT_URL = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
-if (!DIRECT_URL) {
-  console.error("DIRECT_URL / DATABASE_URL is not set. See .env.example.");
+// Migrations run over the DIRECT (non-pooled) endpoint. One name, no fallbacks:
+// the value differs per environment, .env.local points it at the APAC project.
+const DATABASE_URL_DIRECT = process.env.DATABASE_URL_DIRECT;
+if (!DATABASE_URL_DIRECT) {
+  console.error("DATABASE_URL_DIRECT is not set. See .env.example.");
   process.exit(1);
+}
+
+// Say which database is about to be written to. Host and database only: the
+// connection string carries a password and this output ends up in CI logs.
+try {
+  const u = new URL(DATABASE_URL_DIRECT);
+  console.log(`target ${u.hostname}${u.pathname}`);
+} catch {
+  console.log("target (unparsable connection string)");
 }
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "migrations");
@@ -32,11 +41,11 @@ const files = readdirSync(migrationsDir)
 // Both drivers expose the same query/connect/end API used below; type against
 // node-postgres and cast the Neon pool to it.
 let pool: PgPool;
-if (process.env.PREVIEW_MODE === "1") {
-  pool = new PgPool({ connectionString: DIRECT_URL });
+if (process.env.LOCAL_MODE === "1") {
+  pool = new PgPool({ connectionString: DATABASE_URL_DIRECT });
 } else {
   neonConfig.webSocketConstructor = globalThis.WebSocket;
-  pool = new NeonPool({ connectionString: DIRECT_URL }) as unknown as PgPool;
+  pool = new NeonPool({ connectionString: DATABASE_URL_DIRECT }) as unknown as PgPool;
 }
 
 try {

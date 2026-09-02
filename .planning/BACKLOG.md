@@ -38,3 +38,13 @@ invariants in `../CLAUDE.md` still govern anything built from here. Moved out of
    recorded as an `email.*` event that scoring never reads (invariant 2); copy
    stays in the clerk voice. Watch total volume; per-user email preferences may be
    needed before adding recurring or activity-driven mail.
+
+## Requests and feedback (after v3)
+
+Two forms in the app, both landing in a new Admin tab:
+
+- **Request an activity type.** The catalog tells users to ask an admin for a
+  type Curfew does not have. That ask needs somewhere to go.
+- **Feedback.** Free text, tied to the user, visible to admins.
+
+Nothing in the UI mentions the project being open source until it actually is.

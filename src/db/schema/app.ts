@@ -229,3 +229,21 @@ export const balances = pgView("balances", {
   currency: char("currency", { length: 3 }),
   netOwed: bigint("net_owed", { mode: "number" }),
 }).existing();
+
+// v3, decision 63. Which activity types the app offers. The module registry in
+// code says what a type is; this says only whether it is available, which is
+// the one thing an admin changes at runtime. Append-only: a change is a new
+// row, resolved as "the latest row at or before an instant". effective_at is a
+// timestamptz because admin switches take effect immediately (decision 65).
+export const activityTypes = pgTable("activity_types", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  typeKey: text("type_key").notNull(),
+  enabled: boolean("enabled").notNull(),
+  effectiveAt: timestamp("effective_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  changedBy: text("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});

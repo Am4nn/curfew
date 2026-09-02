@@ -7,10 +7,13 @@ out/
 build/
 
 # env
+# Environment files. All hold live secrets.
 .env
 .env.local
-.env.*.local
 .env.preview
+.env.production
+.env.*.local
+!.env.example
 !.env.preview.example
 
 # vercel

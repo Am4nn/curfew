@@ -1,0 +1,75 @@
+name: Deploy
+
+# Production ships on a version tag, never on a push. Vercel's git integration
+# ignores tags, so production deploys come from the CLI here and the Production
+# Branch setting points at a branch nobody pushes. Pushes to main are Preview
+# deployments, which Vercel makes on its own.
+#
+# The build runs here, not on Vercel: `vercel pull` fetches the environment,
+# `vercel build` compiles against it, and `--prebuilt` uploads the result. So
+# the secrets stay in Vercel and GitHub needs only the three below.
+#
+# Two ways in:
+#   a v* tag        deploys to PRODUCTION
+#   Run workflow    deploys a PREVIEW, to prove the pipeline without touching
+#                   the live site. Use this first, and after any edit here.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.event_name == 'push' && 'production' || 'preview' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # A tag is the real thing. A manual run is a dry run against Preview.
+      TARGET: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      PROD: ${{ github.event_name == 'push' && '--prod' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # A tag that fails these must not reach production. CI already ran on the
+      # commit, but a tag can be moved and this is the last gate before a
+      # deploy that real people see.
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun run test
+
+      # The admin console reads its version from package.json, so a tag that
+      # disagrees with it would put a number on screen that is not what shipped.
+      # Bump package.json in the commit you tag.
+      - name: Tag matches package.json version
+        if: github.event_name == 'push'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "tag $GITHUB_REF_NAME does not match package.json version $pkg"
+            exit 1
+          fi
+          echo "shipping $pkg"
+
+      - name: Pull the $TARGET environment
+        run: bunx vercel pull --yes --environment=$TARGET --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: bunx vercel build $PROD --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        run: bunx vercel deploy --prebuilt $PROD --token=${{ secrets.VERCEL_TOKEN }}

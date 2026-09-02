@@ -1,9 +1,9 @@
 // Seed the local preview database with mock data covering every app state.
-// Preview only: refuses to run unless PREVIEW_MODE=1, so it can never touch a
+// Local only: refuses to run unless LOCAL_MODE=1, so it can never touch a
 // real database. Wipes the app tables and rebuilds a deterministic world, then
 // runs the real scorer so scores, outcomes and the ledger are authentic.
 //
-//   bun run preview:seed   (which sets PREVIEW_MODE + the local DB via dotenv)
+//   bun run local:seed   (which loads .env.local via dotenv-cli)
 
 import { DateTime } from "luxon";
 import { randomUUID } from "node:crypto";
@@ -24,8 +24,8 @@ import {
 import { getActivityType } from "@/domain";
 import { scoreAll } from "@/server/scoring";
 
-if (process.env.PREVIEW_MODE !== "1") {
-  console.error("Refusing to seed: PREVIEW_MODE is not 1. This script is preview-only.");
+if (process.env.LOCAL_MODE !== "1") {
+  console.error("Refusing to seed: LOCAL_MODE is not 1. This script is local-only.");
   process.exit(1);
 }
 

@@ -36,8 +36,8 @@ jobs:
       - name: Build
         run: bun run build
         env:
-          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-          DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+          DATABASE_URL_POOLED: postgresql://ci:ci@localhost:5432/ci
+          DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
           BETTER_AUTH_SECRET: ci-build-secret-not-used-at-runtime
           BETTER_AUTH_URL: http://localhost:3000
           GOOGLE_CLIENT_ID: ci-google-client-id
@@ -45,3 +45,53 @@ jobs:
           CRON_SECRET: ci-cron-secret
           RESEND_API_KEY: ci-resend-key
           EMAIL_FROM: "Curfew <notices@example.com>"
+
+  # Migrations and the registry sync, against a throwaway Postgres. This proves
+  # `bun run migrate` applies every numbered file cleanly from empty and that
+  # sync-activities reconciles every registered module into a row.
+  #
+  # It cannot prove the DEPLOYED database is in sync: a fresh database has no
+  # rows until this job's own sync writes them. That guard is the same
+  # `--check`, run against the real database after a deploy. See CONFIG.md.
+  migrate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # LOCAL_MODE routes both scripts through node-postgres, since the Neon
+      # driver cannot speak to a plain Postgres.
+      LOCAL_MODE: "1"
+      DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Migrate from empty
+        run: bun run scripts/migrate.ts
+
+      - name: Sync the activity registry
+        run: bun run scripts/sync-activities.ts
+
+      - name: Every module has a row
+        run: bun run scripts/sync-activities.ts --check
+
+      - name: Migrating twice changes nothing
+        run: bun run scripts/migrate.ts

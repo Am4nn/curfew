@@ -1,0 +1,168 @@
+# ARCHITECTURE.md — How v3 is built
+
+Server-side decisions, taken 2026-09-03. Companion to `CONFIG.md`, which covers
+the registry, app settings and caching. The screen-by-screen contract is
+`SCREENS.md`; the build order is `PLAN.md`.
+
+## Runtime
+
+Vercel, Neon, Cloudflare R2, Vercel Cron, Upstash Redis (decision 76). Nothing
+new except R2 and Upstash. Better Auth stays, ids stay `text`, table names stay
+plural, and the two Neon connection strings stay as they are: pooled for the
+app, direct for migrations.
+
+## Schema: evolve, and rewrite the engine on top
+
+Data is a fresh start (decision 22), the schema is not (decision 69).
+
+**Kept as they are**, because v1 got their shape right and it took a long time to
+get right:
+
+- `events` — the source of truth, append-only, namespaced types.
+- `ledger_entries` — append-only, corrections are compensating rows.
+- `users`, `groups`, `group_members`, `invites`.
+- The effective-dated, insert-only config pattern.
+
+**Reshaped:**
+
+| Table | Change |
+|---|---|
+| `activity_types` | New. One row a module key, `enabled`, `effective_at`. See `CONFIG.md` |
+| `app_settings` | New. Append-only, `effective_at`, one row a change |
+| `user_activities` | Replaces per-user activity opt-in. Type key, enabled, effective-dated config as JSON validated by the module's schema |
+| `activity_scores` | Gains the period unit and the schedule that produced it, so a weekly row is distinguishable from a daily one |
+| `activity_outcomes` | Per group. Gains the settling flag, so a period inside the 7 days is scored but excluded from reputation |
+| `group_activity_types` | New. Which types a group accepts, plus the per-group money override |
+| `group_shares` | New. Per member, per type: shared, and evidence shared |
+| `reputation_daily` | New. One row a user a group a day, derived and rebuildable |
+| `evidence` | New. Owner, activity, period, window, storage key, bytes, mime, `delete_after` |
+| `notices` | New. What an admin announced, and who has acknowledged it |
+
+**Rewritten from scratch:** `periodStart()`, the pass tests, the module
+interface, the check-in state machine. These are the parts v3 outgrew.
+
+## Activity modules: a declarative spec
+
+A module is one file with no React in it (decision 73). It declares what the type
+is; the engine renders every screen from that declaration.
+
+```ts
+export const gym = {
+  key: "gym",
+  name: "Gym",
+  description: "Sessions counted over a week",
+  icon: "gym",
+  defaults: {
+    schedule: { kind: "minimum", perWeek: 3 },
+    grace: 2,
+  },
+  configSchema: z.object({ ... }),
+  evidence: { level: "required", source: "live" },
+  checkin: { kind: "tap" },
+  pass: (periods, config) => ({ passed, detail }),
+}
+```
+
+`checkin.kind` is the whole UI contract. Five shapes cover the twelve types:
+
+| Kind | Used by | What the engine draws |
+|---|---|---|
+| `tap` | Gym, Office | One button. Optional photo slot if the type asks for one |
+| `counter` | Water, Food | A +1 that repeats within the period, showing progress |
+| `number` | Steps, Screen, Study, Reading | A numeric field against the target, with the rule's direction |
+| `camera` | Food, Supplements, Sleep | The check-in page with a photo slot that blocks Send when required |
+| `declare` | Nightfast, Sugar-free | Two answers: it held, or I slipped |
+
+The engine consumes `{ passed, detail }` and never inspects `detail`
+(invariant 6). Nothing outside a module knows what its type means, and no
+`switch` on a type key exists outside the registry.
+
+**The trade this makes:** a genuinely new check-in shape means extending the
+engine, not just adding a module. That is the point. Twelve modules shipping
+their own components is twelve places to drift from the mocks, and an outside
+contributor writing UI that does not match the house style.
+
+Stats charts follow the same rule: a module names its chart kind
+(`windowed`, `numeric`, `weekly`, `binary`) and the engine draws it.
+
+## Scoring: nightly cron, lazy close on read
+
+Decision 70.
+
+**The job** runs nightly on Vercel Cron, as a route handler behind a secret:
+
+1. Close every period that ended, per user, in the user's timezone.
+2. Score it through the module's pass test, resolving config as it stood on that
+   period (invariant 5).
+3. Write `activity_scores`, then `activity_outcomes` per group, applying grace
+   and fines.
+4. Recompute `reputation_daily`.
+5. Sweep evidence past its `delete_after`.
+
+**The lazy path** exists so nothing is ever wrong because a job was late. Any
+read that needs a period which has closed but is not yet scored closes it on the
+spot, through the same function the cron calls. One implementation, two callers.
+
+Both paths are idempotent: scoring a period twice produces the same rows.
+
+## Reputation: nightly batch, replayable
+
+Decision 72. One pass a night per user a group, appending a row a day to
+`reputation_daily`. Rebuildable by replaying daily deltas from the join date,
+checkpointed monthly as an optimisation and never as truth. `bun run verify`
+recomputes a range and diffs it, exactly as it does for `activity_scores`.
+
+The settling rule (decision 54) lives here: a period inside an activity's first
+7 days is scored normally and excluded from the delta. Fines still apply.
+
+## Evidence: presigned PUT straight to R2
+
+Decision 71. No image ever passes through a serverless function.
+
+1. The client compresses and strips EXIF in the browser, on a canvas re-encode.
+   Longest edge capped, JPEG quality tuned to a few hundred KB.
+2. It asks the server for an upload URL. The server writes an `evidence` row in
+   `pending` state and returns a short-lived presigned PUT.
+3. The browser PUTs the file directly to R2.
+4. It calls back to confirm. The server marks the row `stored` and records the
+   check-in event in the same transaction.
+
+Consequences that matter:
+
+- **The check-in is the callback, not the upload.** A file in R2 with no
+  confirmed row is an orphan, swept by the nightly job. A check-in never exists
+  without its photo.
+- Reads are short-lived presigned GETs, issued only to the owner and to members
+  of groups that member shares that activity's evidence with.
+- R2 has no egress fees, which is the cost that grows with a group evidence view.
+
+## Rate limiting
+
+Upstash Redis (decision 75), sliding window, on check-in writes and on upload-URL
+requests. Two limits worth naming now: presigned URLs per user per hour, and
+check-ins per activity per period, since a `counter` type invites repeat taps.
+
+## Validation and errors
+
+Every input validates in place (decision 47). The rule is that validation lives
+in the module's `configSchema` and in the domain, never only in the form, so the
+server rejects what the client would have. A failed save returns which fields
+failed and why, and the screen marks them where they are with Save disabled. The
+mock board `V3CfgErrors` is the reference.
+
+## Testing
+
+- **Domain core under Vitest**, no database: pass tests per module, period
+  boundaries, streak rules including the graced week, reputation deltas
+  including the ceiling drift and the settling window.
+- **`bun run verify`** extended to reputation, recomputing a range and diffing
+  stored rows.
+- **Preview mode** carries forward from v2.5: double-gated, mock clock, seeded
+  data. It gains seed data for all twelve types so every screen in `SCREENS.md`
+  can be opened without a real account.
+
+## Not in v3
+
+RLS stays deferred, so `assertMember()` in the query layer remains the only wall
+(invariant 10). The security round after v3 must confirm it holds on every new
+query in this document.

@@ -6,15 +6,13 @@ node_modules/
 out/
 build/
 
-# env
-# Environment files. All hold live secrets.
+# The three environment files. All gitignored, all hold live secrets.
 .env
 .env.local
 .env.preview
 .env.production
 .env.*.local
 !.env.example
-!.env.preview.example
 
 # vercel
 .vercel

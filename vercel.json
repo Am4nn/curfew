@@ -1,4 +1,9 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "production": false
+    }
+  },
   "crons": [
     {
       "path": "/api/cron/score",

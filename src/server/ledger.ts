@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import { ledgerEntries, groups, groupMembers, users } from "@/db/schema";
 import { splitFine } from "@/domain";
+import { assertMember } from "./membership";
 
 // One member's outcome for one period in one group.
 export interface OutcomeRow {
@@ -118,9 +119,14 @@ export async function getUserGroups(
     .where(and(eq(groupMembers.userId, userId), isNull(groupMembers.leftAt)));
 }
 
+// Membership is checked HERE, not by the caller. Invariant 10 says every
+// group-scoped query goes through assertMember, and a helper that trusts its
+// caller is the one that eventually gets called from somewhere that forgot.
 export async function listGroupMembers(
   groupId: string,
+  viewerId: string,
 ): Promise<{ userId: string; name: string; leftAt: string | null }[]> {
+  await assertMember(groupId, viewerId);
   return db
     .select({
       userId: users.id,
@@ -170,8 +176,8 @@ export async function getUserDebts(
 
   for (const g of groups) {
     const [members, rows] = await Promise.all([
-      listGroupMembers(g.groupId),
-      getGroupLedgerRows(g.groupId),
+      listGroupMembers(g.groupId, userId),
+      getGroupLedgerRows(g.groupId, userId),
     ]);
     const nameById = new Map(members.map((m) => [m.userId, m.name]));
 
@@ -206,7 +212,11 @@ export async function getUserDebts(
   return { owe, owed };
 }
 
-export async function getGroupLedgerRows(groupId: string): Promise<LedgerRow[]> {
+export async function getGroupLedgerRows(
+  groupId: string,
+  viewerId: string,
+): Promise<LedgerRow[]> {
+  await assertMember(groupId, viewerId);
   const uf = alias(users, "uf");
   const ut = alias(users, "ut");
   return db

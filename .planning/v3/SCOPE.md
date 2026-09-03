@@ -203,6 +203,9 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 111 | **Deleting keeps the event rows and detaches them.** `TRUST-SAFETY.md` left the tension between invariant 1 and the right to delete open. Settled: events are kept but stripped of anything identifying and unlinked from the person, so their history stops being theirs while everything that rebuilds from events still works. Photographs, personal fields and every derived row go outright | 2026-09-03 |
 | 112 | **A user row is never hard-deleted, it is scrubbed.** Ledger rows point at it, and a debt with no counterparty is not a debt. The name and email go, sessions and linked accounts go, and signing in becomes impossible | 2026-09-03 |
 | 113 | **Personal stats live at `/stats`, and `/chart` is gone.** Every artboard, every `SCREENS.md` row and the tab bar said `/stats`; `/chart` was a v2.5 name for a screen that only ever showed sleep | 2026-09-03 |
+| 114 | **The consent form and the security round ship in v3.** `TRUST-SAFETY.md` marked them "after v3"; those headings predate the phase plan, and shipping a photo-sharing app to real people with no consent record and no security pass is not defensible. Content rules and reporting stay deferred: groups are invite-only, so the exposure is bounded | 2026-09-03 |
+| 115 | **Consent is a blocking gate everyone passes once**, versioned, in the root layout beside the notice overlay. It blocks rather than redirects because it has to reach every screen without each one remembering to check. The same text is in Settings, because a thing you agreed to once and can never see again is not something you agreed to | 2026-09-03 |
+| 116 | **`bun run break-in` is a command, not a checklist.** Every item on the security round runs against the real database and exits non-zero if anything gives, so the pass can be repeated rather than remembered | 2026-09-03 |
 
 ## Invariants
 

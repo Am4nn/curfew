@@ -7,6 +7,7 @@ import { getPersonalSettings } from "@/server/settings";
 import { listUserActivities } from "@/server/activities";
 import { listUserGroups } from "@/server/groups";
 import { RETENTION_DAYS } from "@/server/evidence";
+import { consentOf } from "@/server/consent";
 import { QuorumMark } from "../mark";
 import { ThemeToggle } from "../theme-toggle";
 import { SignOut } from "../sign-out";
@@ -26,11 +27,12 @@ export default async function Settings() {
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const [personal, admin, activities, groups] = await Promise.all([
+  const [personal, admin, activities, groups, consent] = await Promise.all([
     getPersonalSettings(user.id),
     hasAdminAccess(user.id),
     listUserActivities(user.id),
     listUserGroups(user.id),
+    consentOf(user.id),
   ]);
   const theme = (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
   const tracked = activities.filter((a) => a.enabled).length;
@@ -80,6 +82,11 @@ export default async function Settings() {
               <span className="text-[11px] text-muted">{RETENTION_DAYS} days</span>
             </div>
             <Row label="How reputation works" href="/ranks" />
+            <Row
+              label="What Curfew stores"
+              value={consent ? `accepted ${consent.acceptedAt.toISOString().slice(0, 10)}` : undefined}
+              href="/settings/stored"
+            />
             <Row label="Delete data" href="/settings/data" />
           </div>
         </section>

@@ -17,6 +17,7 @@
     "sync:activities": "dotenv -e .env.preview -- bun run scripts/sync-activities.ts",
     "score": "dotenv -e .env.preview -- bun run scripts/score.ts",
     "verify": "dotenv -e .env.preview -- bun run scripts/verify.ts",
+    "break-in": "dotenv -e .env.preview -- bun run scripts/break-in.ts",
     "local:migrate": "dotenv -e .env.local -- bun run scripts/migrate.ts && dotenv -e .env.local -- bun run scripts/sync-activities.ts",
     "local:seed": "dotenv -e .env.local -- bun run scripts/seed-local.ts",
     "migrate:production": "dotenv -e .env.production -- bun run scripts/migrate.ts && dotenv -e .env.production -- bun run scripts/sync-activities.ts",

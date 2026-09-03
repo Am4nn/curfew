@@ -24,7 +24,7 @@ export default async function GroupSettingsTab({
     acceptedTypes(groupId),
     sharesFor(groupId, user.id),
     listUserActivities(user.id),
-    listGroupMembers(groupId),
+    listGroupMembers(groupId, user.id),
     getAppConfig(),
     resolveAppSettingAt("money", new Date()),
   ]);

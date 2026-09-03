@@ -24,7 +24,7 @@ Money is optional and can be switched off entirely.
 
 ## Current phase
 
-**v3, Phases 0 to 8 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
+**v3, Phases 0 to 9 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
 designed and specified: twelve activity types with per-user schedules and
 thresholds, photo evidence, a 0 to 1000 reputation per group with six ranks,
 group stats, an admin console that can switch whole systems off, and a fresh
@@ -55,8 +55,13 @@ start on data. Every screen is mocked in `.design/` and listed in
   catalog, personal stats at `/stats` with its four chart kinds, settings,
   sharing, the ranks page and deleting your data.
 
-**Next is Phase 9, before anyone uses it.** Do not begin a phase whose
-predecessor is unticked.
+- **Phase 9** before anyone uses it: the consent gate, the security round as
+  `bun run break-in`, and CONTRIBUTING with the add-an-activity-type
+  walkthrough.
+
+**All nine phases are done. What remains is the cutover**, below, and the
+`SCREENS.md` review gate, which is a person opening each screen beside its
+artboard.
 
 **The Configure and Check-in rows in `SCREENS.md` are unticked on purpose.**
 Ticking one means a person has opened the screen beside its artboard. Both sets
@@ -186,6 +191,7 @@ dev        bun run dev             — Next.js against .env.preview (APAC)
 local      bun run local           — Next.js against .env.local (docker, mock data)
 test       bun run test            — Vitest, domain core, no database
 migrate    bun run migrate         — migrations, then sync, against .env.preview
+break-in   bun run break-in        — the security round; non-zero if anything gives
 sync       bun run sync:activities — registry into activity_types, disabled
 verify     bun run verify          — recompute a range and diff stored rows
 seed       bun run local:seed      — mock data into the local database

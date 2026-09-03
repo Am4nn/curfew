@@ -384,3 +384,15 @@ export const groupActivityRules = pgTable("group_activity_rules", {
   changedBy: text("changed_by").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// What somebody accepted, and when. Append-only and versioned: an old
+// acceptance does not cover new wording, and a re-acceptance is another row.
+// See migrations/0013.
+export const consentRecords = pgTable("consent_records", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -33,7 +33,7 @@ of truth and everything rebuilds from it. Deleting events breaks rebuildability.
   go, sessions and linked accounts go, and signing in becomes impossible.
 - Exactly what is never deleted is stated in the policy and in the consent form.
 
-## The consent form (after v3)
+## The consent form
 
 The user accepts this at signup. It must be readable, not a wall. It states, in
 plain words:
@@ -66,17 +66,26 @@ Photos of people, in a group, means rules and a way to enforce them.
 - Because groups are invite-only, the exposure is bounded. That changes the day
   open signup lands, and content rules must be revisited before it does.
 
-## Security round (after v3)
+## Security round
 
 Two passes, written into the release checklist:
 
 1. **Security review.** Auth, session handling, signed URL scope and expiry,
    `assertMember` coverage on every query, object storage bucket policy, EXIF
    stripping, rate limits on capture and check-in, and injection surfaces.
-2. **Break our own app.** Deliberately attempt: check-in replay, back-dating a
-   check-in, fetching another group's evidence URL, escalating to owner,
-   scrubbing reputation by un-sharing, uploading a non-image, uploading something
-   enormous, and deleting an account with money outstanding. Fix what falls over.
+2. **Break our own app.** `bun run break-in` runs every one of these against the
+   real database and exits non-zero if anything gives: check-in replay,
+   back-dating a check-in, reading another group's evidence and standings,
+   escalating to owner, back-dating a fine, scrubbing reputation by un-sharing,
+   uploading a non-image, uploading something enormous, claiming another
+   member's photo, skipping a required photo, and deleting an account with money
+   outstanding.
+
+   All of them hold. The review found two real gaps and both are fixed:
+   `getGroupLedgerRows` and `listGroupMembers` took a group id and trusted their
+   caller to have checked membership. Invariant 10 says every group-scoped query
+   goes through `assertMember`, and a helper that trusts its caller is the one
+   that eventually gets called from somewhere that forgot.
 
 RLS is still deferred (`../BACKLOG.md`), so query-layer membership enforcement is
 the only wall. The security round must confirm it holds everywhere.

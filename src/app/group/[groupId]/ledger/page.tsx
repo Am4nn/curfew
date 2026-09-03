@@ -27,7 +27,7 @@ export default async function GroupLedger({
 
   const [header, rows, balances] = await Promise.all([
     groupHeader(groupId, user.id),
-    getGroupLedgerRows(groupId),
+    getGroupLedgerRows(groupId, user.id),
     groupBalances(groupId, user.id),
   ]);
   if (!header) redirect("/groups");

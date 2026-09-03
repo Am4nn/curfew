@@ -179,7 +179,25 @@ The settling rule (decision 54) lives here: a period inside an activity's first
 Decision 71. No image ever passes through a serverless function.
 
 1. The client compresses and strips EXIF in the browser, on a canvas re-encode.
-   Longest edge capped, JPEG quality tuned to a few hundred KB.
+   The canvas only ever holds pixels, so every scrap of metadata, GPS included,
+   is gone by construction rather than by a stripping pass that could miss a
+   field.
+
+   **The settings are the module's** (decision 97): Food is 1600px at quality
+   0.80, everything else 1280 at 0.75. Output is WebP where the browser can
+   encode it and JPEG where it cannot (decision 98), which is about 180 KB a
+   photo, or 110 KB in WebP. Six photos a day for fifty people over a 30-day
+   retention is under 2 GB, well inside R2's free 10 GB, so the constraint this
+   is tuned against is **upload time on a bad connection**, not cost.
+
+   Anything the browser can decode is re-encoded rather than refused
+   (decision 100): a 40 MB HEIC from a gallery becomes a 180 KB JPEG and never
+   reaches the network at full size. The only refusals are a source over 50 MB,
+   refused before it is read, and a file that will not decode.
+
+   **One object per check-in** (decision 99). No thumbnail: a second object
+   would double the presigned URLs, the sweep entries and the ways a file can
+   be orphaned, to save bytes that are already small.
 2. It asks the server for an upload URL. The server writes an `evidence` row in
    `pending` state and returns a short-lived presigned PUT.
 3. The browser PUTs the file directly to R2.

@@ -130,6 +130,9 @@ decision 108.
 
 **Done when:** every remaining row in `SCREENS.md` is ticked.
 
+Deleting data landed here rather than in Phase 9, account deletion included.
+`/chart` became `/stats`, which is what every artboard says.
+
 ## Phase 9 — Before anyone uses it
 
 - Consent form and policies (`TRUST-SAFETY.md`).

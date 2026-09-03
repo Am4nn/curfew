@@ -31,7 +31,10 @@ export async function NoticeOverlay() {
 
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto px-[18px] py-4">
           {pending.map((notice) => (
-            <p key={notice.id} className="text-[12px] leading-[1.6] text-muted">
+            <p
+              key={notice.id}
+              className="whitespace-pre-line text-[12px] leading-[1.6] text-muted"
+            >
               {notice.body}
             </p>
           ))}

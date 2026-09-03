@@ -57,6 +57,22 @@ const SETTING_COPY: Record<string, { name: string; on: string[]; off: string[] }
   },
 };
 
+/**
+ * The notice a user sees, built from the same blocks the admin was shown.
+ *
+ * Nobody types this. An admin who has just read what a change does should not
+ * then have to write it out again in their own words, and a hand-written notice
+ * can say something the change did not do.
+ */
+export function noticeFrom(changes: Consequence[]): string {
+  return changes
+    .map((c) => {
+      const head = `${c.name} is now ${c.state}.`;
+      return [head, ...c.lines].join(" ");
+    })
+    .join("\n\n");
+}
+
 export function settingConsequence(key: string, value: unknown): Consequence {
   const copy = SETTING_COPY[key];
   if (!copy) {

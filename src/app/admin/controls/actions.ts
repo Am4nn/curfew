@@ -8,7 +8,8 @@ import { saveControls, type PendingChange } from "@/server/controls";
 export interface SaveControlsInput {
   changes: PendingChange[];
   notify: boolean;
-  noticeBody: string;
+  /** Composed from the confirm sheet's own blocks, never typed by hand. */
+  notice: string;
 }
 
 export async function saveControlsAction(input: SaveControlsInput): Promise<void> {
@@ -18,11 +19,7 @@ export async function saveControlsAction(input: SaveControlsInput): Promise<void
 
   // The notice is written only when the box was ticked (decision 57). It is
   // unticked by default, so announcing a change is always a deliberate act.
-  await saveControls(
-    input.changes,
-    user.id,
-    input.notify ? input.noticeBody : undefined,
-  );
+  await saveControls(input.changes, user.id, input.notify ? input.notice : undefined);
 
   revalidatePath("/admin/controls");
   revalidatePath("/", "layout");

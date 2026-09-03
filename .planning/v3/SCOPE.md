@@ -146,7 +146,7 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 54 | A newly added or newly shared activity has a **7-day settling period** before it can move reputation. Fines still apply from day one | 2026-09-02 |
 | 55 | The schedule is one control: a day row with an ANY cell that turns it into a minimum a week. Period is not a separate field | 2026-09-03 |
 | 56 | **Nothing an admin toggles saves on the flip.** A changed switch is marked unsaved, a bar offers Discard or a red Save, and Save opens a sheet built from the pending changes with the consequences of each | 2026-09-03 |
-| 57 | The sheet carries an unticked "tell users what changed" checkbox | 2026-09-03 |
+| 57 | The sheet carries an unticked "tell users what changed" checkbox. **The notice is composed from the sheet's own blocks, never typed.** An admin who has just read what a change does should not write it out again, and a hand-written notice can claim something the change did not do | 2026-09-03 |
 | 58 | A user notice is a **blocking overlay on every route**, not a banner. The app does nothing until it is acknowledged. One at a time, and acknowledging is final | 2026-09-03 |
 | 59 | **Every calculation resolves the on/off state as it stood on the period being scored.** Turning anything off never rewrites history and never creates a retroactive miss. See the table in `ACTIVITIES.md` | 2026-09-03 |
 | 60 | Admin console is Overview, Users, Insights, Controls, Ops. Overview approves pending users inline. Controls regulates the whole app. Admin counts behaviour and never reads it | 2026-09-03 |

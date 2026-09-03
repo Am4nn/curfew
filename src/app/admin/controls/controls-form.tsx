@@ -7,6 +7,7 @@ import {
   settingConsequence,
   retentionConsequence,
   typeConsequence,
+  noticeFrom,
   type Consequence,
 } from "./consequences";
 
@@ -100,8 +101,8 @@ export function ControlsForm({
   const [draft, setDraft] = useState<Draft>(initial);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [notify, setNotify] = useState(false);
-  const [noticeBody, setNoticeBody] = useState("");
-  const [pending, startTransition] = useTransition();
+
+  const [saving, startTransition] = useTransition();
 
   const changes: PendingChange[] = useMemo(() => {
     const out: PendingChange[] = [];
@@ -141,10 +142,11 @@ export function ControlsForm({
 
   function save() {
     startTransition(async () => {
-      await saveControlsAction({ changes, notify, noticeBody });
+      // The notice is the sheet's own words, so a user reads exactly what the
+      // admin was shown before they saved.
+      await saveControlsAction({ changes, notify, notice: noticeFrom(consequences) });
       setSheetOpen(false);
       setNotify(false);
-      setNoticeBody("");
     });
   }
 
@@ -333,16 +335,6 @@ export function ControlsForm({
                 <span className="text-[12.5px]">Tell users what changed</span>
               </label>
 
-              {notify ? (
-                <textarea
-                  value={noticeBody}
-                  onChange={(e) => setNoticeBody(e.target.value)}
-                  rows={3}
-                  placeholder="Money is off. Your balances are kept and come back if it returns."
-                  className="w-full border border-rule bg-transparent p-[10px] text-[12.5px] leading-[1.5] text-fg placeholder:text-muted"
-                />
-              ) : null}
-
               <span className="text-[11px] leading-[1.55] text-muted">
                 A switch hides a system. Nothing here deletes data, and switching back
                 restores what was hidden.
@@ -359,10 +351,10 @@ export function ControlsForm({
                 <button
                   type="button"
                   onClick={save}
-                  disabled={pending || (notify && noticeBody.trim().length === 0)}
+                  disabled={saving}
                   className="h-[46px] flex-1 border border-penalty bg-penalty text-[13.5px] font-semibold text-bg disabled:opacity-50"
                 >
-                  {pending ? "Saving" : "Save changes"}
+                  {saving ? "Saving" : "Save changes"}
                 </button>
               </div>
             </div>

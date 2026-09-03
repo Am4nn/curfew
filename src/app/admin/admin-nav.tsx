@@ -15,7 +15,7 @@ export function AdminNav({ tabs }: { tabs: [string, string][] }) {
             href={href}
             aria-current={active ? "page" : undefined}
             className={
-              "whitespace-nowrap pb-2 text-[13px] " +
+              "whitespace-nowrap pb-[10px] text-[9.5px] uppercase tracking-[0.08em] " +
               (active ? "border-b-2 border-fg text-fg" : "text-muted")
             }
           >

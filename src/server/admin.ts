@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNull, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, like, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   userApprovals,
@@ -6,18 +6,25 @@ import {
   sessions,
   groups,
   groupMembers,
+  groupInvites,
   activityScores,
   activityOutcomes,
   groupActivityRules,
+  groupActivityTypes,
   ledgerEntries,
   events,
   balances,
+  userActivities,
+  evidence,
+  reputationDaily,
 } from "@/db/schema";
+import { resolveAt, getActivityType } from "@/domain";
 import { recordEvent } from "./events";
 import { accountDisabledEmail, approvalEmail, sendEmailBestEffort } from "./email";
 import { userBalances } from "./groups";
-import { scoreAll } from "./scoring";
+import { scoreAll, rebuildAll } from "./scoring";
 import { verifyAll, type Drift } from "./verify";
+import { evidenceOps, humanBytes } from "./ops";
 import {
   roleCapabilities,
   roleHas,
@@ -71,60 +78,161 @@ async function scalar(query: Promise<{ n: unknown }[]>): Promise<number> {
 
 // ---- Overview -------------------------------------------------------------
 
+// The six tiles on .design/V3AdminOverview.dc.html, in that order.
 export interface Overview {
   usersTotal: number;
-  usersPending: number;
-  usersApproved: number;
-  admins: number;
-  groups: number;
-  activeMemberships: number;
-  events: number;
-  checkins7d: number;
-  totalFined: number; // minor units, fines only
-  outstanding: number; // sum of positive net balances
-  lastScoredAt: Date | null;
+  groupsTotal: number;
+  pendingInvites: number; // group_invites still status='pending', not user approvals
+  activitiesTracked: number; // user_activities rows currently switched on
+  evidenceBytes: number;
+  checkinsScoredPct: number | null; // null when there is nothing to score yet
+}
+
+// "LAST NIGHT'S RUN": there is no persisted run log (no cron writes a summary
+// anywhere), so every row here is computed live, on read, from the derived
+// tables the nightly job itself writes. That means these numbers describe the
+// most recent closed period on file, not literally "last night" if the cron
+// has not run since. See the Ops page for the same honesty tradeoff on
+// "DRIFT, LAST RUN".
+export interface LastRun {
+  scoring: { periodsClosed: number; ok: true };
+  reputation: { usersRecomputed: number; ok: true };
+  retentionSweep: { photosDeleted: number; ok: true };
+  driftCheck: { periodsDiffer: number; ok: boolean };
 }
 
 export async function getOverview(): Promise<Overview> {
-  const weekAgo = new Date(Date.now() - 7 * 864e5);
-  const [
-    usersTotal,
-    usersPending,
-    usersApproved,
-    admins,
-    groupCount,
-    activeMemberships,
-    eventCount,
-    checkins7d,
-    totalFined,
-    outstanding,
-    lastScoredRow,
-  ] = await Promise.all([
-    scalar(db.select({ n: sql`count(*)` }).from(users)),
-    scalar(db.select({ n: sql`count(*)` }).from(userApprovals).where(eq(userApprovals.status, "pending"))),
-    scalar(db.select({ n: sql`count(*)` }).from(userApprovals).where(eq(userApprovals.status, "approved"))),
-    scalar(db.select({ n: sql`count(*)` }).from(userApprovals).where(eq(userApprovals.isAdmin, true))),
-    scalar(db.select({ n: sql`count(*)` }).from(groups).where(isNull(groups.archivedAt))),
-    scalar(db.select({ n: sql`count(*)` }).from(groupMembers).where(isNull(groupMembers.leftAt))),
-    scalar(db.select({ n: sql`count(*)` }).from(events)),
-    scalar(db.select({ n: sql`count(*)` }).from(events).where(and(like(events.type, "checkin.%"), gte(events.occurredAt, weekAgo)))),
-    scalar(db.select({ n: sql`coalesce(sum(${ledgerEntries.amount}),0)` }).from(ledgerEntries).where(eq(ledgerEntries.kind, "fine"))),
-    scalar(db.select({ n: sql`coalesce(sum(${balances.netOwed}),0)` }).from(balances).where(sql`${balances.netOwed} > 0`)),
-    db.select({ ts: sql<Date | null>`max(${activityOutcomes.computedAt})` }).from(activityOutcomes),
-  ]);
+  const [usersTotal, groupsTotal, pendingInvites, activitiesTracked, evBytes, scoredPct] =
+    await Promise.all([
+      scalar(db.select({ n: sql`count(*)` }).from(users)),
+      scalar(db.select({ n: sql`count(*)` }).from(groups).where(isNull(groups.archivedAt))),
+      scalar(
+        db
+          .select({ n: sql`count(*)` })
+          .from(groupInvites)
+          .where(eq(groupInvites.status, "pending")),
+      ),
+      activitiesTrackedCount(),
+      scalar(
+        db
+          .select({ n: sql`coalesce(sum(${evidence.bytes}),0)` })
+          .from(evidence)
+          .where(isNull(evidence.deletedAt)),
+      ),
+      checkinsScoredPct(),
+    ]);
 
   return {
     usersTotal,
-    usersPending,
-    usersApproved,
-    admins,
-    groups: groupCount,
-    activeMemberships,
-    events: eventCount,
-    checkins7d,
-    totalFined,
-    outstanding,
-    lastScoredAt: lastScoredRow[0]?.ts ? new Date(lastScoredRow[0].ts) : null,
+    groupsTotal,
+    pendingInvites,
+    activitiesTracked,
+    evidenceBytes: evBytes,
+    checkinsScoredPct: scoredPct,
+  };
+}
+
+// user_activities is append-only (a switch is a new row, never an update), so
+// "currently tracked" is the latest row at-or-before now for each (user,
+// type), same resolution rule as resolveAt() uses per-user elsewhere, done
+// here as one set query across everyone.
+async function activitiesTrackedCount(): Promise<number> {
+  const latest = db
+    .select({
+      userId: userActivities.userId,
+      typeKey: userActivities.typeKey,
+      maxAt: sql<Date>`max(${userActivities.effectiveAt})`.as("max_at"),
+    })
+    .from(userActivities)
+    .where(sql`${userActivities.effectiveAt} <= now()`)
+    .groupBy(userActivities.userId, userActivities.typeKey)
+    .as("latest");
+
+  return scalar(
+    db
+      .select({ n: sql`count(*)` })
+      .from(latest)
+      .innerJoin(
+        userActivities,
+        and(
+          eq(userActivities.userId, latest.userId),
+          eq(userActivities.typeKey, latest.typeKey),
+          eq(userActivities.effectiveAt, latest.maxAt),
+        ),
+      )
+      .where(eq(userActivities.enabled, true)),
+  );
+}
+
+// What fraction of the check-in presses on record (grouped into the period
+// each one belongs to) have a matching row in activity_scores. Not "does the
+// app have check-ins", but "has the scoring pass caught up with them" — a
+// period scored moments after its window closes reads at or near 100%; a
+// backlog shows up as a drop. Null (rendered as "—") only when nobody has
+// ever checked in.
+async function checkinsScoredPct(): Promise<number | null> {
+  // A flat query rather than a join against a derived subquery: Drizzle
+  // cannot qualify a raw jsonb-extraction expression with its subquery's
+  // alias once it crosses into an outer join condition, so a two-level
+  // "distinct periods, then join activity_scores" version produced an
+  // ambiguous "period_start" reference. Row-value DISTINCT and a correlated
+  // EXISTS say the same thing in one query, with nothing to mis-qualify.
+  const typeKeyExpr = sql`(${events.payload}->>'type_key')`;
+  const periodStartExpr = sql`((${events.payload}->>'period_start')::date)`;
+
+  const [row] = await db
+    .select({
+      total: sql<number>`count(distinct (${events.userId}, ${typeKeyExpr}, ${periodStartExpr}))`,
+      scored: sql<number>`count(distinct (${events.userId}, ${typeKeyExpr}, ${periodStartExpr})) filter (where exists (
+        select 1 from ${activityScores}
+        where ${activityScores.userId} = ${events.userId}
+          and ${activityScores.typeKey} = ${typeKeyExpr}
+          and ${activityScores.periodStart} = ${periodStartExpr}
+      ))`,
+    })
+    .from(events)
+    .where(and(like(events.type, "checkin.%"), sql`${events.payload}->>'period_start' is not null`));
+
+  const total = Number(row?.total ?? 0);
+  if (total === 0) return null;
+  return Math.round((Number(row?.scored ?? 0) / total) * 100);
+}
+
+/**
+ * "LAST NIGHT'S RUN", read live from the derived tables the nightly job
+ * writes. Scoring, reputation and the retention sweep have no failure state
+ * to detect (no run log persists a fault), so they read "ok" whenever there
+ * is data to show; the drift check is the one row backed by a real
+ * pass/fail, from an actual recompute over a recent window.
+ */
+export async function getLastRun(): Promise<LastRun> {
+  const [scoringRow, reputationRow, ev, drift] = await Promise.all([
+    db
+      .select({ periodEnd: activityScores.periodEnd, n: sql<number>`count(*)` })
+      .from(activityScores)
+      .groupBy(activityScores.periodEnd)
+      .orderBy(desc(activityScores.periodEnd))
+      .limit(1),
+    db
+      .select({ day: reputationDaily.day, n: sql<number>`count(distinct ${reputationDaily.userId})` })
+      .from(reputationDaily)
+      .groupBy(reputationDaily.day)
+      .orderBy(desc(reputationDaily.day))
+      .limit(1),
+    evidenceOps(),
+    // Scoped to a recent window rather than full history: this runs on every
+    // Overview load, and a full recompute per user is not something to pay
+    // for on every page view.
+    verifyAll({ from: new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) }),
+  ]);
+
+  const periodsDiffer = drift.filter((d) => d.kind === "score").length;
+
+  return {
+    scoring: { periodsClosed: Number(scoringRow[0]?.n ?? 0), ok: true },
+    reputation: { usersRecomputed: Number(reputationRow[0]?.n ?? 0), ok: true },
+    retentionSweep: { photosDeleted: ev.lastSweep?.deleted ?? 0, ok: true },
+    driftCheck: { periodsDiffer, ok: periodsDiffer === 0 },
   };
 }
 
@@ -135,10 +243,23 @@ export interface PendingUser {
   email: string;
   name: string;
   requestedAt: Date;
+  /** Who invited them, and into which group — null when nothing traces back
+   * to an invite (a person can also sign up unprompted). */
+  invite: { invitedByName: string; groupName: string } | null;
+}
+
+// Just the count, for the header's pending-work dot (decision 33) — no need
+// to pull every pending row to know whether there's at least one.
+export async function pendingApprovalCount(): Promise<number> {
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(userApprovals)
+    .where(eq(userApprovals.status, "pending"));
+  return row?.n ?? 0;
 }
 
 export async function listPendingApprovals(): Promise<PendingUser[]> {
-  return db
+  const rows = await db
     .select({
       userId: userApprovals.userId,
       email: users.email,
@@ -148,6 +269,34 @@ export async function listPendingApprovals(): Promise<PendingUser[]> {
     .from(userApprovals)
     .innerJoin(users, eq(users.id, userApprovals.userId))
     .where(eq(userApprovals.status, "pending"));
+  if (rows.length === 0) return [];
+
+  // A pending approval traces to an invite by email match: whoever invited
+  // this address into a group, most recent first. Not every approval has
+  // one — signing up needs no invite — so this is a best-effort join, never
+  // a requirement.
+  const emails = [...new Set(rows.map((r) => r.email))];
+  const invites = await db
+    .select({
+      email: groupInvites.email,
+      groupName: groups.name,
+      invitedByName: users.name,
+      createdAt: groupInvites.createdAt,
+    })
+    .from(groupInvites)
+    .innerJoin(groups, eq(groups.id, groupInvites.groupId))
+    .innerJoin(users, eq(users.id, groupInvites.invitedBy))
+    .where(inArray(groupInvites.email, emails))
+    .orderBy(desc(groupInvites.createdAt));
+
+  const byEmail = new Map<string, { invitedByName: string; groupName: string }>();
+  for (const inv of invites) {
+    if (!byEmail.has(inv.email)) {
+      byEmail.set(inv.email, { invitedByName: inv.invitedByName, groupName: inv.groupName });
+    }
+  }
+
+  return rows.map((r) => ({ ...r, invite: byEmail.get(r.email) ?? null }));
 }
 
 export interface AdminUserRow {
@@ -157,7 +306,15 @@ export interface AdminUserRow {
   status: string;
   role: string;
   disabled: boolean;
+  // active | pending | banned — the three states .design/V3AdminUsers.dc.html
+  // filters and labels by. Collapses raw status + disabled into one field so
+  // the screen doesn't re-derive it.
+  displayStatus: string;
   groupCount: number;
+  // Distinct type_key with the latest (by effective_at) user_activities row
+  // enabled=true, i.e. what they track right now, not every row ever written.
+  activityCount: number;
+  requestedAt: Date | null;
   lastEventAt: Date | null;
 }
 
@@ -170,7 +327,28 @@ export async function listAllUsers(): Promise<AdminUserRow[]> {
       status: sql<string>`coalesce(${userApprovals.status}, 'pending')`,
       role: sql<string>`case when coalesce(${userApprovals.isAdmin}, false) then 'admin' else coalesce(${userApprovals.role}, 'member') end`,
       disabled: sql<boolean>`(${userApprovals.disabledAt} is not null)`,
-      groupCount: sql<number>`(select count(*) from group_members gm where gm.user_id = ${users.id} and gm.left_at is null)`,
+      displayStatus: sql<string>`case
+        when ${userApprovals.disabledAt} is not null then 'banned'
+        when coalesce(${userApprovals.status}, 'pending') = 'pending' then 'pending'
+        when coalesce(${userApprovals.status}, 'pending') = 'approved' then 'active'
+        else 'banned'
+      end`,
+      // count(*) comes back from Postgres as bigint, which the driver hands
+      // back as a string — cast to int, or `=== 1` singular/plural checks on
+      // these downstream silently always take the plural branch.
+      groupCount: sql<number>`(select count(*)::int from group_members gm where gm.user_id = ${users.id} and gm.left_at is null)`,
+      // One correlated subquery, same style as groupCount/lastEventAt below:
+      // one round trip for the whole directory, not one query per user.
+      activityCount: sql<number>`(
+        select count(*)::int from (
+          select distinct on (ua.type_key) ua.enabled
+          from user_activities ua
+          where ua.user_id = ${users.id}
+          order by ua.type_key, ua.effective_at desc
+        ) latest
+        where latest.enabled
+      )`,
+      requestedAt: userApprovals.requestedAt,
       lastEventAt: sql<Date | null>`(select max(occurred_at) from events e where e.user_id = ${users.id})`,
     })
     .from(users)
@@ -247,6 +425,10 @@ export interface AdminGroupRow {
   groupId: string;
   name: string;
   memberCount: number;
+  // Distinct type_key currently accepted (latest group_activity_types row,
+  // resolved the same way sharing.acceptedTypes() resolves it for a member).
+  typeCount: number;
+  ownerName: string | null;
   totalFined: number;
   archived: boolean;
 }
@@ -255,7 +437,7 @@ export async function listAllGroups(): Promise<AdminGroupRow[]> {
   // Aggregated separately then merged, rather than correlated subqueries: an
   // unqualified outer column reference inside a subquery whose table also has
   // that column name (ledger_entries.id) gets shadowed.
-  const [gs, memberCounts, fines] = await Promise.all([
+  const [gs, memberCounts, fines, owners, typeRows] = await Promise.all([
     db
       .select({ groupId: groups.id, name: groups.name, archivedAt: groups.archivedAt })
       .from(groups)
@@ -270,15 +452,55 @@ export async function listAllGroups(): Promise<AdminGroupRow[]> {
       .from(ledgerEntries)
       .where(eq(ledgerEntries.kind, "fine"))
       .groupBy(ledgerEntries.groupId),
+    db
+      .select({ groupId: groupMembers.groupId, name: users.name })
+      .from(groupMembers)
+      .innerJoin(users, eq(users.id, groupMembers.userId))
+      .where(and(eq(groupMembers.role, "owner"), isNull(groupMembers.leftAt))),
+    // Whole table, one query, resolved in memory below — same tradeoff
+    // moneyOverrides() in group-controls.ts makes for the same reason: it is
+    // append-only and small, and resolving "as of now" per group needs the
+    // full history, not just the latest row (Postgres can't pick "latest per
+    // group+type" without either this or a window function per group).
+    db
+      .select({
+        id: groupActivityTypes.id,
+        groupId: groupActivityTypes.groupId,
+        typeKey: groupActivityTypes.typeKey,
+        accepted: groupActivityTypes.accepted,
+        effectiveAt: groupActivityTypes.effectiveAt,
+      })
+      .from(groupActivityTypes),
   ]);
 
   const mc = new Map(memberCounts.map((r) => [r.groupId, Number(r.n)]));
   const fc = new Map(fines.map((r) => [r.groupId, Number(r.total)]));
+  const oc = new Map(owners.map((r) => [r.groupId, r.name]));
+
+  const now = new Date();
+  const rowsByGroup = new Map<string, typeof typeRows>();
+  for (const row of typeRows) {
+    const arr = rowsByGroup.get(row.groupId);
+    if (arr) arr.push(row);
+    else rowsByGroup.set(row.groupId, [row]);
+  }
+  const tc = new Map<string, number>();
+  for (const [groupId, rows] of rowsByGroup) {
+    let count = 0;
+    for (const typeKey of new Set(rows.map((r) => r.typeKey))) {
+      const resolved = resolveAt(rows.filter((r) => r.typeKey === typeKey), now);
+      if (resolved?.accepted) count++;
+    }
+    tc.set(groupId, count);
+  }
+
   return gs.map((g) => ({
     groupId: g.groupId,
     name: g.name,
     archived: g.archivedAt != null,
     memberCount: mc.get(g.groupId) ?? 0,
+    typeCount: tc.get(g.groupId) ?? 0,
+    ownerName: oc.get(g.groupId) ?? null,
     totalFined: fc.get(g.groupId) ?? 0,
   }));
 }
@@ -506,8 +728,106 @@ export async function runScoring(
   return result;
 }
 
-export async function runVerify(adminId: string): Promise<Drift[]> {
-  const drift = await verifyAll();
-  await recordEvent({ userId: adminId, type: "admin.verify.ran", payload: { drift: drift.length } });
+export async function runVerify(
+  adminId: string,
+  opts: { from?: string; to?: string } = {},
+): Promise<Drift[]> {
+  const drift = await verifyAll(opts);
+  await recordEvent({
+    userId: adminId,
+    type: "admin.verify.ran",
+    payload: { from: opts.from ?? null, to: opts.to ?? null, drift: drift.length },
+  });
   return drift;
+}
+
+/**
+ * Rewrites activity_scores, activity_outcomes and reputation_daily for the
+ * given range, from events. Never writes ledger_entries (fines:false skips
+ * writeFines entirely) and never writes events (scoreUser only reads them).
+ * The mock's own caption is the constraint: "Rebuild rewrites derived tables
+ * only. Events and ledger entries are never touched."
+ */
+export async function runRebuild(
+  adminId: string,
+  opts: { from?: string; to?: string } = {},
+): Promise<{ users: number; scores: number; outcomes: number }> {
+  const result = await rebuildAll(opts);
+  await recordEvent({
+    userId: adminId,
+    type: "admin.rebuild.ran",
+    payload: { from: opts.from ?? null, to: opts.to ?? null, ...result },
+  });
+  return result;
+}
+
+// ---- Ops: DRIFT, LAST RUN --------------------------------------------------
+
+export interface DriftRow {
+  userName: string;
+  typeName: string; // an activity type's display name, or "Reputation"
+  date: string; // yyyy-mm-dd
+  detail: string; // "stored X, recomputed Y"
+}
+
+/**
+ * The Ops page's "DRIFT, LAST RUN" list. There is no persisted run log (same
+ * tradeoff as Overview's LAST NIGHT'S RUN), so this recomputes live for the
+ * given range every time the Ops page is opened or its range changes — "last
+ * run" means "as of this read", not a nightly job's history.
+ */
+export async function getDriftReport(
+  opts: { from?: string; to?: string } = {},
+): Promise<{ rows: DriftRow[]; total: number }> {
+  const drift = await verifyAll(opts);
+  if (drift.length === 0) return { rows: [], total: 0 };
+
+  const userIds = [...new Set(drift.map((d) => d.userId))];
+  const people = await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, userIds));
+  const nameOf = new Map(people.map((p) => [p.id, p.name]));
+
+  const rows = drift.slice(0, 20).map((d): DriftRow => {
+    const userName = nameOf.get(d.userId) ?? "unknown";
+    if (d.kind === "score") {
+      const [typeKey, periodStart] = d.key.split("|");
+      return {
+        userName,
+        typeName: activityTypeName(typeKey),
+        date: periodStart,
+        detail: describeScoreDrift(d),
+      };
+    }
+    const [, day] = d.key.split("|");
+    return { userName, typeName: "Reputation", date: day, detail: describeReputationDrift(d) };
+  });
+
+  return { rows, total: drift.length };
+}
+
+function activityTypeName(typeKey: string): string {
+  try {
+    return getActivityType(typeKey).name;
+  } catch {
+    return typeKey;
+  }
+}
+
+function describeScoreDrift(d: Drift): string {
+  if (d.field === "*") return `no stored score, recomputed ${d.computed ? "pass" : "fail"}`;
+  if (d.field === "passed") {
+    return `stored ${d.stored ? "pass" : "fail"}, recomputed ${d.computed ? "pass" : "fail"}`;
+  }
+  if (d.field === "settling") {
+    return `stored settling=${String(d.stored)}, recomputed settling=${String(d.computed)}`;
+  }
+  return `${d.field}: stored ${String(d.stored)}, recomputed ${String(d.computed)}`;
+}
+
+function describeReputationDrift(d: Drift): string {
+  if (d.field === "*") return `no stored reputation, recomputed ${String(d.computed)}`;
+  if (d.field === "score") return `stored ${String(d.stored)}, recomputed ${String(d.computed)}`;
+  if (d.field === "reason") {
+    return `stored reason ${String(d.stored)}, recomputed reason ${String(d.computed)}`;
+  }
+  return `${d.field}: stored ${String(d.stored)}, recomputed ${String(d.computed)}`;
 }

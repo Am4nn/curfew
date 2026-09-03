@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { formatMoney } from "@/domain";
 import type { MoneyOverride } from "@/server/group-controls";
 import { setMoneyOverrideAction, setArchivedAction } from "./actions";
 
@@ -23,6 +22,7 @@ const OPTIONS: { value: MoneyOverride; label: string; hint: string }[] = [
 export function GroupRow({
   group,
   override,
+  moneyLabel,
   canWrite,
   canArchive,
 }: {
@@ -30,10 +30,12 @@ export function GroupRow({
     groupId: string;
     name: string;
     memberCount: number;
-    totalFined: number;
+    typeCount: number;
+    ownerName: string | null;
     archived: boolean;
   };
   override: MoneyOverride;
+  moneyLabel: string | null;
   canWrite: boolean;
   canArchive: boolean;
 }) {
@@ -42,64 +44,68 @@ export function GroupRow({
   return (
     <div className="flex flex-col gap-[10px] border-b border-rule py-[14px]">
       <div className="flex items-baseline gap-2">
-        <Link href={`/admin/groups/${group.groupId}`} className="text-[14px]">
+        <Link href={`/admin/groups/${group.groupId}`} className="flex-1 text-[14px]">
           {group.name} &rsaquo;
         </Link>
         {group.archived ? (
           <span className="border border-rule px-[6px] py-px text-[9.5px] tracking-[0.1em] text-muted">
             ARCHIVED
           </span>
+        ) : canArchive ? (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                await setArchivedAction(group.groupId, true);
+              })
+            }
+            className="flex-none text-[11px] text-muted disabled:opacity-40"
+          >
+            Archive
+          </button>
         ) : null}
       </div>
 
       <span className="text-[11px] text-muted">
         {group.memberCount} {group.memberCount === 1 ? "member" : "members"}
         {" · "}
-        {formatMoney(group.totalFined, "INR")} fined
+        {group.typeCount} {group.typeCount === 1 ? "type" : "types"}
+        {group.ownerName ? ` · owner ${group.ownerName}` : ""}
       </span>
 
-      <div className="flex flex-wrap items-center gap-[6px]">
-        <span className="mr-1 text-[11px] text-muted">Money</span>
-        {OPTIONS.map((option) => {
-          const active = override === option.value;
-          return (
-            <button
-              key={String(option.value)}
-              type="button"
-              title={option.hint}
-              disabled={!canWrite || pending || active}
-              onClick={() =>
-                startTransition(async () => {
-                  await setMoneyOverrideAction(group.groupId, option.value);
-                })
-              }
-              className={
-                "h-[30px] border px-[10px] text-[11.5px] disabled:opacity-100 " +
-                (active
-                  ? "border-fg bg-fg font-semibold text-bg"
-                  : "border-rule text-muted disabled:opacity-40")
-              }
-            >
-              {option.label}
-            </button>
-          );
-        })}
-
-        {canArchive ? (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() =>
-              startTransition(async () => {
-                await setArchivedAction(group.groupId, !group.archived);
-              })
-            }
-            className="ml-auto h-[30px] border border-rule px-[10px] text-[11.5px] text-muted disabled:opacity-40"
-          >
-            {group.archived ? "Restore" : "Archive"}
-          </button>
-        ) : null}
-      </div>
+      {/* Archived groups are frozen and show no money control here (mock:
+          .design/V3AdminGroups.dc.html row 4). Restoring is still possible
+          from the group's own inspector page, which is not this list. */}
+      {!group.archived ? (
+        <div className="flex flex-wrap items-center gap-[6px]">
+          {moneyLabel ? <span className="mr-1 text-[11px] text-muted">{moneyLabel}</span> : null}
+          {OPTIONS.map((option) => {
+            const active = override === option.value;
+            return (
+              <button
+                key={String(option.value)}
+                type="button"
+                title={option.hint}
+                disabled={!canWrite || pending || active}
+                onClick={() =>
+                  startTransition(async () => {
+                    await setMoneyOverrideAction(group.groupId, option.value);
+                  })
+                }
+                className={
+                  "h-[30px] border px-[10px] text-[11.5px] disabled:opacity-100 " +
+                  (active
+                    ? "border-fg bg-fg font-semibold text-bg"
+                    : "border-rule text-muted disabled:opacity-40")
+                }
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

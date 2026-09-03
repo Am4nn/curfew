@@ -10,11 +10,9 @@ import {
   restoreUser,
   archiveGroup,
   restoreGroup,
-  runScoring,
-  runVerify,
+  runRebuild,
 } from "@/server/admin";
 import { isRole, type Capability } from "@/lib/capabilities";
-import { formatMoney } from "@/domain";
 import type { FormState } from "../ui";
 
 async function guard(capability: Capability) {
@@ -124,36 +122,21 @@ export async function restoreGroupAction(
   }
 }
 
-export async function runScoringAction(
+export async function runRebuildAction(
   _state: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
     const user = await guard("ops.score");
     const from = String(formData.get("from") || "").trim() || undefined;
-    const result = await runScoring(user.id, from);
-    revalidatePath("/admin");
-    return { ok: true, note: `Scored ${result.users} user(s)${from ? ` from ${from}` : ""}.` };
+    const to = String(formData.get("to") || "").trim() || undefined;
+    const result = await runRebuild(user.id, { from, to });
+    revalidatePath("/admin/ops");
+    return {
+      ok: true,
+      note: `Rewrote ${result.scores} score(s) and ${result.outcomes} outcome(s) across ${result.users} user(s).`,
+    };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Scoring failed." };
-  }
-}
-
-export async function runVerifyAction(_state: FormState): Promise<FormState> {
-  try {
-    const user = await guard("ops.verify");
-    const drift = await runVerify(user.id);
-    if (drift.length === 0) return { ok: true, note: "No drift. Stored rows match a fresh recompute." };
-    const lines = drift
-      .slice(0, 20)
-      .map((d) => {
-        const fmt = (v: unknown) =>
-          d.field === "fine_amount" && typeof v === "number" ? formatMoney(v, "INR") : String(v);
-        return `${d.kind} ${d.key} ${d.field}: stored=${fmt(d.stored)} computed=${fmt(d.computed)}`;
-      })
-      .join("\n");
-    return { error: `${drift.length} drift row(s):\n${lines}` };
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Verify failed." };
+    return { error: e instanceof Error ? e.message : "Rebuild failed." };
   }
 }

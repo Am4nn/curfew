@@ -5,6 +5,7 @@ import { recomputeUser } from "./scoring";
 
 export interface Drift {
   kind: "score" | "reputation";
+  userId: string;
   key: string;
   field: string;
   stored: unknown;
@@ -47,15 +48,23 @@ export async function verifyUser(
       const key = `${c.typeKey}|${c.periodStart}`;
       const s = byKey.get(key);
       if (!s) {
-        drift.push({ kind: "score", key, field: "*", stored: null, computed: c.passed });
+        drift.push({ kind: "score", userId, key, field: "*", stored: null, computed: c.passed });
         continue;
       }
       if (s.passed !== c.passed) {
-        drift.push({ kind: "score", key, field: "passed", stored: s.passed, computed: c.passed });
+        drift.push({
+          kind: "score",
+          userId,
+          key,
+          field: "passed",
+          stored: s.passed,
+          computed: c.passed,
+        });
       }
       if (s.settling !== c.settling) {
         drift.push({
           kind: "score",
+          userId,
           key,
           field: "settling",
           stored: s.settling,
@@ -86,13 +95,21 @@ export async function verifyUser(
       const key = scope(c.groupId, c.day);
       const s = byScope.get(key);
       if (!s) {
-        drift.push({ kind: "reputation", key, field: "*", stored: null, computed: c.score });
+        drift.push({
+          kind: "reputation",
+          userId,
+          key,
+          field: "*",
+          stored: null,
+          computed: c.score,
+        });
         continue;
       }
       // Stored as numeric, so compare the numbers rather than their spelling.
       if (Math.abs(Number(s.score) - Number(c.score)) > 0.001) {
         drift.push({
           kind: "reputation",
+          userId,
           key,
           field: "score",
           stored: s.score,
@@ -102,6 +119,7 @@ export async function verifyUser(
       if (s.reason !== c.reason) {
         drift.push({
           kind: "reputation",
+          userId,
           key,
           field: "reason",
           stored: s.reason,

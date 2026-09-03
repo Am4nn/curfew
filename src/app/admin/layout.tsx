@@ -39,7 +39,7 @@ export default async function AdminLayout({
               v{APP_VERSION}
             </span>
           </div>
-          <Link href="/" className="text-[12px] text-muted">‹ dashboard</Link>
+          <Link href="/" className="text-[12px] text-muted">Back to app &rsaquo;</Link>
         </header>
         <AdminNav tabs={tabs.map(([href, label]) => [href, label])} />
         {children}

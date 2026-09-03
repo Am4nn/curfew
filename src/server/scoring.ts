@@ -705,6 +705,32 @@ export async function scoreAll(
   return { users: users.length, fines };
 }
 
+/**
+ * Rewrite activity_scores, activity_outcomes and reputation_daily for a
+ * range, from events. The admin Ops "Rebuild" primitive: unlike `scoreAll`,
+ * this never settles fines, so it never writes `ledger_entries` (invariant
+ * 3), and it never touches `events` either, since `scoreUser` only reads
+ * them. One pass, not two: there is no fines pass to sequence after.
+ */
+export async function rebuildAll(
+  opts: { from?: string; to?: string } = {},
+): Promise<{ users: number; scores: number; outcomes: number }> {
+  const users = await db
+    .selectDistinct({ userId: userActivities.userId })
+    .from(userActivities)
+    .leftJoin(userApprovals, eq(userApprovals.userId, userActivities.userId))
+    .where(isNull(userApprovals.disabledAt));
+
+  let scores = 0;
+  let outcomes = 0;
+  for (const u of users) {
+    const result = await scoreUser(u.userId, { from: opts.from, to: opts.to, fines: false });
+    scores += result.scores;
+    outcomes += result.outcomes;
+  }
+  return { users: users.length, scores, outcomes };
+}
+
 // ---------------------------------------------------------------------------
 // Reading
 // ---------------------------------------------------------------------------

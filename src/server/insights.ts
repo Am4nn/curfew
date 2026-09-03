@@ -1,8 +1,18 @@
 import { DateTime } from "luxon";
-import { and, eq, gte, like, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, like, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { events, activityScores, ledgerEntries, balances, users } from "@/db/schema";
-import { resolveUserTimezone } from "./config";
+import {
+  events,
+  activityScores,
+  userApprovals,
+  userActivities,
+  groups,
+  groupMembers,
+  activityOutcomes,
+} from "@/db/schema";
+import { getActivityType } from "@/domain";
+import { moneyOnFor } from "./app-config";
+import { ownerMoneyToggle } from "./sharing";
 import { nowUTC } from "@/lib/clock";
 
 export interface Point {
@@ -31,6 +41,27 @@ function fill(rows: { d: string; n: number }[], from: string, days: number): Poi
   return dayList(from, days).map((date) => ({ date, value: map.get(date) ?? 0 }));
 }
 
+function average(nums: number[]): number {
+  return nums.length === 0 ? 0 : nums.reduce((s, v) => s + v, 0) / nums.length;
+}
+
+function median(nums: number[]): number {
+  if (nums.length === 0) return 0;
+  const sorted = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+}
+
+/** A type's name and icon, or the raw key if it is no longer registered. */
+function typeLabel(typeKey: string): { name: string; icon: string } {
+  try {
+    const t = getActivityType(typeKey);
+    return { name: t.name, icon: t.icon };
+  } catch {
+    return { name: typeKey, icon: "" };
+  }
+}
+
 // Daily count of check-in events (any step), by server-clock date.
 export async function checkinsPerDay(days = 30): Promise<Point[]> {
   const dexpr = sql<string>`to_char(${events.occurredAt}::date, 'YYYY-MM-DD')`;
@@ -42,116 +73,247 @@ export async function checkinsPerDay(days = 30): Promise<Point[]> {
   return fill(rows, await startDate(days), days);
 }
 
-// Pass rate per period, as a percentage. Only days that were scored appear.
-export async function passRateOverTime(days = 30): Promise<Point[]> {
+/**
+ * The one-line read on the check-ins-a-day chart: last 7 days average against
+ * the 7 before it, and whether Saturday and Sunday sit measurably below the
+ * weekdays in that same window. Computed, not written by hand.
+ */
+export function checkinsTrendCaption(points: Point[]): string {
+  if (points.length < 14) return "Not enough history yet.";
+
+  const last7 = points.slice(-7);
+  const prior7 = points.slice(-14, -7);
+  const recentAvg = average(last7.map((p) => p.value));
+  const priorAvg = average(prior7.map((p) => p.value));
+  const change = priorAvg === 0 ? 0 : (recentAvg - priorAvg) / priorAvg;
+
+  const trend = change > 0.05 ? "Rising." : change < -0.05 ? "Falling." : "Flat.";
+
+  const window = points.slice(-14);
+  const weekday: number[] = [];
+  const weekend: number[] = [];
+  for (const p of window) {
+    const dow = DateTime.fromISO(p.date, { zone: "utc" }).weekday; // 1=Mon..7=Sun
+    (dow === 6 || dow === 7 ? weekend : weekday).push(p.value);
+  }
+  const weekdayAvg = average(weekday);
+  const weekendAvg = average(weekend);
+  const weekendDip = weekday.length > 0 && weekend.length > 0 && weekendAvg < weekdayAvg * 0.9;
+
+  return weekendDip ? `${trend} Weekends are the dips.` : trend;
+}
+
+export interface TopStats {
+  checkedInToday: number;
+  pctOfApproved: number;
+  silent7Days: number;
+}
+
+/** Checked in today, that as a share of approved users, and who has gone quiet. */
+export async function topStats(): Promise<TopStats> {
+  const todayStart = await startInstant(1);
+  const sevenDaysAgo = await startInstant(7);
+
+  const [[todayRow], approved, recent] = await Promise.all([
+    db
+      .select({ n: sql<number>`count(distinct ${events.userId})` })
+      .from(events)
+      .where(and(like(events.type, "checkin.%"), gte(events.occurredAt, todayStart))),
+    db
+      .select({ userId: userApprovals.userId })
+      .from(userApprovals)
+      .where(eq(userApprovals.status, "approved")),
+    db
+      .selectDistinct({ userId: events.userId })
+      .from(events)
+      .where(and(like(events.type, "checkin.%"), gte(events.occurredAt, sevenDaysAgo))),
+  ]);
+
+  const checkedInToday = Number(todayRow?.n ?? 0);
+  const approvedCount = approved.length;
+  const recentIds = new Set(recent.map((r) => r.userId).filter((id): id is string => id !== null));
+  const silent7Days = approved.filter((a) => !recentIds.has(a.userId)).length;
+
+  return {
+    checkedInToday,
+    pctOfApproved: approvedCount === 0 ? 0 : Math.round((checkedInToday / approvedCount) * 100),
+    silent7Days,
+  };
+}
+
+export interface TypeRate {
+  typeKey: string;
+  name: string;
+  icon: string;
+  percent: number;
+}
+
+/** Pass rate per activity type, across every user, worst last. */
+export async function passRateByType(): Promise<TypeRate[]> {
   const rows = await db
     .select({
-      d: activityScores.periodStart,
+      typeKey: activityScores.typeKey,
       total: sql<number>`count(*)`,
       passed: sql<number>`sum(case when ${activityScores.passed} then 1 else 0 end)`,
     })
     .from(activityScores)
-    .where(gte(activityScores.periodStart, await startDate(days)))
-    .groupBy(activityScores.periodStart)
-    .orderBy(activityScores.periodStart);
-  return rows.map((r) => ({
-    date: r.d,
-    value: Number(r.total) === 0 ? 0 : Math.round((Number(r.passed) / Number(r.total)) * 100),
-  }));
-}
+    .groupBy(activityScores.typeKey);
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-// Pass rate by weekday (Mon..Sun), as a percentage, across users. A longer
-// window than the other charts so each weekday has enough scored periods.
-// Weekday comes from the period, resolved in that period's own boundary.
-export async function passRateByWeekday(days = 84): Promise<Point[]> {
-  const rows = await db
-    .select({ periodStart: activityScores.periodStart, passed: activityScores.passed })
-    .from(activityScores)
-    .where(gte(activityScores.periodStart, await startDate(days)));
-  const agg = WEEKDAYS.map(() => ({ pass: 0, total: 0 }));
-  for (const r of rows) {
-    const idx = DateTime.fromISO(r.periodStart).weekday - 1; // 1=Mon..7=Sun
-    agg[idx].total += 1;
-    if (r.passed) agg[idx].pass += 1;
-  }
-  return WEEKDAYS.map((label, i) => ({
-    date: label,
-    value: agg[i].total === 0 ? 0 : Math.round((agg[i].pass / agg[i].total) * 100),
-  }));
-}
-
-// Total fines per period, in minor units.
-export async function finesPerDay(days = 30): Promise<Point[]> {
-  const rows = await db
-    .select({
-      d: sql<string>`${ledgerEntries.periodStart}`,
-      n: sql<number>`coalesce(sum(${ledgerEntries.amount}), 0)`,
-    })
-    .from(ledgerEntries)
-    .where(and(eq(ledgerEntries.kind, "fine"), gte(ledgerEntries.periodStart, await startDate(days))))
-    .groupBy(ledgerEntries.periodStart);
-  return fill(rows, await startDate(days), days);
-}
-
-// Average wake time (minutes after local midnight) per period, across users.
-export async function wakeTrend(days = 30): Promise<Point[]> {
-  const from = await startDate(days);
-  const rows = await db
-    .select({
-      userId: events.userId,
-      at: events.occurredAt,
-      period: sql<string>`${events.payload}->>'period_start'`,
-    })
-    .from(events)
-    .where(and(eq(events.type, "checkin.sleep.wake"), gte(events.occurredAt, await startInstant(days))));
-
-  const tzByUser = new Map<string, string>();
-  async function tzOf(userId: string): Promise<string> {
-    let tz = tzByUser.get(userId);
-    if (!tz) {
-      tz = await resolveUserTimezone(userId, (await nowUTC()).toFormat("yyyy-MM-dd"));
-      tzByUser.set(userId, tz);
-    }
-    return tz;
-  }
-
-  const acc = new Map<string, { sum: number; n: number }>();
-  for (const r of rows) {
-    if (!r.userId || !r.period || r.period < from) continue;
-    const tz = await tzOf(r.userId);
-    const local = DateTime.fromJSDate(r.at, { zone: tz });
-    const minutes = local.hour * 60 + local.minute;
-    const a = acc.get(r.period) ?? { sum: 0, n: 0 };
-    a.sum += minutes;
-    a.n += 1;
-    acc.set(r.period, a);
-  }
-  return [...acc.entries()]
-    .map(([date, a]) => ({ date, value: Math.round(a.sum / a.n) }))
-    .sort((x, y) => (x.date < y.date ? -1 : 1));
-}
-
-export interface BalanceBar {
-  name: string;
-  netOwed: number; // positive = owes
-  currency: string;
-}
-
-// Net owed per user across all groups (positive means they owe).
-export async function outstandingBalances(): Promise<BalanceBar[]> {
-  const rows = await db
-    .select({
-      name: users.name,
-      currency: balances.currency,
-      net: sql<number>`sum(${balances.netOwed})`,
-    })
-    .from(balances)
-    .innerJoin(users, eq(users.id, balances.userId))
-    .groupBy(users.name, balances.currency);
   return rows
-    .map((r) => ({ name: r.name, currency: r.currency ?? "INR", netOwed: Number(r.net) }))
-    .filter((b) => b.netOwed !== 0)
-    .sort((a, b) => b.netOwed - a.netOwed);
+    .map((r) => {
+      const { name, icon } = typeLabel(r.typeKey);
+      const percent = Number(r.total) === 0 ? 0 : Math.round((Number(r.passed) / Number(r.total)) * 100);
+      return { typeKey: r.typeKey, name, icon, percent };
+    })
+    .sort((a, b) => b.percent - a.percent);
+}
+
+/**
+ * The callout under "what people actually hold": names the worst-passing
+ * type, and only connects it to abandonment when that type is genuinely near
+ * the top of the abandonment list too. No connection is forced.
+ */
+export function worstTypeCallout(rates: TypeRate[], abandonment: AbandonRate[]): string | null {
+  if (rates.length === 0) return null;
+  const worst = rates[rates.length - 1];
+  const abandonRank = abandonment.findIndex((a) => a.typeKey === worst.typeKey);
+  const isTopAbandoned = abandonRank >= 0 && abandonRank < 2;
+  if (isTopAbandoned) {
+    return `${worst.name} is the type people add and then stop hitting. Worth asking whether its defaults are wrong.`;
+  }
+  return `${worst.name} has the lowest pass rate, at ${worst.percent}%.`;
+}
+
+export interface AbandonRate {
+  typeKey: string;
+  name: string;
+  percent: number;
+}
+
+/**
+ * Per type: of the users who ever turned it on, the share whose earliest
+ * enable was followed by a disable within 14 days. Reads only the switch
+ * (enabled/effective_at), never the settings it configures.
+ */
+export async function abandonmentByType(): Promise<AbandonRate[]> {
+  const rows = await db
+    .select({
+      userId: userActivities.userId,
+      typeKey: userActivities.typeKey,
+      enabled: userActivities.enabled,
+      effectiveAt: userActivities.effectiveAt,
+    })
+    .from(userActivities)
+    .orderBy(userActivities.userId, userActivities.typeKey, userActivities.effectiveAt);
+
+  const byUserType = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const k = `${r.userId}|${r.typeKey}`;
+    const arr = byUserType.get(k);
+    if (arr) arr.push(r);
+    else byUserType.set(k, [r]);
+  }
+
+  const started = new Map<string, Set<string>>(); // typeKey -> userIds
+  const abandoned = new Map<string, Set<string>>();
+  const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
+
+  for (const [key, arr] of byUserType) {
+    const [userId, typeKey] = key.split("|");
+    const firstEnable = arr.find((r) => r.enabled);
+    if (!firstEnable) continue;
+
+    const startedSet = started.get(typeKey) ?? new Set<string>();
+    startedSet.add(userId);
+    started.set(typeKey, startedSet);
+
+    const disabledWithin = arr.find(
+      (r) =>
+        !r.enabled &&
+        r.effectiveAt.getTime() > firstEnable.effectiveAt.getTime() &&
+        r.effectiveAt.getTime() - firstEnable.effectiveAt.getTime() <= FOURTEEN_DAYS_MS,
+    );
+    if (disabledWithin) {
+      const abandonedSet = abandoned.get(typeKey) ?? new Set<string>();
+      abandonedSet.add(userId);
+      abandoned.set(typeKey, abandonedSet);
+    }
+  }
+
+  const out: AbandonRate[] = [];
+  for (const [typeKey, startedSet] of started) {
+    const abandonedCount = abandoned.get(typeKey)?.size ?? 0;
+    const { name } = typeLabel(typeKey);
+    out.push({
+      typeKey,
+      name,
+      percent: startedSet.size === 0 ? 0 : Math.round((abandonedCount / startedSet.size) * 100),
+    });
+  }
+  return out.sort((a, b) => b.percent - a.percent);
+}
+
+export interface GroupsSummary {
+  activeThisWeek: { count: number; of: number };
+  dormantAMonth: number;
+  trackingMoney: { count: number; of: number };
+  medianSize: number;
+}
+
+/**
+ * Four counted facts about groups: recent activity, dormancy, whether money
+ * is genuinely on (app-wide switch, admin override, owner toggle, same
+ * resolution as the group hub), and typical size.
+ */
+export async function groupsSummary(): Promise<GroupsSummary> {
+  const allGroups = await db.select({ id: groups.id }).from(groups).where(isNull(groups.archivedAt));
+  const total = allGroups.length;
+  if (total === 0) {
+    return {
+      activeThisWeek: { count: 0, of: 0 },
+      dormantAMonth: 0,
+      trackingMoney: { count: 0, of: 0 },
+      medianSize: 0,
+    };
+  }
+  const ids = allGroups.map((g) => g.id);
+
+  const [weekActive, monthActive, memberCounts] = await Promise.all([
+    db
+      .selectDistinct({ groupId: activityOutcomes.groupId })
+      .from(activityOutcomes)
+      .where(and(inArray(activityOutcomes.groupId, ids), gte(activityOutcomes.periodStart, await startDate(7)))),
+    db
+      .selectDistinct({ groupId: activityOutcomes.groupId })
+      .from(activityOutcomes)
+      .where(and(inArray(activityOutcomes.groupId, ids), gte(activityOutcomes.periodStart, await startDate(30)))),
+    db
+      .select({ groupId: groupMembers.groupId, n: sql<number>`count(*)` })
+      .from(groupMembers)
+      .where(and(inArray(groupMembers.groupId, ids), isNull(groupMembers.leftAt)))
+      .groupBy(groupMembers.groupId),
+  ]);
+
+  const monthActiveIds = new Set(monthActive.map((r) => r.groupId));
+  const dormantAMonth = total - monthActiveIds.size;
+
+  // No batch form of "is money genuinely on" exists (it resolves three
+  // append-only, effective-dated sources per group), so this is one pair of
+  // queries per group rather than a single aggregate one. Fine at admin scale;
+  // would need a batched resolver if the group count grows large.
+  const now = new Date();
+  const moneyOn = await Promise.all(
+    ids.map(async (id) => moneyOnFor(id, await ownerMoneyToggle(id), now)),
+  );
+  const moneyOnCount = moneyOn.filter(Boolean).length;
+
+  const sizeByGroup = new Map(memberCounts.map((m) => [m.groupId, Number(m.n)]));
+  const sizes = ids.map((id) => sizeByGroup.get(id) ?? 0);
+
+  return {
+    activeThisWeek: { count: weekActive.length, of: total },
+    dormantAMonth,
+    trackingMoney: { count: moneyOnCount, of: total },
+    medianSize: median(sizes),
+  };
 }

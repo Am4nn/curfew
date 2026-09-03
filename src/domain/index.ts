@@ -95,6 +95,15 @@ export {
   type ReplayDay,
   type ReplayRow,
 } from "./reputation";
+export {
+  RANKS,
+  IMMACULATE_FROM,
+  rankFor,
+  isImmaculate,
+  nextRank,
+  type Rank,
+  type RankKey,
+} from "./ranks";
 export { getActivityType, registeredKeys, register } from "./registry";
 export type {
   ActivityType,

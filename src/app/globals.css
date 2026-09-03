@@ -19,6 +19,13 @@
   --rule: #2e2c28;
   --dash: #4a4740;
   --penalty: #e4574b;
+  --gold: #ffd23f;
+  /* The five rank bands. Every value but gold already exists in the palette. */
+  --rank-doubt: #8a4f49;
+  --rank-intent: #8c8c8c;
+  --rank-practice: #7fa8ff;
+  --rank-discipline: #6ba17f;
+  --rank-unbroken: #ff7a2f;
   --pass: #6ba17f;
   --accent: #7fa8ff;
   color-scheme: dark;
@@ -32,6 +39,13 @@
   --rule: #c4c0b8;
   --dash: #a8a49c;
   --penalty: #a3251c;
+  --gold: #a37b00;
+  /* Darker on light, so each band still separates from its neighbours. */
+  --rank-doubt: #8a3a32;
+  --rank-intent: #5a5751;
+  --rank-practice: #2f5aa8;
+  --rank-discipline: #2f5d3f;
+  --rank-unbroken: #b8480f;
   --pass: #2f5d3f;
   --accent: #7fa8ff;
   color-scheme: light;

@@ -25,6 +25,14 @@ const config: Config = {
         // The dashed edge of an empty photo slot: a step lighter than a rule,
         // and the only place it is used.
         dash: "var(--dash)",
+        gold: "var(--gold)",
+        rank: {
+          doubt: "var(--rank-doubt)",
+          intent: "var(--rank-intent)",
+          practice: "var(--rank-practice)",
+          discipline: "var(--rank-discipline)",
+          unbroken: "var(--rank-unbroken)",
+        },
         penalty: "var(--penalty)",
         pass: "var(--pass)",
         accent: "var(--accent)",

@@ -13,10 +13,13 @@ import { ConfigureForm } from "./configure-form";
 // prefilled and a start button.
 export default async function ConfigurePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ key: string }>;
+  searchParams: Promise<{ from?: string; invite?: string }>;
 }) {
   const { key } = await params;
+  const { from, invite } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect("/signin");
 
@@ -58,6 +61,7 @@ export default async function ConfigurePage({
         initialSchedule={state.schedule}
         initialConfig={state.config}
         tracked={tracked}
+        returnTo={from === "join" && invite ? `/join/${invite}` : undefined}
         streak={standing?.streak ?? 0}
         best={standing?.best ?? 0}
         graceLeft={standing?.graceLeft ?? null}

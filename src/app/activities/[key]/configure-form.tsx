@@ -279,6 +279,7 @@ export function ConfigureForm({
   streak,
   best,
   graceLeft,
+  returnTo,
 }: {
   typeKey: string;
   name: string;
@@ -289,6 +290,7 @@ export function ConfigureForm({
   streak: number;
   best: number;
   graceLeft: number | null;
+  returnTo?: string;
 }) {
   const type = getActivityType(typeKey);
   const [schedule, setSchedule] = useState<ScheduleConfig>(initialSchedule);
@@ -338,7 +340,7 @@ export function ConfigureForm({
     setError(null);
     startTransition(async () => {
       try {
-        await saveActivityAction({ typeKey, schedule, config });
+        await saveActivityAction({ typeKey, schedule, config, returnTo });
         setSaved({ schedule, config });
       } catch (e) {
         setError(e instanceof Error ? e.message : "That did not save.");
@@ -478,7 +480,11 @@ export function ConfigureForm({
               : "cursor-not-allowed border-rule text-muted")
           }
         >
-          {pending ? "Starting" : `Start tracking ${name}`}
+          {pending
+            ? "Starting"
+            : returnTo
+              ? `Add and share ${name}`
+              : `Start tracking ${name}`}
         </button>
       ) : dirty ? (
         <button

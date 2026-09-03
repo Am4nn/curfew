@@ -24,7 +24,7 @@ Money is optional and can be switched off entirely.
 
 ## Current phase
 
-**v3, Phases 0 to 6 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
+**v3, Phases 0 to 7 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
 designed and specified: twelve activity types with per-user schedules and
 thresholds, photo evidence, a 0 to 1000 reputation per group with six ranks,
 group stats, an admin console that can switch whole systems off, and a fresh
@@ -45,11 +45,14 @@ start on data. Every screen is mocked in `.design/` and listed in
   the check-in as the callback, and the nightly retention and orphan sweeps.
 - **Phase 6** scoring and reputation: the pass rewritten per user and per type,
   the lazy close on read, the reputation curve, the global score, and `verify`
-  extended to cover it. Per-group reputation waits for Phase 7's sharing.
+  extended to cover it.
 
-**Next is Phase 7, groups.** Do not begin a phase whose predecessor is
-unticked. Fines are not written by the scoring pass until that phase rebuilds
-them against the group model.
+- **Phase 7** groups: the model rebuilt on types, sharing with its two
+  toggles, the four hub tabs, group stats, the full ledger, fines split among
+  the members who passed, and the join flow.
+
+**Next is Phase 8, surfaces.** Do not begin a phase whose predecessor is
+unticked.
 
 **The Configure and Check-in rows in `SCREENS.md` are unticked on purpose.**
 Ticking one means a person has opened the screen beside its artboard. Both sets

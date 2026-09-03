@@ -11,6 +11,8 @@ export async function saveActivityAction(input: {
   typeKey: string;
   schedule: ScheduleConfig;
   config: unknown;
+  /** Set when the activity was added from a join screen, to return there. */
+  returnTo?: string;
 }): Promise<void> {
   const user = await getSessionUser();
   if (!user) throw new Error("not signed in");
@@ -33,6 +35,8 @@ export async function saveActivityAction(input: {
 
   revalidatePath("/activities");
   revalidatePath(`/activities/${input.typeKey}`);
+  // Only ever an in-app path, never something the caller can point outward.
+  if (input.returnTo?.startsWith("/join/")) redirect(input.returnTo);
 }
 
 export async function stopTrackingAction(typeKey: string): Promise<void> {

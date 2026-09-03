@@ -115,6 +115,11 @@ twelve types, and the global score, which is full breadth and needs no group.
 **Done when:** two seeded members can miss, be fined, settle, and every row in
 the Groups section of `SCREENS.md` is ticked.
 
+The model changed here, not just the screens: `activities` and `activity_rules`
+are gone, and a group's types live in `group_activity_types` (accepted,
+operational) and `group_activity_rules` (fines, future-dated). See
+decision 108.
+
 ## Phase 8 — Surfaces
 
 - Home, all four states plus the notice overlay.

@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, lte } from "drizzle-orm";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { db } from "@/db";
 import { activityScores, reputationDaily, userActivities } from "@/db/schema";
 import { recomputeUser } from "./scoring";
@@ -73,24 +73,27 @@ export async function verifyUser(
       .where(
         and(
           eq(reputationDaily.userId, userId),
-          isNull(reputationDaily.groupId),
           gte(reputationDaily.day, days[0]),
           lte(reputationDaily.day, days[days.length - 1]),
         ),
       );
-    const byDay = new Map(stored.map((r) => [r.day, r]));
+    // A user has one global score and one per group, so the day alone is not a
+    // key. Comparing without the scope diffs a group's row against the global.
+    const scope = (groupId: string | null, day: string) => `${groupId ?? "global"}|${day}`;
+    const byScope = new Map(stored.map((r) => [scope(r.groupId, r.day), r]));
 
     for (const c of reputation) {
-      const s = byDay.get(c.day);
+      const key = scope(c.groupId, c.day);
+      const s = byScope.get(key);
       if (!s) {
-        drift.push({ kind: "reputation", key: c.day, field: "*", stored: null, computed: c.score });
+        drift.push({ kind: "reputation", key, field: "*", stored: null, computed: c.score });
         continue;
       }
       // Stored as numeric, so compare the numbers rather than their spelling.
       if (Math.abs(Number(s.score) - Number(c.score)) > 0.001) {
         drift.push({
           kind: "reputation",
-          key: c.day,
+          key,
           field: "score",
           stored: s.score,
           computed: c.score,
@@ -99,7 +102,7 @@ export async function verifyUser(
       if (s.reason !== c.reason) {
         drift.push({
           kind: "reputation",
-          key: c.day,
+          key,
           field: "reason",
           stored: s.reason,
           computed: c.reason,

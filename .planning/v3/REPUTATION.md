@@ -42,19 +42,44 @@ d      day completion = passed_periods / scheduled_periods concluding today,
 h      headroom = max(0, (C - S)) / 1000
 ```
 
+```
+w      warm-up  = (S + 150) / (C + 150), damping gains for a fresh member
+day    one clean day here = G * h * w
+```
+
 Daily delta:
 
 ```
-nothing scheduled today            ->  neutral, no change
-d == 1 (a clean day)               ->  S += G * h
-d <  1                             ->  S -= L * (1 - d) * (h + 0.15)
 S > C (ceiling dropped)            ->  S -= DRIFT, until S == C
-no scheduled period for 7 days     ->  S -= IDLE per day
+nothing scheduled today            ->  neutral, no change
+  ... and nothing for 7 days       ->  S -= IDLE per day
+d == 1 (a clean day)               ->  S += day
+d <  1                             ->  S -= (1 - d) * costDays * day'
 ```
 
-Constants, tunable: `G = 12`, `L = 20`, `DRIFT = 2`, `IDLE = 3`.
+where `costDays = 2 + 5 * (S / 1000)` and `day'` is `day` with `h` floored at
+0.03, so a miss still costs something to someone sitting on their ceiling.
+
+Constants, tunable: `G = 20`, `DRIFT = 2`, `IDLE = 3`.
 
 Clamp to `[0, 1000]` after every step.
+
+**Two things here differ from the first sketch, and both were forced by the
+target properties.**
+
+The **warm-up** exists because a flat `G * h` reaches the first rank in 18 days,
+half what the table asks. Damping early gains says something true as well: a
+member who has shown nothing yet climbs more slowly than one with a record.
+
+A miss is priced **in clean days rather than points**. A flat points figure that
+stings at 900 is ruinous at 200, and the two recovery targets cannot both be met
+with one. Stating it as "this costs you two days at the start and a week at the
+top" hits both, and is the sentence the UI would use anyway.
+
+**The targets are not all satisfiable at once.** 350 in five weeks and 600 in two
+months together need the climb to accelerate harder than 950 in seven to eight
+months allows it to decelerate. The constants above give 29, 73, 136 and 196
+days, which is the closest fit; `reputation.test.ts` asserts those bands.
 
 Notes:
 
@@ -62,10 +87,11 @@ Notes:
   streak but the day still counts as incomplete here.
 - Only shared activities count, and only from the day you joined and opted in.
   No retroactive credit or blame.
-- **A newly added or newly shared activity cannot move reputation for 14 days**
+- **A newly added or newly shared activity cannot move reputation for 7 days**
   (decision 54). Without this, adding a hard habit is a risk to your standing,
-  and the score would quietly punish anyone with ambition. Two weeks is long
-  enough to learn whether you can hold it.
+  and the score would quietly punish anyone with ambition. A week is long enough
+  to find your feet, and short enough that adding and dropping types cannot be
+  used to dodge a bad run.
 - Weekly activities contribute one scheduled period on the day the week is
   judged, not seven.
 

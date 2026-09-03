@@ -40,14 +40,15 @@ Full verification of the engine, then simulation.
   the fixture writes the whole history's fines in one scoring pass. Fixture
   debt, not app behaviour.
 
-## Questions to put to Aman
+## Answered by Aman, 2026-09-04
 
-1. `/ranks` is global ("Yours, across everything"); the artboard is group-scoped
-   ("In Weekend Club. 210 to UNBROKEN."). Which is right? The page is reached
-   from Settings AND from a group's Standing tab.
-2. The stats detail pages put the chart, then the weekday bars, then the tiles.
-   The four artboards disagree with each other on that order. One order for all
-   four, or match each mock exactly?
-3. Numeric charts are labelled "LAST 29 PERIODS" because the engine may not
-   know a type's unit. The mock says "STEPS A DAY, 21 DAYS". Should a module
-   declare its own chart heading?
+1. **`/ranks` stays global.** The artboard is group-scoped; we keep what is
+   built, because the page is reached from Settings where there is no group to
+   scope it to. A deliberate, agreed drift from the mock.
+2. **One section order on all four stats detail screens**: chart, weekday bars,
+   tiles, as built. The four artboards disagree with each other on this, and we
+   are not copying the inconsistency.
+3. **A module names its own chart heading.** Add it to the module interface
+   beside `icon` and `chart`, so Steps can read "STEPS A DAY, 21 DAYS" without
+   the engine learning what a step is. Replaces the generic
+   "LAST N PERIODS". Touches all twelve modules and `CONTRIBUTING`.

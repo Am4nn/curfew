@@ -290,7 +290,10 @@ export function ControlsForm({
       ) : null}
 
       {sheetOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-bg/85">
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          style={{ backgroundColor: "var(--scrim-85)" }}
+        >
           <div className="flex max-h-[85vh] w-full flex-col border-t border-penalty bg-bg">
             <div className="px-5 pb-[6px] pt-5">
               <span className="text-[16px] font-semibold">

@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { inviteAction } from "../../actions";
-import { SubmitButton } from "../../ui";
+import { inviteAction } from "../../../actions";
+import { SubmitButton } from "../../../ui";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 

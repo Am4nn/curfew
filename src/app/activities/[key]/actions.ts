@@ -13,7 +13,15 @@ export async function saveActivityAction(input: {
   config: unknown;
   /** Set when the activity was added from a join screen, to return there. */
   returnTo?: string;
-}): Promise<void> {
+  /**
+   * From a join screen, whether to return and pick up the sharing step, or
+   * stop here having added it for the person alone (decision: "Add for
+   * myself only" never re-enters the join flow, so the type is never shared
+   * with the inviting group unless the person comes back and turns it on
+   * themselves in Settings).
+   */
+  share?: boolean;
+}): Promise<{ redirectTo: string | null }> {
   const user = await getSessionUser();
   if (!user) throw new Error("not signed in");
 
@@ -35,8 +43,16 @@ export async function saveActivityAction(input: {
 
   revalidatePath("/activities");
   revalidatePath(`/activities/${input.typeKey}`);
+
   // Only ever an in-app path, never something the caller can point outward.
-  if (input.returnTo?.startsWith("/join/")) redirect(input.returnTo);
+  // Returned rather than redirect()ed: this action is invoked as a plain
+  // awaited call from a client transition, not a <form action>, and a
+  // server-thrown redirect there does not reliably reach the router — the
+  // caller navigates itself once this resolves.
+  if (input.share !== false && input.returnTo?.startsWith("/join/")) {
+    return { redirectTo: input.returnTo };
+  }
+  return { redirectTo: null };
 }
 
 export async function stopTrackingAction(typeKey: string): Promise<void> {

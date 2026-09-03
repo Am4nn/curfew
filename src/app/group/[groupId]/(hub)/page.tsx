@@ -4,8 +4,8 @@ import { getSessionUser } from "@/lib/session";
 import { rankFor } from "@/domain";
 import { acceptedTypes } from "@/server/sharing";
 import { groupHeader, memberStandings, standingIn, weekStats } from "@/server/group-view";
-import { ActivityIcon } from "../../activity-icon";
-import { RankScore, RANK_TEXT } from "../../rank-icon";
+import { ActivityIcon } from "../../../activity-icon";
+import { RankScore, RANK_TEXT } from "../../../rank-icon";
 
 export default async function GroupOverview({
   params,

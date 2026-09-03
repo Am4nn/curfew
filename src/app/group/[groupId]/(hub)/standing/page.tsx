@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { rankFor, nextRank, formatMoney } from "@/domain";
 import { groupHeader, standingIn, groupBalances } from "@/server/group-view";
-import { RankIcon, RANK_TEXT } from "../../../rank-icon";
+import { RankIcon, RANK_TEXT, RANK_BG } from "../../../../rank-icon";
 
 const REASON: Record<string, string> = {
   clean: "All shared activities done",
@@ -31,6 +31,7 @@ export default async function StandingTab({
   const rank = rankFor(standing.score);
   const next = nextRank(standing.score);
   const colour = RANK_TEXT[rank.key];
+  const fill = RANK_BG[rank.key];
   const owed = header.moneyOn ? await groupBalances(groupId, user.id) : [];
 
   const pct = Math.min(100, (standing.score / 1000) * 100);
@@ -73,13 +74,23 @@ export default async function StandingTab({
                 <span className="text-[13px]">
                   {b.netOwed > 0 ? `You owe ${b.name}` : `${b.name} owes you`}
                 </span>
-                <span
-                  className={
-                    "text-[15px] tabular-nums " +
-                    (b.netOwed > 0 ? "text-penalty" : "text-pass")
-                  }
-                >
-                  {formatMoney(Math.abs(b.netOwed), b.currency)}
+                <span className="flex items-center gap-[10px]">
+                  <span
+                    className={
+                      "text-[15px] tabular-nums " +
+                      (b.netOwed > 0 ? "text-penalty" : "text-pass")
+                    }
+                  >
+                    {formatMoney(Math.abs(b.netOwed), b.currency)}
+                  </span>
+                  {b.netOwed > 0 ? (
+                    <Link
+                      href={`/group/${groupId}/ledger`}
+                      className="border border-rule px-3 py-[7px] text-[12.5px]"
+                    >
+                      Settle
+                    </Link>
+                  ) : null}
                 </span>
               </div>
             ))
@@ -102,7 +113,7 @@ export default async function StandingTab({
         <span className="text-[10px] tracking-[0.16em] text-muted">CEILING</span>
         <div className="relative h-[6px] bg-rule">
           <div
-            className={"absolute inset-y-0 left-0 " + colour.replace("text-", "bg-")}
+            className={"absolute inset-y-0 left-0 " + fill}
             style={{ width: `${pct}%` }}
           />
           {standing.ceiling < 1000 ? (

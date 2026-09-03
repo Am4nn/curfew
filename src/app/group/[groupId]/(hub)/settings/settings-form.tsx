@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatMoney, minorUnitExponent } from "@/domain";
-import { ActivityIcon } from "../../../activity-icon";
+import { ActivityIcon } from "../../../../activity-icon";
 import {
   setShareAction,
   setAcceptedAction,

@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 
 // The one navigation, present on every member-facing screen. Admin is not a tab
 // (it is a header link for admins); the check-in has no screen of its own any
-// more, it lives on Home. Hidden on the pre-approval and admin surfaces, which
-// carry their own chrome.
+// more, it lives on Home. Hidden on the pre-approval, admin and check-in
+// surfaces, which carry their own chrome.
 const HIDDEN = ["/signin", "/pending"];
 
 type Tab = { href: string; label: string; icon: React.ReactNode; match: (p: string) => boolean };
@@ -18,6 +18,17 @@ const TABS: Tab[] = [
     match: (p) => p === "/" || p === "/balances",
     icon: (
       <path d="M3 10.5 12 3l9 7.5M5 9.5V20h14V9.5" />
+    ),
+  },
+  {
+    href: "/activities",
+    label: "Activities",
+    match: (p) => p.startsWith("/activities"),
+    icon: (
+      <>
+        <path d="M10 7h10M10 12h10M10 17h10" />
+        <path d="M3.5 6.6 5 8.1 7.4 5.6M3.5 11.6 5 13.1 7.4 10.6M3.5 16.6 5 18.1 7.4 15.6" />
+      </>
     ),
   },
   {
@@ -56,9 +67,15 @@ const TABS: Tab[] = [
   },
 ];
 
-export function TabBar() {
+export function TabBar({ hasPendingInvite = false }: { hasPendingInvite?: boolean }) {
   const pathname = usePathname() ?? "/";
-  if (HIDDEN.includes(pathname) || pathname.startsWith("/admin")) return null;
+  if (
+    HIDDEN.includes(pathname) ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/checkin/")
+  ) {
+    return null;
+  }
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg">
@@ -71,17 +88,24 @@ export function TabBar() {
               href={t.href}
               aria-current={active ? "page" : undefined}
               className={
-                "flex flex-1 flex-col items-center gap-[5px] px-0 pb-3 pt-[10px] text-[11px] " +
+                "relative flex flex-1 flex-col items-center gap-[5px] px-0 pb-[11px] pt-[9px] text-[10px] " +
                 (active ? "text-fg" : "text-muted")
               }
             >
+              {t.href === "/groups" && hasPendingInvite ? (
+                <span
+                  className="absolute left-[calc(50%+8px)] top-[7px] h-[5px] w-[5px] bg-penalty"
+                  style={{ borderRadius: "50%" }}
+                />
+              ) : null}
               <svg
-                width="20"
-                height="20"
+                width="19"
+                height="19"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={1.6}
+                strokeLinecap="square"
                 aria-hidden="true"
               >
                 {t.icon}

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ActivityIcon } from "../../activity-icon";
-import { setShareAction } from "../../group/[groupId]/settings/actions";
+import { setShareAction } from "../../group/[groupId]/(hub)/settings/actions";
 
 export interface ShareRow {
   typeKey: string;

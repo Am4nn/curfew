@@ -41,7 +41,10 @@ export function ReportButton({
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-bg/85">
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          style={{ backgroundColor: "var(--scrim-85)" }}
+        >
           <div className="flex w-full flex-col gap-3 border-t border-penalty bg-bg px-5 pb-5 pt-5">
             <span className="text-[16px] font-semibold">Report this photo</span>
             <span className="text-[12px] leading-[1.6] text-muted">

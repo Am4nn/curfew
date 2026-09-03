@@ -49,7 +49,9 @@ export default async function GroupLedger({
   };
 
   const direction = (r: (typeof rows)[number]) =>
-    `${r.fromUserId === user.id ? "You" : r.fromName} to ${r.toUserId === user.id ? "you" : r.toName}`;
+    r.kind === "adjustment"
+      ? "Reversed"
+      : `${r.fromUserId === user.id ? "You" : r.fromName} to ${r.toUserId === user.id ? "you" : r.toName}`;
 
   return (
     <main className="min-h-dvh pb-24">

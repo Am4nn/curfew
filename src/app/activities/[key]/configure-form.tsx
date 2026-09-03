@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   getActivityType,
   scheduleConfigSchema,
@@ -154,11 +155,14 @@ function NumberBox({
       }
     >
       <input
-        type="number"
+        type="text"
         inputMode="numeric"
-        value={Number.isNaN(value) ? "" : value}
+        // A native type="number" input can never show a thousands separator
+        // (the browser strips all formatting), so this is a formatted text
+        // field: display with commas, parse them back out on change.
+        value={Number.isNaN(value) ? "" : value.toLocaleString("en-US")}
         aria-label={label}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) => onChange(Number(e.target.value.replace(/,/g, "")))}
         className="w-full bg-transparent text-[14px] tabular-nums text-fg outline-none"
       />
       {unit ? <span className="text-[12px] text-muted">{unit}</span> : null}
@@ -293,6 +297,7 @@ export function ConfigureForm({
   returnTo?: string;
 }) {
   const type = getActivityType(typeKey);
+  const router = useRouter();
   const [schedule, setSchedule] = useState<ScheduleConfig>(initialSchedule);
   const [config, setConfig] = useState<unknown>(initialConfig);
   const [saved, setSaved] = useState({ schedule: initialSchedule, config: initialConfig });
@@ -336,12 +341,17 @@ export function ConfigureForm({
     setSchedule((s) => ({ ...s, schedule: next }));
   }
 
-  function save() {
+  function save(share?: boolean) {
     setError(null);
     startTransition(async () => {
       try {
-        await saveActivityAction({ typeKey, schedule, config, returnTo });
+        const result = await saveActivityAction({ typeKey, schedule, config, returnTo, share });
         setSaved({ schedule, config });
+        if (result.redirectTo) {
+          router.push(result.redirectTo);
+        } else if (returnTo) {
+          router.push("/activities");
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "That did not save.");
       }
@@ -469,27 +479,42 @@ export function ConfigureForm({
 
       {/* Nothing pending: only the way out. Changed: Save, dead until valid. */}
       {!tracked ? (
-        <button
-          type="button"
-          onClick={save}
-          disabled={!valid || pending}
-          className={
-            "h-11 w-full border text-[14px] " +
-            (valid
-              ? "border-fg bg-fg font-semibold text-bg"
-              : "cursor-not-allowed border-rule text-muted")
-          }
-        >
-          {pending
-            ? "Starting"
-            : returnTo
-              ? `Add and share ${name}`
-              : `Start tracking ${name}`}
-        </button>
+        <div className="flex flex-col gap-[10px]">
+          <button
+            type="button"
+            onClick={() => save(true)}
+            disabled={!valid || pending}
+            className={
+              "h-11 w-full border text-[14px] " +
+              (valid
+                ? "border-fg bg-fg font-semibold text-bg"
+                : "cursor-not-allowed border-rule text-muted")
+            }
+          >
+            {pending
+              ? "Starting"
+              : returnTo
+                ? `Add and share ${name}`
+                : `Start tracking ${name}`}
+          </button>
+          {returnTo ? (
+            <button
+              type="button"
+              onClick={() => save(false)}
+              disabled={!valid || pending}
+              className={
+                "h-11 w-full border text-[14px] " +
+                (valid ? "border-rule text-fg" : "cursor-not-allowed border-rule text-muted")
+              }
+            >
+              Add for myself only
+            </button>
+          ) : null}
+        </div>
       ) : dirty ? (
         <button
           type="button"
-          onClick={save}
+          onClick={() => save(true)}
           disabled={!valid || pending}
           className={
             "h-11 w-full border text-[14px] " +

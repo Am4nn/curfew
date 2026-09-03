@@ -22,7 +22,8 @@ export async function NoticeOverlay() {
       role="dialog"
       aria-modal="true"
       aria-label="What changed"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-bg/90 p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center p-6"
+      style={{ backgroundColor: "var(--scrim)" }}
     >
       <div className="flex w-full max-w-[420px] flex-col border border-rule bg-bg">
         <div className="border-b border-rule px-[18px] py-4">

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { listUserGroups, listInvitesForEmail, userBalances } from "@/server/groups";
-import { hasAdminAccess } from "@/server/admin";
+import { hasAdminAccess, pendingApprovalCount } from "@/server/admin";
 import { todayFor } from "@/server/today";
 import { standingIn } from "@/server/group-view";
 import { formatMoney } from "@/domain";
@@ -27,6 +27,8 @@ export default async function Home() {
     listInvitesForEmail(user.email),
     hasAdminAccess(user.id),
   ]);
+
+  const pendingAdminWork = admin ? await pendingApprovalCount() : 0;
 
   const [balances, standings] = await Promise.all([
     userBalances(user.id),
@@ -54,8 +56,15 @@ export default async function Home() {
             CURFEW
           </h1>
           {admin ? (
-            <Link href="/admin" className="text-[11px] text-muted">
-              Admin &rsaquo;
+            <Link href="/admin" className="flex items-center gap-[5px] text-[11px] text-muted">
+              Admin
+              {pendingAdminWork > 0 ? (
+                <span
+                  className="h-[5px] w-[5px] self-start bg-penalty"
+                  style={{ borderRadius: "50%" }}
+                />
+              ) : null}
+              <span>&rsaquo;</span>
             </Link>
           ) : null}
         </header>

@@ -4,7 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { groupEvidence, type EvidenceItem } from "@/server/group-view";
 import { readUrl, RETENTION_DAYS } from "@/server/evidence";
 import { resolveUserTimezone } from "@/server/config";
-import { ActivityIcon } from "../../../activity-icon";
+import { ActivityIcon } from "../../../../activity-icon";
 import { ReportButton } from "./report-button";
 
 // The reason photos exist in a group. A dated log, newest first, and nothing
@@ -36,8 +36,19 @@ export default async function EvidenceTab({
     limit: older ? 60 : 20,
   });
 
-  const byDay = new Map<string, EvidenceItem[]>();
+  // A presign failure (a stale key, a storage outage) must not take down the
+  // whole tab over one bad photo; drop it rather than crash the page.
+  const withUrl: (EvidenceItem & { url: string })[] = [];
   for (const item of items) {
+    try {
+      withUrl.push({ ...item, url: readUrl(item.objectKey) });
+    } catch {
+      // Skip it.
+    }
+  }
+
+  const byDay = new Map<string, (EvidenceItem & { url: string })[]>();
+  for (const item of withUrl) {
     const day = DateTime.fromISO(item.at).setZone(timezone).toFormat("yyyy-MM-dd");
     byDay.set(day, [...(byDay.get(day) ?? []), item]);
   }
@@ -49,10 +60,7 @@ export default async function EvidenceTab({
   return (
     <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
       {days.length === 0 ? (
-        <p className="text-[12.5px] leading-[1.6] text-muted">
-          Nothing shared here yet. A photo appears only if the person who took it
-          shares that activity, and its evidence, with this group.
-        </p>
+        <p className="text-[12.5px] leading-[1.6] text-muted">Nothing shared here yet.</p>
       ) : (
         days.map((day) => (
           <section key={day} className="flex flex-col gap-3">
@@ -64,7 +72,7 @@ export default async function EvidenceTab({
                 <div key={item.id} className="flex flex-col gap-[6px]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={readUrl(item.objectKey)}
+                    src={item.url}
                     alt={`${item.who}, ${item.typeName}`}
                     className="aspect-square w-full border border-rule bg-surface object-cover"
                   />

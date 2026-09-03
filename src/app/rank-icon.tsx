@@ -47,6 +47,19 @@ export const RANK_TEXT: Record<RankKey, string> = {
   unbroken: "text-rank-unbroken",
 };
 
+// A parallel table, not RANK_TEXT with its prefix swapped at runtime: Tailwind
+// only generates a utility for a class name it can find literally in source,
+// so a string built with .replace() at runtime (e.g. "text-x".replace("text-",
+// "bg-")) never gets its CSS emitted at all. Every consumer that needs a fill
+// colour rather than a text colour must use this table instead.
+export const RANK_BG: Record<RankKey, string> = {
+  doubt: "bg-rank-doubt",
+  intent: "bg-rank-intent",
+  practice: "bg-rank-practice",
+  discipline: "bg-rank-discipline",
+  unbroken: "bg-rank-unbroken",
+};
+
 export function RankIcon({ score, size = 17 }: { score: number; size?: number }) {
   const rank = rankFor(score);
   return (

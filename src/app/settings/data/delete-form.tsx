@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { ActivityIcon } from "../../activity-icon";
 import {
   deletePhotosAction,
+  deleteOnePhotoAction,
   deleteActivityHistoryAction,
   deleteAllHistoryAction,
   deleteAccountAction,
@@ -19,8 +20,20 @@ export interface HistoryRow {
   icon: string;
 }
 
+export interface PhotoRow {
+  id: number;
+  url: string;
+  typeKey: string;
+  name: string;
+  icon: string;
+  /** Already formatted server-side, e.g. "3 Sep". */
+  date: string;
+}
+
 type Pending =
   | { kind: "photos" }
+  | { kind: "photo-pick" }
+  | { kind: "photo"; id: number; name: string; date: string }
   | { kind: "activity"; typeKey: string; name: string }
   | { kind: "history" }
   | { kind: "account" }
@@ -54,10 +67,12 @@ function Row({
 
 export function DeleteForm({
   photos,
+  singlePhotos,
   activities,
   outstanding,
 }: {
   photos: number;
+  singlePhotos: PhotoRow[];
   activities: HistoryRow[];
   /** Already formatted server-side: money never gets a hardcoded divisor. */
   outstanding: string[];
@@ -67,12 +82,12 @@ export function DeleteForm({
   const [busy, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  function run(fn: () => Promise<void>) {
+  function run(fn: () => Promise<void>, after: Pending = null) {
     setError(null);
     startTransition(async () => {
       try {
         await fn();
-        setPending(null);
+        setPending(after);
         setTyped("");
       } catch (e) {
         setError(e instanceof Error ? e.message : "That did not go through.");
@@ -80,9 +95,18 @@ export function DeleteForm({
     });
   }
 
+  const title = (p: NonNullable<Pending>) => {
+    if (p.kind === "account") return "Delete your account?";
+    if (p.kind === "photo") return `Delete this ${p.name} photo from ${p.date}?`;
+    return "Delete this?";
+  };
+
   const confirmText = (p: NonNullable<Pending>) => {
     if (p.kind === "photos") {
       return `${photos} ${photos === 1 ? "photo goes" : "photos go"} from storage within minutes. Your check-ins, streaks and standing are unaffected.`;
+    }
+    if (p.kind === "photo") {
+      return "This cannot be undone. The photo goes from storage within minutes. The check-in stays as an anonymous count.";
     }
     if (p.kind === "activity") {
       return `Every scored period of ${p.name} goes, along with its photos. The check-ins stay as anonymous counts. Any fine already charged stays owed.`;
@@ -98,6 +122,10 @@ export function DeleteForm({
       <section className="flex flex-col gap-2">
         <span className="text-[10px] tracking-[0.16em] text-muted">PHOTOS</span>
         <div className="flex flex-col">
+          <Row
+            label="Delete a single photo"
+            onClick={() => setPending({ kind: "photo-pick" })}
+          />
           <Row
             label="Delete all photos"
             sub={`${photos} stored`}
@@ -157,12 +185,60 @@ export function DeleteForm({
         undone.
       </div>
 
-      {pending ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-bg/85">
-          <div className="flex w-full flex-col gap-3 border-t border-penalty bg-bg px-5 pb-5 pt-5">
-            <span className="text-[16px] font-semibold">
-              {pending.kind === "account" ? "Delete your account?" : "Delete this?"}
+      {pending && (pending.kind === "photo-pick" || pending.kind === "photo") ? (
+        <div className="fixed inset-0 z-40 flex flex-col bg-bg">
+          <header className="flex items-center gap-[9px] border-b border-rule px-5 pb-[11px] pt-5">
+            <button
+              type="button"
+              onClick={() => setPending(null)}
+              className="text-[14px] text-muted"
+            >
+              &lsaquo;
+            </button>
+            <span className="text-[14px] font-semibold tracking-[0.14em]">
+              DELETE A PHOTO
             </span>
+          </header>
+          <div className="flex-1 overflow-y-auto px-5 py-[18px]">
+            {singlePhotos.length === 0 ? (
+              <p className="text-[12.5px] leading-[1.6] text-muted">You have no photos.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                {singlePhotos.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() =>
+                      setPending({ kind: "photo", id: p.id, name: p.name, date: p.date })
+                    }
+                    className="flex flex-col gap-[6px] text-left"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.url}
+                      alt={`${p.name}, ${p.date}`}
+                      className="aspect-square w-full border border-rule bg-surface object-cover"
+                    />
+                    <span className="flex items-center gap-[5px] text-[10px] text-muted">
+                      <ActivityIcon name={p.icon} size={11} />
+                      {p.name}
+                    </span>
+                    <span className="text-[10px] text-muted">{p.date}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {pending && pending.kind !== "photo-pick" ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          style={{ backgroundColor: "var(--scrim-85)" }}
+        >
+          <div className="flex w-full flex-col gap-3 border-t border-penalty bg-bg px-5 pb-5 pt-5">
+            <span className="text-[16px] font-semibold">{title(pending)}</span>
             <span className="text-[12px] leading-[1.6] text-muted">
               {confirmText(pending)}
             </span>
@@ -185,7 +261,7 @@ export function DeleteForm({
               <button
                 type="button"
                 onClick={() => {
-                  setPending(null);
+                  setPending(pending.kind === "photo" ? { kind: "photo-pick" } : null);
                   setTyped("");
                 }}
                 className="h-[46px] flex-1 border border-rule text-[13.5px]"
@@ -198,11 +274,12 @@ export function DeleteForm({
                 onClick={() =>
                   run(() => {
                     if (pending.kind === "photos") return deletePhotosAction();
+                    if (pending.kind === "photo") return deleteOnePhotoAction(pending.id);
                     if (pending.kind === "activity")
                       return deleteActivityHistoryAction(pending.typeKey);
                     if (pending.kind === "history") return deleteAllHistoryAction();
                     return deleteAccountAction();
-                  })
+                  }, pending.kind === "photo" ? { kind: "photo-pick" } : null)
                 }
                 className="h-[46px] flex-1 border border-penalty bg-penalty text-[13.5px] font-semibold text-bg disabled:opacity-50"
               >

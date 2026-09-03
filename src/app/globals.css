@@ -13,6 +13,12 @@
 :root,
 [data-theme="dark"] {
   --bg: #0b0a09;
+  /* Blocking-overlay scrim: --bg at 90% opacity. A literal value, not derived
+     from --bg at runtime, because Tailwind's bg-bg/90 can't inject an alpha
+     channel into a var()-defined color and silently drops it (invariant: the
+     notice overlay must actually dim what's behind it). */
+  --scrim: #0b0a09e6;
+  --scrim-85: #0b0a09d9;
   --surface: #17150f;
   --fg: #f2f2f2;
   --muted: #8c8c8c;
@@ -33,6 +39,8 @@
 
 [data-theme="light"] {
   --bg: #e8e6e1;
+  --scrim: #e8e6e1e6;
+  --scrim-85: #e8e6e1d9;
   --surface: #dcd8d0;
   --fg: #1a1917;
   --muted: #5a5751;

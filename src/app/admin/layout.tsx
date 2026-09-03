@@ -11,6 +11,7 @@ const TABS: [string, string, Capability | null][] = [
   ["/admin/insights", "Insights", "insights.view"],
   ["/admin/users", "Users", "users.view"],
   ["/admin/groups", "Groups", "groups.view"],
+  ["/admin/reports", "Reports", "users.disable"],
   ["/admin/controls", "Controls", "settings.view"],
   ["/admin/ops", "Ops", "ops.score"],
 ];

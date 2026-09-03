@@ -55,9 +55,14 @@ start on data. Every screen is mocked in `.design/` and listed in
   catalog, personal stats at `/stats` with its four chart kinds, settings,
   sharing, the ranks page and deleting your data.
 
-- **Phase 9** before anyone uses it: the consent gate, the security round as
+- **Phase 9** before anyone uses it: the consent gate carrying both what
+  Curfew stores and the rules, reporting and bans, the security round as
   `bun run break-in`, and CONTRIBUTING with the add-an-activity-type
   walkthrough.
+
+**Before launch, two things need a person, not code.** `JURISDICTION.city` in
+`src/server/policy.ts` is a placeholder, and the terms have not been read by a
+lawyer. Neither is something the tests can catch.
 
 **All nine phases are done. What remains is the cutover**, below, and the
 `SCREENS.md` review gate, which is a person opening each screen beside its

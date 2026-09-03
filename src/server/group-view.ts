@@ -257,6 +257,8 @@ export interface EvidenceItem {
   icon: string;
   at: string;
   objectKey: string;
+  /** Your own photo, which you cannot report. */
+  mine: boolean;
 }
 
 /**
@@ -315,6 +317,7 @@ export async function groupEvidence(
     out.push({
       id: r.id,
       who: who.name,
+      mine: r.userId === viewerId,
       typeKey: r.typeKey,
       typeName: type.name,
       icon: type.icon,

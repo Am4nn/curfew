@@ -14,6 +14,8 @@ import {
   activityOutcomes,
   reputationDaily,
   ledgerEntries,
+  userApprovals,
+  reports,
   userActivities,
   userActivityConfig,
 } from "../src/db/schema";
@@ -24,6 +26,7 @@ import { setShare, setAccepted, setFineRule } from "../src/server/sharing";
 import { memberStandings, groupEvidence, standingIn } from "../src/server/group-view";
 import { scoreUser } from "../src/server/scoring";
 import { deletionSummary } from "../src/server/deletion";
+import { reportEvidence, openReports, reviewReport, banUser } from "../src/server/reports";
 import { assertMember } from "../src/server/membership";
 
 // Break our own app. Every item on the TRUST-SAFETY.md security round, tried
@@ -290,7 +293,94 @@ const summary = await deletionSummary(me.id);
 check("the deletion screen names the money owed", summary.outstanding.length > 0,
   JSON.stringify(summary.outstanding));
 
-console.log("\n--- 11. membership is checked, not assumed ---");
+console.log("\n--- 11. moderation ---");
+{
+  const t = await requestUpload(peer, {
+    typeKey: TYPE, step: "dose", idem: `${TAG}hhhhhhhh`,
+    contentType: "image/jpeg", bytes: 400,
+  });
+  if (t.ok) {
+    await fetch(t.url, {
+      method: "PUT",
+      headers: { "content-type": "image/jpeg" },
+      body: Buffer.from("stand-in for a photo"),
+    });
+    await performCheckin(peer, null, {
+      typeKey: TYPE, step: "dose", idem: `${TAG}hhhhhhhh`,
+      evidenceKey: t.objectKey, evidence: {},
+    });
+
+    const [row] = await db
+      .select({ id: evidence.id })
+      .from(evidence)
+      .where(eq(evidence.objectKey, t.objectKey));
+
+    try {
+      await reportEvidence({
+        reporterId: stranger, evidenceId: row.id, groupId: mine, reason: "nsfw",
+      });
+      check("a non-member cannot report into a group", false, "it worked");
+    } catch (e) {
+      check("a non-member cannot report into a group", true, (e as Error).message);
+    }
+
+    await reportEvidence({
+      reporterId: me.id, evidenceId: row.id, groupId: mine,
+      reason: "nsfw", note: "test",
+    });
+    const open1 = (await openReports()).filter((r) => r.subjectId === peer);
+    check("the report reaches the admin queue", open1.length === 1, `${open1.length}`);
+
+    await reportEvidence({
+      reporterId: me.id, evidenceId: row.id, groupId: mine, reason: "nsfw",
+    });
+    const open2 = (await openReports()).filter((r) => r.subjectId === peer);
+    check("reporting twice is still one report", open2.length === 1, `${open2.length}`);
+
+    await reviewReport({
+      adminId: me.id, reportId: open2[0].id, outcome: "upheld", removePhoto: true,
+    });
+    const [after] = await db
+      .select({ deletedAt: evidence.deletedAt })
+      .from(evidence)
+      .where(eq(evidence.id, row.id));
+    check("upholding a report removes the photo", after?.deletedAt !== null);
+    check("a decided report leaves the queue",
+      (await openReports()).filter((r) => r.subjectId === peer).length === 0);
+  }
+
+  await db.insert(ledgerEntries).values({
+    groupId: mine, typeKey: OPEN, fromUserId: peer, toUserId: me.id,
+    amount: 2500, currency: "INR", kind: "fine", periodStart: back,
+  });
+  await db
+    .insert(userApprovals)
+    .values({ userId: peer, status: "approved", decidedAt: new Date() })
+    .onConflictDoNothing();
+  await banUser({ adminId: me.id, userId: peer, reason: "test" });
+
+  const [banned] = await db
+    .select({ disabledAt: userApprovals.disabledAt, reason: userApprovals.disabledReason })
+    .from(userApprovals)
+    .where(eq(userApprovals.userId, peer));
+  check("a ban blocks the account and records why",
+    banned?.disabledAt !== null && banned?.reason === "test");
+
+  const owed = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(ledgerEntries)
+    .where(and(eq(ledgerEntries.groupId, mine), eq(ledgerEntries.fromUserId, peer)));
+  check("a ban does not clear what they owe", owed[0].n === 1, `${owed[0].n} rows`);
+
+  try {
+    await banUser({ adminId: me.id, userId: me.id, reason: "x" });
+    check("an admin cannot ban themselves", false, "it worked");
+  } catch (e) {
+    check("an admin cannot ban themselves", true, (e as Error).message);
+  }
+}
+
+console.log("\n--- 12. membership is checked, not assumed ---");
 try {
   await assertMember(theirs, me.id);
   check("assertMember refuses a non-member", false, "it passed");
@@ -300,6 +390,8 @@ try {
 
 // Clean up everything this script made.
 const ids = [peer, stranger];
+await db.delete(reports).where(inArray(reports.subjectId, [me.id, peer, stranger]));
+await db.delete(userApprovals).where(inArray(userApprovals.userId, ids));
 await db.delete(ledgerEntries).where(inArray(ledgerEntries.groupId, [mine, theirs]));
 await db.delete(activityOutcomes).where(inArray(activityOutcomes.groupId, [mine, theirs]));
 await db.delete(reputationDaily).where(inArray(reputationDaily.groupId, [mine, theirs]));
@@ -319,6 +411,11 @@ await db
   .delete(userActivities)
   .where(and(inArray(userActivities.userId, [me.id, ...ids]), sql`effective_at <= ${new Date(`${back}T00:00:01Z`)}`));
 await db.delete(users).where(inArray(users.id, ids));
+
+// The cleanup removed this account's derived rows along with the run's, so put
+// them back. Derived data is rebuildable by definition, and leaving a hole
+// makes the next `bun run verify` report drift that is not there.
+await scoreUser(me.id);
 
 console.log(`\n${failures === 0 ? "nothing broke" : `${failures} BROKE`}`);
 process.exit(failures === 0 ? 0 : 1);

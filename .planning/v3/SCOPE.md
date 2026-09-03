@@ -206,6 +206,11 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 114 | **The consent form and the security round ship in v3.** `TRUST-SAFETY.md` marked them "after v3"; those headings predate the phase plan, and shipping a photo-sharing app to real people with no consent record and no security pass is not defensible. Content rules and reporting stay deferred: groups are invite-only, so the exposure is bounded | 2026-09-03 |
 | 115 | **Consent is a blocking gate everyone passes once**, versioned, in the root layout beside the notice overlay. It blocks rather than redirects because it has to reach every screen without each one remembering to check. The same text is in Settings, because a thing you agreed to once and can never see again is not something you agreed to | 2026-09-03 |
 | 116 | **`bun run break-in` is a command, not a checklist.** Every item on the security round runs against the real database and exits non-zero if anything gives, so the pass can be repeated rather than remembered | 2026-09-03 |
+| 117 | **Content rules ship in v3 after all**, reversing decision 114's deferral. The rules, the liability position and the admin's right to remove and ban are in `policy.ts` beside the privacy text, shown at the same gate and readable in Settings afterwards | 2026-09-03 |
+| 118 | **18 or older, and Indian law.** Money plus photographs is not a combination to have minors inside, and it keeps children's-data rules out of scope. Disputes go to the courts named in `policy.ts`; set the city before launch | 2026-09-03 |
+| 119 | **Somebody else in frame without their agreement is a rule; your own face is guidance.** Banning faces outright fights the product, since a gym selfie is the honest way to prove a gym session. Photographing another person without their agreement is a removal | 2026-09-03 |
+| 120 | **A report is the only route by which an admin sees a photograph**, and the fact they looked is recorded on the report. Removing a photo and removing a person are separate acts, so taking down one bad picture never quietly takes down an account | 2026-09-03 |
+| 121 | **A ban never clears a debt.** Photographs go with the banned account; ledger rows stay owed and stay visible to the people owed. Otherwise getting banned would be the cheapest way to settle | 2026-09-03 |
 
 ## Invariants
 

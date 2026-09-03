@@ -5,6 +5,7 @@ import { groupEvidence, type EvidenceItem } from "@/server/group-view";
 import { readUrl, RETENTION_DAYS } from "@/server/evidence";
 import { resolveUserTimezone } from "@/server/config";
 import { ActivityIcon } from "../../../activity-icon";
+import { ReportButton } from "./report-button";
 
 // The reason photos exist in a group. A dated log, newest first, and nothing
 // else: no reactions, no comments, no feed mechanics.
@@ -73,10 +74,19 @@ export default async function EvidenceTab({
                       {DateTime.fromISO(item.at).setZone(timezone).toFormat("h:mm a")}
                     </span>
                   </div>
-                  <span className="flex items-center gap-[5px] text-[10px] text-muted">
-                    <ActivityIcon name={item.icon} size={11} />
-                    {item.typeName}
-                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-[5px] text-[10px] text-muted">
+                      <ActivityIcon name={item.icon} size={11} />
+                      {item.typeName}
+                    </span>
+                    {item.mine ? null : (
+                      <ReportButton
+                        evidenceId={item.id}
+                        groupId={groupId}
+                        who={item.who}
+                      />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,5 +1,6 @@
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { CONSENT, hasConsented } from "@/server/consent";
+import { TERMS } from "@/server/policy";
 import { acceptConsentAction } from "./consent/actions";
 
 // The consent gate, over every route, the same way a notice is (decision 58).
@@ -24,16 +25,20 @@ export async function ConsentGate() {
     >
       <div className="border-b border-rule px-5 pb-[11px] pt-5">
         <span className="text-[14px] font-semibold tracking-[0.16em]">
-          WHAT CURFEW STORES
+          BEFORE YOU START
         </span>
       </div>
 
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-5 py-5">
         <p className="text-[13px] leading-[1.6]">
           Curfew keeps a record of what you say you did, and shows some of it to
-          people you choose. Read this before you start. It is also in Settings,
-          always.
+          people you choose. Two things to read: what it stores, and the rules
+          you are agreeing to. Both are in Settings afterwards, always.
         </p>
+
+        <span className="text-[11px] tracking-[0.16em] text-fg">
+          WHAT CURFEW STORES
+        </span>
 
         {CONSENT.map((section) => (
           <section key={section.heading} className="flex flex-col gap-[10px]">
@@ -52,6 +57,25 @@ export async function ConsentGate() {
             </ul>
           </section>
         ))}
+        <span className="mt-2 text-[11px] tracking-[0.16em] text-fg">THE RULES</span>
+
+        {TERMS.map((section) => (
+          <section key={section.heading} className="flex flex-col gap-[10px]">
+            <span className="text-[10px] tracking-[0.16em] text-muted">
+              {section.heading}
+            </span>
+            <ul className="flex flex-col gap-[10px]">
+              {section.lines.map((line) => (
+                <li key={line} className="flex gap-[9px]">
+                  <span className="text-[11px] leading-[1.65] text-muted">&bull;</span>
+                  <span className="flex-1 text-[12.5px] leading-[1.6] text-muted">
+                    {line.replaceAll("**", "")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
 
       <div className="border-t border-rule px-5 pb-5 pt-[14px]">
@@ -60,7 +84,7 @@ export async function ConsentGate() {
             type="submit"
             className="h-12 w-full border border-fg bg-fg text-[14px] font-semibold text-bg"
           >
-            I have read this
+            I am 18 or older and I agree
           </button>
         </form>
       </div>

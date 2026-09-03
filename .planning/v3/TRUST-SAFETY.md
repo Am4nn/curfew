@@ -52,7 +52,7 @@ plain words:
 Everything a user consented to must also be visible later in Settings, not only
 at signup.
 
-## Content rules (after v3)
+## Content rules
 
 Photos of people, in a group, means rules and a way to enforce them.
 
@@ -65,6 +65,15 @@ Photos of people, in a group, means rules and a way to enforce them.
 - Bans: account level, with the ledger consequences spelled out.
 - Because groups are invite-only, the exposure is bounded. That changes the day
   open signup lands, and content rules must be revisited before it does.
+
+**Built in Phase 9.** The rules, the liability position and the admin's right to
+remove and ban live in `src/server/policy.ts`, shown at the consent gate and
+readable afterwards under Settings. Reporting is a control on each shared photo;
+reports reach `/admin/reports`, which is the only place an admin ever sees an
+image, and the fact they looked is recorded on the report. Removing a photo and
+banning an account are separate acts. A ban deletes the account's photographs
+and leaves its ledger rows owed and visible: getting banned is not a way to
+settle.
 
 ## Security round
 

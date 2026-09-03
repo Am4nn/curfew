@@ -2,22 +2,32 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { consentRecords } from "@/db/schema";
 import { RETENTION_DAYS } from "./evidence";
+import { MINIMUM_AGE, type PolicySection } from "./policy";
 
 // What Curfew records, stated plainly and accepted before the app can be used.
+// The rules a member agrees to are in `policy.ts`, and the gate shows both.
 //
 // The text lives here rather than in a document, because every claim in it has
 // to stay true as the code changes, and a policy nobody can diff is a policy
 // that quietly stops being accurate.
 
-/** Bump when the text below changes in substance. Everyone re-accepts. */
+/**
+ * Bump when EITHER document changes in substance. Everyone re-accepts, because
+ * an old acceptance does not cover new wording.
+ */
 export const CONSENT_VERSION = 1;
 
-export interface ConsentSection {
-  heading: string;
-  lines: string[];
-}
+export type ConsentSection = PolicySection;
 
 export const CONSENT: ConsentSection[] = [
+  {
+    heading: "BEFORE ANYTHING ELSE",
+    lines: [
+      `You must be ${MINIMUM_AGE} or older to use Curfew.`,
+      "Curfew records what you say you did. It does not check whether it is true, and a streak is a record of what you pressed rather than proof of what you did.",
+      "It is not health, fitness, medical or financial advice, and nothing in it is a professional opinion.",
+    ],
+  },
   {
     heading: "WHAT IS RECORDED",
     lines: [

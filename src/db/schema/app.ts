@@ -39,6 +39,8 @@ export const userApprovals = pgTable("user_approvals", {
   decidedAt: timestamp("decided_at", { withTimezone: true }),
   decidedBy: text("decided_by").references(() => users.id),
   disabledAt: timestamp("disabled_at", { withTimezone: true }), // soft-delete; blocks access
+  // Why, so a ban can be told from an admin tidying up.
+  disabledReason: text("disabled_reason"),
 });
 
 export type ApprovalStatus = "pending" | "approved" | "rejected" | "disabled";
@@ -395,4 +397,27 @@ export const consentRecords = pgTable("consent_records", {
     .references(() => users.id, { onDelete: "cascade" }),
   version: integer("version").notNull(),
   acceptedAt: timestamp("accepted_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// A member reporting a photo or a person. Append-only: reviewing sets the
+// outcome and never deletes the row, so what was reported and what was done
+// about it stays answerable. See migrations/0014.
+export const reports = pgTable("reports", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  reporterId: text("reporter_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "set null" }),
+  subjectId: text("subject_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  evidenceId: bigint("evidence_id", { mode: "number" }).references(() => evidence.id, {
+    onDelete: "set null",
+  }),
+  groupId: uuid("group_id").references(() => groups.id, { onDelete: "set null" }),
+  reason: text("reason").notNull(),
+  note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  outcome: text("outcome").notNull().default("open"),
+  reviewedBy: text("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 });

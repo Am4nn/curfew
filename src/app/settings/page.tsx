@@ -87,6 +87,7 @@ export default async function Settings() {
               value={consent ? `accepted ${consent.acceptedAt.toISOString().slice(0, 10)}` : undefined}
               href="/settings/stored"
             />
+            <Row label="The rules" href="/settings/rules" />
             <Row label="Delete data" href="/settings/data" />
           </div>
         </section>

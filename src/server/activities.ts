@@ -40,7 +40,7 @@ export interface UserActivity {
 }
 
 /** The engine-owned half of a config blob, with the module's half beside it. */
-function splitConfig(raw: unknown): { schedule: ScheduleConfig; config: unknown } {
+export function splitConfig(raw: unknown): { schedule: ScheduleConfig; config: unknown } {
   const blob = (raw ?? {}) as Record<string, unknown>;
   return {
     schedule: scheduleConfigSchema.parse(blob.schedule),

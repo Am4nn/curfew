@@ -8,6 +8,17 @@ import {
   type FineRules,
 } from "@/domain";
 
+// A stored config row is either the module's config directly (the seed's own
+// userId-null default, written before saveUserActivity's wrapping existed) or
+// { schedule, config } (every real per-user save, see activities.ts's
+// splitConfig). Detect which one this is rather than assuming — assuming
+// wrapped breaks the seed default (no .schedule key to satisfy
+// scheduleConfigSchema), assuming flat breaks the first real save.
+function moduleConfigOf(raw: unknown): unknown {
+  const blob = raw as Record<string, unknown> | null;
+  return blob && typeof blob === "object" && "config" in blob ? blob.config : raw;
+}
+
 // Resolve a user's timezone as it stood on `asOf` (a "yyyy-MM-dd" date). Reads
 // the user's own rows and the NULL default, then picks with the effective-dated
 // rule. Falls back to Asia/Kolkata, which is also the seeded default.
@@ -53,7 +64,10 @@ export async function resolveUserSleepConfigRow(
   if (!row) {
     throw new Error(`no sleep config effective on ${periodStart}`);
   }
-  return { config: sleepConfigSchema.parse(row.config), version: row.version };
+  // This was reading the raw blob directly against sleepConfigSchema, which
+  // only matches the seed's legacy flat default row and throws the moment a
+  // real per-user save (always wrapped as { schedule, config }) takes over.
+  return { config: sleepConfigSchema.parse(moduleConfigOf(row.config)), version: row.version };
 }
 
 export async function resolveUserSleepConfig(

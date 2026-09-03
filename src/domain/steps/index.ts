@@ -13,9 +13,8 @@ import { thresholdPass, latestField } from "../pass";
 
 export const STEPS_STEP = "count";
 
-// The direction is a control on the artboard, not a constant in the code. It
-// was always data rather than two code paths (decision 52); this lets someone
-// who is cutting down rather than building up say so.
+// Direction is a setting, not a constant: it was always data rather than two
+// code paths (decision 52), and someone cutting down can say so.
 export const stepsConfigSchema = z
   .object({
     target: z.number().int().min(100).max(100000),

@@ -11,13 +11,10 @@ import { now } from "@/lib/clock";
 
 // Evidence photos. No image passes through a serverless function (decision 71):
 // the browser compresses, asks for a presigned PUT, uploads straight to R2, and
-// only then sends the check-in.
-//
-// The order is deliberate. A file in R2 with no confirmed row is an orphan, and
-// an orphan is swept. A check-in that needs a photo never exists without one,
-// because the write path refuses it.
+// only then sends the check-in. A file with no confirmed row is an orphan and
+// is swept; a check-in that needs a photo is refused without one.
 
-/** How long a photograph is kept. The check-in outlives it (decision, 60 days). */
+/** How long a photograph is kept. The check-in outlives it (decision 101). */
 export const RETENTION_DAYS = 60;
 
 /** Two formats, because those are the two a canvas can encode to. */
@@ -64,13 +61,7 @@ function objectKeyFor(input: {
   return `ev/${input.userId}/${input.typeKey}/${input.period}/${input.idem}.${EXTENSION[input.contentType]}`;
 }
 
-/**
- * A presigned PUT for one photo, and the pending row that will be confirmed
- * when the check-in arrives.
- *
- * The window is checked here as well as on the check-in, so a photo can never
- * be uploaded against a window a check-in would be refused for.
- */
+/** A presigned PUT, and the pending row the check-in will confirm. */
 export async function requestUpload(
   userId: string,
   raw: unknown,
@@ -117,10 +108,8 @@ export async function requestUpload(
     .plus({ days: RETENTION_DAYS })
     .toFormat("yyyy-MM-dd");
 
-  // One photo per press. A client retrying with the same key gets the same
-  // object back rather than a second row, so a stuck browser cannot fill the
-  // bucket; a client retrying with a NEW key is simply a new attempt, and the
-  // one it abandons is swept.
+  // One photo per press. A retry with the same key reuses the object rather
+  // than making a second row, so a stuck browser cannot fill the bucket.
   const [row] = await db
     .insert(evidence)
     .values({
@@ -151,8 +140,8 @@ export async function requestUpload(
   return {
     ok: true,
     objectKey: row.objectKey,
-    // Long enough for a slow upload on mobile data, short enough that a leaked
-    // URL is worth little. It is a bearer token for exactly one object.
+    // A bearer token for one object: long enough for mobile data, short
+    // enough that a leaked one is worth little.
     url: presign({ key: row.objectKey, method: "PUT", expiresIn: 300 }),
     expiresIn: 300,
   };
@@ -175,11 +164,9 @@ export async function pendingFor(userId: string, idem: string) {
 }
 
 /**
- * Mark a photo confirmed, once the check-in that carries its key is recorded.
- *
- * There is no transaction: the HTTP driver has none. It does not need one.
- * The event carries the object key, so a confirm that fails leaves a row whose
- * state disagrees with the events table, and the sweep believes the event.
+ * Mark a photo confirmed. There is no transaction and none is needed: the event
+ * carries the object key, so when this disagrees with `events` the sweep
+ * believes the event.
  */
 export async function confirmEvidence(id: number, eventAt: Date): Promise<void> {
   await db
@@ -205,14 +192,12 @@ export interface SweepResult {
 }
 
 /**
- * Delete every photograph past its retention date, and every upload that was
- * never followed by a check-in.
+ * Delete every photograph past its retention date, and every upload never
+ * followed by a check-in.
  *
- * Both run nightly beside scoring. Deleting the object comes first: a row
- * marked deleted whose object survives is a photograph we said we had removed
- * and had not, which is the failure that matters. A row still marked live whose
- * object is gone is simply swept again tomorrow, and R2 answers a repeat delete
- * the same way it answers the first.
+ * The object goes before the row. A row marked deleted whose object survives is
+ * a photograph we said we had removed and had not; a live row whose object is
+ * already gone is simply swept again tomorrow.
  */
 export async function sweepEvidence(): Promise<SweepResult> {
   const instant = await now();
@@ -234,15 +219,12 @@ export async function sweepEvidence(): Promise<SweepResult> {
         .where(eq(evidence.id, row.id));
       result.expired += 1;
     } catch {
-      // Leave the row alone and try again tomorrow. Marking it deleted here
-      // would lose the only pointer to a file that is still in the bucket.
+      // Leave the row: it is the only pointer to a file still in the bucket.
       result.failed += 1;
     }
   }
 
-  // An upload with no check-in an hour later was abandoned: the browser died,
-  // the window closed, or the person changed their mind. The photograph has
-  // nothing to belong to.
+  // An upload with no check-in an hour later was abandoned.
   const cutoff = new Date(instant.getTime() - 60 * 60 * 1000);
   const unconfirmed = await db
     .select({
@@ -263,8 +245,7 @@ export async function sweepEvidence(): Promise<SweepResult> {
 
   for (const row of unconfirmed) {
     // Events are the truth (invariant 1). A check-in carrying this key means
-    // the confirm failed, not that the photo is an orphan: repair the row
-    // rather than deleting a photograph someone's group is entitled to see.
+    // the confirm failed, not that the photo is an orphan.
     const [event] = await db
       .select({ occurredAt: events.occurredAt })
       .from(events)

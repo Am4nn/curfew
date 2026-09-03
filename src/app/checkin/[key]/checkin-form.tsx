@@ -8,15 +8,12 @@ import { compressFile, type Compressed } from "@/lib/compress";
 import { Camera } from "./camera";
 import { checkInAction } from "./actions";
 
-// ONE check-in screen, twelve types. The photo slot, the fields, the question
-// and the words under it all come from the module (decision 90); this file only
-// draws them. Artboards: V3Checkin, V3CheckinRequired, V3CheckinReady,
-// V3CheckinAbstain.
+// One check-in screen, twelve types. The photo slot, the fields, the question
+// and the words under them all come from the module (decision 90).
 //
-// The module is asked for its hint here, in the browser, as the number is
-// typed (decision 91). That is what turns "1180 so far today. The limit is
-// 2000." into "1700 of 2000 once this is sent." with one implementation
-// instead of two.
+// The hint is asked of the module here, in the browser, as the number is typed
+// (decision 91): that is what turns "1180 so far today" into "1700 of 2000 once
+// this is sent" without a second implementation of the same sentence.
 
 function newIdem(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -44,8 +41,7 @@ function CameraIcon() {
   );
 }
 
-// The photo slot: empty and waiting, or the frame with a red cross to remove
-// it (artboards V3Checkin, V3CheckinRequired, V3CheckinReady).
+// Empty and waiting, or the frame with a red cross to remove it.
 function PhotoSlot({
   required,
   shot,
@@ -172,8 +168,8 @@ export function CheckinForm({
   const missing = step.fields.filter(
     (f) => f.kind === "number" && (values[f.key] ?? "") === "",
   );
-  // Required means required ON THIS STEP: sleep asks for one on confirm and
-  // nowhere else.
+  // Required means required ON THIS STEP: sleep asks on confirm and nowhere
+  // else.
   const photoRequired =
     state.evidence.level === "required" &&
     (state.evidence.steps === undefined || state.evidence.steps.includes(step.key));
@@ -214,10 +210,8 @@ export function CheckinForm({
   }, [state, step, values]);
 
   /**
-   * Upload the photo, then record the check-in.
-   *
-   * That order is the point (decision 71): the check-in is the callback, not
-   * the upload. A file in R2 with no check-in is an orphan and is swept; a
+   * Upload the photo, then record the check-in. That order is the point
+   * (decision 71): a file with no check-in is an orphan and is swept, and a
    * check-in that needs a photo never exists without one.
    */
   async function send(evidence: Record<string, unknown>) {
@@ -423,8 +417,7 @@ export function CheckinForm({
         />
       ))}
 
-      {/* Your own line, for your own record. Never scored, never shown to a
-          group unless you share the check-in itself. */}
+      {/* Your own line, never scored. */}
       <div className="flex flex-col gap-[7px]">
         <span className="text-[11px] tracking-[0.06em] text-muted">Note</span>
         <div className="flex items-center justify-between gap-[10px] border border-rule bg-bg px-3 py-[11px]">
@@ -478,7 +471,7 @@ export function CheckinForm({
   );
 }
 
-// The one flame in the app outside Home, at the size the artboard uses.
+// The one flame outside Home.
 function StreakBadge({ value }: { value: number }) {
   return (
     <span className="flex items-center gap-1">

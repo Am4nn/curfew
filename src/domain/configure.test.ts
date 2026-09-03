@@ -5,9 +5,9 @@ import { screenActivity } from "./screen";
 import { stepsActivity } from "./steps";
 import { readingActivity } from "./reading";
 
-// The configure screen is drawn once for twelve types, so what each screen SAYS
-// is a property of its module. These assertions are the V3Cfg* artboards: if a
-// label here changes, a mock changed with it, deliberately.
+// One screen, twelve types, so what each screen says belongs to its module.
+// These assertions are the mocks: a label changing here means a mock changed
+// with it, deliberately.
 
 const LABELS: Record<string, string[]> = {
   sleep: ["Night window", "Wake window", "Confirm window"],

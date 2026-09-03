@@ -9,7 +9,7 @@ import { ConfigureForm } from "./configure-form";
 
 // Both entry points land here (decision 31): a tracked activity opens with its
 // own settings and a stop control, an untracked one with the type's defaults
-// prefilled and a start button. Artboards V3Cfg*.
+// prefilled and a start button.
 export default async function ConfigurePage({
   params,
 }: {

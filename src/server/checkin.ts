@@ -23,16 +23,12 @@ import { rateLimit } from "./ratelimit";
 import { pendingFor, confirmEvidence } from "./evidence";
 import { now } from "@/lib/clock";
 
-// The check-in path, one implementation for all twelve types.
+// The check-in path, one implementation for all twelve types. Nothing here
+// knows what a type means (invariant 6): the module supplies its steps, its
+// windows, its words and its evidence shape.
 //
-// Nothing here knows what a type means (invariant 6). The engine asks the
-// module for its steps and its windows, prints the module's own words, and
-// stores whatever its evidenceSchema accepts. Every sentence on the screen that
-// is specific to a type comes from the type.
-//
-// Invariant 9: nothing in this file writes on a read. getCheckinState is a
-// query. The only writer is performCheckin, and it is only ever reached from a
-// POST.
+// getCheckinState is a query. The only writer is performCheckin, reached only
+// from a POST (invariant 9).
 
 const TIME = "h:mm a"; // 12-hour with AM or PM (CLAUDE.md voice).
 
@@ -242,11 +238,10 @@ const PER_PERIOD = 50;
 const PER_MINUTE = 20;
 
 /**
- * Everything a write needs about one step: is it tracked, is today one of its
- * days, does the step exist, and is its window open right now.
- *
- * The check-in and the upload-URL request both go through here, so a photo can
- * never be uploaded against a window that a check-in would be refused for.
+ * Everything a write needs about one step: tracked, scheduled today, the step
+ * exists, its window is open. Both the check-in and the upload-URL request go
+ * through here, so a photo can never be uploaded against a window a check-in
+ * would be refused for.
  */
 export type CheckinTarget =
   | {
@@ -339,10 +334,9 @@ export async function performCheckin(
   if (!target.ok) return target;
   const { type, config, period, timezone, step } = target;
 
-  // A photo, where the type requires one on this step. The check-in is the
-  // callback: the upload came first, and this is what confirms it. A required
-  // photo that is missing means no check-in at all, which is what makes a
-  // Gym streak mean the same thing for everyone in a group.
+  // The check-in is the callback: the upload came first, this confirms it. A
+  // required photo that is missing means no check-in at all, which is what
+  // makes a Gym streak mean the same thing for everyone in a group.
   const needsPhoto =
     type.evidence.level === "required" &&
     (type.evidence.steps === undefined || type.evidence.steps.includes(input.step));
@@ -433,9 +427,8 @@ export async function performCheckin(
     return { ok: false, reason: "duplicate", message: "Already recorded." };
   }
 
-  // The event is the truth, so it is written first. If this fails the photo is
-  // left unconfirmed and the sweep repairs it from the event rather than
-  // deleting a photograph that a recorded check-in points at.
+  // The event is the truth, so it goes first. A failure here leaves the photo
+  // unconfirmed and the sweep repairs it from the event.
   if (photo) await confirmEvidence(photo.id, row.occurredAt);
 
   return { ok: true, step: input.step, atLabel: label(row.occurredAt, timezone) };

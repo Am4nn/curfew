@@ -5,11 +5,9 @@ import { registeredKeys } from "@/domain";
 import { getCheckinState } from "@/server/checkin";
 import { CheckinForm } from "./checkin-form";
 
-// The check-in screen. Bare chrome, no tab bar: this is a single act with a way
-// back, not a place to browse from (artboards V3Checkin and friends).
-//
-// This is a GET. It reads, and it records nothing (invariant 9). The only
-// writer is the action behind the buttons.
+// Bare chrome, no tab bar: a single act with a way back, not a place to browse
+// from. A GET, so it records nothing (invariant 9); the only writer is the
+// action behind the buttons.
 export default async function CheckinPage({
   params,
 }: {
@@ -26,9 +24,7 @@ export default async function CheckinPage({
   // is where that starts.
   if (!state) redirect(`/activities/${key}`);
 
-  // The step being checked in is the one whose window is open. Where several
-  // are open at once the earliest in the module's own order wins, which is the
-  // order it lists them in.
+  // The open one. Where several overlap, the module's own order wins.
   const step = state.steps.find((s) => s.open) ?? null;
 
   const occurrence =
@@ -58,8 +54,7 @@ export default async function CheckinPage({
   );
 }
 
-// No artboard covers this: every check-in board is drawn with a window open.
-// It states the fact and names the next window, in the same register.
+// No mock covers this: every check-in board is drawn with a window open.
 function Closed({
   state,
 }: {

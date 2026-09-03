@@ -10,9 +10,7 @@ import { sugarfreeActivity } from "./sugarfree";
 import { DECLARE_STEP } from "./abstinence";
 import { clockLabel } from "./windows";
 
-// What the check-in screen draws comes entirely from the modules (decision 90).
-// These are the sentences that ship, so they are asserted verbatim against the
-// artboards rather than described.
+// The sentences that ship, asserted verbatim against the mocks.
 
 const IST = "Asia/Kolkata";
 const DAY = "2026-09-07";
@@ -83,7 +81,7 @@ describe("the line under the fields, in the module's own words", () => {
     });
 
   it("Study states the target before anything is recorded", () => {
-    // The V3Checkin artboard, word for word.
+    // The mock, word for word.
     expect(
       hint(studyActivity, STUDY_STEP, [], { minutesTarget: 45 } as never),
     ).toBe("Target is 45. Anything at or above counts.");
@@ -106,7 +104,7 @@ describe("the line under the fields, in the module's own words", () => {
       check(FOOD_STEP, "13:00", { calories: 700 }),
     ];
     const config = { meals: 3, calorieLimit: 2000 } as never;
-    // Both lines are the V3CheckinRequired and V3CheckinReady artboards.
+    // Both lines are on the mocks.
     expect(foodActivity.hint?.({
       periodStart: DAY, timezone: IST, config, checkins: meals,
       step: FOOD_STEP, pending: null,
@@ -164,7 +162,7 @@ describe("the line under the fields, in the module's own words", () => {
 describe("the abstinence question", () => {
   it("names the cut-off in 12-hour time", () => {
     const [step] = nightfastActivity.steps(nightfastActivity.defaults.config, DAY);
-    // The V3CheckinAbstain artboard.
+    // The mock.
     expect(step.prompt).toBe("Nothing after 8:00 PM last night. Did it hold?");
     expect(step.key).toBe(DECLARE_STEP);
   });

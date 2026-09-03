@@ -50,7 +50,7 @@ describe("resolveAt", () => {
 });
 
 describe("a period straddling a switch", () => {
-  // The Phase 2 done-condition. Money off at 3pm; the day closes at midnight.
+  // Money off at 3pm; the day closes at midnight.
   const settings = [
     row(1, "2026-09-01T00:00Z", true),
     row(2, "2026-09-10T09:30Z", false), // 3pm IST

@@ -13,14 +13,10 @@ import {
 import { CameraIcon, StreakNumber } from "../../activity-icon";
 import { saveActivityAction, stopTrackingAction } from "./actions";
 
-// ONE configure screen, twelve types, drawn to the V3Cfg* artboards. Every
-// control here is one of the five the mocks use: a day picker, a stepper, a
-// typed box, a segmented switch and a time range. Adding a type adds no code to
-// this file.
-//
-// Field labels, units, hints and which control to draw all come from the
-// module (decision 88). The days, the grace and the "changes apply from"
-// sentence are the engine's, because they mean the same thing for every type.
+// One configure screen, twelve types. Five controls, drawn from the module's
+// declared fields (decision 88): a day picker, a stepper, a typed box, a
+// segmented switch and a time range. Days, grace and "changes apply from" are
+// the engine's, because they mean the same thing for every type.
 
 const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 
@@ -200,9 +196,8 @@ function Segmented({
   );
 }
 
-// A single time, and a pair of them. Both use the platform time control: it is
-// the only one that reaches the phone's own picker, and its 12-hour or 24-hour
-// display follows the device.
+// The platform time control: the only one that reaches the phone's own picker.
+// Its 12-hour or 24-hour display follows the device.
 function TimeBox({
   value,
   invalid,
@@ -304,8 +299,7 @@ export function ConfigureForm({
     JSON.stringify({ schedule, config }) !== JSON.stringify(saved);
 
   // Everything wrong, against the field it belongs to. The schema says what is
-  // valid; the module says what the schema cannot (three windows that may not
-  // overlap), and both report a path.
+  // valid; the module says what the schema cannot.
   const issues: FieldIssue[] = [];
   const parsedConfig = type.configSchema.safeParse(config);
   if (!parsedConfig.success) {
@@ -461,8 +455,7 @@ export function ConfigureForm({
         </Note>
       ) : null}
 
-      {/* A tracked activity with no pending change offers only the way out; a
-          changed one offers Save, dead until it is valid (V3CfgErrors). */}
+      {/* Nothing pending: only the way out. Changed: Save, dead until valid. */}
       {!tracked ? (
         <button
           type="button"

@@ -139,8 +139,8 @@ function StreakBlock({ current, best }: { current: number; best: number }) {
 // The one-tap check-in, on Home for every window. Tonight's steps read as
 // status, not buttons; only the open window shows a press.
 //
-// Home still shows sleep alone. Phase 8 rebuilds it around every activity a
-// person tracks; this keeps the v2.5 hero working against the generic state.
+// Home still shows sleep alone. It is rebuilt around every tracked activity
+// with the rest of the surfaces.
 function CheckinHero({ state }: { state: ActivityCheckinState }) {
   const { steps } = state;
   const done = steps.filter((s) => s.count > 0).length;

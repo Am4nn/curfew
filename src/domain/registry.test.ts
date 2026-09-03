@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getActivityType, registeredKeys } from "./index";
 
 describe("registry", () => {
-  it("registers the two Phase 1 types", () => {
+  it("registers the two shapes the engine was built against", () => {
     // Sleep and Gym are the two shapes: a windowed day, and a weekly minimum.
     expect(registeredKeys()).toEqual(expect.arrayContaining(["sleep", "gym"]));
     expect(getActivityType("sleep").key).toBe("sleep");

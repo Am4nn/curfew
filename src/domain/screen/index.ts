@@ -13,8 +13,7 @@ import { thresholdPass, latestField } from "../pass";
 
 export const SCREEN_STEP = "reading";
 
-// Stored in minutes, set in hours: the artboard's control reads "3 hours" and
-// the field declares the scale between them.
+// Stored in minutes, set in hours. The field declares the scale between them.
 export const screenConfigSchema = z
   .object({
     limitMinutes: z.number().int().min(1).max(1440),

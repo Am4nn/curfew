@@ -1,14 +1,9 @@
 // Compressing a photo in the browser, before it goes anywhere.
 //
-// Everything here happens on a canvas, and a canvas holds nothing but pixels.
-// That is what strips EXIF: not a pass over the metadata that could miss a
-// field, but the fact that the original file's bytes are never what we upload.
-// GPS, the device, the timestamp the camera wrote, all of it is gone by
-// construction (decision 98).
-//
-// The settings come from the activity type (decision 97). Food keeps more
-// detail because a plate carries some; everything else is 1280 at 0.75, which
-// is about 180 KB and roughly a second of upload on a bad connection.
+// Everything happens on a canvas, and a canvas holds nothing but pixels. That
+// is what strips EXIF: the original file's bytes are never what we upload, so
+// GPS and the rest are gone by construction rather than by a pass that could
+// miss a field (decision 98). Sizes come from the type (decision 97).
 
 /** Bigger than this is refused before it is read. A video, usually. */
 export const MAX_SOURCE_BYTES = 50_000_000;
@@ -87,12 +82,9 @@ export async function compressFrame(
 }
 
 /**
- * A file from the gallery, for the types that allow one.
- *
- * Anything the browser can decode is re-encoded rather than refused
- * (decision 100), so a 40 MB HEIC becomes a 180 KB JPEG and never reaches the
- * network at full size. Only two things are turned away: a source too large to
- * be a photograph, refused before it is read, and a file that will not decode.
+ * A file from the gallery, for the types that allow one. Anything the browser
+ * can decode is re-encoded rather than refused (decision 100), so a 40 MB HEIC
+ * becomes a 180 KB JPEG and never reaches the network at full size.
  */
 export async function compressFile(
   file: File,

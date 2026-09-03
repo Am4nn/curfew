@@ -3,15 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { compressFrame, type Compressed } from "@/lib/compress";
 
-// The camera, full bleed, one shutter and one close (artboard V3Camera), then
-// the frame with Retake and Use this photo (V3CaptureConfirm).
+// The camera: full bleed, one shutter, one close, then the frame with Retake
+// and Use this photo.
 //
-// The frame is taken from the video stream, never from a file. That is what
-// makes "live camera" a rule rather than a request: there is no File object
-// anywhere in this path for anyone to substitute.
-//
-// Both screens are forced dark whatever the theme. A camera on a pale
-// background is a lamp pointed at your face at 7 AM.
+// The frame comes off the video stream, never a file. That is what makes "live
+// camera" a rule rather than a request: no File object exists here to
+// substitute. Forced dark whatever the theme, because a camera screen on a pale
+// background is a lamp in your face at 7 AM.
 
 type State =
   | { kind: "starting" }
@@ -60,9 +58,8 @@ export function Camera({
         }
         setState({ kind: "live" });
       } catch {
-        // Denied, no camera, or an in-app browser that will not hand one over.
-        // The rule holds either way (decision, Phase 5): a photo from the
-        // gallery cannot show when it was taken.
+        // Denied, no camera, or an in-app browser that blocks it. The rule
+        // holds either way (decision 103).
         setState({
           kind: "denied",
           message:
@@ -188,7 +185,7 @@ export function Camera({
             style={{ borderRadius: "50%" }}
             className="flex h-[70px] w-[70px] items-center justify-center border-2 border-fg disabled:opacity-40"
           >
-            {/* The one round thing in the app. A shutter is a shutter. */}
+            {/* The one round thing in the app. */}
             <span style={{ borderRadius: "50%" }} className="h-[56px] w-[56px] bg-fg" />
           </button>
         </div>

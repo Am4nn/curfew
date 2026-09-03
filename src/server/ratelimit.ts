@@ -8,9 +8,7 @@ import { required } from "@/lib/env";
 // quotas anyone should ever meet, and a fixed window is one round trip: INCR
 // the counter, EXPIRE it on the first hit. A sliding window costs a sorted set
 // and several commands to save an accuracy nobody is measuring.
-//
-// Phase 0 ships this with no callers. Phase 4 puts it on check-ins and Phase 5
-// on upload URLs.
+
 
 /**
  * Count one hit against `key` and say whether it is allowed.

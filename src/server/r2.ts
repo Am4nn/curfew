@@ -10,8 +10,7 @@ import { required } from "@/lib/env";
 // than the AWS SDK. It is about sixty lines against a megabyte of dependency
 // that would run on every cold start, and there is nothing else here we would
 // use it for.
-//
-// Phase 0 ships this with no callers. Phase 5 wires it to the upload flow.
+
 
 const SERVICE = "s3";
 const REGION = "auto"; // R2 has one region name for signing, whatever the bucket.

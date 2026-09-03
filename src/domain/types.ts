@@ -135,7 +135,7 @@ type ConfigFieldShape =
       unit?: string;
       /**
        * A stepper for something you nudge, a typed box for something you know.
-       * "3 a day" is a stepper; "8,000 steps" is a box (the artboards).
+       * "3 a day" is a stepper; "8,000 steps" is a box.
        */
       display?: "stepper" | "input";
       /**

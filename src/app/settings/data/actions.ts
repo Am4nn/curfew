@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { getSessionUser } from "@/lib/session";
 import { previewEnabled } from "@/lib/preview";
 import { deletePhotos, deleteHistory, deleteAccount } from "@/server/deletion";
+import { deleteOnePhoto } from "@/server/evidence";
 
 async function me() {
   const user = await getSessionUser();
@@ -17,6 +18,13 @@ async function me() {
 export async function deletePhotosAction(): Promise<void> {
   const user = await me();
   await deletePhotos(user.id);
+  revalidatePath("/settings/data");
+}
+
+export async function deleteOnePhotoAction(evidenceId: number): Promise<void> {
+  const user = await me();
+  const gone = await deleteOnePhoto(user.id, evidenceId);
+  if (!gone) throw new Error("That photo could not be deleted. It may already be gone.");
   revalidatePath("/settings/data");
 }
 

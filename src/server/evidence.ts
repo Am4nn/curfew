@@ -180,6 +180,70 @@ export function readUrl(objectKey: string): string {
   return presign({ key: objectKey, method: "GET", expiresIn: 300 });
 }
 
+export interface OwnPhoto {
+  id: number;
+  objectKey: string;
+  typeKey: string;
+  periodStart: string;
+}
+
+/**
+ * Every photo a user has actually taken: confirmed, not deleted. Newest
+ * first. Small personal library, so no pagination.
+ */
+export async function listOwnPhotos(userId: string): Promise<OwnPhoto[]> {
+  const rows = await db
+    .select({
+      id: evidence.id,
+      objectKey: evidence.objectKey,
+      typeKey: evidence.typeKey,
+      periodStart: evidence.periodStart,
+    })
+    .from(evidence)
+    .where(
+      and(
+        eq(evidence.userId, userId),
+        isNull(evidence.deletedAt),
+        sql`${evidence.confirmedAt} is not null`,
+      ),
+    )
+    .orderBy(sql`${evidence.periodStart} desc, ${evidence.id} desc`);
+  return rows;
+}
+
+/**
+ * Delete one photograph, verified to belong to this user first. Mirrors
+ * `deletePhotos()`'s order: the object goes before the row is marked, and a
+ * failed object delete leaves the row for the nightly sweep to retry.
+ */
+export async function deleteOnePhoto(userId: string, evidenceId: number): Promise<boolean> {
+  const [row] = await db
+    .select({ id: evidence.id, objectKey: evidence.objectKey })
+    .from(evidence)
+    .where(
+      and(
+        eq(evidence.id, evidenceId),
+        eq(evidence.userId, userId),
+        isNull(evidence.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!row) return false;
+
+  try {
+    await deleteObject(row.objectKey);
+    await db
+      .update(evidence)
+      .set({ deletedAt: new Date() })
+      .where(eq(evidence.id, row.id));
+    return true;
+  } catch {
+    // Leave the row: it is the only pointer to a file still in the bucket,
+    // and the nightly sweep will try again.
+    return false;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // The nightly sweeps
 // ---------------------------------------------------------------------------

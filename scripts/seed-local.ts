@@ -13,10 +13,11 @@ import {
   users,
   userApprovals,
   groups,
+  groupActivityTypes,
+  groupActivityRules,
+  memberShares,
   groupMembers,
   groupInvites,
-  activities,
-  activityRules,
   userSettings,
   userActivityConfig,
   events,
@@ -76,7 +77,8 @@ async function main() {
   await db.execute(sql`TRUNCATE TABLE
     ledger_entries, activity_outcomes, activity_scores, events,
     user_activity_config, user_settings, activity_rules,
-    group_invites, group_members, activities, groups,
+    group_invites, group_members, member_shares, group_activity_rules,
+    group_activity_types, groups,
     user_approvals, sessions, accounts, users
     RESTART IDENTITY CASCADE`);
 
@@ -109,17 +111,7 @@ async function main() {
     config: DEFAULT_WINDOWS,
     effectiveFrom: configFrom,
   });
-  await db.insert(activityRules).values({
-    activityId: null,
-    fineMode: "flat",
-    fineAmount: 5000, // INR 50.00 in minor units
-    currency: "INR",
-    gracePerMonth: 2,
-    effectiveFrom: configFrom,
-    changedBy: "preview-admin",
-  });
-
-  // Groups, members, one sleep activity each.
+  // Groups, members, the types they accept and what each member shares.
   const groupSpecs = [
     { name: "Night Owls", members: ["preview-admin", "preview-alex", "preview-sam"] },
     { name: "Early Risers", members: ["preview-admin", "preview-riya"] },
@@ -135,13 +127,32 @@ async function main() {
         joinedAt: configFrom,
       });
     }
-    await db.insert(activities).values({
+    // The group accepts Sleep, fines a miss INR 50, and every member shares it.
+    await db.insert(groupActivityTypes).values({
       groupId,
       typeKey: "sleep",
-      period: "day",
-      name: "Sleep",
-      createdBy: "preview-admin",
+      accepted: true,
+      changedBy: "preview-admin",
     });
+    await db.insert(groupActivityRules).values({
+      groupId,
+      typeKey: "sleep",
+      fineMode: "flat",
+      fineAmount: 5000, // INR 50.00 in minor units
+      currency: "INR",
+      effectiveFrom: configFrom,
+      changedBy: "preview-admin",
+    });
+    for (const uid of g.members) {
+      await db.insert(memberShares).values({
+        groupId,
+        userId: uid,
+        typeKey: "sleep",
+        shared: true,
+        shareEvidence: true,
+        changedBy: uid,
+      });
+    }
     // A pending outgoing invite so the group detail shows the invites list.
     await db.insert(groupInvites).values({
       groupId,
@@ -156,7 +167,7 @@ async function main() {
   const outsideGroupId = randomUUID();
   await db.insert(groups).values({ id: outsideGroupId, name: "Weekend Club", createdBy: "preview-alex" });
   await db.insert(groupMembers).values({ groupId: outsideGroupId, userId: "preview-alex", role: "owner", joinedAt: configFrom });
-  await db.insert(activities).values({ groupId: outsideGroupId, typeKey: "sleep", period: "day", name: "Sleep", createdBy: "preview-alex" });
+  await db.insert(groupActivityTypes).values({ groupId: outsideGroupId, typeKey: "sleep", accepted: true, changedBy: "preview-alex" });
   await db.insert(groupInvites).values({ groupId: outsideGroupId, email: "preview@curfew.local", invitedBy: "preview-alex", status: "pending" });
 
   // Check-in events for the active members across the last HISTORY_DAYS closed

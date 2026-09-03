@@ -87,21 +87,6 @@ export const groupInvites = pgTable("group_invites", {
   respondedAt: timestamp("responded_at", { withTimezone: true }),
 });
 
-export const activities = pgTable("activities", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  groupId: uuid("group_id")
-    .notNull()
-    .references(() => groups.id, { onDelete: "cascade" }),
-  typeKey: text("type_key").notNull(), // 'sleep' in v1; registry key
-  period: text("period").notNull(), // day | week | month, denormalised from the type
-  name: text("name"),
-  createdBy: text("created_by")
-    .notNull()
-    .references(() => users.id),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  archivedAt: timestamp("archived_at", { withTimezone: true }),
-});
-
 export const userSettings = pgTable("user_settings", {
   version: serial("version").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // null = default
@@ -136,26 +121,6 @@ export const events = pgTable("events", {
 
 // Group's stake for one activity: fine policy, currency, grace. Insert-only and
 // effective-dated; null activity_id is the default. amounts are minor units.
-export const activityRules = pgTable("activity_rules", {
-  version: serial("version").primaryKey(),
-  activityId: uuid("activity_id").references(() => activities.id, {
-    onDelete: "cascade",
-  }), // null = default
-  fineMode: text("fine_mode").notNull().default("flat"), // flat | escalating
-  fineAmount: bigint("fine_amount", { mode: "number" }).notNull(),
-  fineStep: bigint("fine_step", { mode: "number" }).notNull().default(0),
-  fineCap: bigint("fine_cap", { mode: "number" }),
-  currency: char("currency", { length: 3 }).notNull().default("INR"),
-  gracePerMonth: integer("grace_per_month").notNull().default(2),
-  config: jsonb("config").notNull().default({}),
-  effectiveFrom: date("effective_from", { mode: "string" }).notNull(),
-  changedBy: text("changed_by").references(() => users.id),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
-
-// Did this person meet THEIR OWN targets this period? Keyed by type, not
-// activity: evaluated once per user per type per period, group-independent.
-// Rebuildable from events.
 export const activityScores = pgTable(
   "activity_scores",
   {
@@ -180,37 +145,38 @@ export const activityScores = pgTable(
 
 // The consequences of that period, per group activity: same pass/fail, but
 // different money, streak and grace per group. Rebuildable from scores + rules.
+// The consequences of a period in ONE group: whether it counted there, whether
+// grace forgave it, and what it cost. Keyed by type rather than by an activity
+// row, because a group no longer owns the activity. See migrations/0012.
 export const activityOutcomes = pgTable(
   "activity_outcomes",
   {
-    activityId: uuid("activity_id")
+    groupId: uuid("group_id")
       .notNull()
-      .references(() => activities.id, { onDelete: "cascade" }),
-    userId: text("user_id").notNull(),
+      .references(() => groups.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     typeKey: text("type_key").notNull(),
     periodStart: date("period_start", { mode: "string" }).notNull(),
+    passed: boolean("passed").notNull(),
     graceUsed: boolean("grace_used").notNull().default(false),
-    streakAfter: integer("streak_after").notNull().default(0),
     fineAmount: bigint("fine_amount", { mode: "number" }).notNull().default(0),
     currency: char("currency", { length: 3 }).notNull().default("INR"),
-    rulesVersion: integer("rules_version")
-      .notNull()
-      .references(() => activityRules.version),
+    rulesVersion: integer("rules_version"),
     computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [primaryKey({ columns: [t.activityId, t.userId, t.periodStart] })],
+  (t) => [
+    primaryKey({ columns: [t.groupId, t.userId, t.typeKey, t.periodStart] }),
+  ],
 );
 
-// Append-only, per group. Never update or delete: corrections are compensating
-// rows, settlements are rows. A failed period writes one fine row per other
-// active member; fine rows snapshot their own amount and currency and are never
-// recomputed. amounts are minor units.
 export const ledgerEntries = pgTable("ledger_entries", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   groupId: uuid("group_id")
     .notNull()
     .references(() => groups.id, { onDelete: "cascade" }),
-  activityId: uuid("activity_id").references(() => activities.id), // null for settlements
+  typeKey: text("type_key"), // null for settlements
   fromUserId: text("from_user_id")
     .notNull()
     .references(() => users.id), // who owes
@@ -381,3 +347,40 @@ export const reputationDaily = pgTable(
     computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   },
 );
+
+// The member's half of the two toggles (decision 16): share this type here, and
+// share its evidence. Append-only and immediate. See migrations/0012.
+export const memberShares = pgTable("member_shares", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  typeKey: text("type_key").notNull(),
+  shared: boolean("shared").notNull(),
+  shareEvidence: boolean("share_evidence").notNull().default(false),
+  effectiveAt: timestamp("effective_at", { withTimezone: true }).notNull().defaultNow(),
+  changedBy: text("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// What a miss costs in this group, per type. Insert-only with a future
+// effective_from (invariant 4). Grace is personal and lives on the user's own
+// activity, not here.
+export const groupActivityRules = pgTable("group_activity_rules", {
+  version: serial("version").primaryKey(),
+  groupId: uuid("group_id")
+    .notNull()
+    .references(() => groups.id, { onDelete: "cascade" }),
+  typeKey: text("type_key").notNull(),
+  fineMode: text("fine_mode").notNull().default("flat"),
+  fineAmount: bigint("fine_amount", { mode: "number" }).notNull(),
+  fineStep: bigint("fine_step", { mode: "number" }).notNull().default(0),
+  fineCap: bigint("fine_cap", { mode: "number" }),
+  currency: char("currency", { length: 3 }).notNull().default("INR"),
+  effectiveFrom: date("effective_from", { mode: "string" }).notNull(),
+  changedBy: text("changed_by").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -1,76 +1,57 @@
 import { and, eq, or, isNull, lte, gt, desc } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
-import {
-  ledgerEntries,
-  activities,
-  groups,
-  groupMembers,
-  users,
-} from "@/db/schema";
+import { ledgerEntries, groups, groupMembers, users } from "@/db/schema";
 import { splitFine } from "@/domain";
 
-// What a fine needs to know. Fines are rebuilt against the v3 group model with
-// sharing; nothing writes these today, and the ledger keeps every row it has.
+// One member's outcome for one period in one group.
 export interface OutcomeRow {
-  activityId: string;
+  groupId: string;
   userId: string;
   typeKey: string;
   periodStart: string;
+  passed: boolean;
   fineAmount: number;
   currency: string;
 }
 
-// Active members of a group on a given period: joined on or before, not yet
-// left. Gates who a fine is split among.
-async function activeMembersAt(
-  groupId: string,
-  period: string,
-): Promise<string[]> {
-  const rows = await db
-    .select({ userId: groupMembers.userId })
-    .from(groupMembers)
-    .where(
-      and(
-        eq(groupMembers.groupId, groupId),
-        lte(groupMembers.joinedAt, period),
-        or(isNull(groupMembers.leftAt), gt(groupMembers.leftAt, period)),
-      ),
-    );
-  return rows.map((r) => r.userId);
-}
-
-// Turn failed outcomes into fine ledger rows: one row per other active member,
-// the fine split equally, ordered by user id. Idempotent via the
-// ledger_one_fine_idx unique index, so re-running the scorer never
-// double-charges. Solo periods (no other member) write nothing.
+/**
+ * Turn missed periods into fine rows: one row per member who PASSED that period
+ * and shares that type, the fine split equally among them.
+ *
+ * A fine is a debt to specific people, so with nobody who passed there is no
+ * creditor and nothing is written (decision 107). That keeps invariant 7 exact:
+ * every fine sums to its shares, because there are always shares.
+ *
+ * Idempotent through ledger_one_fine_idx, so re-running the scorer never
+ * double-charges.
+ */
 export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
-  const failed = outcomes.filter((o) => o.fineAmount > 0);
+  const failed = outcomes.filter((o) => !o.passed && o.fineAmount > 0);
   if (failed.length === 0) return 0;
 
-  const groupByActivity = new Map<string, string>();
   const rows: (typeof ledgerEntries.$inferInsert)[] = [];
 
   for (const o of failed) {
-    let groupId = groupByActivity.get(o.activityId);
-    if (!groupId) {
-      const [act] = await db
-        .select({ groupId: activities.groupId })
-        .from(activities)
-        .where(eq(activities.id, o.activityId));
-      if (!act) continue;
-      groupId = act.groupId;
-      groupByActivity.set(o.activityId, groupId);
-    }
+    // Only members who passed the same period, sharing the same type. Someone
+    // who does not share Gym here is neither fined for it nor paid for it.
+    const recipients = outcomes
+      .filter(
+        (p) =>
+          p.groupId === o.groupId &&
+          p.typeKey === o.typeKey &&
+          p.periodStart === o.periodStart &&
+          p.passed &&
+          p.userId !== o.userId,
+      )
+      .map((p) => p.userId);
 
-    const members = await activeMembersAt(groupId, o.periodStart);
-    const recipients = members.filter((m) => m !== o.userId);
     if (recipients.length === 0) continue;
 
     for (const share of splitFine(o.fineAmount, recipients)) {
       rows.push({
-        groupId,
-        activityId: o.activityId,
+        groupId: o.groupId,
+        typeKey: o.typeKey,
         fromUserId: o.userId,
         toUserId: share.toUserId,
         amount: share.amount,

@@ -4,8 +4,6 @@ import { db } from "@/db";
 import {
   userSettings,
   userActivityConfig,
-  activityRules,
-  activities,
   groupMembers,
 } from "@/db/schema";
 import {
@@ -13,12 +11,7 @@ import {
   validateSleepWindows,
   type SleepConfig,
 } from "@/domain";
-import {
-  resolveUserTimezone,
-  resolveUserSleepConfigRow,
-  resolveActivityRules,
-  type ResolvedRules,
-} from "./config";
+import { resolveUserTimezone, resolveUserSleepConfigRow } from "./config";
 import { recordEvent } from "./events";
 import { nowUTC } from "@/lib/clock";
 
@@ -78,94 +71,3 @@ export async function updateSleepWindows(
     });
 }
 
-// The one sleep activity for a group.
-export async function groupSleepActivity(
-  groupId: string,
-): Promise<{ activityId: string } | null> {
-  const [a] = await db
-    .select({ id: activities.id })
-    .from(activities)
-    .where(
-      and(
-        eq(activities.groupId, groupId),
-        eq(activities.typeKey, "sleep"),
-        isNull(activities.archivedAt),
-      ),
-    );
-  return a ? { activityId: a.id } : null;
-}
-
-// Same as getPersonalSettings: the shared-rules editor shows the going-forward
-// (tomorrow) rules so a just-saved change is visible. Scoring resolves per period.
-export async function getGroupRules(activityId: string): Promise<ResolvedRules> {
-  return resolveActivityRules(activityId, await tomorrow());
-}
-
-async function isOwner(groupId: string, userId: string): Promise<boolean> {
-  const [m] = await db
-    .select({ role: groupMembers.role })
-    .from(groupMembers)
-    .where(
-      and(
-        eq(groupMembers.groupId, groupId),
-        eq(groupMembers.userId, userId),
-        isNull(groupMembers.leftAt),
-      ),
-    );
-  return m?.role === "owner";
-}
-
-// Shared rules change: owner only, effective tomorrow, and it announces itself
-// with a config.shared.changed event (personal changes stay silent).
-export async function updateGroupRules(
-  groupId: string,
-  activityId: string,
-  byUserId: string,
-  input: { fineAmount: number; currency: string; gracePerMonth: number },
-): Promise<void> {
-  if (!(await isOwner(groupId, byUserId))) {
-    throw new Error("only the group owner can change shared rules");
-  }
-  if (!Number.isInteger(input.fineAmount) || input.fineAmount <= 0) {
-    throw new Error("fine amount must be a positive integer in minor units");
-  }
-  if (!/^[A-Z]{3}$/.test(input.currency)) throw new Error("currency must be a 3-letter code");
-  if (!Number.isInteger(input.gracePerMonth) || input.gracePerMonth < 0) {
-    throw new Error("grace must be a non-negative integer");
-  }
-
-  const effectiveFrom = await tomorrow();
-  await db
-    .insert(activityRules)
-    .values({
-      activityId,
-      fineMode: "flat",
-      fineAmount: input.fineAmount,
-      currency: input.currency,
-      gracePerMonth: input.gracePerMonth,
-      effectiveFrom,
-      changedBy: byUserId,
-    })
-    .onConflictDoUpdate({
-      target: [activityRules.activityId, activityRules.effectiveFrom],
-      set: {
-        fineAmount: input.fineAmount,
-        currency: input.currency,
-        gracePerMonth: input.gracePerMonth,
-        changedBy: byUserId,
-      },
-    });
-
-  await recordEvent({
-    userId: byUserId,
-    type: "config.shared.changed",
-    payload: {
-      group_id: groupId,
-      activity_id: activityId,
-      effective_from: effectiveFrom,
-      fine_amount: input.fineAmount,
-      currency: input.currency,
-      grace_per_month: input.gracePerMonth,
-    },
-  });
-}

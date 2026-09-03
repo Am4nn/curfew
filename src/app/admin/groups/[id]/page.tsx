@@ -69,9 +69,11 @@ export default async function GroupInspectorPage({
         ) : (
           data.rulesTimeline.map((r, i) => (
             <Row key={i}>
-              <span>from {r.effectiveFrom}</span>
+              <span>
+                {r.typeKey} · from {r.effectiveFrom}
+              </span>
               <span className="tabular-nums text-muted">
-                {formatMoney(r.fineAmount, r.currency)} · {r.fineMode} · grace {r.gracePerMonth}
+                {formatMoney(r.fineAmount, r.currency)} · {r.fineMode}
               </span>
             </Row>
           ))

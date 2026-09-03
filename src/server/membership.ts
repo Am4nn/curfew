@@ -10,8 +10,16 @@ export async function assertMember(
   groupId: string,
   userId: string,
 ): Promise<void> {
+  await memberRole(groupId, userId);
+}
+
+/** The same check, answering with the role, for the screens that need it. */
+export async function memberRole(
+  groupId: string,
+  userId: string,
+): Promise<"owner" | "member"> {
   const rows = await db
-    .select({ userId: groupMembers.userId })
+    .select({ role: groupMembers.role })
     .from(groupMembers)
     .where(
       and(
@@ -25,4 +33,5 @@ export async function assertMember(
   if (rows.length === 0) {
     throw new Error("not a member of this group");
   }
+  return rows[0].role === "owner" ? "owner" : "member";
 }

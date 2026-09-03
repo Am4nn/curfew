@@ -6,10 +6,9 @@ import {
   sessions,
   groups,
   groupMembers,
-  activities,
-  activityRules,
   activityScores,
   activityOutcomes,
+  groupActivityRules,
   ledgerEntries,
   events,
   balances,
@@ -183,7 +182,7 @@ export interface UserInspector {
   profile: { userId: string; name: string; email: string; status: string; role: string; disabled: boolean };
   recentCheckins: { step: string; at: Date }[];
   recentScores: { periodStart: string; passed: boolean; detail: unknown }[];
-  recentOutcomes: { periodStart: string; groupName: string; streakAfter: number; graceUsed: boolean; fineAmount: number; currency: string }[];
+  recentOutcomes: { periodStart: string; groupName: string; typeKey: string; passed: boolean; graceUsed: boolean; fineAmount: number; currency: string }[];
   balances: { groupId: string; currency: string; netOwed: number }[];
 }
 
@@ -219,14 +218,14 @@ export async function getUserInspector(userId: string): Promise<UserInspector | 
       .select({
         periodStart: activityOutcomes.periodStart,
         groupName: groups.name,
-        streakAfter: activityOutcomes.streakAfter,
+        typeKey: activityOutcomes.typeKey,
+        passed: activityOutcomes.passed,
         graceUsed: activityOutcomes.graceUsed,
         fineAmount: activityOutcomes.fineAmount,
         currency: activityOutcomes.currency,
       })
       .from(activityOutcomes)
-      .innerJoin(activities, eq(activities.id, activityOutcomes.activityId))
-      .innerJoin(groups, eq(groups.id, activities.groupId))
+      .innerJoin(groups, eq(groups.id, activityOutcomes.groupId))
       .where(eq(activityOutcomes.userId, userId))
       .orderBy(desc(activityOutcomes.periodStart))
       .limit(14),
@@ -288,7 +287,7 @@ export interface GroupInspector {
   name: string;
   archived: boolean;
   members: { userId: string; name: string; role: string; joinedAt: string; leftAt: string | null }[];
-  rulesTimeline: { effectiveFrom: string; fineMode: string; fineAmount: number; currency: string; gracePerMonth: number }[];
+  rulesTimeline: { effectiveFrom: string; typeKey: string; fineMode: string; fineAmount: number; currency: string }[];
   ledger: { id: number; fromName: string; toName: string; amount: number; currency: string; kind: string; periodStart: string | null; createdAt: Date }[];
 }
 
@@ -299,16 +298,12 @@ export async function getGroupInspector(groupId: string): Promise<GroupInspector
     .where(eq(groups.id, groupId));
   if (!g) return null;
 
-  const [members, act, ledger] = await Promise.all([
+  const [members, ledger] = await Promise.all([
     db
       .select({ userId: users.id, name: users.name, role: groupMembers.role, joinedAt: groupMembers.joinedAt, leftAt: groupMembers.leftAt })
       .from(groupMembers)
       .innerJoin(users, eq(users.id, groupMembers.userId))
       .where(eq(groupMembers.groupId, groupId)),
-    db
-      .select({ id: activities.id })
-      .from(activities)
-      .where(and(eq(activities.groupId, groupId), eq(activities.typeKey, "sleep"), isNull(activities.archivedAt))),
     db
       .select({
         id: ledgerEntries.id,
@@ -326,20 +321,17 @@ export async function getGroupInspector(groupId: string): Promise<GroupInspector
       .limit(100),
   ]);
 
-  let rulesTimeline: GroupInspector["rulesTimeline"] = [];
-  if (act[0]) {
-    rulesTimeline = await db
-      .select({
-        effectiveFrom: activityRules.effectiveFrom,
-        fineMode: activityRules.fineMode,
-        fineAmount: activityRules.fineAmount,
-        currency: activityRules.currency,
-        gracePerMonth: activityRules.gracePerMonth,
-      })
-      .from(activityRules)
-      .where(eq(activityRules.activityId, act[0].id))
-      .orderBy(desc(activityRules.effectiveFrom));
-  }
+  const rulesTimeline = await db
+    .select({
+      effectiveFrom: groupActivityRules.effectiveFrom,
+      typeKey: groupActivityRules.typeKey,
+      fineMode: groupActivityRules.fineMode,
+      fineAmount: groupActivityRules.fineAmount,
+      currency: groupActivityRules.currency,
+    })
+    .from(groupActivityRules)
+    .where(eq(groupActivityRules.groupId, groupId))
+    .orderBy(desc(groupActivityRules.effectiveFrom));
 
   return { name: g.name, archived: g.archivedAt != null, members, rulesTimeline, ledger };
 }
@@ -484,15 +476,11 @@ export async function restoreUser(adminId: string, targetUserId: string): Promis
   });
 }
 
-// Soft-delete a group: archive it and its activities so tracking and scoring
-// stop. Members, balances and history survive. Reversible.
+// Soft-delete a group: archive it so it stops accepting anything and stops
+// being scored. Members, balances and history survive. Reversible.
 export async function archiveGroup(adminId: string, groupId: string): Promise<void> {
   const now = new Date();
   await db.update(groups).set({ archivedAt: now }).where(eq(groups.id, groupId));
-  await db
-    .update(activities)
-    .set({ archivedAt: now })
-    .where(and(eq(activities.groupId, groupId), isNull(activities.archivedAt)));
   await recordEvent({
     userId: adminId,
     type: "admin.group.archived",
@@ -502,7 +490,6 @@ export async function archiveGroup(adminId: string, groupId: string): Promise<vo
 
 export async function restoreGroup(adminId: string, groupId: string): Promise<void> {
   await db.update(groups).set({ archivedAt: null }).where(eq(groups.id, groupId));
-  await db.update(activities).set({ archivedAt: null }).where(eq(activities.groupId, groupId));
   await recordEvent({
     userId: adminId,
     type: "admin.group.restored",

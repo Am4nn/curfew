@@ -129,9 +129,13 @@ export default async function UserInspectorPage({
         ) : (
           recentOutcomes.map((o, i) => (
             <Row key={i}>
-              <span>{o.periodStart} · {o.groupName}</span>
+              <span>
+                {o.periodStart} · {o.groupName} · {o.typeKey}
+              </span>
               <span className="tabular-nums text-muted">
-                streak {o.streakAfter}{o.graceUsed ? " · grace" : ""}{o.fineAmount > 0 ? ` · ${formatMoney(o.fineAmount, o.currency)}` : ""}
+                {o.passed ? "passed" : "missed"}
+                {o.graceUsed ? " · grace" : ""}
+                {o.fineAmount > 0 ? ` · ${formatMoney(o.fineAmount, o.currency)}` : ""}
               </span>
             </Row>
           ))

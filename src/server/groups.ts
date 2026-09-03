@@ -1,6 +1,6 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { groups, groupMembers, activities, groupInvites, balances, users } from "@/db/schema";
+import { groups, groupMembers, groupInvites, balances, users } from "@/db/schema";
 import { assertMember } from "./membership";
 import { groupInviteEmail, sendEmailBestEffort } from "./email";
 
@@ -22,9 +22,8 @@ export async function createGroup(
   await db
     .insert(groupMembers)
     .values({ groupId: g.id, userId, role: "owner", joinedAt: today() });
-  await db
-    .insert(activities)
-    .values({ groupId: g.id, typeKey: "sleep", period: "day", createdBy: userId });
+  // A new group accepts nothing yet. The owner picks its types on the settings
+  // tab, and until then there is nothing for anyone to share.
   return { groupId: g.id };
 }
 

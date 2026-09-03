@@ -200,6 +200,9 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 108 | **A group's types live in two tables, because they answer two questions.** Acceptance is operational and append-only on an instant, so dropping a type takes effect now while a past ceiling still resolves as it stood. Fine rules are scoring config and future-dated on a date, so changing a fine cannot rewrite a period in progress. `activities` and `activity_rules` are gone; a group no longer owns an activity | 2026-09-03 |
 | 109 | **Accept on an invite opens the join screen rather than joining.** Joining is where sharing is chosen, and `GROUPS.md` says a member sees exactly what the group accepts before agreeing to anything. Accepting inline would put someone in a group before they had chosen what it can see | 2026-09-03 |
 | 110 | **A rejoin replays from the current join date.** The score starts from the hidden global score, never the old number, which is what stops someone leaving and rejoining to escape a bad record | 2026-09-03 |
+| 111 | **Deleting keeps the event rows and detaches them.** `TRUST-SAFETY.md` left the tension between invariant 1 and the right to delete open. Settled: events are kept but stripped of anything identifying and unlinked from the person, so their history stops being theirs while everything that rebuilds from events still works. Photographs, personal fields and every derived row go outright | 2026-09-03 |
+| 112 | **A user row is never hard-deleted, it is scrubbed.** Ledger rows point at it, and a debt with no counterparty is not a debt. The name and email go, sessions and linked accounts go, and signing in becomes impossible | 2026-09-03 |
+| 113 | **Personal stats live at `/stats`, and `/chart` is gone.** Every artboard, every `SCREENS.md` row and the tab bar said `/stats`; `/chart` was a v2.5 name for a screen that only ever showed sleep | 2026-09-03 |
 
 ## Invariants
 

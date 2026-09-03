@@ -23,11 +23,14 @@ than silently keeping rows.
 
 This creates a real tension with invariant 1, where `events` is the only source
 of truth and everything rebuilds from it. Deleting events breaks rebuildability.
-The resolution, to be confirmed at implementation:
+**Settled in Phase 8** (decisions 111 and 112):
 
-- Evidence objects and personal fields are deleted outright.
+- Evidence objects, personal fields and every derived row are deleted outright.
 - Event rows are retained but stripped of identifying payload and detached from
   the user, so history stays rebuildable in aggregate without naming anyone.
+- The user row itself is **scrubbed rather than removed**, because ledger rows
+  point at it and a debt with no counterparty is not a debt. The name and email
+  go, sessions and linked accounts go, and signing in becomes impossible.
 - Exactly what is never deleted is stated in the policy and in the consent form.
 
 ## The consent form (after v3)

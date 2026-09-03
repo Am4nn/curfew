@@ -80,8 +80,9 @@ replaying the same check-in twice changes nothing.
   cross to remove.
 - The camera and confirm screens.
 - The retention sweep, and the orphan sweep for files with no confirmed row.
-- **The storage maths.** Photos a user a day, compressed size, cost at 7, 30 and
-  90 days. Retention is 30 days until this says otherwise.
+- **The storage maths.** Done, in `ARCHITECTURE.md`. Six photos a day at about
+  180 KB puts fifty people at 3.2 GB over a 60-day retention, inside R2's free
+  10 GB. Retention is **60 days** (decision 101).
 
 **Done when:** a photo can be taken, attached, sent and seen, and killing the
 browser mid-upload leaves no check-in and no orphan after the sweep.

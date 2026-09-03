@@ -90,6 +90,14 @@ export interface EvidenceRule {
    * sentence about steps, not about evidence in general.
    */
   detail: string;
+  /**
+   * What the browser compresses to (decision 97). Defaults are 1280px at
+   * quality 0.75; a type whose photo carries detail worth keeping asks for
+   * more. Bigger means a longer upload on a bad connection, which is the cost
+   * this trades against, not storage.
+   */
+  maxEdge?: number;
+  quality?: number;
 }
 
 // The whole UI contract for checking in. Five shapes cover twelve types

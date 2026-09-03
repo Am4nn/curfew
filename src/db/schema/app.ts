@@ -334,3 +334,27 @@ export const userActivities = pgTable("user_activities", {
   effectiveAt: timestamp("effective_at", { withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Evidence photos. The row is written when the browser asks for an upload URL,
+// and confirmed when the check-in that carries its key is recorded. Whether a
+// photo is confirmed is derivable from events (invariant 1); this table holds
+// what an event cannot: the object key, its size and type, and the date the
+// photograph must be deleted. See migrations/0010.
+export const evidence = pgTable("evidence", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  typeKey: text("type_key").notNull(),
+  step: text("step").notNull(),
+  periodStart: date("period_start", { mode: "string" }).notNull(),
+  // The press this photo belongs to; the check-in event carries the same key.
+  idem: text("idem").notNull(),
+  objectKey: text("object_key").notNull(),
+  contentType: text("content_type").notNull(),
+  bytes: integer("bytes").notNull(),
+  requestedAt: timestamp("requested_at", { withTimezone: true }).notNull().defaultNow(),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  deleteAfter: date("delete_after", { mode: "string" }).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});

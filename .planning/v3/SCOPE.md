@@ -57,7 +57,7 @@ accountability layer on top, not the point.
 2. **Activity catalog and per-user customization.** A user picks activities from
    a catalog and configures each one. Adding a new activity type must be cheap.
 3. **Evidence capture.** Own camera UI, live capture, per-window rules, object
-   storage, 30-day auto-delete. See `EVIDENCE.md`.
+   storage, 60-day auto-delete. See `EVIDENCE.md`.
 4. **Reputation and ranks.** A 0 to 1000 running score per user per group, six
    rank labels with their own colors and icons. See `REPUTATION.md` and
    `RANKS.md`.
@@ -97,7 +97,7 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 5 | Grace is per activity, per calendar month. It protects the **streak only**. The fine still applies and reputation still dips. This reverses v1/v2, where grace waived the fine | 2026-09-02 |
 | 6 | **Evidence is fixed by the activity type**, not chosen by the user: off, optional or required, and live-capture or gallery-allowed. The configure screen states it, never offers it. This replaces the earlier version where the user chose | 2026-09-02 |
 | 7 | When evidence is required, the camera opens as part of check-in. There is no path to a pass without it | 2026-09-02 |
-| 8 | Evidence is ephemeral, auto-deleted after **30 days** (placeholder until the storage maths) | 2026-09-02 |
+| 8 | Evidence is ephemeral, auto-deleted after **60 days** (decision 101 settled the number) | 2026-09-02 |
 | 9 | Reputation is a running 0 to 1000 score, per user per group, starting at 200 | 2026-09-02 |
 | 10 | A **global reputation** sets a user's starting score in a new group, bounded 100 to 300, and never affects the live score afterwards. It is **shown to its owner** at the top of Activities and to nobody else, and is disclosed in the consent form | 2026-09-02 |
 | 11 | Gains shrink as the score climbs and losses soften too. 1000 is asymptotic. Above 950 is a distinct title | 2026-09-02 |
@@ -190,6 +190,9 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 98 | **WebP where the browser can encode it, JPEG where it cannot.** About 40% fewer bytes for the same visible quality, behind one feature test. The row records which was stored. Re-encoding through a canvas is also what strips EXIF, GPS included, because a canvas only ever holds pixels | 2026-09-03 |
 | 99 | **One object per check-in. No thumbnails.** At 180 KB a group feed can load the real photos, and a second object would double the presigned URLs, the sweep entries and the ways a file can be orphaned. Revisit only if a feed feels slow | 2026-09-03 |
 | 100 | **Anything the browser can decode is re-encoded rather than refused.** A 40 MB HEIC becomes a 180 KB JPEG and never reaches the network at full size, so the only refusals are a source over 50 MB, refused before it is read, and a file the browser cannot decode at all. The server still caps the PUT | 2026-09-03 |
+| 101 | **Retention is 60 days.** The storage maths says cost is not the constraint: fifty people at six photos a day is 3.2 GB, inside R2's free tier. The reason not to keep them longer is that an indefinite archive of people's homes, meals and gyms is a liability someone has to answer for. The check-in, the score and the streak are kept forever; only the photograph goes | 2026-09-03 |
+| 102 | **The camera is in-app, on `getUserMedia`.** It is the artboard, and it is the only way "live camera, no gallery" is enforced rather than requested: the frame comes off the video stream, so no File object exists for anyone to substitute | 2026-09-03 |
+| 103 | **No camera means no check-in, for a live-camera type.** Permission denied, no webcam, or an in-app browser that blocks it: the screen says so and Send stays dead. Falling back to the gallery would put a second class of evidence into the model and into every screen that shows one, and a Gym streak would stop meaning the same thing for every member of a group | 2026-09-03 |
 
 ## Invariants
 
@@ -218,7 +221,7 @@ still true before implementation begins.
 
 Three left, and none of them block the start of the build.
 
-- **Retention.** 30 days is a placeholder until the storage maths in Phase 5.
+- **Retention.** Settled at 60 days by the storage maths in Phase 5 (decision 101).
 - **Reputation constants.** The target properties in `REPUTATION.md` are the
   spec; the constants are tuned in Phase 6 until those properties hold.
 - **Fresh start.** Confirmed, but Phase 0 asks once more before anything is

@@ -15,6 +15,7 @@ export async function checkInAction(input: {
   step: string;
   idem: string;
   note?: string;
+  evidenceKey?: string;
   evidence: unknown;
 }): Promise<CheckinResult> {
   const user = await getSessionUser();

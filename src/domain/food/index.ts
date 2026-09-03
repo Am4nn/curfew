@@ -51,6 +51,9 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
     level: "required",
     source: "live",
     detail: "Live camera, and the calories with it.",
+    // A plate carries detail the others do not: what is on it, and how much.
+    maxEdge: 1600,
+    quality: 0.8,
   },
   checkin: { kind: "camera" },
   chart: "numeric",

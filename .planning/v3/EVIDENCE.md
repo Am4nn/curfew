@@ -13,7 +13,7 @@ one with real cost, real privacy weight and real limits. See `SCOPE.md`.
   another app. Everything else defaults to live.
 - When evidence is required, the camera is part of the check-in. There is no path
   to a pass without a photo (decision 7).
-- Evidence is **ephemeral**: auto-deleted 30 days after capture (decision 8).
+- Evidence is **ephemeral**: auto-deleted 60 days after capture (decision 101).
 - v3 ships images only. The model must leave room for other kinds later.
 
 ## Honest limits
@@ -75,22 +75,38 @@ Notes:
 - Reads are signed URLs with a short expiry, issued only to the owner and to
   members of groups the user shares that activity's evidence with.
 - Compression happens client side before upload: longest edge capped, JPEG
-  quality tuned, target a few hundred KB. Exact numbers set during the storage
-  maths.
-- **Strip EXIF before upload.** Location data in a gym photo is a real leak.
+  quality set by the type (decision 97): Food is 1600px at 0.80 because a plate
+  carries detail, everything else 1280 at 0.75. WebP where the browser can
+  encode it, JPEG where it cannot, which is about 180 KB a photo.
+- **EXIF is gone by construction, not by stripping.** The upload is a canvas
+  re-encode, and a canvas holds nothing but pixels, so GPS, the device and the
+  camera's own timestamp never survive to be missed by a stripping pass. A
+  location in a gym photo is a real leak, and this is why there is no code path
+  that could forget to remove one.
 
 ## Retention
 
-30 days is a placeholder chosen so evidence outlives the reputation window and
-any future objection window. Finalise after estimating:
+**60 days** (decision 101), which outlives the reputation window and any future
+objection window with room to spare.
 
-- photos per active user per day across their activities,
-- average compressed size,
-- expected active users,
-- storage plus egress cost per month at 7, 30 and 90 days.
+The maths that settled it is in `ARCHITECTURE.md`. Six photos a day is a heavy
+user; at 180 KB that is 3.2 GB for fifty people over 60 days, inside R2's free
+10 GB, with no egress fees. **Cost was never going to be the constraint at this
+scale**, so the number is chosen on a different ground: an indefinite archive of
+people's homes, meals and gyms is a liability, and the shorter the window the
+less there is to lose. The check-in, the score and the streak are kept forever.
+Only the photograph goes.
 
-Deletion is a scheduled job, and it must delete the object and the row together.
-A failed object delete must not leave the row saying the photo is gone.
+Deletion is a scheduled job, and it deletes the object BEFORE the row. A row
+marked deleted whose object survives is a photograph we said we had removed and
+had not, which is the failure that matters; a row still marked live whose object
+is already gone is simply swept again tomorrow, and R2 answers a repeated delete
+the same way it answers the first.
+
+The same job sweeps **orphans**: an upload with no check-in an hour later was
+abandoned. Before deleting one it checks `events`, because events are the truth
+(invariant 1): a check-in carrying that object key means the confirm failed
+rather than that the photo is an orphan, and the row is repaired instead.
 
 Retention, and what it means, is shown to the user in the consent form and in
 Settings (see `TRUST-SAFETY.md`).

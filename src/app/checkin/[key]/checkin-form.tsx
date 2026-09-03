@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { getActivityType, type ConfigField } from "@/domain";
 import type { ActivityCheckinState, CheckinStepView } from "@/server/checkin";
+import { compressFile, type Compressed } from "@/lib/compress";
+import { Camera } from "./camera";
 import { checkInAction } from "./actions";
 
 // ONE check-in screen, twelve types. The photo slot, the fields, the question
@@ -42,26 +44,62 @@ function CameraIcon() {
   );
 }
 
-// The photo slot. Phase 5 replaces the placeholder with the camera and the
-// upload; the slot states the type's rule now so the screen is honest about it.
-function PhotoSlot({ required }: { required: boolean }) {
+// The photo slot: empty and waiting, or the frame with a red cross to remove
+// it (artboards V3Checkin, V3CheckinRequired, V3CheckinReady).
+function PhotoSlot({
+  required,
+  shot,
+  onOpen,
+  onRemove,
+}: {
+  required: boolean;
+  shot: Compressed | null;
+  onOpen: () => void;
+  onRemove: () => void;
+}) {
   return (
     <div className="flex flex-col gap-[9px]">
       <div className="flex items-baseline justify-between">
         <span className="text-[11px] tracking-[0.14em] text-muted">PHOTO</span>
-        <span className={"text-[11px] " + (required ? "text-penalty" : "text-muted")}>
+        <span
+          className={
+            "text-[11px] " + (required && !shot ? "text-penalty" : "text-muted")
+          }
+        >
           {required ? "required" : "optional"}
         </span>
       </div>
-      <div
-        className={
-          "flex h-[186px] flex-col items-center justify-center gap-[9px] border border-dashed bg-surface text-muted " +
-          (required ? "border-penalty" : "border-dash")
-        }
-      >
-        <CameraIcon />
-        <span className="text-[12.5px]">Photos arrive in the next release</span>
-      </div>
+
+      {shot ? (
+        <div className="relative h-[186px] border border-rule bg-surface">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={shot.url}
+            alt="The photo you attached"
+            className="h-full w-full object-cover"
+          />
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Remove the photo"
+            className="absolute right-2 top-2 flex h-[26px] w-[26px] items-center justify-center bg-penalty text-[13px] leading-none text-bg"
+          >
+            &#10005;
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpen}
+          className={
+            "flex h-[186px] w-full flex-col items-center justify-center gap-[9px] border border-dashed bg-surface text-muted " +
+            (required ? "border-penalty" : "border-dash")
+          }
+        >
+          <CameraIcon />
+          <span className="text-[12.5px]">Take a photo</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -124,14 +162,31 @@ export function CheckinForm({
   const router = useRouter();
   const [values, setValues] = useState<Record<string, string>>({});
   const [note, setNote] = useState("");
+  const [shot, setShot] = useState<Compressed | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const [pending, startTransition] = useTransition();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const missing = step.fields.filter(
     (f) => f.kind === "number" && (values[f.key] ?? "") === "",
   );
-  const photoRequired = state.evidence.level === "required";
-  const canSend = missing.length === 0;
+  // Required means required ON THIS STEP: sleep asks for one on confirm and
+  // nowhere else.
+  const photoRequired =
+    state.evidence.level === "required" &&
+    (state.evidence.steps === undefined || state.evidence.steps.includes(step.key));
+  const takesPhoto = state.evidence.level !== "none";
+  const gallery = state.evidence.source === "gallery";
+  const canSend = missing.length === 0 && (!photoRequired || shot !== null);
+  const busy = sending || pending;
+
+  const evidenceRule = getActivityType(state.typeKey).evidence;
+  const compression = {
+    maxEdge: evidenceRule.maxEdge ?? 1280,
+    quality: evidenceRule.quality ?? 0.75,
+  };
 
   // The module's own line, recomputed as the number is typed.
   const hints = useMemo(() => {
@@ -158,24 +213,89 @@ export function CheckinForm({
     return { [step.key]: line } as Record<string, string | null>;
   }, [state, step, values]);
 
-  function send(evidence: Record<string, unknown>) {
+  /**
+   * Upload the photo, then record the check-in.
+   *
+   * That order is the point (decision 71): the check-in is the callback, not
+   * the upload. A file in R2 with no check-in is an orphan and is swept; a
+   * check-in that needs a photo never exists without one.
+   */
+  async function send(evidence: Record<string, unknown>) {
     setError(null);
+    setSending(true);
     const idem = newIdem();
-    startTransition(async () => {
+
+    try {
+      let evidenceKey: string | undefined;
+
+      if (shot) {
+        const ticket = await fetch("/api/evidence/upload-url", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            typeKey: state.typeKey,
+            step: step.key,
+            idem,
+            contentType: shot.contentType,
+            bytes: shot.blob.size,
+          }),
+        });
+        const body = (await ticket.json().catch(() => ({}))) as {
+          ok?: boolean;
+          url?: string;
+          objectKey?: string;
+          message?: string;
+        };
+        if (!ticket.ok || !body.url || !body.objectKey) {
+          setError(body.message ?? "That upload could not start.");
+          return;
+        }
+
+        const put = await fetch(body.url, {
+          method: "PUT",
+          headers: { "content-type": shot.contentType },
+          body: shot.blob,
+        });
+        if (!put.ok) {
+          setError("The photo did not upload. Try again.");
+          return;
+        }
+        evidenceKey = body.objectKey;
+      }
+
       const result = await checkInAction({
         typeKey: state.typeKey,
         step: step.key,
         idem,
         note: note.trim() === "" ? undefined : note.trim(),
+        evidenceKey,
         evidence,
       });
       if (result.ok) {
-        router.push(`/activities/${state.typeKey}`);
-        router.refresh();
+        startTransition(() => {
+          router.push(`/activities/${state.typeKey}`);
+          router.refresh();
+        });
         return;
       }
       setError(result.message);
-    });
+    } catch {
+      setError("Network failed. Nothing was recorded.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function pickFromGallery(file: File | undefined) {
+    if (!file) return;
+    setError(null);
+    try {
+      const compressed = await compressFile(file, compression);
+      if (shot) URL.revokeObjectURL(shot.url);
+      setShot(compressed);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "That photo could not be read.");
+    }
   }
 
   function sendFields() {
@@ -202,7 +322,7 @@ export function CheckinForm({
         <div className="flex flex-col gap-[10px]">
           <button
             type="button"
-            disabled={pending}
+            disabled={busy}
             onClick={() => send({ held: true })}
             className="h-[52px] w-full border border-fg bg-fg text-[15px] font-semibold text-bg disabled:opacity-60"
           >
@@ -210,7 +330,7 @@ export function CheckinForm({
           </button>
           <button
             type="button"
-            disabled={pending}
+            disabled={busy}
             onClick={() => send({ held: false })}
             className="h-[52px] w-full border border-rule bg-transparent text-[15px] text-penalty disabled:opacity-60"
           >
@@ -238,19 +358,55 @@ export function CheckinForm({
     );
   }
 
-  const blocked = photoRequired
-    ? missing.length > 0
+  const needsPhoto = photoRequired && shot === null;
+  const blocked =
+    needsPhoto && missing.length > 0
       ? `Take the photo and enter the ${missing[0].label.toLowerCase()} to send this check-in.`
-      : "Take the photo to send this check-in."
-    : missing.length > 0
-      ? `Enter the ${missing[0].label.toLowerCase()} to send this check-in.`
-      : null;
+      : needsPhoto
+        ? "Take the photo to send this check-in."
+        : missing.length > 0
+          ? `Enter the ${missing[0].label.toLowerCase()} to send this check-in.`
+          : null;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-5 pb-6 pt-[18px]">
-      {state.evidence.level === "none" ? null : (
-        <PhotoSlot required={photoRequired} />
-      )}
+      {takesPhoto ? (
+        <PhotoSlot
+          required={photoRequired}
+          shot={shot}
+          onOpen={() => (gallery ? fileRef.current?.click() : setCameraOpen(true))}
+          onRemove={() => {
+            if (shot) URL.revokeObjectURL(shot.url);
+            setShot(null);
+          }}
+        />
+      ) : null}
+
+      {gallery ? (
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => pickFromGallery(e.target.files?.[0])}
+        />
+      ) : null}
+
+      {cameraOpen ? (
+        <Camera
+          title={`${state.name.toUpperCase()} \u00b7 ${step.label.toUpperCase()}`}
+          closesLabel={step.closesLabel}
+          nowLabel={state.nowLabel}
+          maxEdge={compression.maxEdge}
+          quality={compression.quality}
+          onClose={() => setCameraOpen(false)}
+          onUse={(taken) => {
+            if (shot) URL.revokeObjectURL(shot.url);
+            setShot(taken);
+            setCameraOpen(false);
+          }}
+        />
+      ) : null}
 
       {step.fields.map((field) => (
         <Field
@@ -306,7 +462,7 @@ export function CheckinForm({
         </button>
         <button
           type="button"
-          disabled={!canSend || pending}
+          disabled={!canSend || busy}
           onClick={sendFields}
           className={
             "h-[46px] flex-[1.6] border text-[13.5px] " +
@@ -315,7 +471,7 @@ export function CheckinForm({
               : "cursor-not-allowed border-rule bg-transparent text-muted")
           }
         >
-          {pending ? "Sending" : "Send"}
+          {busy ? "Sending" : "Send"}
         </button>
       </div>
     </div>

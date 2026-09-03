@@ -76,6 +76,21 @@ describe("the twelve configure screens", () => {
     expect(screenActivity.defaults.config.limitMinutes).toBe(120);
   });
 
+  it("only Food asks for a bigger photo", () => {
+    // Decision 97. A plate carries detail; a gym mirror does not.
+    const bigger = registeredKeys().filter((k) => getActivityType(k).evidence.maxEdge);
+    expect(bigger).toEqual(["food"]);
+    expect(getActivityType("food").evidence).toMatchObject({ maxEdge: 1600, quality: 0.8 });
+  });
+
+  it("every type that takes a photo says where it may come from", () => {
+    for (const key of registeredKeys()) {
+      const rule = getActivityType(key).evidence;
+      if (rule.level === "none") continue;
+      expect(["live", "gallery"], key).toContain(rule.source);
+    }
+  });
+
   it("the two threshold types offer their direction, and default opposite ways", () => {
     expect(stepsActivity.defaults.config.direction).toBe("atLeast");
     expect(screenActivity.defaults.config.direction).toBe("atMost");

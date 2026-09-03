@@ -186,9 +186,23 @@ Decision 71. No image ever passes through a serverless function.
    **The settings are the module's** (decision 97): Food is 1600px at quality
    0.80, everything else 1280 at 0.75. Output is WebP where the browser can
    encode it and JPEG where it cannot (decision 98), which is about 180 KB a
-   photo, or 110 KB in WebP. Six photos a day for fifty people over a 30-day
-   retention is under 2 GB, well inside R2's free 10 GB, so the constraint this
-   is tuned against is **upload time on a bad connection**, not cost.
+   photo, or 110 KB in WebP.
+
+   **The storage maths, settled.** Six photos a day is a heavy user: one sleep
+   confirm, three meals, supplements, and a gym or study session.
+
+   | Retention | 10 users | 50 users | 200 users |
+   |---|---|---|---|
+   | 30 days | 0.3 GB | 1.6 GB | 6.5 GB |
+   | 60 days | 0.6 GB | 3.2 GB | 13 GB |
+   | 90 days | 1.0 GB | 4.8 GB | 19 GB |
+
+   R2's free tier is 10 GB with no egress fees, so at the scale this app is for,
+   **cost is not the constraint**. The constraint this is tuned against is
+   upload time on a bad connection: a person standing in a gym doorway at 6 AM
+   waiting for a photo to go. 60 days is the retention (decision 101), and the
+   reason it is not longer is that holding other people's photographs is a
+   liability rather than an expense.
 
    Anything the browser can decode is re-encoded rather than refused
    (decision 100): a 40 MB HEIC from a gallery becomes a 180 KB JPEG and never

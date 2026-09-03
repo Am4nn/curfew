@@ -24,7 +24,7 @@ Money is optional and can be switched off entirely.
 
 ## Current phase
 
-**v3, Phases 0 to 4 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
+**v3, Phases 0 to 5 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
 designed and specified: twelve activity types with per-user schedules and
 thresholds, photo evidence, a 0 to 1000 reputation per group with six ranks,
 group stats, an admin console that can switch whole systems off, and a fresh
@@ -41,11 +41,11 @@ start on data. Every screen is mocked in `.design/` and listed in
   declared fields.
 - **Phase 4** check-in: one screen for all twelve, idempotent on a key the press
   carries, rate limited, nothing recorded on a GET.
+- **Phase 5** evidence: in-app camera, canvas compression, presigned PUT to R2,
+  the check-in as the callback, and the nightly retention and orphan sweeps.
 
-**Next is Phase 5, evidence.** Do not begin a phase whose predecessor is
-unticked. The check-in screen currently states that photos arrive in the next
-release and lets a camera type send without one; Phase 5 turns the slot on and
-Send starts blocking.
+**Next is Phase 6, scoring and reputation.** Do not begin a phase whose
+predecessor is unticked.
 
 **The Configure and Check-in rows in `SCREENS.md` are unticked on purpose.**
 Ticking one means a person has opened the screen beside its artboard. Both sets
@@ -56,8 +56,6 @@ all of them waiting on later phases:
   reads "10:00 PM" or "22:00" follows the device. The artboards show 12-hour.
 - Streak, best, and grace-left read zero or are absent until Phase 6 fills
   them.
-- The photo slot says photos arrive in the next release, and Send is not
-  blocked, until Phase 5.
 
 **The cutover has not happened.** Production still serves v2.5 from the old Neon
 project, and `.env.production` is the only file pointing at it. At the cutover

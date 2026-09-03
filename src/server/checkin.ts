@@ -10,6 +10,8 @@ import {
   isScheduledDay,
   weekdayOf,
   type Checkin,
+  type CheckinStep,
+  type CheckinWindow,
   type CheckinKind,
   type ConfigField,
   type EvidenceRule,
@@ -18,6 +20,7 @@ import { getUserActivity } from "./activities";
 import { resolveUserTimezone } from "./config";
 import { recordEvent } from "./events";
 import { rateLimit } from "./ratelimit";
+import { pendingFor, confirmEvidence } from "./evidence";
 import { now } from "@/lib/clock";
 
 // The check-in path, one implementation for all twelve types.
@@ -211,44 +214,59 @@ export const checkinInputSchema = z
     // A line of your own, for your own record. Optional everywhere, never
     // scored, and never read by the admin console.
     note: z.string().trim().max(200).optional(),
+    /** The object key returned when the photo's upload URL was issued. */
+    evidenceKey: z.string().min(1).max(300).optional(),
     evidence: z.unknown().optional(),
   })
   .strict();
 
 export type CheckinInput = z.infer<typeof checkinInputSchema>;
 
+export type CheckinFailure =
+  | "untracked"
+  | "unscheduled"
+  | "unknown_step"
+  | "closed"
+  | "invalid"
+  | "duplicate"
+  | "rate_limited"
+  | "no_photo";
+
 export type CheckinResult =
   | { ok: true; step: string; atLabel: string }
-  | {
-      ok: false;
-      reason:
-        | "untracked"
-        | "unscheduled"
-        | "unknown_step"
-        | "closed"
-        | "invalid"
-        | "duplicate"
-        | "rate_limited";
-      message: string;
-    };
+  | { ok: false; reason: CheckinFailure; message: string };
 
 // Abuse ceilings, not quotas (decision 92). 50 a period clears eight glasses of
 // water several times over; 20 a minute stops a button that has got stuck.
 const PER_PERIOD = 50;
 const PER_MINUTE = 20;
 
-export async function performCheckin(
-  userId: string,
-  sessionId: string | null,
-  raw: unknown,
-): Promise<CheckinResult> {
-  const parsed = checkinInputSchema.safeParse(raw);
-  if (!parsed.success) {
-    return { ok: false, reason: "invalid", message: "That check-in was malformed." };
-  }
-  const input = parsed.data;
+/**
+ * Everything a write needs about one step: is it tracked, is today one of its
+ * days, does the step exist, and is its window open right now.
+ *
+ * The check-in and the upload-URL request both go through here, so a photo can
+ * never be uploaded against a window that a check-in would be refused for.
+ */
+export type CheckinTarget =
+  | {
+      ok: true;
+      type: ReturnType<typeof getActivityType>;
+      config: unknown;
+      period: string;
+      timezone: string;
+      instant: Date;
+      step: CheckinStep;
+      window: CheckinWindow;
+    }
+  | { ok: false; reason: CheckinFailure; message: string };
 
-  const activity = await getUserActivity(userId, input.typeKey);
+export async function resolveCheckinTarget(
+  userId: string,
+  typeKey: string,
+  stepKey: string,
+): Promise<CheckinTarget> {
+  const activity = await getUserActivity(userId, typeKey);
   if (!activity || !activity.enabled) {
     return {
       ok: false,
@@ -257,7 +275,7 @@ export async function performCheckin(
     };
   }
 
-  const type = getActivityType(input.typeKey);
+  const type = getActivityType(typeKey);
   const instant = await now();
   const timezone = await resolveUserTimezone(
     userId,
@@ -276,12 +294,10 @@ export async function performCheckin(
     };
   }
 
-  const step = type
-    .steps(activity.config, period)
-    .find((s) => s.key === input.step);
+  const step = type.steps(activity.config, period).find((s) => s.key === stepKey);
   const window = type
     .windows(activity.config, period, timezone)
-    .find((w) => w.step === input.step);
+    .find((w) => w.step === stepKey);
   if (!step || !window) {
     return { ok: false, reason: "unknown_step", message: "No such check-in." };
   }
@@ -293,6 +309,61 @@ export async function performCheckin(
       ok: false,
       reason: "closed",
       message: `${step.label} closed ${label(window.closesAt, timezone)}.`,
+    };
+  }
+
+  return {
+    ok: true,
+    type,
+    config: activity.config,
+    period,
+    timezone,
+    instant,
+    step,
+    window,
+  };
+}
+
+export async function performCheckin(
+  userId: string,
+  sessionId: string | null,
+  raw: unknown,
+): Promise<CheckinResult> {
+  const parsed = checkinInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, reason: "invalid", message: "That check-in was malformed." };
+  }
+  const input = parsed.data;
+
+  const target = await resolveCheckinTarget(userId, input.typeKey, input.step);
+  if (!target.ok) return target;
+  const { type, config, period, timezone, step } = target;
+
+  // A photo, where the type requires one on this step. The check-in is the
+  // callback: the upload came first, and this is what confirms it. A required
+  // photo that is missing means no check-in at all, which is what makes a
+  // Gym streak mean the same thing for everyone in a group.
+  const needsPhoto =
+    type.evidence.level === "required" &&
+    (type.evidence.steps === undefined || type.evidence.steps.includes(input.step));
+
+  type Photo = NonNullable<Awaited<ReturnType<typeof pendingFor>>>;
+  let photo: Photo | null = null;
+  if (input.evidenceKey) {
+    photo = await pendingFor(userId, input.idem);
+    if (!photo || photo.objectKey !== input.evidenceKey) {
+      return {
+        ok: false,
+        reason: "invalid",
+        message: "That photo does not belong to this check-in.",
+      };
+    }
+  }
+  if (needsPhoto && !photo) {
+    return {
+      ok: false,
+      reason: "no_photo",
+      message: `${step.label} needs a photo.`,
     };
   }
 
@@ -350,6 +421,7 @@ export async function performCheckin(
       period_start: period,
       idem: input.idem,
       note: input.note && input.note !== "" ? input.note : undefined,
+      evidence_key: photo?.objectKey,
       evidence: evidence.data,
     },
     ignoreConflict: true,
@@ -360,6 +432,11 @@ export async function performCheckin(
   if (!row) {
     return { ok: false, reason: "duplicate", message: "Already recorded." };
   }
+
+  // The event is the truth, so it is written first. If this fails the photo is
+  // left unconfirmed and the sweep repairs it from the event rather than
+  // deleting a photograph that a recorded check-in points at.
+  if (photo) await confirmEvidence(photo.id, row.occurredAt);
 
   return { ok: true, step: input.step, atLabel: label(row.occurredAt, timezone) };
 }

@@ -18,20 +18,24 @@ export function ThemeToggle({ initial }: { initial: Theme }) {
   }
 
   return (
-    <div className="flex border border-fg">
-      {(["dark", "light"] as Theme[]).map((t) => (
+    <div className="flex border border-rule">
+      {([
+        ["dark", "Dark"],
+        ["light", "Light"],
+      ] as [Theme, string][]).map(([t, label], i) => (
         <button
           key={t}
           type="button"
           onClick={() => set(t)}
           aria-pressed={theme === t}
-          aria-label={`${t} theme`}
+          aria-label={`${label} theme`}
           className={
-            "min-w-[64px] px-3 py-[7px] text-[13px] uppercase tracking-[0.12em] " +
+            "flex-1 px-1 py-[10px] text-center text-[12.5px] " +
+            (i === 1 ? "border-l border-rule " : "") +
             (theme === t ? "bg-fg text-bg" : "bg-transparent text-muted")
           }
         >
-          {t}
+          {label}
         </button>
       ))}
     </div>

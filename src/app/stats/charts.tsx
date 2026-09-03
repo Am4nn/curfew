@@ -13,6 +13,8 @@ const num = (d: Record<string, unknown>, key: string): number | null => {
   return typeof v === "number" ? v : null;
 };
 
+const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
+
 export function ActivityChartView({ chart }: { chart: ActivityChart }) {
   if (chart.points.length === 0) {
     return (
@@ -23,114 +25,370 @@ export function ActivityChartView({ chart }: { chart: ActivityChart }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-[22px]">
       {chart.kind === "numeric" ? <Numeric chart={chart} /> : null}
       {chart.kind === "binary" ? <Binary chart={chart} /> : null}
       {chart.kind === "weekly" ? <Weekly chart={chart} /> : null}
       {chart.kind === "windowed" ? <Windowed chart={chart} /> : null}
-      <PassRate chart={chart} />
+      <Weekdays chart={chart} />
+      <Tiles chart={chart} />
     </div>
   );
 }
 
-// Bars against the target, with the rule's direction shown as the line to be
-// on the right side of.
-function Numeric({ chart }: { chart: ActivityChart }) {
-  const value = (d: Record<string, unknown>) =>
-    num(d, "steps") ?? num(d, "minutes") ?? num(d, "amount") ?? num(d, "calories") ?? num(d, "glasses") ?? 0;
-  const target = (d: Record<string, unknown>) => num(d, "target") ?? num(d, "limit") ?? 0;
+// ---------------------------------------------------------------------------
+// The three figures every chart carries, and the weekday bars under it. Both
+// are drawn from the points alone, so a new kind gets them without asking.
+// ---------------------------------------------------------------------------
 
-  const peak = Math.max(
-    1,
-    ...chart.points.map((p) => Math.max(value(p.detail), target(p.detail))),
+function Tiles({ chart }: { chart: ActivityChart }) {
+  const third = thirdTile(chart);
+  return (
+    <div className="flex gap-[10px]">
+      <Tile value={String(chart.streak)} label="CURRENT STREAK" flame />
+      <Tile value={String(chart.best)} label="BEST" />
+      <Tile value={third.value} label={third.label} />
+    </div>
   );
-  const line = target(chart.points.at(-1)!.detail);
+}
+
+// The third figure is the one that depends on the kind: a rate for the kinds
+// that carry a number, grace left for the kinds that do not.
+function thirdTile(chart: ActivityChart): { value: string; label: string } {
+  if (chart.kind === "numeric") {
+    const total = chart.points.reduce((s, p) => s + numericValue(p.detail), 0);
+    return {
+      value: Math.round(total / chart.points.length).toLocaleString("en-US"),
+      label: "AVERAGE A PERIOD",
+    };
+  }
+  if (chart.kind === "weekly") {
+    const total = chart.points.reduce((s, p) => s + (num(p.detail, "sessions") ?? 0), 0);
+    return {
+      value: (total / chart.points.length).toFixed(1),
+      label: "SESSIONS A WEEK",
+    };
+  }
+  return { value: String(chart.graceLeft), label: "GRACE LEFT" };
+}
+
+function Tile({ value, label, flame }: { value: string; label: string; flame?: boolean }) {
+  return (
+    <div className="flex flex-1 flex-col gap-[5px] border border-rule p-3">
+      <span
+        className={
+          "text-[19px] font-semibold leading-none tabular-nums " +
+          (flame
+            ? "bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-transparent"
+            : "")
+        }
+      >
+        {value}
+      </span>
+      <span className="text-[9.5px] leading-[1.4] tracking-[0.08em] text-muted">{label}</span>
+    </div>
+  );
+}
+
+// Monday-first weekday index for a period start.
+function weekdayOf(day: string): number {
+  return DateTime.fromISO(day).weekday - 1;
+}
+
+// For a weekly kind the bars count which days the sessions actually happened,
+// which the module records; for every other kind they are the pass rate on
+// that weekday. Both are counted here rather than on the server, because both
+// are already in the points.
+function Weekdays({ chart }: { chart: ActivityChart }) {
+  const weekly = chart.kind === "weekly";
+  const counts = Array.from({ length: 7 }, () => ({ hit: 0, of: 0 }));
+
+  if (weekly) {
+    for (const p of chart.points) {
+      const days = Array.isArray(p.detail.days) ? (p.detail.days as unknown[]) : [];
+      for (const d of days) {
+        if (typeof d !== "string") continue;
+        counts[weekdayOf(d)].hit += 1;
+      }
+    }
+    // Every week offered every weekday, so the denominator is the week count.
+    for (const c of counts) c.of = chart.points.length;
+  } else {
+    for (const p of chart.points) {
+      const c = counts[weekdayOf(p.periodStart)];
+      c.of += 1;
+      if (p.passed) c.hit += 1;
+    }
+  }
+
+  const values = counts.map((c) => (c.of === 0 ? null : (c.hit / c.of) * 100));
+  if (values.every((v) => v === null)) return null;
 
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">LAST 30 PERIODS</span>
-      <div className="relative flex h-[120px] items-end gap-[3px]">
-        {line > 0 ? (
-          <div
-            className="absolute inset-x-0 border-t border-dashed border-muted"
-            style={{ bottom: `${(line / peak) * 100}%` }}
-          />
-        ) : null}
-        {chart.points.map((p) => (
-          <div
-            key={p.periodStart}
-            title={`${p.periodStart}: ${value(p.detail)}`}
-            className={"flex-1 " + (p.passed ? "bg-pass" : "bg-penalty")}
-            style={{ height: `${Math.max(2, (value(p.detail) / peak) * 100)}%` }}
-          />
-        ))}
+      <span className="text-[10px] tracking-[0.16em] text-muted">
+        {weekly ? "WHICH DAYS YOU GO" : "PASS RATE BY WEEKDAY"}
+      </span>
+      <div className="flex flex-col gap-[9px]">
+        <div className="flex h-[70px] items-end gap-[6px]">
+          {values.map((v, i) => (
+            <div key={i} className="flex h-full flex-1 flex-col justify-end">
+              <div className="bg-fg" style={{ height: `${v ?? 0}%` }} />
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-[6px]">
+          {DAYS.map((d, i) => (
+            <span key={i} className="flex-1 text-center text-[10px] text-muted">
+              {d}
+            </span>
+          ))}
+        </div>
       </div>
-      {line > 0 ? (
-        <span className="text-[11.5px] leading-[1.55] text-muted">
-          The dashed line is your target of {line.toLocaleString("en-US")}.
-        </span>
-      ) : null}
     </section>
   );
 }
 
-// Held or slipped. Every cell carries a mark, so the meaning does not rest on
-// colour alone.
-function Binary({ chart }: { chart: ActivityChart }) {
+// ---------------------------------------------------------------------------
+// The four kinds.
+// ---------------------------------------------------------------------------
+
+const numericValue = (d: Record<string, unknown>) =>
+  num(d, "steps") ??
+  num(d, "minutes") ??
+  num(d, "amount") ??
+  num(d, "calories") ??
+  num(d, "glasses") ??
+  0;
+
+const numericTarget = (d: Record<string, unknown>) => num(d, "target") ?? num(d, "limit") ?? 0;
+
+// Bars against the target. A bar that reached the line is solid, one that fell
+// short is the rule colour: height carries the pass as well as tone does.
+function Numeric({ chart }: { chart: ActivityChart }) {
+  const peak = Math.max(
+    1,
+    ...chart.points.map((p) => Math.max(numericValue(p.detail), numericTarget(p.detail))),
+  );
+  const line = numericTarget(chart.points.at(-1)!.detail);
+  const short = chart.points.filter((p) => !p.passed).length;
+
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">HELD OR SLIPPED</span>
-      <div className="grid grid-cols-7 gap-[4px]">
-        {chart.points.map((p) => (
-          <div
-            key={p.periodStart}
-            title={p.periodStart}
-            className={
-              "flex aspect-square items-center justify-center border text-[11px] " +
-              (p.passed ? "border-pass text-pass" : "border-penalty text-penalty")
-            }
-          >
-            {p.passed ? "✓" : "✕"}
-          </div>
-        ))}
+      <span className="text-[10px] tracking-[0.16em] text-muted">
+        LAST {chart.points.length} PERIODS
+      </span>
+      <div className="relative h-[132px]">
+        {line > 0 ? (
+          <>
+            <div
+              className="absolute inset-x-0 border-t border-dashed border-accent"
+              style={{ bottom: `${(line / peak) * 100}%` }}
+            />
+            <span
+              className="absolute right-0 bg-bg pl-[4px] text-[9.5px] text-accent"
+              style={{ bottom: `calc(${(line / peak) * 100}% + 2px)` }}
+            >
+              target {line.toLocaleString("en-US")}
+            </span>
+          </>
+        ) : null}
+        <div className="flex h-full items-end gap-[4px]">
+          {chart.points.map((p) => (
+            <div
+              key={p.periodStart}
+              title={`${p.periodStart}: ${numericValue(p.detail).toLocaleString("en-US")}`}
+              className={"flex-1 " + (p.passed ? "bg-fg" : "bg-rule")}
+              style={{ height: `${Math.max(2, (numericValue(p.detail) / peak) * 100)}%` }}
+            />
+          ))}
+        </div>
       </div>
       <span className="text-[11.5px] leading-[1.55] text-muted">
-        A tick is a day it held. A cross is a day you said it did not.
+        Bars at or above the line passed.{" "}
+        {short === 0
+          ? "None fell short."
+          : `${short} ${short === 1 ? "period" : "periods"} fell short.`}
       </span>
     </section>
   );
 }
 
-// Weekly counts against the minimum.
-function Weekly({ chart }: { chart: ActivityChart }) {
-  const sessions = (d: Record<string, unknown>) => num(d, "sessions") ?? 0;
-  const required = (d: Record<string, unknown>) => num(d, "required") ?? 0;
-  const peak = Math.max(1, ...chart.points.map((p) => Math.max(sessions(p.detail), required(p.detail))));
+// Held or slipped, laid out on a real calendar so a weekday reads down a
+// column. Every cell carries a mark, so the meaning never rests on colour.
+function Binary({ chart }: { chart: ActivityChart }) {
+  const byDay = new Map(chart.points.map((p) => [p.periodStart, p.passed]));
+  const first = DateTime.fromISO(chart.points[0].periodStart).startOf("week");
+  const last = DateTime.fromISO(chart.points.at(-1)!.periodStart);
+  const weeks: (boolean | null)[][] = [];
+  for (let cursor = first; cursor <= last; cursor = cursor.plus({ weeks: 1 })) {
+    const week = cursor;
+    weeks.push(
+      Array.from({ length: 7 }, (_, d) => {
+        const key = week.plus({ days: d }).toFormat("yyyy-MM-dd");
+        return byDay.has(key) ? byDay.get(key)! : null;
+      }),
+    );
+  }
+  const slips = chart.points.filter((p) => !p.passed).length;
 
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">WEEK BY WEEK</span>
-      <div className="flex h-[110px] items-end gap-[6px]">
-        {chart.points.map((p) => (
-          <div key={p.periodStart} className="flex flex-1 flex-col items-center gap-[6px]">
-            {/* An explicit height, not h-full: the column above this track has
-                no height of its own (its items-end parent lets it shrink to
-                content), so a percentage height here would resolve against
-                nothing and never show a bar. */}
-            <div className="flex h-[90px] w-full flex-col justify-end bg-rule">
-              <div
-                className={p.passed ? "bg-pass" : "bg-penalty"}
-                style={{ height: `${(sessions(p.detail) / peak) * 100}%` }}
-              />
-            </div>
-            <span className="text-[10px] tabular-nums text-muted">
-              {sessions(p.detail)}
-            </span>
+      <span className="text-[10px] tracking-[0.16em] text-muted">
+        HELD OR SLIPPED, {weeks.length} WEEKS
+      </span>
+      <div className="flex flex-col gap-[5px]">
+        {weeks.map((week, w) => (
+          <div key={w} className="flex gap-[5px]">
+            {week.map((held, d) => (
+              <Cell key={d} held={held} />
+            ))}
           </div>
         ))}
       </div>
+      <div className="flex gap-[5px]">
+        {DAYS.map((d, i) => (
+          <span key={i} className="flex-1 text-center text-[10px] text-muted">
+            {d}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center gap-[14px]">
+        <span className="flex items-center gap-[6px] text-[10.5px] text-muted">
+          <span className="flex text-pass">
+            <Tick />
+          </span>
+          held
+        </span>
+        <span className="flex items-center gap-[6px] text-[10.5px] text-muted">
+          <span className="flex text-penalty">
+            <Cross />
+          </span>
+          slipped
+        </span>
+        <span className="ml-auto text-[10.5px] text-muted">empty is not scheduled</span>
+      </div>
       <span className="text-[11.5px] leading-[1.55] text-muted">
-        Against a minimum of {required(chart.points.at(-1)!.detail)} a week.
+        {slips === 0
+          ? "No slips in this window."
+          : `${slips} ${slips === 1 ? "slip" : "slips"} in ${weeks.length} weeks.`}{" "}
+        All on your own word. There is nothing here to verify.
+      </span>
+    </section>
+  );
+}
+
+function Cell({ held }: { held: boolean | null }) {
+  if (held === null) return <div className="aspect-square flex-1 border border-rule" />;
+  return (
+    <div
+      className={
+        "flex aspect-square flex-1 items-center justify-center border " +
+        (held ? "border-pass text-pass" : "border-penalty text-penalty")
+      }
+      // A tint of the same colour, mixed rather than an opacity modifier:
+      // Tailwind's bg-pass/15 cannot inject an alpha into a var()-backed
+      // colour and silently drops it.
+      style={{
+        background: held
+          ? "color-mix(in srgb, var(--pass) 15%, transparent)"
+          : "color-mix(in srgb, var(--penalty) 15%, transparent)",
+      }}
+    >
+      {held ? <Tick /> : <Cross />}
+    </div>
+  );
+}
+
+function Tick() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="square"
+      aria-hidden="true"
+    >
+      <path d="M4 12.5 9 17.5 20 6.5" />
+    </svg>
+  );
+}
+
+function Cross() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="square"
+      aria-hidden="true"
+    >
+      <path d="M6 6 18 18" />
+      <path d="M18 6 6 18" />
+    </svg>
+  );
+}
+
+// Weekly counts against the minimum, the count printed above each bar.
+function Weekly({ chart }: { chart: ActivityChart }) {
+  const sessions = (d: Record<string, unknown>) => num(d, "sessions") ?? 0;
+  const required = (d: Record<string, unknown>) => num(d, "required") ?? 0;
+  const min = required(chart.points.at(-1)!.detail);
+  const peak = Math.max(1, min, ...chart.points.map((p) => sessions(p.detail)));
+  const short = chart.points.filter((p) => sessions(p.detail) < min).length;
+
+  return (
+    <section className="flex flex-col gap-[11px]">
+      <span className="text-[10px] tracking-[0.16em] text-muted">
+        SESSIONS A WEEK, {chart.points.length} WEEKS
+      </span>
+      <div className="relative h-[132px]">
+        {min > 0 ? (
+          <>
+            <div
+              className="absolute inset-x-0 border-t border-dashed border-accent"
+              style={{ bottom: `${(min / peak) * 84}%` }}
+            />
+            <span
+              className="absolute right-0 bg-bg pl-[4px] text-[9.5px] text-accent"
+              style={{ bottom: `calc(${(min / peak) * 84}% + 2px)` }}
+            >
+              minimum {min}
+            </span>
+          </>
+        ) : null}
+        <div className="flex h-full items-end gap-[7px]">
+          {chart.points.map((p) => (
+            <div
+              key={p.periodStart}
+              className="flex h-full flex-1 flex-col items-center justify-end gap-[5px]"
+            >
+              <span
+                className={
+                  "text-[10px] tabular-nums " +
+                  (sessions(p.detail) >= min ? "text-muted" : "text-penalty")
+                }
+              >
+                {sessions(p.detail)}
+              </span>
+              <div
+                className={"w-full " + (sessions(p.detail) >= min ? "bg-fg" : "bg-rule")}
+                style={{ height: `${Math.max(2, (sessions(p.detail) / peak) * 84)}%` }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      <span className="text-[11.5px] leading-[1.55] text-muted">
+        {short === 0
+          ? `Every week met the minimum of ${min}.`
+          : `${short} ${short === 1 ? "week" : "weeks"} fell short of ${min}.`}
       </span>
     </section>
   );
@@ -186,7 +444,11 @@ function Windowed({ chart }: { chart: ActivityChart }) {
       <div className="relative h-[132px] border-b border-l border-rule">
         <div
           className="absolute inset-x-0 border-y border-dashed border-pass"
-          style={{ top: `${topOf(windowOpen)}%`, height: `${topOf(windowClose) - topOf(windowOpen)}%` }}
+          style={{
+            top: `${topOf(windowOpen)}%`,
+            height: `${topOf(windowClose) - topOf(windowOpen)}%`,
+            background: "color-mix(in srgb, var(--pass) 12%, transparent)",
+          }}
         />
         <span
           className="absolute right-[6px] -translate-y-1/2 text-[9.5px] text-pass"
@@ -221,21 +483,6 @@ function Windowed({ chart }: { chart: ActivityChart }) {
           : `${missed} morning${missed === 1 ? "" : "s"} landed outside the window.`}{" "}
         Descriptive only, this never ranks anyone.
       </span>
-    </section>
-  );
-}
-
-function PassRate({ chart }: { chart: ActivityChart }) {
-  const passed = chart.points.filter((p) => p.passed).length;
-  const percent = Math.round((passed / chart.points.length) * 100);
-  const first = DateTime.fromISO(chart.points[0].periodStart).toFormat("d LLL");
-
-  return (
-    <section className="flex items-center justify-between gap-3 border border-rule p-[13px]">
-      <span className="text-[12.5px]">
-        {passed} of {chart.points.length} passed since {first}
-      </span>
-      <span className="text-[15px] tabular-nums text-muted">{percent}%</span>
     </section>
   );
 }

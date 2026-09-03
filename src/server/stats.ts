@@ -136,6 +136,12 @@ export interface ActivityChart {
   /** Oldest first. `detail` is the module's own, printed by nobody. */
   points: { periodStart: string; passed: boolean; detail: Record<string, unknown> }[];
   graceMonthLabel: string;
+  /** The three figures under every chart, whatever its kind. */
+  streak: number;
+  best: number;
+  graceLeft: number;
+  /** The user's other tracked activities, for the picker at the top. */
+  others: { typeKey: string; name: string; icon: string }[];
 }
 
 /**
@@ -148,7 +154,8 @@ export async function chartFor(
   userId: string,
   typeKey: string,
 ): Promise<ActivityChart | null> {
-  const mine = (await listUserActivities(userId)).find((a) => a.typeKey === typeKey);
+  const all = (await listUserActivities(userId)).filter((a) => a.enabled);
+  const mine = all.find((a) => a.typeKey === typeKey);
   if (!mine) return null;
 
   const instant = await now();
@@ -157,7 +164,11 @@ export async function chartFor(
     instant.toISOString().slice(0, 10),
   );
   const today = DateTime.fromJSDate(instant, { zone: timezone });
-  const from = today.minus({ days: 29 }).toFormat("yyyy-MM-dd");
+  const type = getActivityType(typeKey);
+  // A weekly period needs a longer window to draw the same number of bars: ten
+  // weeks against thirty days, as the two mocks show.
+  const window = type.chart === "weekly" ? 69 : 29;
+  const from = today.minus({ days: window }).toFormat("yyyy-MM-dd");
 
   const rows = await db
     .select({
@@ -175,7 +186,7 @@ export async function chartFor(
     )
     .orderBy(activityScores.periodStart);
 
-  const type = getActivityType(typeKey);
+  const standing = await standingFor(userId, typeKey);
   return {
     typeKey,
     name: type.name,
@@ -187,5 +198,14 @@ export async function chartFor(
       detail: (r.detail ?? {}) as Record<string, unknown>,
     })),
     graceMonthLabel: graceMonth(today.toFormat("yyyy-MM-dd")),
+    streak: standing?.streak ?? 0,
+    best: standing?.best ?? 0,
+    graceLeft: standing?.graceLeft ?? 0,
+    others: all
+      .filter((a) => a.typeKey !== typeKey)
+      .map((a) => {
+        const t = getActivityType(a.typeKey);
+        return { typeKey: a.typeKey, name: t.name, icon: t.icon };
+      }),
   };
 }

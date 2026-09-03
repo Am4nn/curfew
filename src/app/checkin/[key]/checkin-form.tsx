@@ -161,6 +161,7 @@ export function CheckinForm({
   const [shot, setShot] = useState<Compressed | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attempted, setAttempted] = useState(false);
   const [sending, setSending] = useState(false);
   const [pending, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -441,7 +442,7 @@ export function CheckinForm({
 
       {error ? (
         <span className="text-[11px] leading-[1.5] text-penalty">{error}</span>
-      ) : blocked ? (
+      ) : attempted && blocked ? (
         <span className="text-[11px] leading-[1.5] text-penalty">{blocked}</span>
       ) : null}
 
@@ -455,8 +456,8 @@ export function CheckinForm({
         </button>
         <button
           type="button"
-          disabled={!canSend || busy}
-          onClick={sendFields}
+          disabled={busy}
+          onClick={() => (canSend ? sendFields() : setAttempted(true))}
           className={
             "h-[46px] flex-[1.6] border text-[13.5px] " +
             (canSend

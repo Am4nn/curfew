@@ -34,6 +34,15 @@
   --rank-unbroken: #ff7a2f;
   --pass: #6ba17f;
   --accent: #7fa8ff;
+  /* The heatmap ramp: none to all, five discrete steps from the near-black of
+     an empty day up to the flame. A ramp, not --fg at five opacities: opacity
+     on a var()-defined colour is exactly what Tailwind cannot express, and the
+     steps are chosen to separate, not to interpolate. */
+  --heat-1: #221f1b;
+  --heat-2: #4a3524;
+  --heat-3: #7d4d26;
+  --heat-4: #b35f27;
+  --heat-5: #ff7a2f;
   color-scheme: dark;
 }
 
@@ -56,6 +65,13 @@
   --rank-unbroken: #b8480f;
   --pass: #2f5d3f;
   --accent: #7fa8ff;
+  /* The same five steps read against the light ground: they darken as the day
+     fills, rather than brightening. */
+  --heat-1: #d5d1c9;
+  --heat-2: #e0bb99;
+  --heat-3: #d99b64;
+  --heat-4: #cf7433;
+  --heat-5: #b8480f;
   color-scheme: light;
 }
 

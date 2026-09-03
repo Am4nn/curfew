@@ -214,25 +214,46 @@ export default async function Home() {
 // something to share.
 function NewUser({ hasGroup }: { hasGroup: boolean }) {
   return (
-    <section className="flex flex-col gap-4">
-      <p className="text-[13px] leading-[1.6] text-muted">
-        You are not tracking anything yet. Pick an activity and Curfew starts
-        keeping the record.
-      </p>
-      <Link
-        href="/activities"
-        className="flex h-11 w-full items-center justify-center border border-fg bg-fg text-[14px] font-semibold text-bg"
-      >
-        Add an activity
-      </Link>
-      {hasGroup ? null : (
+    <section className="flex flex-col gap-5">
+      <div className="flex flex-col gap-[3px]">
+        <span className="text-[10px] tracking-[0.16em] text-muted">TODAY</span>
+        <span className="text-[22px] font-semibold leading-tight">
+          You are tracking nothing.
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-[14px] border border-rule p-[14px]">
+        <p className="text-[13px] leading-[1.6] text-muted">
+          Pick an activity, set what counts as done, and check in. Streaks are
+          yours. Groups come later, and only see what you share.
+        </p>
         <Link
-          href="/groups"
-          className="flex h-11 w-full items-center justify-center border border-rule text-[14px]"
+          href="/activities"
+          className="flex h-11 w-full items-center justify-center border border-fg bg-fg text-[14px] font-semibold text-bg"
         >
-          Create a group
+          Add an activity
         </Link>
+      </div>
+
+      {hasGroup ? null : (
+        <div className="flex flex-col gap-[14px] border border-rule p-[14px]">
+          <p className="text-[13px] leading-[1.6] text-muted">
+            Keeping it up alone is harder. Start a group and invite the friends
+            who will notice when you stop.
+          </p>
+          <Link
+            href="/groups"
+            className="flex h-11 w-full items-center justify-center border border-rule text-[14px]"
+          >
+            Create a group
+          </Link>
+        </div>
       )}
+
+      <div className="border-l-[3px] border-l-accent bg-surface px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-muted">
+        Groups are invite-only. They only ever see the activities you choose to
+        share.
+      </div>
     </section>
   );
 }

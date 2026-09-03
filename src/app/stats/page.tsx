@@ -3,8 +3,27 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { overviewFor, chartFor } from "@/server/stats";
 import { QuorumMark } from "../mark";
-import { ActivityIcon } from "../activity-icon";
+import { ActivityIcon, Flame } from "../activity-icon";
 import { ActivityChartView } from "./charts";
+
+// The heatmap ramp, none to all, defined once in globals.css so light mode
+// gets its own five steps. Tailwind can't emit a class for a value picked at
+// runtime, so these are read as CSS variables and set inline.
+const HEAT = [
+  "var(--heat-1)",
+  "var(--heat-2)",
+  "var(--heat-3)",
+  "var(--heat-4)",
+  "var(--heat-5)",
+];
+
+// A day's completion, 0..1, into one of the five steps. Anything above zero
+// lands at least on step 2, so a day with something done never reads as empty.
+function heatStep(v: number): number {
+  if (v <= 0) return 0;
+  if (v >= 1) return 4;
+  return 1 + Math.min(2, Math.floor(v * 3));
+}
 
 // Stats: the month at a glance, then one activity at a time. Everything is
 // counted from scored periods, which come from check-ins alone (invariant 2).
@@ -23,18 +42,52 @@ export default async function StatsPage({
     if (!chart) redirect("/stats");
     return (
       <main className="min-h-dvh px-5 pb-24 pt-5">
-        <div className="mx-auto flex max-w-[560px] flex-col gap-6">
-          <header className="-mx-5 flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px]">
-            <Link href="/stats" className="flex items-center gap-[9px]">
-              <span className="text-[14px] text-muted">&lsaquo;</span>
-              <span className="text-[14px] font-semibold tracking-[0.14em]">
-                {chart.name.toUpperCase()}
-              </span>
+        <div className="mx-auto flex max-w-[560px] flex-col gap-[22px]">
+          <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
+            <Link href="/stats" className="text-[14px] text-muted">
+              &lsaquo;
             </Link>
-            <span className="text-muted">
-              <ActivityIcon name={chart.icon} />
-            </span>
+            <QuorumMark size={15} />
+            <h1 className="text-[14px] font-semibold tracking-[0.16em]">STATS</h1>
           </header>
+
+          {/* The mock's picker, and a real one: a disclosure rather than a box
+              with a chevron that does nothing. */}
+          <details className="group">
+            <summary className="flex cursor-pointer list-none items-center gap-[10px] border border-rule px-3 py-[11px] [&::-webkit-details-marker]:hidden">
+              <span className="flex flex-none">
+                <ActivityIcon name={chart.icon} size={17} />
+              </span>
+              <span className="flex-1 text-[14px]">{chart.name}</span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="flex-none text-muted transition-transform group-open:rotate-180"
+                aria-hidden="true"
+              >
+                <path d="M5 9l7 7 7-7" />
+              </svg>
+            </summary>
+            <div className="flex flex-col border-x border-b border-rule">
+              {chart.others.map((o) => (
+                <Link
+                  key={o.typeKey}
+                  href={`/stats?a=${o.typeKey}`}
+                  className="flex items-center gap-[10px] border-t border-rule px-3 py-[11px] first:border-t-0"
+                >
+                  <span className="flex flex-none text-muted">
+                    <ActivityIcon name={o.icon} size={17} />
+                  </span>
+                  <span className="flex-1 text-[14px]">{o.name}</span>
+                </Link>
+              ))}
+            </div>
+          </details>
+
           <ActivityChartView chart={chart} />
         </div>
       </main>
@@ -86,22 +139,34 @@ export default async function StatsPage({
               <span className="text-[10px] tracking-[0.16em] text-muted">
                 EVERY DAY, HOW MUCH OF IT
               </span>
-              <div className="flex flex-col gap-[3px]">
-                {stats.heatmap.map((week, w) => (
-                  <div key={w} className="flex gap-[3px]">
-                    {week.map((v, d) => (
-                      <div
-                        key={d}
-                        className="aspect-square flex-1 border border-rule"
-                        style={
-                          v < 0
-                            ? { opacity: 0.25 }
-                            : { backgroundColor: "var(--fg)", opacity: 0.12 + v * 0.88 }
-                        }
-                      />
-                    ))}
-                  </div>
-                ))}
+              <div className="flex flex-col gap-[9px]">
+                {/* A week is a column, a day a row, as in the mock: eight weeks
+                    read left to right the way a calendar does. */}
+                <div className="flex gap-[3px]">
+                  {stats.heatmap.map((week, w) => (
+                    <div key={w} className="flex flex-1 flex-col gap-[3px]">
+                      {week.map((v, d) => (
+                        <div
+                          key={d}
+                          className={
+                            "aspect-square w-full " + (v < 0 ? "border border-rule" : "")
+                          }
+                          style={v < 0 ? undefined : { background: HEAT[heatStep(v)] }}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-[7px]">
+                  <span className="text-[10px] text-muted">none</span>
+                  {HEAT.map((c, i) => (
+                    <div key={i} className="h-[8px] w-[14px]" style={{ background: c }} />
+                  ))}
+                  <span className="text-[10px] text-muted">all</span>
+                  <span className="ml-auto text-[10px] text-muted">
+                    {stats.heatmap.length} weeks
+                  </span>
+                </div>
               </div>
             </section>
 
@@ -122,8 +187,18 @@ export default async function StatsPage({
                     <div className="flex flex-1 flex-col gap-[6px]">
                       <div className="flex items-center justify-between gap-[9px]">
                         <span className="text-[13px]">{row.name}</span>
-                        <span className="text-[11.5px] tabular-nums text-muted">
-                          {row.percent}%
+                        <span className="flex items-center gap-[9px]">
+                          <span className="text-[11.5px] tabular-nums text-muted">
+                            {row.percent}%
+                          </span>
+                          {row.streak > 0 ? (
+                            <span className="flex items-center gap-1">
+                              <Flame size={13} />
+                              <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">
+                                {row.streak}
+                              </span>
+                            </span>
+                          ) : null}
                         </span>
                       </div>
                       <div className="h-[3px] bg-rule">

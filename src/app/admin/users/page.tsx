@@ -6,7 +6,6 @@ export default async function AdminUsers() {
 
   return (
     <section className="flex flex-col gap-[14px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">USERS</span>
       <UsersDirectory users={users} />
     </section>
   );

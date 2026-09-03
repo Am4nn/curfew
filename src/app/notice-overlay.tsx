@@ -31,14 +31,25 @@ export async function NoticeOverlay() {
         </div>
 
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto px-[18px] py-4">
-          {pending.map((notice) => (
-            <p
-              key={notice.id}
-              className="whitespace-pre-line text-[12px] leading-[1.6] text-muted"
-            >
-              {notice.body}
-            </p>
-          ))}
+          {pending.map((notice) =>
+            // Each change composed by noticeFrom() is one "\n\n"-separated
+            // paragraph starting "Name is now state." -- split that headline
+            // sentence out so it reads like the confirm sheet it came from,
+            // not one flat block.
+            notice.body.split("\n\n").map((paragraph, i) => {
+              const sentenceEnd = paragraph.indexOf(". ");
+              const headline = sentenceEnd === -1 ? paragraph : paragraph.slice(0, sentenceEnd + 1);
+              const rest = sentenceEnd === -1 ? "" : paragraph.slice(sentenceEnd + 2);
+              return (
+                <div key={`${notice.id}-${i}`} className="flex flex-col gap-1">
+                  <span className="text-[13.5px] font-semibold">{headline}</span>
+                  {rest ? (
+                    <span className="text-[12px] leading-[1.6] text-muted">{rest}</span>
+                  ) : null}
+                </div>
+              );
+            }),
+          )}
           <span className="text-[10.5px] text-muted">
             {published.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             {" \u00b7 from Curfew"}

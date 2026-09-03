@@ -5,6 +5,30 @@ import { RANKS, IMMACULATE_FROM, rankFor, isImmaculate } from "@/domain";
 import { globalScore } from "@/server/scoring";
 import { RankIcon, RANK_TEXT } from "../rank-icon";
 
+// A crown, gold, glowing: the mock's own icon for IMMACULATE, deliberately
+// distinct from UNBROKEN's mountain even though it is "a title inside
+// UNBROKEN, not a band of its own" -- on this one explanatory list, telling
+// the two apart at a glance matters more than the literal domain model.
+function CrownIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+      aria-hidden="true"
+      style={{ filter: "drop-shadow(0 0 6px var(--gold))" }}
+    >
+      <path d="M3.5 18h17" />
+      <path d="M4.5 18 3 8l5 4 4-7 4 7 5-4-1.5 10Z" />
+    </svg>
+  );
+}
+
 // What the number means, in the app rather than in a document. Reached from a
 // standing screen and from Settings.
 export default async function RanksPage() {
@@ -26,16 +50,21 @@ export default async function RanksPage() {
           </span>
         </header>
 
-        <div className="flex items-center gap-[15px]">
+        <div className="flex items-center gap-[13px] border border-rule p-[14px]">
           <span className={"flex flex-none " + RANK_TEXT[mine.key]}>
-            <RankIcon score={score} size={42} />
+            <RankIcon score={score} size={30} />
           </span>
-          <div className="flex flex-col gap-[5px]">
-            <span className={"text-[32px] font-semibold leading-none " + RANK_TEXT[mine.key]}>
-              {Math.round(score)}
-            </span>
-            <span className="text-[10.5px] tracking-[0.14em] text-muted">
-              YOUR SCORE, ACROSS EVERYTHING
+          <div className="flex flex-1 flex-col gap-[3px]">
+            <div className="flex items-baseline gap-[9px]">
+              <span className={"text-[20px] font-semibold " + RANK_TEXT[mine.key]}>
+                {Math.round(score)}
+              </span>
+              <span className={"text-[10.5px] tracking-[0.14em] " + RANK_TEXT[mine.key]}>
+                {mine.name}
+              </span>
+            </div>
+            <span className="text-[10.5px] text-muted">
+              Yours, across everything. Nobody else sees it.
             </span>
           </div>
         </div>
@@ -49,40 +78,46 @@ export default async function RanksPage() {
         <section className="flex flex-col gap-[10px]">
           <span className="text-[10px] tracking-[0.16em] text-muted">THE BANDS</span>
           <div className="flex flex-col">
-            {RANKS.map((rank) => (
-              <div
-                key={rank.key}
-                className="flex items-center gap-[11px] border-b border-rule py-3"
-              >
-                <span className={"flex flex-none " + RANK_TEXT[rank.key]}>
-                  <RankIcon score={rank.from} size={20} />
-                </span>
-                <div className="flex flex-1 flex-col gap-[3px]">
-                  <span className={"text-[13.5px] tracking-[0.1em] " + RANK_TEXT[rank.key]}>
-                    {rank.name}
+            {[...RANKS].reverse().map((rank, i, reversed) => {
+              const upper = i === 0 ? 1000 : reversed[i - 1].from - 1;
+              return (
+                <div
+                  key={rank.key}
+                  className="flex items-center gap-[13px] border-b border-rule py-[14px]"
+                >
+                  <span className={"flex flex-none " + RANK_TEXT[rank.key]}>
+                    <RankIcon score={rank.from} size={26} />
                   </span>
-                  <span className="text-[11px] text-muted">{rank.meaning}</span>
+                  <div className="flex flex-1 flex-col gap-[3px]">
+                    <div className="flex items-baseline gap-[9px]">
+                      <span className={"text-[13.5px] tracking-[0.12em] " + RANK_TEXT[rank.key]}>
+                        {rank.name}
+                      </span>
+                      <span className="text-[11px] tabular-nums text-muted">
+                        {rank.from}-{upper}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-muted">{rank.meaning}</span>
+                  </div>
                 </div>
-                <span className="flex-none text-[11px] tabular-nums text-muted">
-                  {rank.from}
-                  {rank.key === "unbroken" ? "+" : ""}
-                </span>
-              </div>
-            ))}
+              );
+            })}
 
-            <div className="flex items-center gap-[11px] border-b border-rule py-3">
-              <span className="flex flex-none text-fg">
-                <RankIcon score={IMMACULATE_FROM} size={20} />
+            <div className="flex items-center gap-[13px] border-b border-rule py-[14px]">
+              <span className="flex flex-none text-gold">
+                <CrownIcon size={26} />
               </span>
               <div className="flex flex-1 flex-col gap-[3px]">
-                <span className="text-[13.5px] tracking-[0.1em] text-fg">IMMACULATE</span>
+                <div className="flex items-baseline gap-[9px]">
+                  <span className="text-[13.5px] tracking-[0.12em] text-gold">IMMACULATE</span>
+                  <span className="text-[11px] tabular-nums text-muted">
+                    {IMMACULATE_FROM}+
+                  </span>
+                </div>
                 <span className="text-[11px] text-muted">
-                  A title inside UNBROKEN, not a band of its own
+                  A title inside UNBROKEN, not a rank of its own
                 </span>
               </div>
-              <span className="flex-none text-[11px] tabular-nums text-muted">
-                {IMMACULATE_FROM}+
-              </span>
             </div>
           </div>
           {isImmaculate(score) ? (

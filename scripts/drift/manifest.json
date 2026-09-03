@@ -5,8 +5,7 @@
     "mock": "V3Home.dc.html",
     "route": "/",
     "state": "Some done, some due, one not scheduled today greyed",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "home-done",
@@ -14,8 +13,7 @@
     "mock": "V3HomeDone.dc.html",
     "route": "/",
     "state": "Everything passed, next window named, balances still shown",
-    "fixture": "all-done",
-    "clock": "2026-01-15T05:00:00.000Z"
+    "fixture": "all-done"
   },
   {
     "slug": "home-no-money",
@@ -23,8 +21,7 @@
     "mock": "V3HomeNoMoney.dc.html",
     "route": "/",
     "state": "No group tracks money: no balances block at all",
-    "fixture": "no-money",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "no-money"
   },
   {
     "slug": "home-empty",
@@ -32,8 +29,7 @@
     "mock": "V3HomeEmpty.dc.html",
     "route": "/",
     "state": "No activities, no groups. Add an activity, create a group",
-    "fixture": "new-user",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "new-user"
   },
   {
     "slug": "notice-home",
@@ -41,8 +37,7 @@
     "mock": "V3Notice.dc.html",
     "route": "/",
     "state": "Blocking overlay, Got it only",
-    "fixture": "notice-active",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "notice-active"
   },
   {
     "slug": "notice-group",
@@ -50,8 +45,7 @@
     "mock": "V3NoticeGroups.dc.html",
     "route": "/groups",
     "state": "Same overlay on another route",
-    "fixture": "notice-active",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "notice-active"
   },
   {
     "slug": "activities-list",
@@ -59,8 +53,7 @@
     "mock": "V3Activities.dc.html",
     "route": "/activities",
     "state": "Global score at top, own list, streak per row",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "activities-add",
@@ -68,8 +61,7 @@
     "mock": "V3Catalog.dc.html",
     "route": "/activities/add",
     "state": "Catalog, plus to add, already-tracking section",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-sleep",
@@ -77,8 +69,7 @@
     "mock": "V3CfgSleep.dc.html",
     "route": "/activities/sleep",
     "state": "Noon-to-noon fact, three windows, photo required on confirm",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-gym",
@@ -86,8 +77,7 @@
     "mock": "V3CfgGym.dc.html",
     "route": "/activities/gym",
     "state": "ANY schedule, minimum stepper",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-food",
@@ -95,8 +85,7 @@
     "mock": "V3CfgFood.dc.html",
     "route": "/activities/food",
     "state": "Logs plus calorie limit, both required to pass",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-supplements",
@@ -104,8 +93,7 @@
     "mock": "V3CfgSupplements.dc.html",
     "route": "/activities/supplements",
     "state": "Once a day, no window",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-office",
@@ -113,8 +101,7 @@
     "mock": "V3CfgOffice.dc.html",
     "route": "/activities/office",
     "state": "Weekdays, 10 AM to 2 PM",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-study",
@@ -122,8 +109,7 @@
     "mock": "V3CfgStudy.dc.html",
     "route": "/activities/study",
     "state": "ANY schedule, minutes target, photo required",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-steps",
@@ -131,8 +117,7 @@
     "mock": "V3CfgSteps.dc.html",
     "route": "/activities/steps",
     "state": "At-or-above rule, gallery allowed",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-water",
@@ -140,8 +125,7 @@
     "mock": "V3CfgWater.dc.html",
     "route": "/activities/water",
     "state": "No evidence at all",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-reading",
@@ -149,8 +133,7 @@
     "mock": "V3CfgReading.dc.html",
     "route": "/activities/reading",
     "state": "Minutes or pages",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-screen",
@@ -158,8 +141,7 @@
     "mock": "V3CfgScreen.dc.html",
     "route": "/activities/screen",
     "state": "At-or-below rule",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-nightfast",
@@ -167,8 +149,7 @@
     "mock": "V3CfgNightfast.dc.html",
     "route": "/activities/nightfast",
     "state": "Nothing-after time, confirm window, no evidence",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-sugarfree",
@@ -176,17 +157,15 @@
     "mock": "V3CfgSugarfree.dc.html",
     "route": "/activities/sugarfree",
     "state": "Confirm window, no evidence",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "cfg-new-steps",
     "section": "Configure",
     "mock": "V3CfgNew.dc.html",
-    "route": "/activities/add/steps",
+    "route": "/activities/steps",
     "state": "Defaults prefilled, settling note, single add button",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "new-user"
   },
   {
     "slug": "cfg-errors",
@@ -195,7 +174,6 @@
     "route": "/activities/sleep",
     "state": "Fields marked in place, Save disabled",
     "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z",
     "interaction": "cfg-errors"
   },
   {
@@ -216,29 +194,30 @@
     "state": "Slot marked required in penalty, Send dead, reason named",
     "fixture": "checkin-open-sleep-confirm",
     "routeKey": "sleep-confirm",
-    "clock": "2026-01-15T02:07:00.000Z"
+    "clock": "2026-01-15T02:07:00.000Z",
+    "interaction": "checkin-required-blocked"
   },
   {
     "slug": "camera",
     "section": "Evidence and check-in",
     "mock": "V3Camera.dc.html",
-    "route": "/checkin/[key]/capture",
+    "route": "/checkin/[key]",
     "state": "Full bleed, one shutter, one close",
     "fixture": "checkin-open-sleep-confirm",
     "routeKey": "sleep-confirm",
     "clock": "2026-01-15T02:07:00.000Z",
-    "note": "requires camera permission; capture screenshot manually or note as untestable headless"
+    "interaction": "camera"
   },
   {
     "slug": "capture-confirm",
     "section": "Evidence and check-in",
     "mock": "V3CaptureConfirm.dc.html",
-    "route": "/checkin/[key]/capture",
+    "route": "/checkin/[key]",
     "state": "Retake or use, nothing recorded yet",
     "fixture": "checkin-open-sleep-confirm",
     "routeKey": "sleep-confirm",
     "clock": "2026-01-15T02:07:00.000Z",
-    "note": "requires a captured frame in client state; likely untestable headless without a fake camera"
+    "interaction": "capture-confirm"
   },
   {
     "slug": "checkin-ready",
@@ -249,7 +228,7 @@
     "fixture": "checkin-open-sleep-confirm",
     "routeKey": "sleep-confirm",
     "clock": "2026-01-15T02:07:00.000Z",
-    "note": "requires client-side attach step; may need interaction script"
+    "interaction": "checkin-ready"
   },
   {
     "slug": "checkin-abstinence",
@@ -267,8 +246,7 @@
     "mock": "V3Groups.dc.html",
     "route": "/groups",
     "state": "Invite banner, group list with rank icon and number",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "group-overview",
@@ -277,8 +255,7 @@
     "route": "/group/[id]",
     "state": "Tracks, members, your standing row, group stats row",
     "fixture": "default",
-    "routeKey": "night-owls",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "routeKey": "night-owls"
   },
   {
     "slug": "group-stats",
@@ -287,8 +264,7 @@
     "route": "/group/[id]/stats",
     "state": "Week, day by day, member shares, what the group finds hard",
     "fixture": "default",
-    "routeKey": "night-owls",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "routeKey": "night-owls"
   },
   {
     "slug": "group-evidence",
@@ -297,8 +273,7 @@
     "route": "/group/[id]/evidence",
     "state": "Today and yesterday, load older",
     "fixture": "default",
-    "routeKey": "night-owls",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "routeKey": "night-owls"
   },
   {
     "slug": "group-standing-money-on",
@@ -307,8 +282,7 @@
     "route": "/group/[id]/standing",
     "state": "Rank, money, full ledger link, ceiling, movements",
     "fixture": "default",
-    "routeKey": "night-owls",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "routeKey": "night-owls"
   },
   {
     "slug": "group-standing-money-off",
@@ -317,8 +291,7 @@
     "route": "/group/[id]/standing",
     "state": "Same minus money, no mention of it",
     "fixture": "no-money",
-    "routeKey": "no-money-group",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "routeKey": "no-money-group"
   },
   {
     "slug": "group-settings",
@@ -327,8 +300,7 @@
     "route": "/group/[id]/settings",
     "state": "Share toggles with the evidence checkbox, owner blocks, leave",
     "fixture": "default",
-    "routeKey": "night-owls",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "routeKey": "night-owls"
   },
   {
     "slug": "group-ledger-full",
@@ -337,8 +309,7 @@
     "route": "/group/[id]/ledger",
     "state": "Every entry including a correction row",
     "fixture": "default",
-    "routeKey": "night-owls",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "routeKey": "night-owls"
   },
   {
     "slug": "join-share",
@@ -346,17 +317,15 @@
     "mock": "V3JoinShare.dc.html",
     "route": "/join/[inviteId]",
     "state": "Share toggles, an untracked type offering setup",
-    "fixture": "invite-tracked-type",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "invite-tracked-type"
   },
   {
     "slug": "join-setup",
     "section": "Groups",
     "mock": "V3JoinSetup.dc.html",
-    "route": "/join/[inviteId]/setup",
+    "route": "/activities/reading?from=join&invite=[inviteId]",
     "state": "Configure inline, add and share, or add for yourself",
-    "fixture": "invite-untracked-type",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "invite-untracked-type"
   },
   {
     "slug": "stats-overview",
@@ -364,8 +333,7 @@
     "mock": "V3Stats.dc.html",
     "route": "/stats",
     "state": "Perfect days, three figures, heatmap, per-activity bars",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "stats-sleep",
@@ -373,8 +341,7 @@
     "mock": "V3StatsSleep.dc.html",
     "route": "/stats?a=sleep",
     "state": "Time plot against the window band",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "stats-steps",
@@ -382,8 +349,7 @@
     "mock": "V3StatsSteps.dc.html",
     "route": "/stats?a=steps",
     "state": "Bars against the target rule",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "stats-gym",
@@ -391,8 +357,7 @@
     "mock": "V3StatsGym.dc.html",
     "route": "/stats?a=gym",
     "state": "Weekly counts against the minimum",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "stats-nightfast",
@@ -400,8 +365,7 @@
     "mock": "V3StatsAbstain.dc.html",
     "route": "/stats?a=nightfast",
     "state": "Held or slipped cells, mark in every cell",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "ranks",
@@ -409,8 +373,7 @@
     "mock": "V3Ranks.dc.html",
     "route": "/ranks",
     "state": "Your standing at top, the six bands, IMMACULATE glowing",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "settings",
@@ -418,8 +381,7 @@
     "mock": "V3Settings.dc.html",
     "route": "/settings",
     "state": "Appearance, personal, your data, sign out",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "settings-sharing",
@@ -427,8 +389,7 @@
     "mock": "V3SettingsSharing.dc.html",
     "route": "/settings/sharing",
     "state": "Every group, every type, the evidence checkbox",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "settings-data",
@@ -436,8 +397,7 @@
     "mock": "V3Data.dc.html",
     "route": "/settings/data",
     "state": "Photos, history, account, the money-is-never-deleted note",
-    "fixture": "default",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "default"
   },
   {
     "slug": "admin-overview",
@@ -445,8 +405,7 @@
     "mock": "V3AdminOverview.dc.html",
     "route": "/admin",
     "state": "Six figures, last night's run, approvals with inline actions",
-    "fixture": "admin",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "admin"
   },
   {
     "slug": "admin-users",
@@ -454,8 +413,7 @@
     "mock": "V3AdminUsers.dc.html",
     "route": "/admin/users",
     "state": "Search, filters, directory, the never-reads note",
-    "fixture": "admin",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "admin"
   },
   {
     "slug": "admin-groups",
@@ -463,8 +421,7 @@
     "mock": "V3AdminGroups.dc.html",
     "route": "/admin/groups",
     "state": "Per-group money override, archive",
-    "fixture": "admin",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "admin"
   },
   {
     "slug": "admin-insights",
@@ -472,8 +429,7 @@
     "mock": "V3AdminInsights.dc.html",
     "route": "/admin/insights",
     "state": "Counted behaviour only, abandonment rates",
-    "fixture": "admin",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "admin"
   },
   {
     "slug": "admin-controls",
@@ -482,7 +438,6 @@
     "route": "/admin/controls",
     "state": "Unsaved tags, save bar, app switches, types, retention. No add-a-type button (decision 82)",
     "fixture": "admin",
-    "clock": "2026-01-15T09:00:00.000Z",
     "note": "unsaved-changes state requires interaction (edit a field) before capture"
   },
   {
@@ -492,7 +447,6 @@
     "route": "/admin/controls",
     "state": "Generic sheet built from pending changes, notify checkbox",
     "fixture": "admin",
-    "clock": "2026-01-15T09:00:00.000Z",
     "interaction": "admin-controls-confirm"
   },
   {
@@ -501,7 +455,6 @@
     "mock": "V3AdminOps.dc.html",
     "route": "/admin/ops",
     "state": "Verify and rebuild, drift list, evidence sweep",
-    "fixture": "admin",
-    "clock": "2026-01-15T09:00:00.000Z"
+    "fixture": "admin"
   }
 ]

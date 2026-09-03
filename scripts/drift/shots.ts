@@ -23,7 +23,6 @@ const SHOTS_DIR = path.join(ROOT, ".shots");
 const MANIFEST_PATH = path.join(ROOT, "scripts", "drift", "manifest.json");
 const FIXTURE_IDS_PATH = path.join(ROOT, "scripts", "drift", "fixture-ids.json");
 const APP_ORIGIN = "http://localhost:3000";
-const PLACEHOLDER_CLOCK = "2026-01-15T09:00:00.000Z";
 
 // The twelve real activity type keys. routeKey hints for /checkin/[key] carry
 // suffixes like "-confirm" that aren't real keys; strip anything after a
@@ -188,16 +187,95 @@ async function screenshotMock(browser: Browser, entry: ManifestEntry): Promise<{
 // action, not from URL + cookie alone. Each best-effort; on failure they
 // leave a screenshot of whatever state was reached and let the caller log it.
 async function runInteraction(page: Page, tag: string): Promise<void> {
-  if (tag === "cfg-errors") {
-    // Blank out the first numeric field on a configure screen so validation
-    // kicks in, then attempt Save so the disabled/error state renders.
-    const numberInputs = page.locator('input[type="number"]');
-    const count = await numberInputs.count();
-    if (count > 0) {
-      const first = numberInputs.first();
-      await first.fill("");
-      await first.blur();
+  if (tag === "checkin-required-blocked") {
+    // Send is never disabled by the incomplete state itself now (fixed: the
+    // red reason used to render unconditionally, before any attempt) -- click
+    // it once so the blocked reason actually appears, matching what the mock
+    // demonstrates.
+    const sendButton = page.getByRole("button", { name: /^send$/i });
+    if (await sendButton.count()) {
+      await sendButton.first().click();
       await page.waitForTimeout(150);
+    } else {
+      console.warn("  checkin-required-blocked: no Send button found.");
+    }
+    return;
+  }
+
+  if (tag === "camera") {
+    // Open the camera from the photo slot. Headless Chromium is launched
+    // with a fake video device (see chromium.launch args), so this reaches
+    // the live state instead of the permission-denied fallback.
+    const openButton = page.getByRole("button", { name: /take a photo/i });
+    if (await openButton.count()) {
+      await openButton.first().click();
+      await page.waitForTimeout(500); // let getUserMedia settle into "live"
+    } else {
+      console.warn("  camera: no photo-slot button found to open it.");
+    }
+    return;
+  }
+
+  if (tag === "capture-confirm" || tag === "checkin-ready") {
+    // Open the camera, take the (fake) shot, and for checkin-ready go one
+    // step further and actually attach it (Use this photo) plus fill any
+    // required numeric field, so Send is genuinely live rather than dead.
+    const openButton = page.getByRole("button", { name: /take a photo/i });
+    if (await openButton.count()) {
+      await openButton.first().click();
+      await page.waitForTimeout(500);
+    } else {
+      console.warn(`  ${tag}: no photo-slot button found to open the camera.`);
+      return;
+    }
+    const shutter = page.getByRole("button", { name: /take the photo/i });
+    if (await shutter.count()) {
+      await shutter.first().click();
+      await page.waitForTimeout(300);
+    } else {
+      console.warn(`  ${tag}: camera never reached the live state (no shutter button).`);
+      return;
+    }
+    if (tag === "checkin-ready") {
+      const useButton = page.getByRole("button", { name: /use this photo/i });
+      if (await useButton.count()) {
+        await useButton.first().click();
+        await page.waitForTimeout(150);
+      }
+      const numberInputs = page.locator('input[type="number"]');
+      const count = await numberInputs.count();
+      for (let i = 0; i < count; i++) {
+        const el = numberInputs.nth(i);
+        if ((await el.inputValue()) === "") {
+          await el.fill("1");
+        }
+      }
+      await page.waitForTimeout(100);
+    }
+    return;
+  }
+
+  if (tag === "cfg-errors") {
+    // Put a configure screen into its invalid state so the per-field errors
+    // render. Sleep (this entry's route) has no numeric field at all -- it is
+    // three time ranges -- and the numeric control is a formatted text box
+    // now, not input[type=number], so the old number-only selector matched
+    // nothing and the screen captured clean. Close the wake window before it
+    // opens instead: that is a guaranteed field-level error.
+    const timeInputs = page.locator('input[type="time"]');
+    const timeCount = await timeInputs.count();
+    if (timeCount >= 4) {
+      await timeInputs.nth(2).fill("07:00"); // wake opens
+      await timeInputs.nth(3).fill("06:00"); // wake closes, before it opens
+      await timeInputs.nth(3).blur();
+      await page.waitForTimeout(200);
+    } else {
+      const numberInputs = page.locator('input[inputmode="numeric"]');
+      if (await numberInputs.count()) {
+        await numberInputs.first().fill("");
+        await numberInputs.first().blur();
+        await page.waitForTimeout(150);
+      }
     }
     const saveButton = page.getByRole("button", { name: /^save$/i });
     if (await saveButton.count()) {
@@ -257,26 +335,36 @@ async function screenshotApp(
     return { ok: false, error: "route placeholder could not be resolved (see warning above)", outPath, skipped: true };
   }
 
+  // Only the checkin-open-* fixtures seed data anchored to a fixed calendar
+  // date (CHECKIN_TARGET_DATE in seed-local.ts) — everything else (default,
+  // all-done, no-money, new-user, notice-active, admin, invite-*) seeds its
+  // world anchored to the real clock at seed time (`DateTime.now()`).
+  // Forcing mock_now to a fixed past date on one of those screens makes the
+  // app look for config and scored history around that date, finds none, and
+  // 500s or renders empty. So a fixture without an explicit `clock` in the
+  // manifest gets no mock_now cookie at all: the app just uses its own real
+  // clock, matching whatever the seed actually wrote.
   let clock = entry.clock;
-  if (!isIsoInstant(clock)) {
-    if (clock) {
-      console.warn(`WARNING [${entry.slug}]: clock "${clock}" is not a valid ISO instant yet; using placeholder ${PLACEHOLDER_CLOCK}.`);
-    }
-    clock = PLACEHOLDER_CLOCK;
+  if (clock !== undefined && !isIsoInstant(clock)) {
+    console.warn(`WARNING [${entry.slug}]: clock "${clock}" is not a valid ISO instant; ignoring it, capturing with the real clock instead.`);
+    clock = undefined;
   }
 
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 2,
+    permissions: ["camera"],
   });
-  await context.addCookies([
-    {
-      name: "mock_now",
-      value: clock,
-      domain: "localhost",
-      path: "/",
-    },
-  ]);
+  if (clock) {
+    await context.addCookies([
+      {
+        name: "mock_now",
+        value: clock,
+        domain: "localhost",
+        path: "/",
+      },
+    ]);
+  }
   const page = await context.newPage();
   try {
     await page.goto(APP_ORIGIN + route, { waitUntil: "networkidle", timeout: 20000 });
@@ -287,7 +375,31 @@ async function screenshotApp(
       await page.waitForTimeout(150);
     }
 
-    const shot = await page.screenshot({ fullPage: false }); // fixed viewport, matches mock framing
+    // Most screens are a `min-h-dvh flex-col` shell around a `flex-1
+    // overflow-y-auto` content pane -- the phone-screen pattern. The pane
+    // scrolls INSIDE a viewport-sized shell, so a plain viewport screenshot,
+    // and even Playwright's own `fullPage: true` (which only grows with the
+    // *document's* scroll height, not an inner pane's), both silently cut off
+    // anything past the fold -- including, memorably, every configure
+    // screen's Save/Stop-tracking button. Measure the tallest scrollable
+    // element actually on the page and grow the viewport to fit it before
+    // shooting, so the gallery always shows the whole screen.
+    const contentHeight = await page.evaluate(() => {
+      let max = document.documentElement.scrollHeight;
+      for (const el of document.querySelectorAll<HTMLElement>("*")) {
+        const style = getComputedStyle(el);
+        if (style.overflowY === "auto" || style.overflowY === "scroll") {
+          max = Math.max(max, el.scrollHeight);
+        }
+      }
+      return max;
+    });
+    if (contentHeight > 844) {
+      await page.setViewportSize({ width: 390, height: Math.min(contentHeight + 20, 6000) });
+      await page.waitForTimeout(50);
+    }
+
+    const shot = await page.screenshot({ fullPage: false }); // viewport now grown to fit, so this still captures everything
     await writeFile(outPath, shot);
     return { ok: true, error: null, outPath };
   } catch (err) {
@@ -318,6 +430,11 @@ function buildGallery(entries: ManifestEntry[], results: CaptureResult[]): strin
     sections.get(e.section)!.push(e);
   }
 
+  // Stable reference numbers for review comments ("#12 is wrong"): one
+  // running sequence across the whole manifest, in manifest order, so a
+  // number always points at the same screen run to run.
+  const numberBySlug = new Map(entries.map((e, i) => [e.slug, i + 1]));
+
   const sectionNav = [...sections.keys()]
     .map((s) => `<button class="nav-btn" data-section="${escapeHtml(s)}">${escapeHtml(s)}</button>`)
     .join("");
@@ -341,9 +458,11 @@ function buildGallery(entries: ManifestEntry[], results: CaptureResult[]): strin
           const appImg = appOk
             ? `<img src="${escapeHtml(entry.slug)}.app.png" loading="lazy" alt="app">`
             : `<div class="missing">MISSING<br><small>${escapeHtml(r?.appError ?? "not captured")}</small></div>`;
+          const num = numberBySlug.get(entry.slug)!;
           return `
-        <div class="pair" data-section="${escapeHtml(section)}">
+        <div class="pair" id="n${num}" data-section="${escapeHtml(section)}" data-num="${num}">
           <div class="pair-head">
+            <span class="num">#${num}</span>
             <span class="slug">${escapeHtml(entry.slug)}</span>
             <span class="route">${escapeHtml(entry.route)}</span>
           </div>
@@ -380,8 +499,10 @@ function buildGallery(entries: ManifestEntry[], results: CaptureResult[]): strin
   .section-block { padding: 20px; }
   .section-block h2 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #666; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
   .pairs { display: flex; flex-direction: column; gap: 24px; margin-top: 12px; }
-  .pair { border: 1px solid #ccc; background: #fff; padding: 12px; }
-  .pair-head { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; }
+  .pair { border: 1px solid #ccc; background: #fff; padding: 12px; scroll-margin-top: 64px; }
+  .pair-head { display: flex; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 600; }
+  .num { font-weight: 700; color: #fff; background: #111; padding: 1px 6px; font-size: 11px; }
+  .slug { flex: 1; }
   .route { color: #888; font-weight: 400; }
   .state { font-size: 11px; color: #555; margin: 4px 0 10px; }
   .note { font-size: 10.5px; color: #a05a00; margin-top: 8px; }
@@ -392,6 +513,8 @@ function buildGallery(entries: ManifestEntry[], results: CaptureResult[]): strin
   .shot img { width: 100%; display: block; border: 1px solid #ddd; }
   .missing { width: 340px; height: 200px; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #fee; color: #c00; font-size: 12px; font-weight: 700; text-align: center; padding: 8px; }
   .missing small { font-weight: 400; font-size: 9.5px; color: #900; margin-top: 6px; display: block; }
+  .pair.jumped { outline: 3px solid #a05a00; }
+  #jump { width: 70px; padding: 6px 8px; font-family: inherit; font-size: 12px; border: 1px solid #444; background: #000; color: #fff; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -399,11 +522,13 @@ function buildGallery(entries: ManifestEntry[], results: CaptureResult[]): strin
 <header>
   <h1>Drift review</h1>
   <input id="filter" type="text" placeholder="filter by slug or text...">
+  <input id="jump" type="text" placeholder="# to jump">
   <div class="nav">${sectionNav}</div>
 </header>
 ${sectionsHtml}
 <script>
   const filterInput = document.getElementById('filter');
+  const jumpInput = document.getElementById('jump');
   const navButtons = document.querySelectorAll('.nav-btn');
   const pairs = document.querySelectorAll('.pair');
   const sectionBlocks = document.querySelectorAll('.section-block');
@@ -427,6 +552,24 @@ ${sectionsHtml}
       if (target) target.scrollIntoView({ behavior: 'smooth' });
     });
   });
+
+  function jumpTo(n) {
+    const target = document.getElementById('n' + n);
+    if (!target) return;
+    target.hidden = false;
+    target.closest('.section-block').hidden = false;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    pairs.forEach(p => p.classList.remove('jumped'));
+    target.classList.add('jumped');
+  }
+  jumpInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const n = parseInt(jumpInput.value.trim(), 10);
+      if (!Number.isNaN(n)) jumpTo(n);
+    }
+  });
+  const initialHash = location.hash.match(/^#n(\\d+)$/);
+  if (initialHash) jumpTo(initialHash[1]);
 </script>
 </body>
 </html>`;
@@ -473,7 +616,13 @@ async function main() {
     console.warn(`Note: ${FIXTURE_IDS_PATH} does not exist yet. Entries with [id]/[inviteId] routes will skip their app-side capture.`);
   }
 
-  const browser = await chromium.launch();
+  // --use-fake-device-for-media-stream feeds getUserMedia() a synthetic video
+  // stream instead of erroring out in headless Chromium (there is no real
+  // camera here), so the live-camera screens capture their actual state
+  // rather than the permission-denied fallback.
+  const browser = await chromium.launch({
+    args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
+  });
   const results: CaptureResult[] = [];
 
   for (const entry of entries) {

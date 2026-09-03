@@ -47,7 +47,7 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
   evidence: {
     level: "optional",
     source: "live",
-    detail: "Live camera. A shot of the page you stopped on.",
+    detail: "Live camera, of the page you stopped on.",
   },
   checkin: { kind: "number" },
   chart: "numeric",

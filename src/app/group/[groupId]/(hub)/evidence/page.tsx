@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { DateTime } from "luxon";
 import { getSessionUser } from "@/lib/session";
 import { groupEvidence, type EvidenceItem } from "@/server/group-view";
-import { readUrl, RETENTION_DAYS } from "@/server/evidence";
+import { readUrl } from "@/server/evidence";
 import { resolveUserTimezone } from "@/server/config";
 import { ActivityIcon } from "../../../../activity-icon";
 import { ReportButton } from "./report-button";
@@ -110,11 +110,6 @@ export default async function EvidenceTab({
           Load older
         </a>
       ) : null}
-
-      <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
-        Photos are deleted {RETENTION_DAYS} days after they are taken. Only members you
-        shared the activity with can see them.
-      </div>
     </div>
   );
 }

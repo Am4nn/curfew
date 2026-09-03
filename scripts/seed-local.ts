@@ -49,6 +49,7 @@ import {
   groupSettings,
   consentRecords,
   activityTypes,
+  appSettings,
 } from "@/db/schema";
 import {
   getActivityType,
@@ -61,6 +62,7 @@ import {
 } from "@/domain";
 import { scoreAll } from "@/server/scoring";
 import { CONSENT_VERSION } from "@/server/consent";
+import { settingConsequence, typeConsequence, noticeFrom } from "@/app/admin/controls/consequences";
 
 if (process.env.LOCAL_MODE !== "1") {
   console.error("Refusing to seed: LOCAL_MODE is not 1. This script is local-only.");
@@ -694,8 +696,36 @@ async function runScoring(): Promise<void> {
 async function buildDefault(): Promise<void> {
   await wipe();
   await assembleDefaultWorld({ moneyOn: true });
+  await seedTodayPartial();
   await consentApproved(PEOPLE.filter((p) => p.status !== "pending").map((p) => p.id));
   await runScoring();
+}
+
+// A genuinely mixed TODAY: some done, some still due, Office not scheduled
+// (see seedAdminExtras). Without this, "today" carries no check-ins at all --
+// every history helper seeds from i=days down to i=1, never i=0 -- so Home
+// always read "0 of N done" regardless of what the clock said. Water and
+// Nightfast get marked done; Sleep, Gym and Steps stay open, matching the
+// mock's "some done, some due" state (V3Home.dc.html).
+async function seedTodayPartial(): Promise<void> {
+  const userId = "preview-admin";
+  const period = anchor.toFormat("yyyy-MM-dd");
+
+  for (let g = 0; g < 8; g++) {
+    await checkin(userId, "water", "glass", anchor.set({ hour: 9 + g }).toJSDate(), DAILY_SCHEDULE, {});
+  }
+
+  const nfConfig = { window: { open: "06:00", close: "11:00" }, cutoff: "20:00" };
+  const nightfast = getActivityType("nightfast");
+  const [nfWindow] = nightfast.windows(nfConfig, period, TZ);
+  await checkin(
+    userId,
+    "nightfast",
+    "declare",
+    new Date((nfWindow.opensAt.getTime() + nfWindow.closesAt.getTime()) / 2),
+    DAILY_SCHEDULE,
+    { held: true },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -822,13 +852,28 @@ async function buildNoticeActive(): Promise<void> {
   await consentApproved(PEOPLE.filter((p) => p.status !== "pending").map((p) => p.id));
   await runScoring();
 
+  // A real change, not an invented maintenance blurb: turn money off
+  // app-wide and enable Screen, then compose the notice exactly the way
+  // saveControls() does (consequences.ts's noticeFrom), so what a user reads
+  // in the notice actually matches a real toggle in this seeded world rather
+  // than a one-off string only the fixture knows about.
+  const changedBy = "preview-admin";
+  const effectiveAt = new Date();
+  await db.insert(appSettings).values({ key: "money", value: false, changedBy, effectiveAt });
+  await db.insert(activityTypes).values({ typeKey: "screen", enabled: true, changedBy, effectiveAt });
+
+  const body = noticeFrom([
+    settingConsequence("money", false),
+    typeConsequence("Screen", true, 0),
+  ]);
+
   // Inserted last, so its created_at is later than every user's (the notice
   // only applies to accounts that existed when it was published). Left
   // unacknowledged for preview-admin, which is what makes the gate show.
   await db.insert(notices).values({
     id: NOTICE_MAINTENANCE,
-    body: "Evidence uploads are paused for scheduled maintenance tonight between 1 AM and 3 AM.",
-    createdBy: "preview-admin",
+    body,
+    createdBy: changedBy,
   });
 }
 
@@ -948,17 +993,17 @@ async function buildInviteTracked(): Promise<void> {
   await consentApproved(PEOPLE.filter((p) => p.status !== "pending").map((p) => p.id));
   await runScoring();
 
-  // Gym is a type preview-admin already tracks in the default world, so the
-  // join screen has nothing to set up: only the share toggles.
+  // A mix, matching the mock (V3JoinShare.dc.html): two types preview-admin
+  // already tracks (gym, steps -- pure share toggles) and one they do not
+  // (food -- offers inline "Set it up first" instead of a toggle).
   await createGroup(GROUP_INVITE_TRACKED, "Iron Circle", "preview-alex", [
     { id: "preview-alex", role: "owner" },
   ], configFrom);
-  await db.insert(groupActivityTypes).values({
-    groupId: GROUP_INVITE_TRACKED,
-    typeKey: "gym",
-    accepted: true,
-    changedBy: "preview-alex",
-  });
+  await db.insert(groupActivityTypes).values([
+    { groupId: GROUP_INVITE_TRACKED, typeKey: "gym", accepted: true, changedBy: "preview-alex" },
+    { groupId: GROUP_INVITE_TRACKED, typeKey: "steps", accepted: true, changedBy: "preview-alex" },
+    { groupId: GROUP_INVITE_TRACKED, typeKey: "food", accepted: true, changedBy: "preview-alex" },
+  ]);
   await db.insert(groupInvites).values({
     id: INVITE_TRACKED,
     groupId: GROUP_INVITE_TRACKED,

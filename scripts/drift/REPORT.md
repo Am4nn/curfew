@@ -1,5 +1,173 @@
 # v3 drift audit — 54 screens, mock vs real app
 
+## Round 4 — second numbered pass, 2026-09-04
+
+### #54, the reputation drift: found and fixed
+
+Round 3 flagged this and did not touch it. It is now understood and closed, and
+it was two bugs, not one.
+
+**The scoring bug.** `recomputeGroups()` set the score a member starts a group
+on by reading the LATEST row out of `reputation_daily`:
+
+```ts
+const [before] = await db.select({ score: reputationDaily.score })
+  .from(reputationDaily)
+  .where(and(eq(userId), isNull(groupId)))
+  .orderBy(sql`day desc`).limit(1);
+let score = joiningScore(before ? Number(before.score) : START_SCORE);
+```
+
+Two things wrong with those five lines:
+
+1. **It read the global score as it stands NOW, not as it stood on the join
+   date.** Invariant 5, exactly. Every time the global score moved, every
+   group's starting point moved with it, and the whole of that group's
+   history was re-judged from a different number.
+2. **A recompute read the table the recompute writes.** So each run was seeded
+   by the previous run's output. Verify could never converge: it compared a
+   replay-from-the-previous-answer against the stored previous answer, and the
+   gap grew by a day's decay every day.
+
+That is why the numbers looked the way they did: stored and computed both
+started at "delta 0.000, reason neutral" and disagreed anyway (140.000 against
+154.202), then tracked each other's shape forever at a fixed offset that
+compounded.
+
+The fix takes the starting score from the freshly replayed global series that
+`replayGlobal()` has already produced in memory, on the day before the join.
+The recompute is now a pure function of events, and resolves as-of the join.
+
+`bun run verify` over full local history: **235 reputation rows differing before,
+0 after.** Admin Ops now reads "No drift. Stored rows match a fresh recompute."
+
+**The reporting bug.** Admin Overview said "0 periods differ" on the same data
+where Ops listed a hundred rows, because `getLastRun()` counted only
+`kind === "score"` drift and dropped every reputation row on the floor. It now
+counts both, and the copy reads "rows" rather than "periods", since a reputation
+row is a day.
+
+### Fixed this round
+
+| # | What it was |
+|---|---|
+| 36 | Ledger's "entries are never edited" footer removed. It is in the consent form |
+| 38 | Reading's evidence line shortened to one line: "Live camera, of the page you stopped on." A deliberate drift from the artboard, which has the longer sentence |
+| 39 | Heatmap was `--fg` at five opacities; now the mock's five-step flame ramp with its none/all legend and week count, and weeks read down a column as a calendar does. New `--heat-1..5` tokens, with their own light-mode steps. Activity rows carry the streak flame the mock shows |
+| 44 | Rank icons were 20px against the mock's 26 (and 42 against 30 in the header). Sizes matched, and the row rebuilt to the mock's shape: the range sits beside the name, the hero is a bordered box |
+| 45 | Dark/Light was two 64px buttons; now full width, split in half, `Dark`/`Light` in sentence case on a rule border, as drawn |
+| 48 | Admin header had no Curfew mark and carried a border the mock puts under the nav instead. Mark added, header border removed, active tab is an inset shadow rather than a second border. All seven tabs now fit at 390px, so **Reports is visible**: it was never removed, it was scrolled off the right edge by an 18px gap |
+
+### Stats detail pages, built
+
+The four `/stats?a=…` routes had a chart and nothing else. They now carry what
+the artboards carry:
+
+- **The three tiles** under every chart: current streak on the flame gradient,
+  best, and a third that follows the kind (grace left, average a period,
+  sessions a week). `chartFor()` returns the standing to feed them.
+- **The weekday bars**, `PASS RATE BY WEEKDAY` for every kind and
+  `WHICH DAYS YOU GO` for a weekly one, which counts the session days the
+  module records rather than the period.
+- **The activity picker** at the top, as a real disclosure listing your other
+  activities, rather than the mock's box with a chevron that does nothing.
+- **Numeric**: the target line is dashed accent with a `target 8,000` label,
+  and bars are solid or rule rather than green or red.
+- **Weekly**: the minimum line with its label, the count above each bar, and a
+  ten-week window instead of thirty days, so eight bars appear where three did.
+- **Abstinence**: laid out on a real calendar so a weekday reads down a column,
+  with the weekday letters and the held/slipped legend.
+
+### Still open
+
+- **Ledger dates.** Every entry in the seeded group ledger reads "4 Sep",
+  because the fixture writes the whole history's fines in one scoring pass.
+  Fixture debt, not app behaviour.
+- **The `SCREENS.md` review gate** still needs a person opening each screen
+  beside its artboard. That is what the gallery is for.
+
+## Round 3 — your numbered review, 2026-09-04
+
+Every point from your numbered pass over `.shots/index.html`, with what
+actually happened. All 54 screens recaptured clean afterwards; typecheck and
+226 tests green.
+
+### The one root cause behind a third of the list
+
+`scripts/drift/manifest.json` pinned `mock_now` to a **fixed date, 15 Jan
+2026**, on all 54 screens. But only the three `checkin-open-*` fixtures build
+their data around that fixed date. Every other fixture (`default`, `all-done`,
+`no-money`, `new-user`, `notice-active`, `admin`, `invite-*`) anchors on the
+real clock at seed time. So the app was being asked to render a world that had
+no config, no scored history and no periods on the date it was told it was —
+it found nothing, and either rendered empty or threw.
+
+That single mismatch caused **#45** (the `/settings` crash — `no sleep config
+effective on 2026-01-16`), **#39** (empty heatmap), **#51** (zero check-ins a
+day), and much of **#1/#2/#40-43**. Fixed by dropping `clock` from every
+fixture that does not need it: no cookie, real clock, matching whatever the
+seed just wrote.
+
+### Fixed
+
+| # | Slug | What was wrong | Fix |
+|---|------|----------------|-----|
+| general | `cfg-*` | Up to 5 stacked boxes per configure screen | Description and the "changes apply from tomorrow" line are plain text now, not boxed. Down to 2 boxes. |
+| 1, 2 | home-today, home-done | "0 of 5 done" always | Two causes: the clock mismatch, plus the seed never wrote *today's* check-ins at all (every history helper stops at yesterday). Added `seedTodayPartial()`: Water and Nightfast done, Sleep/Gym/Steps due, Office unscheduled. Now reads "3 of 5 done". |
+| 3 | home-no-money | Money shown on the no-money fixture | Real bug: `fineRuleFor` never consulted the money toggle, so fines were written to `ledger_entries` for money-off groups and `balances` had rows. Scoring now resolves `moneyOnFor` per period and zeroes the fine. Seed reports "0 fines written". |
+| 4 | home-empty | Complete mismatch | Rebuilt to the mock: "TODAY" + "You are tracking nothing." headline, two bordered CTA blocks with their copy, invite-only note. |
+| 5, 6 | notice-home, notice-group | Notice text was invented, matched nothing | The fixture bypassed the real pipeline and inserted a hand-written maintenance string. It now flips real switches (money off, Screen on) and composes the body through `noticeFrom()` — the same function the admin confirm sheet uses. Overlay also bolds each change's headline. |
+| 21 | cfg-new-steps | "No such page" | Manifest pointed at `/activities/add/steps`, which has never existed. Fixed to `/activities/steps` on the `new-user` fixture, where Steps is genuinely untracked. |
+| 23, 27 | checkin-optional, checkin-ready | Red text by default; ready state never demonstrated | Real bug: the blocked reason rendered whenever a field was empty, and Send was natively `disabled` so an attempt could never register. Now Send is always clickable, and the reason appears only after a failed press — exactly what you asked for. |
+| 25, 26 | camera, capture-confirm | "No such page" | There is no `/checkin/[key]/capture` route; the camera is a client overlay. Harness now launches Chromium with a fake video device and scripts the interaction. Both screens capture the real camera UI. |
+| 29 | groups-list | Group-name input before "New group" | Now a disclosure: the button alone at rest, input and Create revealed on click. |
+| 32 | group-evidence | Deletion-policy paragraph | Removed. |
+| 37 | join-share | Only one activity | Fixture now accepts 3 types: gym + steps (tracked, share toggles) and food (untracked, "Set it up first"), matching the mock. |
+| 39 | stats-overview | Empty heatmap | Clock fix. Populated. |
+| 44 | ranks | IMMACULATE icon/colour, order, ranges | Order reversed to descending (IMMACULATE last, as in the mock), ranges shown as "850-1000" not "850+", and IMMACULATE now has its own gold crown with the glow instead of reusing UNBROKEN's mountain. |
+| 45 | settings | "Something failed while loading this page" | Clock fix. |
+| 48 | admin (all) | Navbar border and colour | Header divider was `border-b-2 border-fg` (thick white); now `border-b border-rule`. Tab order corrected to the mock's (Overview, Users, Groups, Insights, Controls, Ops); Reports, which has no mock, moved last. |
+| 49, 50 | admin-users, admin-groups | "USERS"/"GROUPS" heading above the search | Both removed. |
+| 51 | admin-insights | Zero check-ins-a-day | Clock fix. Real bars now. |
+
+### Not a bug, after checking
+
+| # | Finding |
+|---|---------|
+| 9, 10 | The Save/Stop-tracking button **is** there and always was. The mock has no persistent Save either: Save appears once a control changes, "Stop tracking" shows at rest. It was invisible in the gallery because these screens scroll inside a fixed-height pane, and neither a viewport screenshot nor Playwright's own `fullPage` captures that. **Harness fixed**: it now measures the tallest scrollable pane and grows the viewport to fit, so every screenshot shows the whole screen. This was hiding content on other screens too. |
+| 7 | activities-list — you called it perfect. Untouched. |
+| 8 | activities-add — the current capture matches the mock structurally (catalog, ALREADY TRACKING, footer note). The earlier mismatch was the clock bug. Which types appear tracked differs from the mock because the mock's persona tracks a different set; that is sample data, not drift. |
+| 24 | checkin-required-blocked bottom text — the mock demonstrates **Food** ("Take the photo and enter the calories..."), our fixture is **Sleep**, whose confirm step has no numeric field, so it correctly reads "Take the photo to send this check-in.". Same sentence shape, fewer required fields. A Food-based fixture would match literally; noted as fixture debt, not a code defect. |
+| 47 | settings-data — the mock has both bottom boxes (money-owed, irreversibility) with the same copy we ship. Left alone. |
+
+### Still open, and why
+
+**#54, admin-ops — a real scoring bug, found while checking this screen.** The
+DRIFT list is not a rendering problem: it is reporting genuine, systematic
+reputation drift for one user on *every* day of history, with the gap growing
+day over day (4 Aug: stored 81.473 vs recomputed 76.589; 23 Aug: 99.937 vs
+95.149; "96 more not shown"). Stored and recomputed reputation come from the
+same function (`scoreUser` calls `recomputeUser`), so they should agree by
+construction.
+
+Checked and ruled out: this is **not** caused by the money-toggle fix above —
+`applyDay()` takes only `score`, `ceiling`, `completion` and `idleDays`, never
+a fine amount. It is pre-existing.
+
+Also inconsistent: admin **Overview** reports "Drift check · 0 periods differ
+from stored" on the same data where **Ops** lists 100+ drifting rows. At least
+one of those two is wrong about the same fact.
+
+This is invariant-protected scoring code that money and reputation both depend
+on. It needs a focused session, not a fix squeezed in at the end of a long
+one — flagging rather than guessing.
+
+**#40-43, the four detail-chart routes** still lack the mock's weekday
+pass-rate bars and streak/best/grace tiles (report item 27 below). The
+missing-data half is fixed; the missing-sections half is a build, not a fix.
+
+---
+
 ## Round 2 — fixes applied, 2026-09-03
 
 Everything below this section is the original round-1 findings, kept as the

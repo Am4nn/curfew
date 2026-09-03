@@ -96,20 +96,26 @@ export default async function GroupsPage() {
           )}
         </section>
 
-        <ActionForm action={createGroupAction}>
-          <div className="flex flex-col gap-[10px]">
-            <input
-              name="name"
-              placeholder="Group name"
-              required
-              maxLength={60}
-              className="border border-rule bg-transparent px-3 py-[11px] text-[14px] text-fg outline-none placeholder:text-muted"
-            />
-            <SubmitButton className="h-11 w-full border border-rule text-[14px]">
-              + New group
-            </SubmitButton>
-          </div>
-        </ActionForm>
+        <details className="border border-rule [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex h-11 cursor-pointer list-none items-center justify-center text-[14px] marker:hidden">
+            + New group
+          </summary>
+          <ActionForm action={createGroupAction}>
+            <div className="flex flex-col gap-[10px] border-t border-rule p-[10px]">
+              <input
+                name="name"
+                placeholder="Group name"
+                required
+                maxLength={60}
+                autoFocus
+                className="border border-rule bg-transparent px-3 py-[11px] text-[14px] text-fg outline-none placeholder:text-muted"
+              />
+              <SubmitButton className="h-11 w-full border border-fg bg-fg text-[14px] font-semibold text-bg">
+                Create
+              </SubmitButton>
+            </div>
+          </ActionForm>
+        </details>
 
         <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
           Groups are invite-only. Nobody finds one by searching.

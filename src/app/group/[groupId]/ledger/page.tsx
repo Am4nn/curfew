@@ -127,10 +127,6 @@ export default async function GroupLedger({
             </div>
           )}
         </section>
-
-        <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
-          Entries are never edited or removed. A correction is a new row.
-        </div>
       </div>
     </main>
   );

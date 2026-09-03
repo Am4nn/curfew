@@ -37,8 +37,6 @@ export default async function AdminGroups() {
 
   return (
     <section className="flex flex-col gap-[10px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">GROUPS</span>
-
       <GroupsDirectory
         rows={rows}
         appWideMoneyOn={appWideMoneyOn}

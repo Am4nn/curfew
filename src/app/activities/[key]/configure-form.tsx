@@ -366,9 +366,9 @@ export function ConfigureForm({
           <span className="text-[11px] text-muted">days &middot; best {best}</span>
         </div>
       ) : (
-        <div className="border border-rule bg-surface p-[14px] text-[12.5px] leading-[1.6] text-muted">
+        <p className="text-[12.5px] leading-[1.6] text-muted">
           {description}. These are the defaults.
-        </div>
+        </p>
       )}
 
       {type.facts?.map((fact) => (
@@ -457,15 +457,13 @@ export function ConfigureForm({
 
       {type.note ? <Note>{type.note}</Note> : null}
 
-      {tracked ? (
-        <Note>
-          {schedule.schedule.kind === "minimum"
+      <p className="text-[11.5px] leading-[1.55] text-muted">
+        {tracked
+          ? schedule.schedule.kind === "minimum"
             ? "Changes apply from Monday."
-            : "Changes apply from tomorrow."}
-        </Note>
-      ) : (
-        <Note tone="pass">A new activity does not move your reputation for 7 days.</Note>
-      )}
+            : "Changes apply from tomorrow."
+          : "A new activity does not move your reputation for 7 days."}
+      </p>
 
       {error ? <Note tone="penalty">{error}</Note> : null}
 

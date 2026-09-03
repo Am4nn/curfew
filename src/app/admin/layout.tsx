@@ -3,17 +3,22 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { getCapabilities, hasAdminAccess } from "@/server/admin";
 import type { Capability } from "@/lib/capabilities";
+import { QuorumMark } from "../mark";
 import { AdminNav } from "./admin-nav";
 import { APP_VERSION } from "@/lib/version";
 
+// Order matches the mocks (V3Admin*.dc.html): Overview, Users, Groups,
+// Insights, Controls, Ops. Reports has no mock of its own (Phase 9 built it
+// after the design set was drawn), so it goes last rather than displacing
+// any of the six the screens were actually reviewed against.
 const TABS: [string, string, Capability | null][] = [
   ["/admin", "Overview", null],
-  ["/admin/insights", "Insights", "insights.view"],
   ["/admin/users", "Users", "users.view"],
   ["/admin/groups", "Groups", "groups.view"],
-  ["/admin/reports", "Reports", "users.disable"],
+  ["/admin/insights", "Insights", "insights.view"],
   ["/admin/controls", "Controls", "settings.view"],
   ["/admin/ops", "Ops", "ops.score"],
+  ["/admin/reports", "Reports", "users.disable"],
 ];
 
 export default async function AdminLayout({
@@ -32,14 +37,15 @@ export default async function AdminLayout({
   return (
     <main className="min-h-dvh px-5 pb-20 pt-5">
       <div className="mx-auto max-w-[720px]">
-        <header className="-mx-5 mb-4 flex items-baseline justify-between border-b-2 border-fg px-5 pb-[10px]">
-          <div className="flex items-baseline gap-[10px]">
-            <h1 className="text-[15px] font-semibold tracking-[0.14em]">ADMIN</h1>
-            <span className="text-[11px] text-muted" title="Deployed version">
-              v{APP_VERSION}
-            </span>
-          </div>
-          <Link href="/" className="text-[12px] text-muted">Back to app &rsaquo;</Link>
+        <header className="mb-[15px] flex items-center gap-[9px]">
+          <QuorumMark size={15} />
+          <h1 className="text-[14px] font-semibold tracking-[0.16em]">ADMIN</h1>
+          <span className="text-[11px] text-muted" title="Deployed version">
+            v{APP_VERSION}
+          </span>
+          <Link href="/" className="ml-auto text-[11px] text-muted">
+            Back to app &rsaquo;
+          </Link>
         </header>
         <AdminNav tabs={tabs.map(([href, label]) => [href, label])} />
         {children}

@@ -47,23 +47,39 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
 
   // Both the photo and the calorie figure are required (decision 45). A meal
   // photo with no number tells a group nothing they can hold you to.
-  evidence: { level: "required", source: "live" },
+  evidence: {
+    level: "required",
+    source: "live",
+    detail: "Live camera, and the calories with it.",
+  },
   checkin: { kind: "camera" },
   chart: "numeric",
-  fields: [
-    { kind: "number", key: "meals", label: "Meals a day", min: 1, max: 10 },
-    {
-      kind: "number",
-      key: "calorieLimit",
-      label: "Calorie limit",
-      min: 500,
-      max: 20000,
-      step: 50,
-      unit: "kcal",
-      nullable: true,
-      offLabel: "Not tracked",
-    },
-  ],
+
+  note: "A photo is not proof. It records that you took one in the app, at a server timestamp.",
+
+  fields() {
+    return [
+      {
+        kind: "number",
+        key: "meals",
+        label: "Logs required",
+        min: 1,
+        max: 10,
+        unit: "per day",
+      },
+      {
+        kind: "number",
+        key: "calorieLimit",
+        label: "Calorie limit",
+        min: 500,
+        max: 20000,
+        step: 50,
+        unit: "cal",
+        display: "input",
+        hint: "Both must hold to pass.",
+      },
+    ];
+  },
 
   steps() {
     return [

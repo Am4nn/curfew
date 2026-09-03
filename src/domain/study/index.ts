@@ -36,22 +36,23 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
   configSchema: studyConfigSchema,
   evidenceSchema: studyEvidenceSchema,
 
-  evidence: { level: "required", source: "live" },
+  evidence: { level: "required", source: "live", detail: "Live camera." },
   checkin: { kind: "number" },
   chart: "numeric",
-  fields: [
-    {
-      kind: "number",
-      key: "minutesTarget",
-      label: "Minutes a day",
-      min: 5,
-      max: 1440,
-      step: 5,
-      unit: "min",
-      nullable: true,
-      offLabel: "Just check in",
-    },
-  ],
+
+  fields() {
+    return [
+      {
+        kind: "number",
+        key: "minutesTarget",
+        label: "Target",
+        min: 5,
+        max: 1440,
+        step: 5,
+        unit: "minutes",
+      },
+    ];
+  },
 
   steps() {
     return [

@@ -48,10 +48,16 @@ release and lets a camera type send without one; Phase 5 turns the slot on and
 Send starts blocking.
 
 **The Configure and Check-in rows in `SCREENS.md` are unticked on purpose.**
-Ticking one means a person has opened the screen beside its artboard. The
-configure screens are known to differ from their mocks: the controls, the
-header, the streak row and the evidence block were built before the artboards
-were read closely.
+Ticking one means a person has opened the screen beside its artboard. Both sets
+are now built to their mocks control by control, with three known differences,
+all of them waiting on later phases:
+
+- Every time control is the platform's `<input type="time">`, so whether it
+  reads "10:00 PM" or "22:00" follows the device. The artboards show 12-hour.
+- Streak, best, and grace-left read zero or are absent until Phase 6 fills
+  them.
+- The photo slot says photos arrive in the next release, and Send is not
+  blocked, until Phase 5.
 
 **The cutover has not happened.** Production still serves v2.5 from the old Neon
 project, and `.env.production` is the only file pointing at it. At the cutover

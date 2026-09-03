@@ -44,21 +44,37 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
   configSchema: readingConfigSchema,
   evidenceSchema: readingEvidenceSchema,
 
-  evidence: { level: "optional", source: "live" },
+  evidence: {
+    level: "optional",
+    source: "live",
+    detail: "Live camera. A shot of the page you stopped on.",
+  },
   checkin: { kind: "number" },
   chart: "numeric",
-  fields: [
-    {
-      kind: "segmented",
-      key: "unit",
-      label: "Measure",
-      options: [
-        { value: "minutes", label: "Minutes" },
-        { value: "pages", label: "Pages" },
-      ],
-    },
-    { kind: "number", key: "target", label: "Target a day", min: 1, max: 5000 },
-  ],
+
+  // The target is labelled in the unit chosen one control above it, which is
+  // why the fields are a function of the config and not a constant.
+  fields(config) {
+    return [
+      {
+        kind: "segmented",
+        key: "unit",
+        label: "Count in",
+        options: [
+          { value: "minutes", label: "Minutes" },
+          { value: "pages", label: "Pages" },
+        ],
+      },
+      {
+        kind: "number",
+        key: "target",
+        label: "Target",
+        min: 1,
+        max: 5000,
+        unit: config.unit,
+      },
+    ];
+  },
 
   steps(config) {
     return [

@@ -32,12 +32,20 @@ export const officeActivity: ActivityType<OfficeConfig, OfficeEvidence> = {
   configSchema: officeConfigSchema,
   evidenceSchema: officeEvidenceSchema,
 
-  evidence: { level: "optional", source: "live" },
+  evidence: { level: "optional", source: "live", detail: "Live camera." },
   checkin: { kind: "tap" },
   chart: "binary",
-  fields: [
-    { kind: "timeRange", label: "In by", openKey: "window.open", closeKey: "window.close" },
-  ],
+
+  fields() {
+    return [
+      {
+        kind: "timeRange",
+        label: "Window",
+        openKey: "window.open",
+        closeKey: "window.close",
+      },
+    ];
+  },
 
   steps(config) {
     return [

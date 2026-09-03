@@ -136,7 +136,7 @@ describe("the line under the fields, in the module's own words", () => {
       stepsActivity.hint?.({
         periodStart: DAY,
         timezone: IST,
-        config: { target: 8000 },
+        config: { target: 8000, direction: "atLeast" },
         checkins: [
           check(STEPS_STEP, "12:00", { steps: 3000 }),
           check(STEPS_STEP, "21:00", { steps: 9000 }),
@@ -182,8 +182,10 @@ describe("the abstinence question", () => {
   });
 
   it("offers the cut-off as a control only where there is one", () => {
-    expect(nightfastActivity.fields.some((f) => f.kind === "time")).toBe(true);
-    expect(sugarfreeActivity.fields.some((f) => f.kind === "time")).toBe(false);
+    const nightfast = nightfastActivity.fields(nightfastActivity.defaults.config);
+    const sugarfree = sugarfreeActivity.fields(sugarfreeActivity.defaults.config);
+    expect(nightfast.some((f) => f.kind === "time")).toBe(true);
+    expect(sugarfree.some((f) => f.kind === "time")).toBe(false);
   });
 });
 

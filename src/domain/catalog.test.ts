@@ -105,13 +105,18 @@ describe("Study, target when set", () => {
 
 describe("Steps and Screen, the two threshold directions", () => {
   const steps = (checkins: ReturnType<typeof check>[], target = 8000) =>
-    stepsActivity.evaluate({ periodStart: DAY, timezone: IST, config: { target }, checkins });
+    stepsActivity.evaluate({
+      periodStart: DAY,
+      timezone: IST,
+      config: { target, direction: "atLeast" },
+      checkins,
+    });
 
   const screen = (checkins: ReturnType<typeof check>[], limitMinutes = 120) =>
     screenActivity.evaluate({
       periodStart: DAY,
       timezone: IST,
-      config: { limitMinutes },
+      config: { limitMinutes, direction: "atMost" },
       checkins,
     });
 

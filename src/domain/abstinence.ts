@@ -54,6 +54,10 @@ export function abstinenceActivity(spec: {
   prompt: (config: AbstinenceConfig) => string;
   /** The line under the confirm window on the configure screen. */
   windowHint: string;
+  /** The line under "No photo" on the configure screen. */
+  evidenceDetail: string;
+  /** The footnote above the stop control. */
+  note: string;
 }): ActivityType<AbstinenceConfig, AbstinenceEvidence> {
   return {
     key: spec.key,
@@ -71,21 +75,26 @@ export function abstinenceActivity(spec: {
     configSchema: abstinenceConfigSchema,
     evidenceSchema: abstinenceEvidenceSchema,
 
-    evidence: { level: "none", source: "live" },
+    evidence: { level: "none", source: "live", detail: spec.evidenceDetail },
     checkin: { kind: "declare" },
     chart: "binary",
-    fields: [
-      ...(spec.cutoff
-        ? [{ kind: "time" as const, key: "cutoff", label: spec.cutoff.label }]
-        : []),
-      {
-        kind: "timeRange",
-        label: "Confirm window",
-        openKey: "window.open",
-        closeKey: "window.close",
-        hint: spec.windowHint,
-      },
-    ],
+
+    note: spec.note,
+
+    fields() {
+      return [
+        ...(spec.cutoff
+          ? [{ kind: "time" as const, key: "cutoff", label: spec.cutoff.label }]
+          : []),
+        {
+          kind: "timeRange",
+          label: "Confirm window",
+          openKey: "window.open",
+          closeKey: "window.close",
+          hint: spec.windowHint,
+        },
+      ];
+    },
 
     steps(config) {
       return [

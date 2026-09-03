@@ -133,6 +133,17 @@ contributor writing UI that does not match the house style.
 Stats charts follow the same rule: a module names its chart kind
 (`windowed`, `numeric`, `weekly`, `binary`) and the engine draws it.
 
+The configure screen works the same way. A module declares its **fields** as a
+function of its config (decision 95), each naming a control the engine already
+draws: a stepper, a typed box, a segmented switch, a time, or a time range. It
+also declares the sentence under its evidence rule, any **fact** stated at the
+top rather than offered as a control, its footnote, and a **validate** for
+anything an object schema cannot express, reported against the field path that
+is wrong so the screen can mark it in place.
+
+The engine owns the day picker, grace, and "changes apply from tomorrow",
+because those mean the same thing for every type.
+
 ## Scoring: nightly cron, lazy close on read
 
 Decision 70.

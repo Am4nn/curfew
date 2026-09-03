@@ -36,12 +36,26 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
   configSchema: waterConfigSchema,
   evidenceSchema: waterEvidenceSchema,
 
-  evidence: { level: "none", source: "live" },
+  evidence: {
+    level: "none",
+    source: "live",
+    detail: "Nothing to photograph. This runs on your word.",
+  },
   checkin: { kind: "counter" },
   chart: "numeric",
-  fields: [
-    { kind: "number", key: "glasses", label: "Glasses a day", min: 1, max: 30 },
-  ],
+
+  fields() {
+    return [
+      {
+        kind: "number",
+        key: "glasses",
+        label: "Target",
+        min: 1,
+        max: 30,
+        unit: "glasses",
+      },
+    ];
+  },
 
   steps() {
     // The one step in the catalog that is meant to be pressed all day.

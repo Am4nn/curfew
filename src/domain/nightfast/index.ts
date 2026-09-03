@@ -15,4 +15,6 @@ export const nightfastActivity = abstinenceActivity({
   prompt: (config) =>
     `Nothing after ${clockLabel(config.cutoff ?? "20:00")} last night. Did it hold?`,
   windowHint: "Next morning you say whether it held.",
+  evidenceDetail: "Nothing can prove absence. This runs on your word.",
+  note: "You still check in once a day. Saying nothing is not a pass.",
 });

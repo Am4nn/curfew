@@ -13,8 +13,13 @@ import { thresholdPass, latestField } from "../pass";
 
 export const SCREEN_STEP = "reading";
 
+// Stored in minutes, set in hours: the artboard's control reads "3 hours" and
+// the field declares the scale between them.
 export const screenConfigSchema = z
-  .object({ limitMinutes: z.number().int().min(1).max(1440) })
+  .object({
+    limitMinutes: z.number().int().min(1).max(1440),
+    direction: z.enum(["atLeast", "atMost"]),
+  })
   .strict();
 export type ScreenConfig = z.infer<typeof screenConfigSchema>;
 
@@ -33,26 +38,45 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
     grace: 2,
-    config: { limitMinutes: 120 },
+    config: { limitMinutes: 120, direction: "atMost" },
   },
 
   configSchema: screenConfigSchema,
   evidenceSchema: screenEvidenceSchema,
 
-  evidence: { level: "optional", source: "gallery" },
+  evidence: {
+    level: "optional",
+    source: "gallery",
+    detail: "Gallery allowed. A screenshot of your phone's own report.",
+  },
   checkin: { kind: "number" },
   chart: "numeric",
-  fields: [
-    {
-      kind: "number",
-      key: "limitMinutes",
-      label: "Daily limit",
-      min: 15,
-      max: 1440,
-      step: 15,
-      unit: "min",
-    },
-  ],
+
+  note: "Curfew cannot read your screen time. The number is yours to enter.",
+
+  fields() {
+    return [
+      {
+        kind: "segmented",
+        key: "direction",
+        label: "Rule",
+        options: [
+          { value: "atLeast", label: "At or above" },
+          { value: "atMost", label: "At or below" },
+        ],
+      },
+      {
+        kind: "number",
+        key: "limitMinutes",
+        label: "Limit",
+        min: 1,
+        max: 24,
+        unit: "hours",
+        display: "input",
+        scale: 60,
+      },
+    ];
+  },
 
   steps() {
     return [
@@ -83,7 +107,9 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
       "minutes",
     );
     if (latest === undefined) {
-      return `The limit is ${limit} min. Anything at or below counts.`;
+      const direction =
+        input.config.direction === "atMost" ? "at or below" : "at or above";
+      return `The limit is ${limit} min. Anything ${direction} counts.`;
     }
     return `${latest} min recorded. The limit is ${limit}.`;
   },
@@ -103,7 +129,7 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
     }
 
     const result = thresholdPass(value, {
-      direction: "atMost",
+      direction: input.config.direction,
       target: input.config.limitMinutes,
     });
     return {

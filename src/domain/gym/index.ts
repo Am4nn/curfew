@@ -52,12 +52,18 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
 
   // Always required, live. A gym session is the easiest thing in the catalog to
   // claim and not do.
-  evidence: { level: "required", source: "live" },
+  evidence: {
+    level: "required",
+    source: "live",
+    detail: "Live camera, on every session.",
+  },
   checkin: { kind: "tap" },
   chart: "weekly",
   // Nothing of its own. "Any 3 a week" is the engine's schedule, drawn by the
   // day picker, so a second control here would be the same number twice.
-  fields: [],
+  fields() {
+    return [];
+  },
 
   // No windows. A session counts whenever it happens, so the step spans the
   // whole day rather than pretending to a schedule nobody set.

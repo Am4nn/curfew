@@ -2,6 +2,7 @@ import { z } from "zod";
 import { DateTime } from "luxon";
 import type {
   ActivityType,
+  FieldIssue,
   CheckinStep,
   CheckinWindow,
 } from "../types";
@@ -91,6 +92,50 @@ export function validateSleepWindows(
 
   return errors;
 }
+/**
+ * The same rules as validateSleepWindows, reported against the field they
+ * belong to so the configure screen can mark them in place (decision 47).
+ */
+export function sleepIssues(config: SleepConfig): FieldIssue[] {
+  const zone = "UTC";
+  const day = "2026-01-05";
+  const resolved = STEPS.map((step) => ({
+    ...step,
+    opensAt: instantWithin(day, zone, config[step.open]),
+    closesAt: instantWithin(day, zone, config[step.close]),
+  }));
+  const periodOpensAt = DateTime.fromISO(day, { zone }).startOf("day").set({ hour: 12 });
+  const periodClosesAt = periodOpensAt.plus({ days: 1 });
+  const issues: FieldIssue[] = [];
+
+  for (const window of resolved) {
+    if (window.opensAt >= window.closesAt) {
+      issues.push({ path: window.open, message: "The window closes before it opens." });
+    }
+    if (window.opensAt < periodOpensAt || window.closesAt >= periodClosesAt) {
+      issues.push({
+        path: window.open,
+        message: "The window must stay inside the noon-to-noon day.",
+      });
+    }
+  }
+
+  const [night, wake, confirm] = resolved;
+  if (night.closesAt > wake.opensAt) {
+    issues.push({
+      path: "wake_open",
+      message: "Wake overlaps the night window. They cannot share a minute.",
+    });
+  }
+  if (wake.closesAt > confirm.opensAt) {
+    issues.push({
+      path: "confirm_open",
+      message: "Confirm overlaps the wake window. They cannot share a minute.",
+    });
+  }
+  return issues;
+}
+
 export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   key: "sleep",
   name: "Sleep",
@@ -118,19 +163,50 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
 
   // Required on the confirm window only (decision 45). Proving you woke is the
   // one moment a photo says anything; a photo at 22:00 says nothing.
-  evidence: { level: "required", source: "live", steps: ["confirm"] },
+  evidence: {
+    level: "required",
+    source: "live",
+    steps: ["confirm"],
+    detail: "On the confirm window. Live camera.",
+  },
   checkin: { kind: "camera" },
   chart: "windowed",
-  fields: [
-    { kind: "timeRange", label: "Night", openKey: "night_open", closeKey: "night_close" },
-    { kind: "timeRange", label: "Wake", openKey: "wake_open", closeKey: "wake_close" },
+
+  facts: [
     {
-      kind: "timeRange",
-      label: "Confirm",
-      openKey: "confirm_open",
-      closeKey: "confirm_close",
+      title: "Judged noon to noon",
+      sub: "A late night belongs to the night before.",
     },
   ],
+
+  fields() {
+    return [
+      {
+        kind: "timeRange",
+        label: "Night window",
+        openKey: "night_open",
+        closeKey: "night_close",
+      },
+      {
+        kind: "timeRange",
+        label: "Wake window",
+        openKey: "wake_open",
+        closeKey: "wake_close",
+      },
+      {
+        kind: "timeRange",
+        label: "Confirm window",
+        openKey: "confirm_open",
+        closeKey: "confirm_close",
+      },
+    ];
+  },
+
+  // Three pairs of times that may not cross each other. No object schema can
+  // say that, so the module says it, against the paths that are wrong.
+  validate(config) {
+    return sleepIssues(config);
+  },
 
   steps(config: SleepConfig): CheckinStep[] {
     return STEPS.map((s) => ({

@@ -4,11 +4,12 @@ import { getSessionUser } from "@/lib/session";
 import { getActivityType, registeredKeys } from "@/domain";
 import { getAppConfig } from "@/server/app-config";
 import { getUserActivity, defaultsFor } from "@/server/activities";
+import { ActivityIcon } from "../../activity-icon";
 import { ConfigureForm } from "./configure-form";
 
 // Both entry points land here (decision 31): a tracked activity opens with its
 // own settings and a stop control, an untracked one with the type's defaults
-// prefilled and a start button.
+// prefilled and a start button. Artboards V3Cfg*.
 export default async function ConfigurePage({
   params,
 }: {
@@ -35,25 +36,29 @@ export default async function ConfigurePage({
   const state = mine ?? defaultsFor(key);
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-5">
-      <div className="mx-auto max-w-[560px]">
-        <Link href="/activities" className="text-[12px] text-muted">
-          &lsaquo; activities
+    <main className="flex min-h-dvh flex-col pb-16">
+      <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
+        <Link href="/activities" className="flex items-center gap-[9px]">
+          <span className="text-[14px] text-muted">&lsaquo;</span>
+          <span className="text-[14px] font-semibold tracking-[0.14em]">
+            {type.name.toUpperCase()}
+          </span>
         </Link>
-        <div className="mt-4">
-          <ConfigureForm
-            typeKey={key}
-            name={type.name}
-            description={type.description}
-            evidence={type.evidence}
-            fields={type.fields}
-            initialSchedule={state.schedule}
-            initialConfig={state.config}
-            tracked={tracked}
-            streak={0}
-          />
-        </div>
-      </div>
+        <span className="text-muted">
+          <ActivityIcon name={type.icon} />
+        </span>
+      </header>
+
+      <ConfigureForm
+        typeKey={key}
+        name={type.name}
+        description={type.description}
+        initialSchedule={state.schedule}
+        initialConfig={state.config}
+        tracked={tracked}
+        streak={0}
+        best={0}
+      />
     </main>
   );
 }

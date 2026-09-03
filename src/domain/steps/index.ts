@@ -13,8 +13,14 @@ import { thresholdPass, latestField } from "../pass";
 
 export const STEPS_STEP = "count";
 
+// The direction is a control on the artboard, not a constant in the code. It
+// was always data rather than two code paths (decision 52); this lets someone
+// who is cutting down rather than building up say so.
 export const stepsConfigSchema = z
-  .object({ target: z.number().int().min(100).max(100000) })
+  .object({
+    target: z.number().int().min(100).max(100000),
+    direction: z.enum(["atLeast", "atMost"]),
+  })
   .strict();
 export type StepsConfig = z.infer<typeof stepsConfigSchema>;
 
@@ -33,18 +39,45 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
     grace: 2,
-    config: { target: 8000 },
+    config: { target: 8000, direction: "atLeast" },
   },
 
   configSchema: stepsConfigSchema,
   evidenceSchema: stepsEvidenceSchema,
 
-  evidence: { level: "optional", source: "gallery" },
+  evidence: {
+    level: "optional",
+    source: "gallery",
+    detail: "Gallery allowed. A shot of your watch or app counts.",
+  },
   checkin: { kind: "number" },
   chart: "numeric",
-  fields: [
-    { kind: "number", key: "target", label: "Steps a day", min: 1000, max: 100000, step: 500 },
-  ],
+
+  note: "Curfew cannot read your watch. The number is yours to enter.",
+
+  fields() {
+    return [
+      {
+        kind: "segmented",
+        key: "direction",
+        label: "Rule",
+        options: [
+          { value: "atLeast", label: "At or above" },
+          { value: "atMost", label: "At or below" },
+        ],
+      },
+      {
+        kind: "number",
+        key: "target",
+        label: "Target",
+        min: 1000,
+        max: 100000,
+        step: 500,
+        unit: "steps",
+        display: "input",
+      },
+    ];
+  },
 
   steps() {
     return [
@@ -72,11 +105,13 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
 
   hint(input) {
     const target = input.config.target.toLocaleString("en-US");
+    const direction =
+      input.config.direction === "atLeast" ? "at or above" : "at or below";
     const latest = latestField(
       input.checkins.filter((c) => c.step === STEPS_STEP),
       "steps",
     );
-    if (latest === undefined) return `Target is ${target}. Anything at or above counts.`;
+    if (latest === undefined) return `Target is ${target}. Anything ${direction} counts.`;
     return `${latest.toLocaleString("en-US")} recorded so far. The target is ${target}.`;
   },
 
@@ -86,9 +121,16 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
 
   evaluate(input) {
     const readings = input.checkins.filter((c) => c.step === STEPS_STEP);
-    const value = latestField(readings, "steps") ?? 0;
+    const value = latestField(readings, "steps");
+
+    // Silence is a miss (invariant 2). Nothing reported is not "under the
+    // target", or an at-or-below rule would reward deleting the app.
+    if (value === undefined) {
+      return { passed: false, detail: { steps: null, target: input.config.target } };
+    }
+
     const result = thresholdPass(value, {
-      direction: "atLeast",
+      direction: input.config.direction,
       target: input.config.target,
     });
     return {

@@ -24,7 +24,11 @@ describe("gym declaration", () => {
   });
 
   it("requires live evidence with no per-step narrowing", () => {
-    expect(gymActivity.evidence).toEqual({ level: "required", source: "live" });
+    expect(gymActivity.evidence).toEqual({
+      level: "required",
+      source: "live",
+      detail: "Live camera, on every session.",
+    });
   });
 
   it("has one step spanning the day, since it has no windows", () => {

@@ -91,6 +91,7 @@ export type {
   HintInput,
   EvidenceRule,
   ConfigField,
+  FieldIssue,
   CheckinKind,
   ChartKind,
   ScheduleDefaults,

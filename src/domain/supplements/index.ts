@@ -33,12 +33,26 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
   configSchema: supplementsConfigSchema,
   evidenceSchema: supplementsEvidenceSchema,
 
-  evidence: { level: "required", source: "live" },
+  evidence: {
+    level: "required",
+    source: "live",
+    detail: "Live camera. A photo of what you took.",
+  },
   checkin: { kind: "camera" },
   chart: "binary",
-  fields: [
-    { kind: "number", key: "dosesPerDay", label: "Doses a day", min: 1, max: 6 },
-  ],
+
+  fields() {
+    return [
+      {
+        kind: "number",
+        key: "dosesPerDay",
+        label: "Logs required",
+        min: 1,
+        max: 6,
+        unit: "per day",
+      },
+    ];
+  },
 
   steps() {
     return [

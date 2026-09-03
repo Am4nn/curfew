@@ -57,6 +57,12 @@ export interface EvaluateInput<Config, Evidence> {
   checkins: Checkin<Evidence>[];
 }
 
+/** One thing wrong, against the config path that is wrong. */
+export interface FieldIssue {
+  path: string;
+  message: string;
+}
+
 export interface HintInput<Config, Evidence> extends EvaluateInput<Config, Evidence> {
   step: string;
   /** What is typed into the fields right now, not yet recorded. */
@@ -78,6 +84,12 @@ export interface EvidenceRule {
   level: "none" | "optional" | "required";
   source: "live" | "gallery";
   steps?: string[];
+  /**
+   * The line under "Photo required" on the configure screen, in the module's
+   * own words. "Gallery allowed. A shot of your watch or app counts." is a
+   * sentence about steps, not about evidence in general.
+   */
+  detail: string;
 }
 
 // The whole UI contract for checking in. Five shapes cover twelve types
@@ -113,6 +125,16 @@ type ConfigFieldShape =
       max: number;
       step?: number;
       unit?: string;
+      /**
+       * A stepper for something you nudge, a typed box for something you know.
+       * "3 a day" is a stepper; "8,000 steps" is a box (the artboards).
+       */
+      display?: "stepper" | "input";
+      /**
+       * Stored units per displayed unit. Screen stores minutes and is set in
+       * hours, so its limit declares 60.
+       */
+      scale?: number;
       // A nullable number is a target the user can switch off entirely. Study's
       // minutes and Food's calorie limit both work this way.
       nullable?: boolean;
@@ -168,8 +190,22 @@ export interface ActivityType<Config, Evidence> {
   evidence: EvidenceRule;
   checkin: { kind: CheckinKind };
   chart: ChartKind;
-  /** How the configure screen draws this module's own settings. */
-  fields: ConfigField[];
+  /**
+   * How the configure screen draws this module's own settings.
+   *
+   * A function of the config, because Reading's target is labelled in the unit
+   * the user picked one control above it.
+   */
+  fields(config: Config): ConfigField[];
+  /** Properties of the type, stated at the top and never offered as controls. */
+  facts?: { title: string; sub: string }[];
+  /** The module's own footnote, above the stop control. */
+  note?: string;
+  /**
+   * Anything the schema cannot express, as field paths. Sleep's windows may not
+   * overlap, and no Zod object can say that about three sibling pairs.
+   */
+  validate?(config: Config): FieldIssue[];
 
   steps(config: Config, periodStart: string): CheckinStep[];
   /**

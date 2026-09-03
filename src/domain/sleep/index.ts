@@ -54,6 +54,18 @@ function instantWithin(
   return day.set({ hour: h, minute: m, second: 0, millisecond: 0 });
 }
 
+/** "HH:mm" as minutes since midnight, for the wake-time chart's axis. */
+function minutesOf(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/** An instant's minutes since local midnight, in a given timezone. */
+function minutesSinceMidnight(instant: Date, timezone: string): number {
+  const dt = DateTime.fromJSDate(instant, { zone: timezone });
+  return dt.hour * 60 + dt.minute;
+}
+
 // Validate a complete nightly schedule against the same absolute instants used
 // for check-ins and scoring. Wall-clock ordering is insufficient because the
 // wake and confirm windows belong to the following calendar morning.
@@ -239,9 +251,28 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
     const night_ok = ok("night");
     const wake_ok = ok("wake");
     const confirm_ok = ok("confirm");
+
+    // The earliest wake press, as minutes since local midnight, for the stats
+    // chart's scatter plot. Computed in the period's own timezone so the plot
+    // never depends on whichever timezone later reads it (invariant 5's
+    // resolve-as-scored applies to this too, not only pass/fail).
+    const wakeCheckins = input.checkins
+      .filter((c) => c.step === "wake")
+      .sort((a, b) => a.at.getTime() - b.at.getTime());
+    const wake_at_minutes = wakeCheckins.length
+      ? minutesSinceMidnight(wakeCheckins[0].at, input.timezone)
+      : null;
+
     return {
       passed: night_ok && wake_ok && confirm_ok,
-      detail: { night_ok, wake_ok, confirm_ok },
+      detail: {
+        night_ok,
+        wake_ok,
+        confirm_ok,
+        wake_at_minutes,
+        wake_window_open_minutes: minutesOf(input.config.wake_open),
+        wake_window_close_minutes: minutesOf(input.config.wake_close),
+      },
     };
   },
 };

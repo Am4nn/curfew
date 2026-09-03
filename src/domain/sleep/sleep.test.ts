@@ -38,7 +38,14 @@ describe("sleep.evaluate", () => {
       checkins: [night, wake, confirm],
     });
     expect(r.passed).toBe(true);
-    expect(r.detail).toEqual({ night_ok: true, wake_ok: true, confirm_ok: true });
+    expect(r.detail).toEqual({
+      night_ok: true,
+      wake_ok: true,
+      confirm_ok: true,
+      wake_at_minutes: 390,
+      wake_window_open_minutes: 360,
+      wake_window_close_minutes: 420,
+    });
   });
 
   it("fails the day when one check-in is missing", () => {
@@ -49,7 +56,14 @@ describe("sleep.evaluate", () => {
       checkins: [night, wake],
     });
     expect(r.passed).toBe(false);
-    expect(r.detail).toEqual({ night_ok: true, wake_ok: true, confirm_ok: false });
+    expect(r.detail).toEqual({
+      night_ok: true,
+      wake_ok: true,
+      confirm_ok: false,
+      wake_at_minutes: 390,
+      wake_window_open_minutes: 360,
+      wake_window_close_minutes: 420,
+    });
   });
 
   it("does not count a check-in outside its window", () => {
@@ -87,6 +101,27 @@ describe("sleep.evaluate", () => {
     });
     // A second wake press cannot satisfy confirm.
     expect(r.detail).toMatchObject({ confirm_ok: false });
+  });
+
+  it("reports the earliest wake press, in minutes since midnight", () => {
+    const laterWake = checkin("wake", "2026-09-01T06:45:00+05:30");
+    const r = sleepActivity.evaluate({
+      periodStart: PERIOD,
+      timezone: IST,
+      config,
+      checkins: [night, laterWake, wake, confirm],
+    });
+    expect(r.detail).toMatchObject({ wake_at_minutes: 390 });
+  });
+
+  it("reports no wake time when there was no wake check-in", () => {
+    const r = sleepActivity.evaluate({
+      periodStart: PERIOD,
+      timezone: IST,
+      config,
+      checkins: [night, confirm],
+    });
+    expect(r.detail).toMatchObject({ wake_at_minutes: null });
   });
 
   it("exposes three steps for the UI", () => {

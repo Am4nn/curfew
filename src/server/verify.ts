@@ -1,84 +1,111 @@
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import { db } from "@/db";
-import { activityScores, activityOutcomes, groupMembers } from "@/db/schema";
+import { activityScores, reputationDaily, userActivities } from "@/db/schema";
 import { recomputeUser } from "./scoring";
 
 export interface Drift {
-  kind: "score" | "outcome";
+  kind: "score" | "reputation";
   key: string;
   field: string;
   stored: unknown;
   computed: unknown;
 }
 
-// Recompute [from..to] from events and diff against what is stored. Uses the
-// same effective-dated lookups as scoring (via recomputeUser), so a past config
-// change is not reported as drift. Read-only.
+/**
+ * Recompute a range from events and diff it against what is stored.
+ *
+ * Goes through the same `recomputeUser` the scorer writes from, so it uses the
+ * same effective-dated lookups and never reports a past config change as drift
+ * (invariant 5). Read-only.
+ */
 export async function verifyUser(
   userId: string,
   opts: { from?: string; to?: string } = {},
 ): Promise<Drift[]> {
-  const { scores, outcomes } = await recomputeUser(userId, opts);
+  const { scores, reputation } = await recomputeUser(userId, opts);
   const drift: Drift[] = [];
-  if (scores.length === 0 && outcomes.length === 0) return drift;
+  if (scores.length === 0 && reputation.length === 0) return drift;
 
-  const periods = scores.map((s) => s.periodStart).sort();
-  const lo = periods[0];
-  const hi = periods[periods.length - 1];
+  if (scores.length > 0) {
+    const periods = scores.map((s) => s.periodStart).sort();
+    const lo = periods[0];
+    const hi = periods[periods.length - 1];
 
-  const storedScores = await db
-    .select()
-    .from(activityScores)
-    .where(
-      and(
-        eq(activityScores.userId, userId),
-        gte(activityScores.periodStart, lo),
-        lte(activityScores.periodStart, hi),
-      ),
-    );
-  const storedScoreByKey = new Map(
-    storedScores.map((s) => [`${s.typeKey}|${s.periodStart}`, s]),
-  );
+    const stored = await db
+      .select()
+      .from(activityScores)
+      .where(
+        and(
+          eq(activityScores.userId, userId),
+          gte(activityScores.periodStart, lo),
+          lte(activityScores.periodStart, hi),
+        ),
+      );
+    const byKey = new Map(stored.map((s) => [`${s.typeKey}|${s.periodStart}`, s]));
 
-  for (const c of scores) {
-    const key = `${c.typeKey}|${c.periodStart}`;
-    const s = storedScoreByKey.get(key);
-    if (!s) {
-      drift.push({ kind: "score", key, field: "*", stored: null, computed: c.passed });
-      continue;
-    }
-    if (s.passed !== c.passed) {
-      drift.push({ kind: "score", key, field: "passed", stored: s.passed, computed: c.passed });
+    for (const c of scores) {
+      const key = `${c.typeKey}|${c.periodStart}`;
+      const s = byKey.get(key);
+      if (!s) {
+        drift.push({ kind: "score", key, field: "*", stored: null, computed: c.passed });
+        continue;
+      }
+      if (s.passed !== c.passed) {
+        drift.push({ kind: "score", key, field: "passed", stored: s.passed, computed: c.passed });
+      }
+      if (s.settling !== c.settling) {
+        drift.push({
+          kind: "score",
+          key,
+          field: "settling",
+          stored: s.settling,
+          computed: c.settling,
+        });
+      }
     }
   }
 
-  const storedOutcomes = await db
-    .select()
-    .from(activityOutcomes)
-    .where(
-      and(
-        eq(activityOutcomes.userId, userId),
-        gte(activityOutcomes.periodStart, lo),
-        lte(activityOutcomes.periodStart, hi),
-      ),
-    );
-  const storedOutcomeByKey = new Map(
-    storedOutcomes.map((o) => [`${o.activityId}|${o.periodStart}`, o]),
-  );
+  if (reputation.length > 0) {
+    const days = reputation.map((r) => r.day).sort();
+    const stored = await db
+      .select()
+      .from(reputationDaily)
+      .where(
+        and(
+          eq(reputationDaily.userId, userId),
+          isNull(reputationDaily.groupId),
+          gte(reputationDaily.day, days[0]),
+          lte(reputationDaily.day, days[days.length - 1]),
+        ),
+      );
+    const byDay = new Map(stored.map((r) => [r.day, r]));
 
-  for (const c of outcomes) {
-    const key = `${c.activityId}|${c.periodStart}`;
-    const o = storedOutcomeByKey.get(key);
-    if (!o) {
-      drift.push({ kind: "outcome", key, field: "*", stored: null, computed: c.streakAfter });
-      continue;
+    for (const c of reputation) {
+      const s = byDay.get(c.day);
+      if (!s) {
+        drift.push({ kind: "reputation", key: c.day, field: "*", stored: null, computed: c.score });
+        continue;
+      }
+      // Stored as numeric, so compare the numbers rather than their spelling.
+      if (Math.abs(Number(s.score) - Number(c.score)) > 0.001) {
+        drift.push({
+          kind: "reputation",
+          key: c.day,
+          field: "score",
+          stored: s.score,
+          computed: c.score,
+        });
+      }
+      if (s.reason !== c.reason) {
+        drift.push({
+          kind: "reputation",
+          key: c.day,
+          field: "reason",
+          stored: s.reason,
+          computed: c.reason,
+        });
+      }
     }
-    if (o.streakAfter !== c.streakAfter)
-      drift.push({ kind: "outcome", key, field: "streak_after", stored: o.streakAfter, computed: c.streakAfter });
-    if (o.graceUsed !== c.graceUsed)
-      drift.push({ kind: "outcome", key, field: "grace_used", stored: o.graceUsed, computed: c.graceUsed });
-    if (o.fineAmount !== c.fineAmount)
-      drift.push({ kind: "outcome", key, field: "fine_amount", stored: o.fineAmount, computed: c.fineAmount });
   }
 
   return drift;
@@ -87,9 +114,7 @@ export async function verifyUser(
 export async function verifyAll(
   opts: { from?: string; to?: string } = {},
 ): Promise<Drift[]> {
-  const users = await db
-    .selectDistinct({ userId: groupMembers.userId })
-    .from(groupMembers);
+  const users = await db.selectDistinct({ userId: userActivities.userId }).from(userActivities);
   const all: Drift[] = [];
   for (const u of users) {
     all.push(...(await verifyUser(u.userId, opts)));

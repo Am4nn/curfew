@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { getActivityType, registeredKeys } from "@/domain";
 import { getAppConfig } from "@/server/app-config";
 import { getUserActivity, defaultsFor } from "@/server/activities";
+import { standingFor } from "@/server/standing";
 import { ActivityIcon } from "../../activity-icon";
 import { ConfigureForm } from "./configure-form";
 
@@ -34,6 +35,7 @@ export default async function ConfigurePage({
 
   const type = getActivityType(key);
   const state = mine ?? defaultsFor(key);
+  const standing = tracked ? await standingFor(user.id, key) : null;
 
   return (
     <main className="flex min-h-dvh flex-col pb-16">
@@ -56,8 +58,9 @@ export default async function ConfigurePage({
         initialSchedule={state.schedule}
         initialConfig={state.config}
         tracked={tracked}
-        streak={0}
-        best={0}
+        streak={standing?.streak ?? 0}
+        best={standing?.best ?? 0}
+        graceLeft={standing?.graceLeft ?? null}
       />
     </main>
   );

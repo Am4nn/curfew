@@ -80,6 +80,21 @@ export {
   type ChainPeriod,
   type ChainOutcome,
 } from "./scoring";
+export {
+  applyDay,
+  replay,
+  ceilingFor,
+  joiningScore,
+  CONSTANTS,
+  START_SCORE,
+  MIN_SCORE,
+  MAX_SCORE,
+  type DayInput,
+  type DayResult,
+  type DayReason,
+  type ReplayDay,
+  type ReplayRow,
+} from "./reputation";
 export { getActivityType, registeredKeys, register } from "./registry";
 export type {
   ActivityType,

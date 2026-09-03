@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { registeredKeys } from "@/domain";
 import { getCheckinState } from "@/server/checkin";
+import { standingFor } from "@/server/standing";
 import { CheckinForm } from "./checkin-form";
 
 // Bare chrome, no tab bar: a single act with a way back, not a place to browse
@@ -26,6 +27,7 @@ export default async function CheckinPage({
 
   // The open one. Where several overlap, the module's own order wins.
   const step = state.steps.find((s) => s.open) ?? null;
+  const standing = await standingFor(user.id, key);
 
   const occurrence =
     step && step.repeats && step.count > 0
@@ -46,7 +48,7 @@ export default async function CheckinPage({
       </header>
 
       {step ? (
-        <CheckinForm state={state} step={step} streak={0} />
+        <CheckinForm state={state} step={step} streak={standing?.streak ?? 0} />
       ) : (
         <Closed state={state} />
       )}

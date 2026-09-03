@@ -278,6 +278,7 @@ export function ConfigureForm({
   tracked,
   streak,
   best,
+  graceLeft,
 }: {
   typeKey: string;
   name: string;
@@ -287,6 +288,7 @@ export function ConfigureForm({
   tracked: boolean;
   streak: number;
   best: number;
+  graceLeft: number | null;
 }) {
   const type = getActivityType(typeKey);
   const [schedule, setSchedule] = useState<ScheduleConfig>(initialSchedule);
@@ -421,7 +423,15 @@ export function ConfigureForm({
         />
       ))}
 
-      <FieldWrap label="Grace" error={errorFor("@grace")}>
+      <FieldWrap
+        label="Grace"
+        hint={
+          graceLeft === null
+            ? undefined
+            : `${graceLeft} left this month.`
+        }
+        error={errorFor("@grace")}
+      >
         <Stepper
           value={schedule.grace}
           min={0}

@@ -11,6 +11,7 @@ import {
   bigserial,
   bigint,
   integer,
+  numeric,
   char,
   primaryKey,
 } from "drizzle-orm/pg-core";
@@ -169,6 +170,9 @@ export const activityScores = pgTable(
     userConfigVersion: integer("user_config_version")
       .notNull()
       .references(() => userActivityConfig.version),
+    // Inside the activity's first 7 days: scored, but excluded from the
+    // reputation delta (decision 54). Fines still apply.
+    settling: boolean("settling").notNull().default(false),
     computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.typeKey, t.periodStart] })],
@@ -358,3 +362,22 @@ export const evidence = pgTable("evidence", {
   deleteAfter: date("delete_after", { mode: "string" }).notNull(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
+
+// Reputation, one row a day per scope. Derived and replayable (invariant 1);
+// a null groupId is the global score. See migrations/0011.
+export const reputationDaily = pgTable(
+  "reputation_daily",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id").references(() => groups.id, { onDelete: "cascade" }),
+    day: date("day", { mode: "string" }).notNull(),
+    score: numeric("score", { precision: 7, scale: 3 }).notNull(),
+    delta: numeric("delta", { precision: 7, scale: 3 }).notNull(),
+    reason: text("reason").notNull(),
+    ceiling: numeric("ceiling", { precision: 7, scale: 3 }).notNull(),
+    completion: numeric("completion", { precision: 4, scale: 3 }),
+    computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+);

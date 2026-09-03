@@ -1,6 +1,6 @@
-// Recompute a date range from events and diff against the stored scores and
-// outcomes. `bun run verify` checks all history; `--from-date=` / `--to-date=`
-// bound the range. Exits non-zero if any drift is found.
+// Recompute from events and diff against the stored scores and reputation.
+// `bun run verify` checks all history; `--from-date=` / `--to-date=` narrow what
+// is compared, never what is computed. Exits non-zero if any drift is found.
 import { verifyAll } from "@/server/verify";
 
 const arg = (name: string) =>

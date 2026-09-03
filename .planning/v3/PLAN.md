@@ -99,6 +99,10 @@ browser mid-upload leaves no check-in and no orphan after the sweep.
 **Done when:** verify reports no drift over a seeded month, and the target
 properties in `REPUTATION.md` hold against a simulation.
 
+Per-group reputation waits for Phase 7's sharing, since its ceiling is shared
+types over accepted types. Phase 6 ships the curve, the scoring rewrite for all
+twelve types, and the global score, which is full breadth and needs no group.
+
 ## Phase 7 — Groups
 
 - Accepted types, sharing with the evidence checkbox, the join flow including

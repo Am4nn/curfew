@@ -9,7 +9,17 @@ import {
   users,
 } from "@/db/schema";
 import { splitFine } from "@/domain";
-import type { OutcomeRow } from "./scoring";
+
+// What a fine needs to know. Fines are rebuilt against the v3 group model with
+// sharing; nothing writes these today, and the ledger keeps every row it has.
+export interface OutcomeRow {
+  activityId: string;
+  userId: string;
+  typeKey: string;
+  periodStart: string;
+  fineAmount: number;
+  currency: string;
+}
 
 // Active members of a group on a given period: joined on or before, not yet
 // left. Gates who a fine is split among.

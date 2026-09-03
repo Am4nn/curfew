@@ -1,126 +1,191 @@
 import { DateTime } from "luxon";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/db";
-import { events, activityScores } from "@/db/schema";
+import { activityScores } from "@/db/schema";
+import { getActivityType, graceMonth, type ChartKind } from "@/domain";
+import { listUserActivities } from "./activities";
+import { standingFor } from "./standing";
+import { scoreUser } from "./scoring";
 import { resolveUserTimezone } from "./config";
-import { nowUTC } from "@/lib/clock";
+import { now } from "@/lib/clock";
 
-// Personal analytics for a member, over their own data only. Everything here is
-// derivable from events and the scores rebuilt from them (invariant 1), and
-// reads only checkin.* events (invariant 2). Scoped to one user id.
+// Personal stats. Everything here is counted from `activity_scores`, which is
+// derived from check-in events alone (invariant 2): no sessions, no last_seen,
+// nothing ambient.
 
-export interface StatPoint {
-  date: string; // yyyy-MM-dd, or a weekday label
-  value: number;
-}
-export interface PersonalStats {
-  wakeRolling: StatPoint[]; // 7-sample trailing average wake minutes, per period
-  weekdayPass: StatPoint[]; // pass % per weekday, Mon..Sun
-  monthPassRate: number | null; // % of scored nights passed over the window, null if none
-  hasWake: boolean;
-  hasScores: boolean;
-}
-
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-async function startDate(days: number): Promise<string> {
-  return (await nowUTC()).minus({ days: days - 1 }).toFormat("yyyy-MM-dd");
-}
-async function startInstant(days: number): Promise<Date> {
-  return (await nowUTC()).minus({ days: days - 1 }).startOf("day").toJSDate();
+export interface Overview {
+  perfectDays: number;
+  daysInMonth: number;
+  passRate: number;
+  longestStreak: number;
+  graceLeft: number;
+  /** Eight weeks of days, each 0..1 of what was scheduled, -1 for the future. */
+  heatmap: number[][];
+  byActivity: {
+    typeKey: string;
+    name: string;
+    icon: string;
+    percent: number;
+    streak: number;
+  }[];
 }
 
-// Rolling average of the user's own wake time (minutes after local midnight).
-// The raw wake instant is the evidence; there is no wake-time column.
-async function rollingWake(userId: string, days: number): Promise<StatPoint[]> {
-  const from = await startDate(days);
+export async function overviewFor(userId: string): Promise<Overview> {
+  await scoreUser(userId);
+
+  const instant = await now();
+  const timezone = await resolveUserTimezone(
+    userId,
+    instant.toISOString().slice(0, 10),
+  );
+  const today = DateTime.fromJSDate(instant, { zone: timezone });
+  const monthStart = today.startOf("month");
+  const from = today.minus({ days: 55 }).toFormat("yyyy-MM-dd");
+
   const rows = await db
-    .select({ at: events.occurredAt, period: sql<string>`${events.payload}->>'period_start'` })
-    .from(events)
-    .where(
-      and(
-        eq(events.type, "checkin.sleep.wake"),
-        eq(events.userId, userId),
-        gte(events.occurredAt, await startInstant(days)),
-      ),
-    );
-  const tz = await resolveUserTimezone(userId, (await nowUTC()).toFormat("yyyy-MM-dd"));
-  const perPeriod = new Map<string, { sum: number; n: number }>();
-  for (const r of rows) {
-    if (!r.period || r.period < from) continue;
-    const local = DateTime.fromJSDate(r.at, { zone: tz });
-    const minutes = local.hour * 60 + local.minute;
-    const a = perPeriod.get(r.period) ?? { sum: 0, n: 0 };
-    a.sum += minutes;
-    a.n += 1;
-    perPeriod.set(r.period, a);
-  }
-  const daily = [...perPeriod.entries()]
-    .map(([date, a]) => ({ date, value: a.sum / a.n }))
-    .sort((x, y) => (x.date < y.date ? -1 : 1));
-
-  const win: number[] = [];
-  return daily.map((d) => {
-    win.push(d.value);
-    if (win.length > 7) win.shift();
-    return { date: d.date, value: Math.round(win.reduce((s, v) => s + v, 0) / win.length) };
-  });
-}
-
-// Pass rate per weekday from the user's own scores (group-independent: did they
-// meet their own targets). Weekday comes from the period date.
-async function weekdayPass(
-  userId: string,
-  days: number,
-): Promise<{ points: StatPoint[]; has: boolean }> {
-  const rows = await db
-    .select({ periodStart: activityScores.periodStart, passed: activityScores.passed })
+    .select({
+      typeKey: activityScores.typeKey,
+      periodStart: activityScores.periodStart,
+      passed: activityScores.passed,
+    })
     .from(activityScores)
-    .where(and(eq(activityScores.userId, userId), gte(activityScores.periodStart, await startDate(days))));
-  const agg = WEEKDAYS.map(() => ({ pass: 0, total: 0 }));
+    .where(and(eq(activityScores.userId, userId), gte(activityScores.periodStart, from)))
+    .orderBy(activityScores.periodStart);
+
+  // A day's completion: how much of what was scheduled was done.
+  const byDay = new Map<string, { done: number; of: number }>();
   for (const r of rows) {
-    const idx = DateTime.fromISO(r.periodStart).weekday - 1;
-    agg[idx].total += 1;
-    if (r.passed) agg[idx].pass += 1;
+    const cur = byDay.get(r.periodStart) ?? { done: 0, of: 0 };
+    cur.of += 1;
+    if (r.passed) cur.done += 1;
+    byDay.set(r.periodStart, cur);
   }
+
+  const thisMonth = [...byDay.entries()].filter(
+    ([day]) => day >= monthStart.toFormat("yyyy-MM-dd"),
+  );
+  const perfectDays = thisMonth.filter(([, v]) => v.of > 0 && v.done === v.of).length;
+
+  const last30 = rows.filter(
+    (r) => r.periodStart >= today.minus({ days: 29 }).toFormat("yyyy-MM-dd"),
+  );
+  const passRate =
+    last30.length === 0
+      ? 0
+      : Math.round((last30.filter((r) => r.passed).length / last30.length) * 100);
+
+  // Eight weeks ending on this week, Monday first.
+  const gridStart = today.startOf("week").minus({ weeks: 7 });
+  const heatmap: number[][] = [];
+  for (let w = 0; w < 8; w += 1) {
+    const week: number[] = [];
+    for (let d = 0; d < 7; d += 1) {
+      const day = gridStart.plus({ weeks: w, days: d });
+      if (day > today) {
+        week.push(-1);
+        continue;
+      }
+      const v = byDay.get(day.toFormat("yyyy-MM-dd"));
+      week.push(v && v.of > 0 ? v.done / v.of : 0);
+    }
+    heatmap.push(week);
+  }
+
+  const mine = (await listUserActivities(userId)).filter((a) => a.enabled);
+  const byActivity: Overview["byActivity"] = [];
+  let longestStreak = 0;
+  let graceLeft = 0;
+
+  for (const a of mine) {
+    const type = getActivityType(a.typeKey);
+    const its = last30.filter((r) => r.typeKey === a.typeKey);
+    const standing = await standingFor(userId, a.typeKey);
+    if (standing) {
+      longestStreak = Math.max(longestStreak, standing.streak);
+      graceLeft += standing.graceLeft;
+    }
+    byActivity.push({
+      typeKey: a.typeKey,
+      name: type.name,
+      icon: type.icon,
+      percent:
+        its.length === 0
+          ? 0
+          : Math.round((its.filter((r) => r.passed).length / its.length) * 100),
+      streak: standing?.streak ?? 0,
+    });
+  }
+  byActivity.sort((a, b) => b.percent - a.percent);
+
   return {
-    points: WEEKDAYS.map((label, i) => ({
-      date: label,
-      value: agg[i].total === 0 ? 0 : Math.round((agg[i].pass / agg[i].total) * 100),
-    })),
-    has: rows.length > 0,
+    perfectDays,
+    daysInMonth: today.daysInMonth ?? 30,
+    passRate,
+    longestStreak,
+    graceLeft,
+    heatmap,
+    byActivity,
   };
 }
 
-// Overall pass rate over the window: share of the user's own scored nights that
-// passed. Group-independent, from activity_scores.
-async function monthPassRate(userId: string, days: number): Promise<number | null> {
+export interface ActivityChart {
+  typeKey: string;
+  name: string;
+  icon: string;
+  kind: ChartKind;
+  /** Oldest first. `detail` is the module's own, printed by nobody. */
+  points: { periodStart: string; passed: boolean; detail: Record<string, unknown> }[];
+  graceMonthLabel: string;
+}
+
+/**
+ * One activity's history, for the chart its module named.
+ *
+ * The engine draws four kinds and the module says which (invariant 6). The
+ * detail travels as it is; only the chart for that kind reads it.
+ */
+export async function chartFor(
+  userId: string,
+  typeKey: string,
+): Promise<ActivityChart | null> {
+  const mine = (await listUserActivities(userId)).find((a) => a.typeKey === typeKey);
+  if (!mine) return null;
+
+  const instant = await now();
+  const timezone = await resolveUserTimezone(
+    userId,
+    instant.toISOString().slice(0, 10),
+  );
+  const today = DateTime.fromJSDate(instant, { zone: timezone });
+  const from = today.minus({ days: 29 }).toFormat("yyyy-MM-dd");
+
   const rows = await db
-    .select({ passed: activityScores.passed })
+    .select({
+      periodStart: activityScores.periodStart,
+      passed: activityScores.passed,
+      detail: activityScores.detail,
+    })
     .from(activityScores)
     .where(
       and(
         eq(activityScores.userId, userId),
-        eq(activityScores.typeKey, "sleep"),
-        gte(activityScores.periodStart, await startDate(days)),
+        eq(activityScores.typeKey, typeKey),
+        gte(activityScores.periodStart, from),
       ),
-    );
-  if (rows.length === 0) return null;
-  const passed = rows.filter((r) => r.passed).length;
-  return Math.round((passed / rows.length) * 100);
-}
+    )
+    .orderBy(activityScores.periodStart);
 
-export async function getPersonalStats(userId: string, days = 30): Promise<PersonalStats> {
-  const [wakeRolling, weekday, monthRate] = await Promise.all([
-    rollingWake(userId, days),
-    weekdayPass(userId, 84),
-    monthPassRate(userId, days),
-  ]);
+  const type = getActivityType(typeKey);
   return {
-    wakeRolling,
-    weekdayPass: weekday.points,
-    monthPassRate: monthRate,
-    hasWake: wakeRolling.length > 0,
-    hasScores: weekday.has,
+    typeKey,
+    name: type.name,
+    icon: type.icon,
+    kind: type.chart,
+    points: rows.map((r) => ({
+      periodStart: r.periodStart,
+      passed: r.passed,
+      detail: (r.detail ?? {}) as Record<string, unknown>,
+    })),
+    graceMonthLabel: graceMonth(today.toFormat("yyyy-MM-dd")),
   };
 }

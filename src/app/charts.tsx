@@ -1,4 +1,4 @@
-// Shared inline-SVG charts used by the admin Insights tab and the member /chart
+// Shared inline-SVG charts used by the admin Insights tab and the member stats
 // page. Theme tokens, single series (one colour, no legend, the title names it),
 // recessive grid, native hover titles. Thin marks, rounded bar ends on the
 // baseline, 2px lines, one selective label (the latest value).

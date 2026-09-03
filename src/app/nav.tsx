@@ -34,9 +34,9 @@ const TABS: Tab[] = [
     ),
   },
   {
-    href: "/chart",
+    href: "/stats",
     label: "Stats",
-    match: (p) => p === "/chart",
+    match: (p) => p.startsWith("/stats"),
     icon: (
       <path d="M4 20V11M10 20V4M16 20v-6" />
     ),

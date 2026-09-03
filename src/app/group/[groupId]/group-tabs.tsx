@@ -3,34 +3,39 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// Four tabs in every group. Group stats hang off Overview rather than taking a
+// fifth, because a tab you visit once a week does not earn permanent chrome.
+const TABS = [
+  { slug: "", label: "OVERVIEW" },
+  { slug: "evidence", label: "EVIDENCE" },
+  { slug: "standing", label: "STANDING" },
+  { slug: "settings", label: "SETTINGS" },
+];
+
 export function GroupTabs({ groupId }: { groupId: string }) {
-  const pathname = usePathname() ?? "";
+  const pathname = usePathname();
   const base = `/group/${groupId}`;
-  const tabs: [string, string][] = [
-    [base, "Overview"],
-    [`${base}/ledger`, "Ledger"],
-    [`${base}/rules`, "Rules"],
-    [`${base}/wake`, "Wake"],
-  ];
 
   return (
-    <nav className="mt-[14px] flex gap-5 border-b border-rule">
-      {tabs.map(([href, label]) => {
-        const active = pathname === href;
+    <div className="flex border-b border-rule px-5">
+      {TABS.map((tab) => {
+        const href = tab.slug ? `${base}/${tab.slug}` : base;
+        const active = tab.slug
+          ? pathname.startsWith(href)
+          : pathname === base || pathname === `${base}/`;
         return (
           <Link
-            key={href}
+            key={tab.slug}
             href={href}
-            aria-current={active ? "page" : undefined}
             className={
-              "pb-2 text-[13px] " +
-              (active ? "border-b-2 border-fg text-fg" : "text-muted")
+              "mr-[22px] pb-[10px] text-[11px] tracking-[0.12em] " +
+              (active ? "text-fg shadow-[inset_0_-2px_0_var(--fg)]" : "text-muted")
             }
           >
-            {label}
+            {tab.label}
           </Link>
         );
       })}
-    </nav>
+    </div>
   );
 }

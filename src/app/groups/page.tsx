@@ -1,111 +1,117 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { listUserGroups, listInvitesForEmail, userBalances } from "@/server/groups";
-import { formatMoney } from "@/domain";
-import { ActionForm, SubmitButton, ConfirmButton } from "../ui";
+import { listUserGroups, listInvitesForEmail } from "@/server/groups";
+import { groupHeader } from "@/server/group-view";
+import { standingIn } from "@/server/group-view";
+import { QuorumMark } from "../mark";
+import { RankScore } from "../rank-icon";
+import { ActionForm, SubmitButton } from "../ui";
 import { createGroupAction, acceptInviteAction, declineInviteAction } from "../actions";
 
-// The full groups surface: invites to answer, the groups you are in, and a new
-// group. Home only summarizes; management lives here.
-export default async function Groups() {
+// Groups are invite-only and nobody finds one by searching, so this is the
+// whole surface: what you were invited to, what you are in, and a way to start
+// one.
+export default async function GroupsPage() {
   const user = await getSessionUser();
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const [groups, invites, balances] = await Promise.all([
+  const [groups, invites] = await Promise.all([
     listUserGroups(user.id),
     listInvitesForEmail(user.email),
-    userBalances(user.id),
   ]);
-  const byGroup = new Map(balances.map((b) => [b.groupId, b]));
+
+  const rows = await Promise.all(
+    groups.map(async (g) => {
+      const [header, standing] = await Promise.all([
+        groupHeader(g.groupId, user.id),
+        standingIn(g.groupId, user.id),
+      ]);
+      return { ...g, moneyOn: header?.moneyOn ?? false, score: standing.score };
+    }),
+  );
 
   return (
     <main className="min-h-dvh px-5 pb-24 pt-5">
-      <div className="mx-auto max-w-[560px]">
-        <header className="-mx-5 mb-7 border-b border-rule px-5 pb-[10px]">
-          <h1 className="text-[15px] font-semibold tracking-[0.14em]">GROUPS</h1>
+      <div className="mx-auto flex max-w-[560px] flex-col gap-5">
+        <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
+          <QuorumMark size={15} />
+          <h1 className="text-[14px] font-semibold tracking-[0.16em]">GROUPS</h1>
         </header>
 
-        {invites.length > 0 ? (
-          <section className="mb-7">
-            <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">INVITES</div>
-            {invites.map((inv) => (
-              <div key={inv.id} className="mb-3 border border-rule bg-surface p-[14px]">
-                <div className="text-[14px]">
-                  You are invited to <span className="font-semibold">{inv.groupName}</span>.
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <ActionForm action={acceptInviteAction} className="flex-1">
-                    <input type="hidden" name="inviteId" value={inv.id} />
-                    <SubmitButton
-                      pendingLabel="Joining"
-                      className="h-[42px] w-full border border-fg bg-fg text-[14px] font-semibold text-bg"
-                    >
-                      Accept
-                    </SubmitButton>
-                  </ActionForm>
-                  <ConfirmButton
-                    action={declineInviteAction}
-                    fields={{ inviteId: inv.id }}
-                    label="Decline"
-                    message={`Decline the invite to ${inv.groupName}?`}
-                    confirmLabel="Decline"
-                  />
-                </div>
-              </div>
-            ))}
-          </section>
-        ) : null}
+        {invites.map((invite) => (
+          <div
+            key={invite.id}
+            className="flex flex-col gap-[10px] border-l-[3px] border-l-accent bg-surface p-[13px]"
+          >
+            <span className="text-[13px] leading-[1.5]">
+              {invite.inviterName} invited you to{" "}
+              <span className="font-semibold">{invite.groupName}</span>.
+            </span>
+            <div className="flex gap-[9px]">
+              <ActionForm action={acceptInviteAction}>
+                <input type="hidden" name="inviteId" value={invite.id} />
+                <SubmitButton className="h-[34px] border border-fg bg-fg px-[14px] text-[12px] font-semibold text-bg">
+                  Accept
+                </SubmitButton>
+              </ActionForm>
+              <ActionForm action={declineInviteAction}>
+                <input type="hidden" name="inviteId" value={invite.id} />
+                <SubmitButton className="h-[34px] border border-rule px-[14px] text-[12px] text-muted">
+                  Decline
+                </SubmitButton>
+              </ActionForm>
+            </div>
+          </div>
+        ))}
 
-        <section className="mb-7">
-          <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">YOUR GROUPS</div>
-          {groups.length === 0 ? (
-            <p className="text-[14px] text-muted">No groups yet. Create one below, or wait for an invite.</p>
+        <section className="flex flex-col gap-[10px]">
+          <span className="text-[10px] tracking-[0.16em] text-muted">YOUR GROUPS</span>
+          {rows.length === 0 ? (
+            <p className="text-[12.5px] leading-[1.6] text-muted">
+              You are not in a group yet. Start one, or wait for an invite.
+            </p>
           ) : (
-            groups.map((g) => {
-              const bal = byGroup.get(g.groupId);
-              return (
-                <Link key={g.groupId} href={`/group/${g.groupId}`} className="block border-b border-rule py-3">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="text-[15px]">{g.name}</span>
-                    <span className="text-[12px] text-muted">
-                      {g.memberCount} member{g.memberCount === 1 ? "" : "s"} · {g.role} ›
+            <div className="flex flex-col">
+              {rows.map((g) => (
+                <Link
+                  key={g.groupId}
+                  href={`/group/${g.groupId}`}
+                  className="flex items-center gap-3 border-b border-rule py-[13px]"
+                >
+                  <div className="flex flex-1 flex-col gap-[3px]">
+                    <span className="text-[14px]">{g.name}</span>
+                    <span className="text-[11px] text-muted">
+                      {g.memberCount} member{g.memberCount === 1 ? "" : "s"}
+                      {g.moneyOn ? " · money on" : ""}
                     </span>
                   </div>
-                  <div className="mt-1 text-[13px]">
-                    {bal && bal.netOwed > 0 ? (
-                      <span className="text-penalty">you owe {formatMoney(bal.netOwed, bal.currency)}</span>
-                    ) : bal && bal.netOwed < 0 ? (
-                      <span className="text-pass">you are owed {formatMoney(-bal.netOwed, bal.currency)}</span>
-                    ) : (
-                      <span className="text-muted">settled</span>
-                    )}
-                  </div>
+                  <RankScore score={g.score} />
                 </Link>
-              );
-            })
+              ))}
+            </div>
           )}
         </section>
 
-        <section>
-          <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">NEW GROUP</div>
-          <ActionForm action={createGroupAction} resetOnSuccess className="flex items-center gap-2">
+        <ActionForm action={createGroupAction}>
+          <div className="flex flex-col gap-[10px]">
             <input
               name="name"
+              placeholder="Group name"
               required
               maxLength={60}
-              placeholder="group name"
-              className="flex-1 border border-fg bg-transparent px-3 py-[10px] text-[14px]"
+              className="border border-rule bg-transparent px-3 py-[11px] text-[14px] text-fg outline-none placeholder:text-muted"
             />
-            <SubmitButton
-              pendingLabel="Creating"
-              className="border border-fg bg-fg px-4 py-[10px] text-[14px] font-semibold text-bg"
-            >
-              Create
+            <SubmitButton className="h-11 w-full border border-rule text-[14px]">
+              + New group
             </SubmitButton>
-          </ActionForm>
-        </section>
+          </div>
+        </ActionForm>
+
+        <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+          Groups are invite-only. Nobody finds one by searching.
+        </div>
       </div>
     </main>
   );

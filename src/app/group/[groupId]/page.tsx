@@ -1,18 +1,11 @@
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
-import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { assertMember } from "@/server/membership";
-import {
-  listGroupMembersDetailed,
-  listGroupPendingInvites,
-  groupBalances,
-} from "@/server/groups";
-import { getGroupLedgerRows } from "@/server/ledger";
-import { groupMemberStreaks } from "@/server/streak";
-import { formatMoney } from "@/domain";
-import { ConfirmButton } from "../../ui";
-import { leaveGroupAction, revokeInviteAction, makeOwnerAction } from "../../actions";
-import { InviteForm } from "./invite-form";
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/session";
+import { rankFor } from "@/domain";
+import { acceptedTypes } from "@/server/sharing";
+import { groupHeader, memberStandings, standingIn, weekStats } from "@/server/group-view";
+import { ActivityIcon } from "../../activity-icon";
+import { RankScore, RANK_TEXT } from "../../rank-icon";
 
 export default async function GroupOverview({
   params,
@@ -22,130 +15,104 @@ export default async function GroupOverview({
   const { groupId } = await params;
   const user = await getSessionUser();
   if (!user) redirect("/signin");
-  if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
-  try {
-    await assertMember(groupId, user.id);
-  } catch {
-    notFound();
-  }
 
-  const [members, invites, balances, streaks, rows] = await Promise.all([
-    listGroupMembersDetailed(groupId),
-    listGroupPendingInvites(groupId),
-    groupBalances(groupId),
-    groupMemberStreaks(groupId, user.id),
-    getGroupLedgerRows(groupId),
+  const [header, accepted, members, standing, week] = await Promise.all([
+    groupHeader(groupId, user.id),
+    acceptedTypes(groupId),
+    memberStandings(groupId, user.id),
+    standingIn(groupId, user.id),
+    weekStats(groupId, user.id),
   ]);
+  if (!header) redirect("/groups");
 
-  const isOwner = members.find((m) => m.userId === user.id)?.role === "owner";
-  const mine = balances.get(user.id);
-
-  // Pairwise net between the viewer and each other member. Positive = viewer owes.
-  const pair = new Map<string, { amount: number; currency: string }>();
-  for (const r of rows) {
-    if (r.fromUserId === user.id) {
-      const cur = pair.get(r.toUserId) ?? { amount: 0, currency: r.currency };
-      pair.set(r.toUserId, { amount: cur.amount + r.amount, currency: r.currency });
-    } else if (r.toUserId === user.id) {
-      const cur = pair.get(r.fromUserId) ?? { amount: 0, currency: r.currency };
-      pair.set(r.fromUserId, { amount: cur.amount - r.amount, currency: r.currency });
-    }
-  }
+  const rank = rankFor(standing.score);
 
   return (
-    <>
-      <div className="mb-5 text-[13px]">
-        {mine && mine.netOwed > 0 ? (
-          <span className="text-penalty">You owe {formatMoney(mine.netOwed, mine.currency)} in this group.</span>
-        ) : mine && mine.netOwed < 0 ? (
-          <span className="text-pass">You are owed {formatMoney(-mine.netOwed, mine.currency)} in this group.</span>
-        ) : (
-          <span className="text-muted">Settled in this group.</span>
-        )}
-      </div>
+    <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
+      {accepted.length > 0 ? (
+        <div className="flex flex-wrap gap-[7px]">
+          {accepted.map((a) => (
+            <span
+              key={a.typeKey}
+              className="flex items-center gap-[7px] border border-rule bg-surface px-[11px] py-[6px] text-[12px]"
+            >
+              <ActivityIcon name={a.icon} size={14} />
+              {a.name}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[12.5px] leading-[1.6] text-muted">
+          This group accepts nothing yet.{" "}
+          {header.role === "owner"
+            ? "Pick its activities under Settings."
+            : "The owner has not picked its activities."}
+        </p>
+      )}
 
-      <section className="mb-6">
-        <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">MEMBERS</div>
-        {members.map((m) => {
-          const you = m.userId === user.id;
-          const streak = streaks.get(m.userId);
-          const p = pair.get(m.userId);
-          const canPromote = isOwner && !you && !m.leftAt && m.role !== "owner";
-          return (
-            <div key={m.userId} className="border-b border-rule py-[11px]">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex flex-col gap-[2px]">
-                  <span className="text-[14px]">
-                    {you ? "You" : m.name}
-                    {m.role === "owner" ? <span className="ml-2 text-[11px] text-muted">owner</span> : null}
-                    {m.leftAt ? <span className="text-muted"> (left)</span> : null}
-                  </span>
-                  <span className="text-[12px] text-muted">
-                    {typeof streak === "number" ? `streak ${streak}` : "no streak yet"}
-                  </span>
+      <section className="flex flex-col gap-[10px]">
+        <span className="text-[10px] tracking-[0.16em] text-muted">
+          MEMBERS &middot; {members.length}
+        </span>
+        <div className="flex flex-col">
+          {members.map((m) => (
+            <div
+              key={m.userId}
+              className="flex items-center gap-[11px] border-b border-rule py-3"
+            >
+              <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                <div className="flex items-baseline gap-[7px]">
+                  <span className="text-[14px]">{m.you ? "You" : m.name}</span>
+                  {m.you ? <span className="text-[10px] text-muted">you</span> : null}
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <div className="text-[13px] tabular-nums">
-                    {you ? (
-                      <span className="text-muted">{m.role}</span>
-                    ) : p && p.amount > 0 ? (
-                      <span className="text-penalty">you owe {formatMoney(p.amount, p.currency)}</span>
-                    ) : p && p.amount < 0 ? (
-                      <span className="text-pass">owes you {formatMoney(-p.amount, p.currency)}</span>
-                    ) : (
-                      <span className="text-muted">settled</span>
-                    )}
-                  </div>
-                  {canPromote ? (
-                    <ConfirmButton
-                      action={makeOwnerAction}
-                      fields={{ groupId, targetUserId: m.userId }}
-                      label="Make owner"
-                      message={`Make ${m.name} an owner? They will be able to change the group's rules and stakes. This cannot be undone here.`}
-                      confirmLabel="Make owner"
-                      tone="neutral"
-                    />
-                  ) : null}
-                </div>
+                <span className="truncate text-[11px] text-muted">{m.streaks}</span>
               </div>
+              <RankScore score={m.score} />
             </div>
-          );
-        })}
+          ))}
+        </div>
       </section>
 
       <Link
-        href={`/group/${groupId}/ledger`}
-        className="mb-6 flex h-[46px] items-center justify-center border border-fg text-[14px] tracking-[0.04em]"
+        href={`/group/${groupId}/standing`}
+        className="flex items-center justify-between gap-3 border border-rule p-[13px]"
       >
-        Settle up
+        <div className="flex flex-col gap-[3px]">
+          <span className="text-[12.5px]">
+            You are {Math.round(standing.score)},{" "}
+            <span className={"tracking-[0.1em] " + RANK_TEXT[rank.key]}>{rank.name}</span>{" "}
+            here
+          </span>
+          <span className="text-[11px] text-muted">
+            {standing.movements[0]
+              ? `${standing.movements[0].delta >= 0 ? "+" : ""}${Math.round(standing.movements[0].delta)} today`
+              : "nothing scored yet"}
+          </span>
+        </div>
+        <span className="text-[13px] text-muted">&rsaquo;</span>
       </Link>
 
-      <section className="mb-8">
-        <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">INVITE</div>
-        <InviteForm groupId={groupId} inviterName={user.name} />
-        {invites.map((inv) => (
-          <div key={inv.id} className="mt-3 flex items-center justify-between gap-3 text-[12px] text-muted">
-            <span className="break-all">{inv.email} · pending</span>
-            {isOwner ? (
-              <ConfirmButton
-                action={revokeInviteAction}
-                fields={{ inviteId: inv.id, groupId }}
-                label="Revoke"
-                message={`Withdraw the invite to ${inv.email}?`}
-                confirmLabel="Revoke"
-              />
-            ) : null}
-          </div>
-        ))}
-      </section>
+      <Link
+        href={`/group/${groupId}/stats`}
+        className="flex items-center justify-between gap-3 border border-rule p-[13px]"
+      >
+        <div className="flex flex-col gap-[3px]">
+          <span className="text-[12.5px]">
+            {week.of === 0
+              ? "Nothing scored this week yet"
+              : `This week the group did ${week.done} of ${week.of}`}
+          </span>
+          <span className="text-[11px] text-muted">Group stats</span>
+        </div>
+        <span className="text-[13px] text-muted">&rsaquo;</span>
+      </Link>
 
-      <ConfirmButton
-        action={leaveGroupAction}
-        fields={{ groupId }}
-        label="Leave this group"
-        message="Leave this group? Your balance and history stay."
-        confirmLabel="Leave"
-      />
-    </>
+      <Link
+        href={`/group/${groupId}/settings`}
+        className="flex h-11 w-full items-center justify-center border border-rule text-[14px]"
+      >
+        Invite someone
+      </Link>
+    </div>
   );
 }

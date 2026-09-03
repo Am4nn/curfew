@@ -134,6 +134,7 @@ export async function listGroupMembers(
 
 export interface LedgerRow {
   id: number;
+  typeKey: string | null;
   fromUserId: string;
   toUserId: string;
   fromName: string;
@@ -211,6 +212,7 @@ export async function getGroupLedgerRows(groupId: string): Promise<LedgerRow[]> 
   return db
     .select({
       id: ledgerEntries.id,
+      typeKey: ledgerEntries.typeKey,
       fromUserId: ledgerEntries.fromUserId,
       toUserId: ledgerEntries.toUserId,
       fromName: uf.name,

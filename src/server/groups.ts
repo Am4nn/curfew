@@ -221,11 +221,17 @@ export interface PendingInvite {
   id: string;
   groupId: string;
   groupName: string;
+  inviterName: string;
 }
 
 export async function listInvitesForEmail(email: string): Promise<PendingInvite[]> {
   return db
-    .select({ id: groupInvites.id, groupId: groupInvites.groupId, groupName: groups.name })
+    .select({
+      id: groupInvites.id,
+      groupId: groupInvites.groupId,
+      groupName: groups.name,
+      inviterName: sql<string>`(select name from users where id = ${groupInvites.invitedBy})`,
+    })
     .from(groupInvites)
     .innerJoin(groups, eq(groups.id, groupInvites.groupId))
     .where(and(eq(groupInvites.email, email.toLowerCase()), eq(groupInvites.status, "pending")));

@@ -5,6 +5,7 @@ import {
   groupActivityRules,
   memberShares,
   groupMembers,
+  groupSettings,
 } from "@/db/schema";
 import { resolveAt, resolveConfig, getActivityType } from "@/domain";
 import { assertMember, memberRole } from "./membership";
@@ -267,6 +268,47 @@ export async function setFineRule(input: {
       ],
       set: { fineAmount: input.fineAmount, currency: input.currency },
     });
+}
+
+// ---------------------------------------------------------------------------
+// The owner's money toggle
+// ---------------------------------------------------------------------------
+
+// Distinct from the admin's per-group override, which lives under "money".
+// An owner can never turn money on where an admin has it off (decision 66).
+const OWNER_MONEY_KEY = "money_owner";
+
+/** Whether this group's owner has money on. Off by default (decision 18). */
+export async function ownerMoneyToggle(groupId: string): Promise<boolean> {
+  const rows = await db
+    .select({
+      id: groupSettings.id,
+      value: groupSettings.value,
+      effectiveAt: groupSettings.effectiveAt,
+    })
+    .from(groupSettings)
+    .where(
+      and(eq(groupSettings.groupId, groupId), eq(groupSettings.key, OWNER_MONEY_KEY)),
+    );
+  const row = resolveAt(rows, new Date());
+  return row?.value === true;
+}
+
+export async function setOwnerMoneyToggle(input: {
+  groupId: string;
+  on: boolean;
+  changedBy: string;
+}): Promise<void> {
+  const role = await memberRole(input.groupId, input.changedBy);
+  if (role !== "owner") throw new Error("Only an owner can switch money.");
+
+  await db.insert(groupSettings).values({
+    groupId: input.groupId,
+    key: OWNER_MONEY_KEY,
+    value: input.on,
+    effectiveAt: new Date(),
+    changedBy: input.changedBy,
+  });
 }
 
 // ---------------------------------------------------------------------------

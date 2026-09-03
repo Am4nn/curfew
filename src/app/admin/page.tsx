@@ -50,8 +50,8 @@ export default async function AdminOverview() {
             label="Drift check"
             detail={
               lastRun.driftCheck.periodsDiffer === 0
-                ? "0 periods differ from stored"
-                : `${lastRun.driftCheck.periodsDiffer} period(s) differ from stored`
+                ? "0 rows differ from stored"
+                : `${lastRun.driftCheck.periodsDiffer} row(s) differ from stored`
             }
             status={lastRun.driftCheck.ok ? "ok" : "review"}
           />

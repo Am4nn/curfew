@@ -32,7 +32,8 @@ import {
   type DayReason,
 } from "@/domain";
 import { resolveUserTimezone } from "./config";
-import { acceptedTypes, sharesFor, fineRuleFor } from "./sharing";
+import { acceptedTypes, sharesFor, fineRuleFor, ownerMoneyToggle } from "./sharing";
+import { moneyOnFor } from "./app-config";
 import { writeFines, type OutcomeRow } from "./ledger";
 import { now } from "@/lib/clock";
 
@@ -334,6 +335,7 @@ export async function recomputeUser(
     scores,
     instant,
     timezone,
+    reputation,
   );
   reputation.push(...groupReputation);
 
@@ -417,7 +419,14 @@ async function recomputeGroups(
   scores: ScoreRow[],
   instant: Date,
   timezone: string,
+  globalSeries: ReputationRow[],
 ): Promise<{ outcomes: OutcomeWrite[]; groupReputation: ReputationRow[] }> {
+  // The global score on each day of this same replay. Read from here rather
+  // than from `reputation_daily`, so a recompute is a pure function of events
+  // and verify converges: reading the stored table would seed each run with
+  // the previous run's output and the two could never agree.
+  const globalOn = new Map(globalSeries.map((r) => [r.day, Number(r.score)]));
+  const globalDays = globalSeries.map((r) => r.day);
   const memberships = await db
     .select({
       groupId: groupMembers.groupId,
@@ -426,6 +435,20 @@ async function recomputeGroups(
     })
     .from(groupMembers)
     .where(eq(groupMembers.userId, userId));
+
+  // The global score on the day before `day`. Before the series begins, the
+  // user had no history at all, so they start where everyone starts.
+  const globalBefore = (day: string): number => {
+    const wanted = addDays(day, -1);
+    const exact = globalOn.get(wanted);
+    if (exact !== undefined) return exact;
+    let best: number | null = null;
+    for (let i = 0; i < globalDays.length; i += 1) {
+      if (globalDays[i] > wanted) break;
+      best = globalOn.get(globalDays[i]) ?? best;
+    }
+    return best ?? START_SCORE;
+  };
 
   const outcomes: OutcomeWrite[] = [];
   const groupReputation: ReputationRow[] = [];
@@ -437,6 +460,12 @@ async function recomputeGroups(
     const start = m.joinedAt > from ? m.joinedAt : from;
     const end = m.leftAt && m.leftAt < today ? m.leftAt : today;
     if (start > end) continue;
+
+    // Whether this group even tracks money at all (decision 66's three-way
+    // resolution: app-wide, admin override, owner toggle). A group with money
+    // off must never accrue a fine for it, or ledger_entries carries debts a
+    // switched-off group never agreed to.
+    const ownerToggle = await ownerMoneyToggle(m.groupId);
 
     // Sharing and acceptance are resolved as they stood on each day, so a
     // change today never rewrites what a past period was judged against.
@@ -456,14 +485,12 @@ async function recomputeGroups(
       };
     };
 
-    // The score someone starts on, from their hidden global score.
-    const [before] = await db
-      .select({ score: reputationDaily.score })
-      .from(reputationDaily)
-      .where(and(eq(reputationDaily.userId, userId), isNull(reputationDaily.groupId)))
-      .orderBy(sql`day desc`)
-      .limit(1);
-    let score = joiningScore(before ? Number(before.score) : START_SCORE);
+    // The score someone starts on, from their hidden global score AS IT STOOD
+    // THE DAY THEY JOINED (invariant 5), not as it stands now. Reading the
+    // latest value instead moves a group's starting point every time the
+    // global score moves, which rewrites every day of that group's history
+    // after the fact.
+    let score = joiningScore(globalBefore(m.joinedAt));
     let idleDays = 0;
 
     for (const day of dayList(start, end)) {
@@ -478,10 +505,14 @@ async function recomputeGroups(
           concludesOn(sc) === day,
       );
 
+      const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
+      const moneyOn = await moneyOnFor(m.groupId, ownerToggle, at);
+
       for (const sc of todays) {
         const rule = await fineRuleFor(m.groupId, sc.typeKey, sc.periodStart);
-        // Grace protects the streak, never the fine (decision 5).
-        const fine = sc.passed
+        // Grace protects the streak, never the fine (decision 5). A group
+        // with money off never accrues one either, whatever the rule says.
+        const fine = sc.passed || !moneyOn
           ? 0
           : fineFor({
               fineMode: rule.fineMode,

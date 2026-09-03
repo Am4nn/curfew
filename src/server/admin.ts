@@ -98,6 +98,7 @@ export interface LastRun {
   scoring: { periodsClosed: number; ok: true };
   reputation: { usersRecomputed: number; ok: true };
   retentionSweep: { photosDeleted: number; ok: true };
+  /** Rows that differ from stored, of any kind: a period or a reputation day. */
   driftCheck: { periodsDiffer: number; ok: boolean };
 }
 
@@ -226,7 +227,9 @@ export async function getLastRun(): Promise<LastRun> {
     verifyAll({ from: new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) }),
   ]);
 
-  const periodsDiffer = drift.filter((d) => d.kind === "score").length;
+  // Every kind, not just "score": counting only period drift reported "0
+  // differ" on a window where Ops was listing a hundred reputation rows.
+  const periodsDiffer = drift.length;
 
   return {
     scoring: { periodsClosed: Number(scoringRow[0]?.n ?? 0), ok: true },

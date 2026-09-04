@@ -32,7 +32,7 @@ import {
   type DayReason,
 } from "@/domain";
 import { resolveUserTimezone } from "./config";
-import { acceptedTypes, sharesFor, fineRuleFor, ownerMoneyToggle } from "./sharing";
+import { acceptedTypes, sharesFor, fineRuleFor, ownerMoneyToggleAsOf } from "./sharing";
 import { moneyOnFor } from "./app-config";
 import { writeFines, type OutcomeRow } from "./ledger";
 import { now } from "@/lib/clock";
@@ -465,7 +465,10 @@ async function recomputeGroups(
     // resolution: app-wide, admin override, owner toggle). A group with money
     // off must never accrue a fine for it, or ledger_entries carries debts a
     // switched-off group never agreed to.
-    const ownerToggle = await ownerMoneyToggle(m.groupId);
+    // Read once, resolved per day below: an owner turning money on today must
+    // not make a period that closed last week read as though it had been on
+    // (invariant 5).
+    const ownerToggleAt = await ownerMoneyToggleAsOf(m.groupId);
 
     // Sharing and acceptance are resolved as they stood on each day, so a
     // change today never rewrites what a past period was judged against.
@@ -506,7 +509,7 @@ async function recomputeGroups(
       );
 
       const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
-      const moneyOn = await moneyOnFor(m.groupId, ownerToggle, at);
+      const moneyOn = await moneyOnFor(m.groupId, ownerToggleAt(at), at);
 
       for (const sc of todays) {
         const rule = await fineRuleFor(m.groupId, sc.typeKey, sc.periodStart);

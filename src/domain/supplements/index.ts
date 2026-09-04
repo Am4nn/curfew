@@ -39,7 +39,7 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
     detail: "Live camera. A photo of what you took.",
   },
   checkin: { kind: "camera" },
-  chart: "binary",
+  chart: { kind: "binary", heading: "TAKEN OR MISSED" },
 
   fields() {
     return [

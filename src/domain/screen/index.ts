@@ -49,7 +49,12 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
     detail: "Gallery allowed. A screenshot of your phone's own report.",
   },
   checkin: { kind: "number" },
-  chart: "numeric",
+  chart: {
+    kind: "numeric",
+    heading: "SCREEN MINUTES A DAY",
+    valueField: "minutes",
+    targetField: "limit",
+  },
 
   note: "Curfew cannot read your screen time. The number is yours to enter.",
 

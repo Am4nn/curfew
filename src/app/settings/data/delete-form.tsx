@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useServerAction } from "@/app/ui";
+import type { SignedPhoto } from "@/server/own-photos";
 import { ActivityIcon } from "../../activity-icon";
+import { PhotoTile } from "../../photo-tile";
 import {
   deletePhotosAction,
   deleteOnePhotoAction,
@@ -21,15 +23,8 @@ export interface HistoryRow {
   icon: string;
 }
 
-export interface PhotoRow {
-  id: number;
-  url: string;
-  typeKey: string;
-  name: string;
-  icon: string;
-  /** Already formatted server-side, e.g. "3 Sep". */
-  date: string;
-}
+/** The shared shape, so the tile is the same one Stats and Photos draw. */
+export type PhotoRow = SignedPhoto;
 
 type Pending =
   | { kind: "photos" }
@@ -111,7 +106,7 @@ export function DeleteForm({
     if (p.kind === "history") {
       return "Every scored period of every activity goes, along with every photo. Your check-ins stay as anonymous counts, and every fine already charged stays owed.";
     }
-    return "Your habit history and photos go. Your name and email are removed. Ledger rows stay, because a debt with no counterparty is not a debt, and you cannot sign in again.";
+    return "Your habit history and photos go. Your email is removed and you cannot sign in again. Ledger rows stay, and your name stays on them, because a debt nobody can name is a debt nobody can settle.";
   };
 
   return (
@@ -170,7 +165,8 @@ export function DeleteForm({
       <p className="text-[11.5px] leading-[1.55] text-penalty">
         Money owed is never deleted.
         {outstanding.length > 0 ? ` You owe ${outstanding.join(", ")}.` : ""} Ledger
-        entries stay, with your name removed where it can be.
+        entries stay, and your name stays on them, so the people involved can still
+        see who owes what.
       </p>
 
       <p className="text-[11.5px] leading-[1.55] text-muted">
@@ -204,19 +200,9 @@ export function DeleteForm({
                     onClick={() =>
                       setPending({ kind: "photo", id: p.id, name: p.name, date: p.date })
                     }
-                    className="flex flex-col gap-[6px] text-left"
+                    className="text-left"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={p.url}
-                      alt={`${p.name}, ${p.date}`}
-                      className="aspect-square w-full border border-rule bg-surface object-cover"
-                    />
-                    <span className="flex items-center gap-[5px] text-[10px] text-muted">
-                      <ActivityIcon name={p.icon} size={11} />
-                      {p.name}
-                    </span>
-                    <span className="text-[10px] text-muted">{p.date}</span>
+                    <PhotoTile photo={p} />
                   </button>
                 ))}
               </div>

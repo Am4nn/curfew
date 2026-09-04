@@ -1,5 +1,4 @@
-import { and, eq, or, isNull, lte, gt, desc } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { and, eq, or, isNull, lte, gt, desc, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { ledgerEntries, groups, groupMembers, users } from "@/db/schema";
 import { splitFine } from "@/domain";
@@ -14,6 +13,25 @@ export interface OutcomeRow {
   passed: boolean;
   fineAmount: number;
   currency: string;
+}
+
+/**
+ * Names for a set of users, resolved once, for freezing onto ledger rows.
+ *
+ * Every ledger insert carries the two names as they stand at the moment of
+ * writing (migration 0015). A name that cannot be resolved is written as
+ * "Former member" rather than left null, because a row with no name is worse
+ * than a row with an anonymous one.
+ */
+async function nameLookup(userIds: string[]): Promise<(id: string) => string> {
+  const wanted = [...new Set(userIds)];
+  if (wanted.length === 0) return () => "Former member";
+  const rows = await db
+    .select({ id: users.id, name: users.name })
+    .from(users)
+    .where(inArray(users.id, wanted));
+  const byId = new Map(rows.map((r) => [r.id, r.name]));
+  return (id) => byId.get(id) ?? "Former member";
 }
 
 /**
@@ -32,6 +50,9 @@ export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
   if (failed.length === 0) return 0;
 
   const rows: (typeof ledgerEntries.$inferInsert)[] = [];
+  const names = await nameLookup(
+    outcomes.map((o) => o.userId),
+  );
 
   for (const o of failed) {
     // Only members who passed the same period, sharing the same type. Someone
@@ -55,6 +76,8 @@ export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
         typeKey: o.typeKey,
         fromUserId: o.userId,
         toUserId: share.toUserId,
+        fromUserName: names(o.userId),
+        toUserName: names(share.toUserId),
         amount: share.amount,
         currency: o.currency,
         kind: "fine",
@@ -94,12 +117,15 @@ export async function recordSettlement(input: {
   if (input.payerUserId === input.payeeUserId) {
     throw new Error("cannot settle with yourself");
   }
+  const names = await nameLookup([input.payerUserId, input.payeeUserId]);
   const [row] = await db
     .insert(ledgerEntries)
     .values({
       groupId: input.groupId,
       fromUserId: input.payeeUserId,
       toUserId: input.payerUserId,
+      fromUserName: names(input.payeeUserId),
+      toUserName: names(input.payerUserId),
       amount: input.amount,
       currency: input.currency ?? "INR",
       kind: "settlement",
@@ -179,7 +205,17 @@ export async function getUserDebts(
       listGroupMembers(g.groupId, userId),
       getGroupLedgerRows(g.groupId, userId),
     ]);
-    const nameById = new Map(members.map((m) => [m.userId, m.name]));
+    // A member still in the group is named as they are now; anyone who has
+    // left, deletion included, is named by what the ledger froze at the time.
+    // Rows arrive newest first, so the first frozen name seen is the latest.
+    const nameById = new Map<string, string>();
+    for (const r of rows) {
+      if (!nameById.has(r.fromUserId)) nameById.set(r.fromUserId, r.fromName);
+      if (!nameById.has(r.toUserId)) nameById.set(r.toUserId, r.toName);
+    }
+    for (const m of members) {
+      if (m.leftAt === null) nameById.set(m.userId, m.name);
+    }
 
     // Positive net means the user owes that person, in that currency.
     const net = new Map<string, number>();
@@ -217,16 +253,16 @@ export async function getGroupLedgerRows(
   viewerId: string,
 ): Promise<LedgerRow[]> {
   await assertMember(groupId, viewerId);
-  const uf = alias(users, "uf");
-  const ut = alias(users, "ut");
+  // The frozen names, not a join on users: a member who deleted their account
+  // still has to be nameable on what they owe.
   return db
     .select({
       id: ledgerEntries.id,
       typeKey: ledgerEntries.typeKey,
       fromUserId: ledgerEntries.fromUserId,
       toUserId: ledgerEntries.toUserId,
-      fromName: uf.name,
-      toName: ut.name,
+      fromName: ledgerEntries.fromUserName,
+      toName: ledgerEntries.toUserName,
       amount: ledgerEntries.amount,
       currency: ledgerEntries.currency,
       kind: ledgerEntries.kind,
@@ -235,8 +271,6 @@ export async function getGroupLedgerRows(
       createdAt: ledgerEntries.createdAt,
     })
     .from(ledgerEntries)
-    .innerJoin(uf, eq(uf.id, ledgerEntries.fromUserId))
-    .innerJoin(ut, eq(ut.id, ledgerEntries.toUserId))
     .where(eq(ledgerEntries.groupId, groupId))
     .orderBy(desc(ledgerEntries.createdAt))
     .limit(200);

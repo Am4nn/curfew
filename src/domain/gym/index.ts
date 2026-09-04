@@ -58,7 +58,12 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     detail: "Live camera, on every session.",
   },
   checkin: { kind: "tap" },
-  chart: "weekly",
+  chart: {
+    kind: "weekly",
+    heading: "SESSIONS A WEEK",
+    valueField: "sessions",
+    targetField: "required",
+  },
   // Nothing of its own. "Any 3 a week" is the engine's schedule, drawn by the
   // day picker, so a second control here would be the same number twice.
   fields() {

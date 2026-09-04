@@ -291,8 +291,30 @@ export async function setFineRule(input: {
 // An owner can never turn money on where an admin has it off (decision 66).
 const OWNER_MONEY_KEY = "money_owner";
 
-/** Whether this group's owner has money on. Off by default (decision 18). */
-export async function ownerMoneyToggle(groupId: string): Promise<boolean> {
+/**
+ * Whether this group's owner had money on, as it stood at `at`. Off by default
+ * (decision 18).
+ *
+ * `at` defaults to now for the screens, which ask about the group as it is.
+ * Anything judging a past period must pass the day being scored, or invariant
+ * 5 breaks: an owner turning money on today would otherwise make every closed
+ * period in the group's history read as though it had been on all along.
+ */
+export async function ownerMoneyToggle(
+  groupId: string,
+  at: Date = new Date(),
+): Promise<boolean> {
+  return (await ownerMoneyToggleAsOf(groupId))(at);
+}
+
+/**
+ * The same answer for many days at once: read the group's rows once, then
+ * resolve each day against them. The scorer walks a range of days and would
+ * otherwise repeat the query per day.
+ */
+export async function ownerMoneyToggleAsOf(
+  groupId: string,
+): Promise<(at: Date) => boolean> {
   const rows = await db
     .select({
       id: groupSettings.id,
@@ -303,8 +325,7 @@ export async function ownerMoneyToggle(groupId: string): Promise<boolean> {
     .where(
       and(eq(groupSettings.groupId, groupId), eq(groupSettings.key, OWNER_MONEY_KEY)),
     );
-  const row = resolveAt(rows, new Date());
-  return row?.value === true;
+  return (at) => resolveAt(rows, at)?.value === true;
 }
 
 export async function setOwnerMoneyToggle(input: {

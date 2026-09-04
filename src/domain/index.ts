@@ -118,6 +118,7 @@ export type {
   FieldIssue,
   CheckinKind,
   ChartKind,
+  ChartSpec,
   ScheduleDefaults,
 } from "./types";
 export {

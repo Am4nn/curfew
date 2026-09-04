@@ -185,6 +185,10 @@ export const ledgerEntries = pgTable("ledger_entries", {
   toUserId: text("to_user_id")
     .notNull()
     .references(() => users.id), // who is owed
+  // Frozen at insert and never rewritten (migration 0015). Deleting an account
+  // renames the user, so a joined name would erase who owed what.
+  fromUserName: text("from_user_name").notNull(),
+  toUserName: text("to_user_name").notNull(),
   amount: bigint("amount", { mode: "number" }).notNull(),
   currency: char("currency", { length: 3 }).notNull().default("INR"),
   kind: text("kind").notNull(), // fine | settlement | adjustment

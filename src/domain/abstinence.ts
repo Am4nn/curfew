@@ -52,6 +52,8 @@ export function abstinenceActivity(spec: {
   cutoff: { label: string; default: string } | null;
   /** The question the check-in screen asks, in this type's own words. */
   prompt: (config: AbstinenceConfig) => string;
+  /** The heading over this type's chart, in its own words. */
+  chartHeading: string;
   /** The line under the confirm window on the configure screen. */
   windowHint: string;
   /** The line under "No photo" on the configure screen. */
@@ -77,7 +79,7 @@ export function abstinenceActivity(spec: {
 
     evidence: { level: "none", source: "live", detail: spec.evidenceDetail },
     checkin: { kind: "declare" },
-    chart: "binary",
+    chart: { kind: "binary", heading: spec.chartHeading },
 
     note: spec.note,
 

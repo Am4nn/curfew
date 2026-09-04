@@ -26,10 +26,10 @@ export function ActivityChartView({ chart }: { chart: ActivityChart }) {
 
   return (
     <div className="flex flex-col gap-[22px]">
-      {chart.kind === "numeric" ? <Numeric chart={chart} /> : null}
-      {chart.kind === "binary" ? <Binary chart={chart} /> : null}
-      {chart.kind === "weekly" ? <Weekly chart={chart} /> : null}
-      {chart.kind === "windowed" ? <Windowed chart={chart} /> : null}
+      {chart.spec.kind === "numeric" ? <Numeric chart={chart} /> : null}
+      {chart.spec.kind === "binary" ? <Binary chart={chart} /> : null}
+      {chart.spec.kind === "weekly" ? <Weekly chart={chart} /> : null}
+      {chart.spec.kind === "windowed" ? <Windowed chart={chart} /> : null}
       <Weekdays chart={chart} />
       <Tiles chart={chart} />
     </div>
@@ -55,18 +55,18 @@ function Tiles({ chart }: { chart: ActivityChart }) {
 // The third figure is the one that depends on the kind: a rate for the kinds
 // that carry a number, grace left for the kinds that do not.
 function thirdTile(chart: ActivityChart): { value: string; label: string } {
-  if (chart.kind === "numeric") {
-    const total = chart.points.reduce((s, p) => s + numericValue(p.detail), 0);
+  if (chart.spec.kind === "numeric") {
+    const total = chart.points.reduce((s, p) => s + valueOf(chart, p.detail), 0);
     return {
       value: Math.round(total / chart.points.length).toLocaleString("en-US"),
       label: "AVERAGE A PERIOD",
     };
   }
-  if (chart.kind === "weekly") {
-    const total = chart.points.reduce((s, p) => s + (num(p.detail, "sessions") ?? 0), 0);
+  if (chart.spec.kind === "weekly") {
+    const total = chart.points.reduce((s, p) => s + valueOf(chart, p.detail), 0);
     return {
       value: (total / chart.points.length).toFixed(1),
-      label: "SESSIONS A WEEK",
+      label: "AVERAGE A WEEK",
     };
   }
   return { value: String(chart.graceLeft), label: "GRACE LEFT" };
@@ -100,7 +100,7 @@ function weekdayOf(day: string): number {
 // that weekday. Both are counted here rather than on the server, because both
 // are already in the points.
 function Weekdays({ chart }: { chart: ActivityChart }) {
-  const weekly = chart.kind === "weekly";
+  const weekly = chart.spec.kind === "weekly";
   const counts = Array.from({ length: 7 }, () => ({ hit: 0, of: 0 }));
 
   if (weekly) {
@@ -153,30 +153,29 @@ function Weekdays({ chart }: { chart: ActivityChart }) {
 // The four kinds.
 // ---------------------------------------------------------------------------
 
-const numericValue = (d: Record<string, unknown>) =>
-  num(d, "steps") ??
-  num(d, "minutes") ??
-  num(d, "amount") ??
-  num(d, "calories") ??
-  num(d, "glasses") ??
-  0;
+// The plotted number and the line it is measured against, both named by the
+// module (ChartSpec). This was a chain of guesses across five field names,
+// which is the engine knowing what a type means.
+const valueOf = (chart: ActivityChart, d: Record<string, unknown>) =>
+  chart.spec.valueField ? (num(d, chart.spec.valueField) ?? 0) : 0;
 
-const numericTarget = (d: Record<string, unknown>) => num(d, "target") ?? num(d, "limit") ?? 0;
+const targetOf = (chart: ActivityChart, d: Record<string, unknown>) =>
+  chart.spec.targetField ? (num(d, chart.spec.targetField) ?? 0) : 0;
 
 // Bars against the target. A bar that reached the line is solid, one that fell
 // short is the rule colour: height carries the pass as well as tone does.
 function Numeric({ chart }: { chart: ActivityChart }) {
   const peak = Math.max(
     1,
-    ...chart.points.map((p) => Math.max(numericValue(p.detail), numericTarget(p.detail))),
+    ...chart.points.map((p) => Math.max(valueOf(chart, p.detail), targetOf(chart, p.detail))),
   );
-  const line = numericTarget(chart.points.at(-1)!.detail);
+  const line = targetOf(chart, chart.points.at(-1)!.detail);
   const short = chart.points.filter((p) => !p.passed).length;
 
   return (
     <section className="flex flex-col gap-[11px]">
       <span className="text-[10px] tracking-[0.16em] text-muted">
-        LAST {chart.points.length} PERIODS
+        {chart.spec.heading}, {chart.points.length} PERIODS
       </span>
       <div className="relative h-[132px]">
         {line > 0 ? (
@@ -197,9 +196,9 @@ function Numeric({ chart }: { chart: ActivityChart }) {
           {chart.points.map((p) => (
             <div
               key={p.periodStart}
-              title={`${p.periodStart}: ${numericValue(p.detail).toLocaleString("en-US")}`}
+              title={`${p.periodStart}: ${valueOf(chart, p.detail).toLocaleString("en-US")}`}
               className={"flex-1 " + (p.passed ? "bg-fg" : "bg-rule")}
-              style={{ height: `${Math.max(2, (numericValue(p.detail) / peak) * 100)}%` }}
+              style={{ height: `${Math.max(2, (valueOf(chart, p.detail) / peak) * 100)}%` }}
             />
           ))}
         </div>
@@ -235,7 +234,7 @@ function Binary({ chart }: { chart: ActivityChart }) {
   return (
     <section className="flex flex-col gap-[11px]">
       <span className="text-[10px] tracking-[0.16em] text-muted">
-        HELD OR SLIPPED, {weeks.length} WEEKS
+        {chart.spec.heading}, {weeks.length} WEEKS
       </span>
       <div className="flex flex-col gap-[5px]">
         {weeks.map((week, w) => (
@@ -337,16 +336,15 @@ function Cross() {
 
 // Weekly counts against the minimum, the count printed above each bar.
 function Weekly({ chart }: { chart: ActivityChart }) {
-  const sessions = (d: Record<string, unknown>) => num(d, "sessions") ?? 0;
-  const required = (d: Record<string, unknown>) => num(d, "required") ?? 0;
-  const min = required(chart.points.at(-1)!.detail);
+  const sessions = (d: Record<string, unknown>) => valueOf(chart, d);
+  const min = targetOf(chart, chart.points.at(-1)!.detail);
   const peak = Math.max(1, min, ...chart.points.map((p) => sessions(p.detail)));
   const short = chart.points.filter((p) => sessions(p.detail) < min).length;
 
   return (
     <section className="flex flex-col gap-[11px]">
       <span className="text-[10px] tracking-[0.16em] text-muted">
-        SESSIONS A WEEK, {chart.points.length} WEEKS
+        {chart.spec.heading}, {chart.points.length} WEEKS
       </span>
       <div className="relative h-[132px]">
         {min > 0 ? (
@@ -421,7 +419,9 @@ function Windowed({ chart }: { chart: ActivityChart }) {
   if (windowOpen === null || windowClose === null || dots.length === 0) {
     return (
       <section className="flex flex-col gap-[11px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">WAKE TIME</span>
+        <span className="text-[10px] tracking-[0.16em] text-muted">
+          {chart.spec.heading}
+        </span>
         <p className="text-[11.5px] leading-[1.55] text-muted">
           No wake check-in recorded yet.
         </p>
@@ -439,7 +439,7 @@ function Windowed({ chart }: { chart: ActivityChart }) {
   return (
     <section className="flex flex-col gap-[11px]">
       <span className="text-[10px] tracking-[0.16em] text-muted">
-        WAKE TIME, {dots.length} DAYS
+        {chart.spec.heading}, {dots.length} DAYS
       </span>
       <div className="relative h-[132px] border-b border-l border-rule">
         <div

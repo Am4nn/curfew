@@ -57,7 +57,12 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
     quality: 0.9,
   },
   checkin: { kind: "camera" },
-  chart: "numeric",
+  chart: {
+    kind: "numeric",
+    heading: "CALORIES A DAY",
+    valueField: "calories",
+    targetField: "limit",
+  },
 
   note: "A photo is not proof. It records that you took one in the app, at a server timestamp.",
 

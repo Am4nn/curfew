@@ -38,7 +38,12 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
 
   evidence: { level: "required", source: "live", detail: "Live camera." },
   checkin: { kind: "number" },
-  chart: "numeric",
+  chart: {
+    kind: "numeric",
+    heading: "STUDY MINUTES A DAY",
+    valueField: "minutes",
+    targetField: "target",
+  },
 
   fields() {
     return [

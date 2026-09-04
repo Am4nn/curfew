@@ -34,7 +34,7 @@ export const officeActivity: ActivityType<OfficeConfig, OfficeEvidence> = {
 
   evidence: { level: "optional", source: "live", detail: "Live camera." },
   checkin: { kind: "tap" },
-  chart: "binary",
+  chart: { kind: "binary", heading: "IN OR NOT" },
 
   fields() {
     return [

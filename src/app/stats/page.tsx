@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { overviewFor, chartFor } from "@/server/stats";
+import { ownPhotos } from "@/server/own-photos";
+import { PhotoGrid } from "../photo-tile";
 import { QuorumMark } from "../mark";
 import { ActivityIcon, Flame } from "../activity-icon";
 import { ActivityChartView } from "./charts";
@@ -40,6 +42,8 @@ export default async function StatsPage({
   if (a) {
     const chart = await chartFor(user.id, a);
     if (!chart) redirect("/stats");
+    // The photographs this activity asked for, beside the numbers they back up.
+    const photos = await ownPhotos(user.id, { typeKey: a, limit: 6 });
     return (
       <main className="min-h-dvh px-5 pb-24 pt-5">
         <div className="mx-auto flex max-w-[560px] flex-col gap-[22px]">
@@ -89,6 +93,20 @@ export default async function StatsPage({
           </details>
 
           <ActivityChartView chart={chart} />
+
+          {photos.length > 0 ? (
+            <section className="flex flex-col gap-[11px]">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[10px] tracking-[0.16em] text-muted">
+                  YOUR PHOTOS
+                </span>
+                <Link href="/settings/photos" className="text-[11px] text-muted">
+                  All &rsaquo;
+                </Link>
+              </div>
+              <PhotoGrid photos={photos} showType={false} />
+            </section>
+          ) : null}
         </div>
       </main>
     );

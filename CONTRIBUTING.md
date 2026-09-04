@@ -45,7 +45,8 @@ export const pushupsActivity: ActivityType<PushupsConfig, PushupsEvidence> = {
   configSchema, evidenceSchema,
   evidence: { level: "optional", source: "live", detail: "Live camera." },
   checkin: { kind: "number" },
-  chart: "numeric",
+  chart: { kind: "numeric", heading: "PUSHUPS A DAY",
+           valueField: "done", targetField: "target" },
   fields(config) { ... },   // what the configure screen draws
   steps(config) { ... },    // what can be checked in, and when
   windows(config, periodStart, timezone) { ... },
@@ -66,7 +67,16 @@ What each piece decides:
   outside your module ever reads it.
 - **`hint`** is optional, and it is the line under the fields on the check-in
   screen. Only your module can write "1180 so far today. The limit is 2000."
-- **`chart`** names which of four charts the stats screen draws. Not a new one.
+- **`chart`** names which of four charts the stats screen draws, and nothing
+  else. `kind` is one of the four; adding a fifth is an engine change.
+  `heading` is the label over it, in your words and in caps, because
+  "LAST 30 PERIODS" tells a reader nothing about what the bars are. A
+  `numeric` or `weekly` chart also names `valueField` and `targetField`: which
+  keys of *your own* `detail` carry the plotted number and the line it is
+  measured against. The engine used to guess through a chain of field names,
+  which is the engine knowing what your type means. It no longer does, so a
+  chart with an unnamed field simply plots zero, and `registry.test.ts` fails
+  the type before it ships.
 
 ### 2. Register it
 

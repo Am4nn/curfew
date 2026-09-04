@@ -50,7 +50,12 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
     detail: "Gallery allowed. A shot of your watch or app counts.",
   },
   checkin: { kind: "number" },
-  chart: "numeric",
+  chart: {
+    kind: "numeric",
+    heading: "STEPS A DAY",
+    valueField: "steps",
+    targetField: "target",
+  },
 
   note: "Curfew cannot read your watch. The number is yours to enter.",
 

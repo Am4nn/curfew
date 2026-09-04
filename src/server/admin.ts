@@ -532,8 +532,8 @@ export async function getGroupInspector(groupId: string): Promise<GroupInspector
     db
       .select({
         id: ledgerEntries.id,
-        fromName: sql<string>`(select name from users where id = ${ledgerEntries.fromUserId})`,
-        toName: sql<string>`(select name from users where id = ${ledgerEntries.toUserId})`,
+        fromName: ledgerEntries.fromUserName,
+        toName: ledgerEntries.toUserName,
         amount: ledgerEntries.amount,
         currency: ledgerEntries.currency,
         kind: ledgerEntries.kind,

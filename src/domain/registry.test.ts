@@ -26,7 +26,16 @@ describe("registry", () => {
       expect(["tap", "counter", "number", "camera", "declare"]).toContain(
         type.checkin.kind,
       );
-      expect(["windowed", "numeric", "weekly", "binary"]).toContain(type.chart);
+      expect(["windowed", "numeric", "weekly", "binary"]).toContain(type.chart.kind);
+      // The heading ships as it is written, in caps, so a module that forgets
+      // it would put an empty label over its own chart.
+      expect(type.chart.heading, `${key} chart heading`).toMatch(/^[A-Z0-9 ,'-]+$/);
+      // A chart that plots a number has to say which number. Without this the
+      // engine is back to guessing field names (invariant 6).
+      if (type.chart.kind === "numeric" || type.chart.kind === "weekly") {
+        expect(type.chart.valueField, `${key} chart valueField`).toBeTruthy();
+        expect(type.chart.targetField, `${key} chart targetField`).toBeTruthy();
+      }
       expect(type.defaults.grace, `${key} grace`).toBeGreaterThanOrEqual(0);
     }
   });

@@ -6,7 +6,7 @@ import { hasAdminAccess } from "@/server/admin";
 import { getPersonalSettings } from "@/server/settings";
 import { listUserActivities } from "@/server/activities";
 import { listUserGroups } from "@/server/groups";
-import { RETENTION_DAYS } from "@/server/evidence";
+import { RETENTION_DAYS, listOwnPhotos } from "@/server/evidence";
 import { consentOf } from "@/server/consent";
 import { QuorumMark } from "../mark";
 import { ThemeToggle } from "../theme-toggle";
@@ -27,15 +27,17 @@ export default async function Settings() {
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const [personal, admin, activities, groups, consent] = await Promise.all([
+  const [personal, admin, activities, groups, consent, ownPhotoRows] = await Promise.all([
     getPersonalSettings(user.id),
     hasAdminAccess(user.id),
     listUserActivities(user.id),
     listUserGroups(user.id),
     consentOf(user.id),
+    listOwnPhotos(user.id),
   ]);
   const theme = (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
   const tracked = activities.filter((a) => a.enabled).length;
+  const photos = ownPhotoRows.length;
 
   return (
     <main className="min-h-dvh px-5 pb-24 pt-5">
@@ -81,6 +83,11 @@ export default async function Settings() {
               <span className="flex-1 text-[13.5px]">Photo retention</span>
               <span className="text-[11px] text-muted">{RETENTION_DAYS} days</span>
             </div>
+            <Row
+              label="Your photos"
+              value={photos > 0 ? `${photos} stored` : undefined}
+              href="/settings/photos"
+            />
             <Row label="How reputation works" href="/ranks" />
             <Row
               label="What Curfew stores"

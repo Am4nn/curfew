@@ -50,7 +50,12 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
     detail: "Live camera, of the page you stopped on.",
   },
   checkin: { kind: "number" },
-  chart: "numeric",
+  chart: {
+    kind: "numeric",
+    heading: "HOW MUCH YOU READ",
+    valueField: "amount",
+    targetField: "target",
+  },
 
   // The target is labelled in the unit chosen one control above it, which is
   // why the fields are a function of the config and not a constant.

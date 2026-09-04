@@ -288,6 +288,10 @@ CREATE TABLE ledger_entries (
     activity_id  uuid REFERENCES activities(id),      -- null for settlements
     from_user_id text NOT NULL REFERENCES users(id),  -- who owes
     to_user_id   text NOT NULL REFERENCES users(id),  -- who is owed
+    -- Frozen at insert, never rewritten. Deleting an account renames the user,
+    -- so a joined name would erase who owed what (migration 0015).
+    from_user_name text NOT NULL,
+    to_user_name   text NOT NULL,
     amount       bigint  NOT NULL CHECK (amount > 0), -- minor units
     currency     char(3) NOT NULL DEFAULT 'INR',
     kind         text NOT NULL CHECK (kind IN ('fine', 'settlement', 'adjustment')),

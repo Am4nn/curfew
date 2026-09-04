@@ -287,6 +287,7 @@ check("a required photo is required", !noPhoto.ok && noPhoto.reason === "no_phot
 console.log("\n--- 10. deleting an account with money outstanding ---");
 await db.insert(ledgerEntries).values({
   groupId: mine, typeKey: TYPE, fromUserId: me.id, toUserId: peer,
+  fromUserName: "Break-in", toUserName: "Break-in peer",
   amount: 5000, currency: "INR", kind: "fine", periodStart: back,
 });
 const summary = await deletionSummary(me.id);
@@ -351,6 +352,7 @@ console.log("\n--- 11. moderation ---");
 
   await db.insert(ledgerEntries).values({
     groupId: mine, typeKey: OPEN, fromUserId: peer, toUserId: me.id,
+    fromUserName: "Break-in peer", toUserName: "Break-in",
     amount: 2500, currency: "INR", kind: "fine", periodStart: back,
   });
   await db

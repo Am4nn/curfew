@@ -93,7 +93,7 @@ export const CONSENT: ConsentSection[] = [
     lines: [
       "You can delete your photos, one activity's history, all of it, or your account, in Settings.",
       "Deleting your account removes your name, your email and your history, and you cannot sign in again.",
-      "Two things survive: ledger rows, because a debt with no counterparty is not a debt, and check-in records with nothing identifying left on them.",
+      "Two things survive. Ledger rows, with your name on them, so the people you owe or who owe you can still see who. And check-in records, with nothing identifying left on them.",
     ],
   },
   {

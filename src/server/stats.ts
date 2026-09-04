@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/db";
 import { activityScores } from "@/db/schema";
-import { getActivityType, graceMonth, type ChartKind } from "@/domain";
+import { getActivityType, graceMonth, type ChartSpec } from "@/domain";
 import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
 import { scoreUser } from "./scoring";
@@ -132,7 +132,8 @@ export interface ActivityChart {
   typeKey: string;
   name: string;
   icon: string;
-  kind: ChartKind;
+  /** The module's own chart declaration: kind, heading, and its own fields. */
+  spec: ChartSpec;
   /** Oldest first. `detail` is the module's own, printed by nobody. */
   points: { periodStart: string; passed: boolean; detail: Record<string, unknown> }[];
   graceMonthLabel: string;
@@ -167,7 +168,7 @@ export async function chartFor(
   const type = getActivityType(typeKey);
   // A weekly period needs a longer window to draw the same number of bars: ten
   // weeks against thirty days, as the two mocks show.
-  const window = type.chart === "weekly" ? 69 : 29;
+  const window = type.chart.kind === "weekly" ? 69 : 29;
   const from = today.minus({ days: window }).toFormat("yyyy-MM-dd");
 
   const rows = await db
@@ -191,7 +192,7 @@ export async function chartFor(
     typeKey,
     name: type.name,
     icon: type.icon,
-    kind: type.chart,
+    spec: type.chart,
     points: rows.map((r) => ({
       periodStart: r.periodStart,
       passed: r.passed,

@@ -42,7 +42,12 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
     detail: "Nothing to photograph. This runs on your word.",
   },
   checkin: { kind: "counter" },
-  chart: "numeric",
+  chart: {
+    kind: "numeric",
+    heading: "GLASSES A DAY",
+    valueField: "glasses",
+    targetField: "target",
+  },
 
   fields() {
     return [

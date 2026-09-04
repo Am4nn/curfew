@@ -182,7 +182,7 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
     detail: "On the confirm window. Live camera.",
   },
   checkin: { kind: "camera" },
-  chart: "windowed",
+  chart: { kind: "windowed", heading: "WAKE TIME" },
 
   facts: [
     {

@@ -109,6 +109,29 @@ export type CheckinKind = "tap" | "counter" | "number" | "camera" | "declare";
 // check-in affordance.
 export type ChartKind = "windowed" | "numeric" | "weekly" | "binary";
 
+/**
+ * Everything the engine needs to draw a module's chart without knowing what the
+ * module measures (invariant 6).
+ *
+ * `heading` was "LAST N PERIODS" over every numeric chart, which told a person
+ * nothing about what the bars were. It is the module's own words now, and the
+ * engine appends the window length to it.
+ *
+ * `valueField` and `targetField` were a chain of guesses in the chart component:
+ * steps ?? minutes ?? amount ?? calories ?? glasses. That is the engine knowing
+ * what a type means, so the module names its own fields instead. Adding a
+ * thirteenth type never edits the chart again.
+ */
+export interface ChartSpec {
+  kind: ChartKind;
+  /** Shipped in caps, so write it in caps. */
+  heading: string;
+  /** The field of this module's `detail` carrying the plotted number. */
+  valueField?: string;
+  /** The field carrying the line it is measured against. */
+  targetField?: string;
+}
+
 // How the engine draws a module's own settings (decision 88).
 //
 // configSchema says what is VALID; this says what it LOOKS LIKE. Zod cannot be
@@ -197,7 +220,7 @@ export interface ActivityType<Config, Evidence> {
 
   evidence: EvidenceRule;
   checkin: { kind: CheckinKind };
-  chart: ChartKind;
+  chart: ChartSpec;
   /**
    * How the configure screen draws this module's own settings.
    *

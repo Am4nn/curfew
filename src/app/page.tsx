@@ -11,7 +11,7 @@ import { ActivityIcon, Flame } from "./activity-icon";
 import { RankScore } from "./rank-icon";
 import { CheckinButton } from "./checkin-button";
 import { InviteRows } from "./invite-rows";
-import { buttonClass } from "./ui";
+import { buttonClass } from "./button-style";
 
 // Home is the day: how much of it is done, every activity with where it stands
 // and the one thing to do about it, then money and groups.

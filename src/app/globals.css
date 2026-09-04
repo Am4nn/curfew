@@ -183,6 +183,16 @@
       opacity: 1;
     }
   }
+  /* The stamp leaves the way it came, which is not instantly. Cutting it made
+     the screen flick rather than clear (mock: V3DayCompleteMotion). */
+  @keyframes overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
   .roll-out {
     animation: roll-out 1.4s ease-in forwards;
   }
@@ -201,6 +211,9 @@
   .scrim-in {
     animation: scrim-in 0.22s ease-out both;
   }
+  .overlay-out {
+    animation: overlay-out 0.36s ease-in both;
+  }
   /* Reduced motion keeps every end state and drops the movement: the count
      still reads 4, the segment is still full, the stamp is still there. */
   @media (prefers-reduced-motion: reduce) {
@@ -208,7 +221,8 @@
     .roll-in,
     .fill-right,
     .stamp-in,
-    .scrim-in {
+    .scrim-in,
+    .overlay-out {
       animation-duration: 0.01ms;
       animation-iteration-count: 1;
     }

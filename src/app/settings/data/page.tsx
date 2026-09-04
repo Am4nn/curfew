@@ -7,8 +7,10 @@ import { ownPhotos } from "@/server/own-photos";
 import { DeleteForm, type HistoryRow } from "./delete-form";
 import { BackLink } from "@/app/back-link";
 
-/** One page of the delete picker. Mirrors /settings/photos. */
-export const PHOTO_PAGE = 30;
+/** One page of the delete picker. Mirrors /settings/photos.
+ *  Not exported: Next allows a page file to export only its own known keys,
+ *  and anything else fails the build's generated types. */
+const PHOTO_PAGE = 30;
 
 export default async function DeleteDataPage() {
   const user = await getSessionUser();

@@ -24,7 +24,10 @@ import { ActivityIcon } from "./activity-icon";
  */
 
 const KEY = "curfew:day-complete";
+/** How long it sits there before it starts leaving. */
 const HOLD_MS = 2600;
+/** And how long it takes to go. Matches .overlay-out in globals.css. */
+const LEAVE_MS = 360;
 
 export function DayComplete({
   /** The user's own day, as the server resolved it. Client clocks are not used. */
@@ -38,7 +41,10 @@ export function DayComplete({
   dateLabel: string;
   icons: string[];
 }) {
-  const [show, setShow] = useState(false);
+  // "in" is the stamp landing and holding, "out" is it going. It has to be a
+  // phase rather than an unmount, because a stamp that cuts makes the screen
+  // flick instead of clear.
+  const [phase, setPhase] = useState<"none" | "in" | "out">("none");
 
   useEffect(() => {
     let seen: string | null = null;
@@ -53,18 +59,29 @@ export function DayComplete({
     } catch {
       // Nothing to do. Worst case it appears again on the next load.
     }
-    setShow(true);
-    const timer = setTimeout(() => setShow(false), HOLD_MS);
+    setPhase("in");
+    const timer = setTimeout(() => setPhase("out"), HOLD_MS);
     return () => clearTimeout(timer);
   }, [dateKey]);
 
-  if (!show) return null;
+  // Leaving is timed rather than hung off animationend, so a browser that
+  // refuses the animation still gets rid of it.
+  useEffect(() => {
+    if (phase !== "out") return;
+    const timer = setTimeout(() => setPhase("none"), LEAVE_MS);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  if (phase === "none") return null;
 
   return (
     <div
       role="status"
-      onClick={() => setShow(false)}
-      className="scrim-in fixed inset-0 z-40 flex flex-col items-center justify-center gap-[26px]"
+      onClick={() => setPhase("out")}
+      className={
+        "fixed inset-0 z-40 flex flex-col items-center justify-center gap-[26px] " +
+        (phase === "out" ? "overlay-out" : "scrim-in")
+      }
       style={{ backgroundColor: "var(--scrim-93)" }}
     >
       <div className="stamp-in flex flex-col items-center gap-[6px] border-[3px] border-pass px-[30px] py-4 text-pass">

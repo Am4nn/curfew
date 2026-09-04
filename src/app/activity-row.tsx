@@ -42,13 +42,21 @@ export function ActivityRow({
   return (
     <div
       className={
-        "flex items-center gap-3 border-b border-rule py-[13px] " +
-        (row.scheduled ? "" : "opacity-[0.42]") +
-        // The rule sits in the left margin, so marking a row never shifts the
-        // text under it.
-        (recorded ? " -ml-[11px] border-l-2 border-l-pass pl-[9px]" : "")
+        "relative flex items-center gap-3 border-b border-rule py-[13px] " +
+        (row.scheduled ? "" : "opacity-[0.42]")
       }
     >
+      {/* The mark for a row that just changed. Positioned rather than a border,
+          so it sits out in the page margin and the divider under every row
+          stays exactly where it was; always mounted, so it fades both ways
+          rather than snapping on and off. */}
+      <span
+        aria-hidden="true"
+        className={
+          "absolute inset-y-0 left-[-11px] w-[2px] bg-pass transition-opacity duration-300 " +
+          (recorded ? "opacity-100" : "opacity-0")
+        }
+      />
       <Link
         href={`/activities/${row.typeKey}`}
         className={"flex flex-none " + (row.scheduled ? "text-fg" : "text-muted")}

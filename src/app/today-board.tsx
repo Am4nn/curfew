@@ -59,22 +59,28 @@ export function TodayBoard({
       <section className="flex flex-col gap-[6px]">
         <span className="text-[10px] tracking-[0.16em] text-muted">TODAY</span>
         <div className="flex items-baseline gap-[10px]">
-          {from !== null ? (
+          {/* One slot, two numbers. The old one lifts out of it and the new one
+              rises into it, which is what a roll is. Side by side it would be
+              two numbers, and the one that stays would sit a digit to the
+              right of where it belongs. */}
+          <span className="relative flex leading-none">
+            {from !== null ? (
+              <span
+                aria-hidden="true"
+                className="roll-out absolute left-0 top-0 text-[38px] font-semibold leading-none tabular-nums text-muted"
+              >
+                {from}
+              </span>
+            ) : null}
             <span
-              aria-hidden="true"
-              className="roll-out text-[38px] font-semibold leading-none tabular-nums text-muted"
+              key={done}
+              className={
+                "text-[38px] font-semibold leading-none tabular-nums " +
+                (from !== null ? "roll-in" : "")
+              }
             >
-              {from}
+              {done}
             </span>
-          ) : null}
-          <span
-            key={done}
-            className={
-              "text-[38px] font-semibold leading-none tabular-nums " +
-              (from !== null ? "roll-in" : "")
-            }
-          >
-            {done}
           </span>
           <span className="text-[15px] text-muted">of {of} done</span>
         </div>

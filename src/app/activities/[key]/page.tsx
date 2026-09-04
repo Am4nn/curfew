@@ -7,6 +7,7 @@ import { getUserActivity, defaultsFor } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { ActivityIcon } from "../../activity-icon";
 import { ConfigureForm } from "./configure-form";
+import { BackLink } from "@/app/back-link";
 
 // Both entry points land here (decision 31): a tracked activity opens with its
 // own settings and a stop control, an untracked one with the type's defaults
@@ -43,12 +44,12 @@ export default async function ConfigurePage({
   return (
     <main className="flex min-h-dvh flex-col pb-16">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
-        <Link href="/activities" className="flex items-center gap-[9px]">
-          <span className="text-[14px] text-muted">&lsaquo;</span>
+        <div className="flex items-center gap-[9px]">
+          <BackLink fallback="/activities" className="text-[14px] text-muted" />
           <span className="text-[14px] font-semibold tracking-[0.14em]">
             {type.name.toUpperCase()}
           </span>
-        </Link>
+        </div>
         <span className="text-muted">
           <ActivityIcon name={type.icon} />
         </span>

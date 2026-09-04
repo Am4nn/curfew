@@ -34,6 +34,25 @@ export type GymEvidence = z.infer<typeof gymEvidenceSchema>;
 
 export const GYM_STEP = "session";
 
+/**
+ * The calendar days a session was recorded on, in the user's zone.
+ *
+ * At most one session counts per day: two presses on a Tuesday are one day at
+ * the gym, and without that a single enthusiastic day would pass a whole week.
+ * `evaluate`, `hint` and `countsNow` all need the same answer, so the rule
+ * lives here rather than three times over.
+ */
+function sessionDays(
+  checkins: { step: string; at: Date }[],
+  timezone: string,
+): Set<string> {
+  return new Set(
+    checkins
+      .filter((c) => c.step === GYM_STEP)
+      .map((c) => DateTime.fromJSDate(c.at, { zone: timezone }).toFormat("yyyy-MM-dd")),
+  );
+}
+
 export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   key: "gym",
   name: "Gym",
@@ -89,19 +108,29 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     ];
   },
 
-  evaluate(input: EvaluateInput<GymConfig, GymEvidence>) {
-    // At most one session counts per calendar day. Two presses on a Tuesday are
-    // one day at the gym, and without this a single enthusiastic day would pass
-    // a whole week.
-    const sessionDays = new Set(
-      input.checkins
-        .filter((c) => c.step === GYM_STEP)
-        .map((c) =>
-          DateTime.fromJSDate(c.at, { zone: input.timezone }).toFormat("yyyy-MM-dd"),
-        ),
-    );
+  // Days at the gym this week, which is what the module counts. One a day,
+  // however many times you press.
+  hint(input) {
+    const days = sessionDays(input.checkins, input.timezone);
+    const need = input.config.sessionsPerWeek;
+    const today = DateTime.now().setZone(input.timezone).toFormat("yyyy-MM-dd");
+    if (days.size >= need) return `${days.size} of ${need} this week. Done.`;
+    if (days.has(today)) {
+      return `${days.size} of ${need} this week. Today is logged.`;
+    }
+    return `${days.size} of ${need} this week.`;
+  },
 
-    const days = [...sessionDays].sort();
+  // One session a day counts, so once today is logged another press changes
+  // nothing and Home stops offering the button. Without this the dashboard
+  // invited a press that `evaluate` would throw away.
+  countsNow(input) {
+    const today = DateTime.now().setZone(input.timezone).toFormat("yyyy-MM-dd");
+    return !sessionDays(input.checkins, input.timezone).has(today);
+  },
+
+  evaluate(input: EvaluateInput<GymConfig, GymEvidence>) {
+    const days = [...sessionDays(input.checkins, input.timezone)].sort();
     const result = countPass(
       days.map((d) => ({ step: GYM_STEP, at: new Date(d) })),
       { min: input.config.sessionsPerWeek },

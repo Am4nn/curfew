@@ -7,6 +7,7 @@ import { PhotoGrid } from "../photo-tile";
 import { QuorumMark } from "../mark";
 import { ActivityIcon, Flame } from "../activity-icon";
 import { ActivityChartView } from "./charts";
+import { BackLink } from "@/app/back-link";
 
 // The heatmap ramp, none to all, defined once in globals.css so light mode
 // gets its own five steps. Tailwind can't emit a class for a value picked at
@@ -48,9 +49,7 @@ export default async function StatsPage({
       <main className="min-h-dvh px-5 pb-24 pt-5">
         <div className="mx-auto flex max-w-[560px] flex-col gap-[22px]">
           <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-            <Link href="/stats" className="text-[14px] text-muted">
-              &lsaquo;
-            </Link>
+            <BackLink fallback="/stats" className="text-[14px] text-muted" />
             <QuorumMark size={15} />
             <h1 className="text-[14px] font-semibold tracking-[0.16em]">STATS</h1>
           </header>

@@ -248,6 +248,20 @@ export interface ActivityType<Config, Evidence> {
    * line into "1700 of 2000 once this is sent."
    */
   hint?(input: HintInput<Config, Evidence>): string | null;
+  /**
+   * Whether another press of this step would count for anything right now.
+   * Defaults to true, so most types never implement it.
+   *
+   * Gym does. It counts at most one session a calendar day, so once today's
+   * session is recorded a second press is deliberately ignored by `evaluate`.
+   * Without this the engine had no way to know that, and Home went on offering
+   * a Check in button whose press could not change the result. A control that
+   * does nothing is worse than no control.
+   *
+   * The engine uses it to hide the affordance and to refuse the press. It
+   * never infers WHY, only whether (invariant 6).
+   */
+  countsNow?(input: HintInput<Config, Evidence>): boolean;
   // Resolve every step's window to absolute instants for the given period.
   windows(config: Config, periodStart: string, timezone: string): CheckinWindow[];
   evaluate(input: EvaluateInput<Config, Evidence>): EvaluateResult;

@@ -5,6 +5,7 @@ import { registeredKeys } from "@/domain";
 import { getCheckinState } from "@/server/checkin";
 import { standingFor } from "@/server/standing";
 import { CheckinForm } from "./checkin-form";
+import { BackLink } from "@/app/back-link";
 
 // Bare chrome, no tab bar: a single act with a way back, not a place to browse
 // from. A GET, so it records nothing (invariant 9); the only writer is the
@@ -37,10 +38,10 @@ export default async function CheckinPage({
   return (
     <main className="flex h-dvh flex-col">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
-        <Link href={`/activities/${key}`} className="flex items-center gap-[9px]">
-          <span className="text-[14px] text-muted">&lsaquo;</span>
+        <div className="flex items-center gap-[9px]">
+          <BackLink fallback={`/activities/${key}`} className="text-[14px] text-muted" />
           <span className="text-[14px] font-semibold tracking-[0.14em]">CHECK IN</span>
-        </Link>
+        </div>
         <span className="text-[11px] text-muted">
           {state.name}
           {occurrence} &middot; {state.nowLabel}

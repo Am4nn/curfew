@@ -162,7 +162,19 @@ export async function getCheckinState(
       label: step.label,
       opensLabel: window ? label(window.opensAt, timezone) : "",
       closesLabel: window ? label(window.closesAt, timezone) : "",
-      open: window ? instant >= window.opensAt && instant <= window.closesAt : false,
+      // Open means the window is open AND another press would count. Gym's
+      // window is the whole week, but only one session a day counts, so a
+      // Tuesday evening press after a Tuesday morning one is not "open".
+      open:
+        (window ? instant >= window.opensAt && instant <= window.closesAt : false) &&
+        (type.countsNow?.({
+          periodStart: period,
+          timezone,
+          config: activity.config,
+          checkins,
+          step: step.key,
+          pending: null,
+        }) ?? true),
       count: mine.length,
       repeats: step.repeats ?? false,
       fields: step.fields ?? [],
@@ -244,7 +256,8 @@ export type CheckinFailure =
   | "invalid"
   | "duplicate"
   | "rate_limited"
-  | "no_photo";
+  | "no_photo"
+  | "already_counted";
 
 export type CheckinResult =
   | { ok: true; step: string; atLabel: string }
@@ -322,6 +335,27 @@ export async function resolveCheckinTarget(
       ok: false,
       reason: "closed",
       message: `${step.label} closed ${label(window.closesAt, timezone)}.`,
+    };
+  }
+
+  // The module's own answer to "would another press change anything?". Gym
+  // counts one session a calendar day, so a second press on the same day is
+  // refused here rather than recorded and silently thrown away by evaluate.
+  const { checkins: recorded } = await recordedFor(userId, typeKey, period);
+  const counts =
+    type.countsNow?.({
+      periodStart: period,
+      timezone,
+      config: activity.config,
+      checkins: recorded,
+      step: stepKey,
+      pending: null,
+    }) ?? true;
+  if (!counts) {
+    return {
+      ok: false,
+      reason: "already_counted",
+      message: `${step.label} is already recorded for today.`,
     };
   }
 

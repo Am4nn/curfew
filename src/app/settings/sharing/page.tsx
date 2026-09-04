@@ -7,6 +7,7 @@ import { acceptedTypes, sharesFor } from "@/server/sharing";
 import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { SharingForm, type GroupShares } from "./sharing-form";
+import { BackLink } from "@/app/back-link";
 
 // Every group, every accepted type, in one place. The same two toggles as the
 // group's own settings tab, and they mean the same thing here (decision 16).
@@ -61,9 +62,7 @@ export default async function SharingPage() {
   return (
     <main className="min-h-dvh pb-24">
       <header className="flex items-center gap-[9px] border-b border-rule px-5 pb-[11px] pt-5">
-        <Link href="/settings" className="text-[14px] text-muted">
-          &lsaquo;
-        </Link>
+        <BackLink fallback="/settings" className="text-[14px] text-muted" />
         <span className="text-[14px] font-semibold tracking-[0.14em]">
           WHAT YOU SHARE
         </span>

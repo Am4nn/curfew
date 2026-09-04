@@ -11,6 +11,7 @@ import {
   deleteActivityHistoryAction,
   deleteAllHistoryAction,
   deleteAccountAction,
+  morePhotosAction,
 } from "./actions";
 
 // Nothing here can be undone, so nothing here happens on one press. Every row
@@ -64,16 +65,25 @@ function Row({
 export function DeleteForm({
   photos,
   singlePhotos,
+  totalPhotos,
   activities,
   outstanding,
 }: {
   photos: number;
+  /** The first page. The sheet asks for more on a press. */
   singlePhotos: PhotoRow[];
+  /** Every photo the person has, so the sheet knows when to stop asking. */
+  totalPhotos: number;
   activities: HistoryRow[];
   /** Already formatted server-side: money never gets a hardcoded divisor. */
   outstanding: string[];
   }) {
   const [pending, setPending] = useState<Pending>(null);
+  // The picker used to be handed every photo at once. It takes a page and asks
+  // for the next one, the same shape as /settings/photos and the group
+  // evidence tab.
+  const [shown, setShown] = useState<PhotoRow[]>(singlePhotos);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [typed, setTyped] = useState("");
   const { run: runAction, pending: busy, error } = useServerAction();
 
@@ -189,11 +199,11 @@ export function DeleteForm({
             </span>
           </header>
           <div className="flex-1 overflow-y-auto px-5 py-[18px]">
-            {singlePhotos.length === 0 ? (
+            {shown.length === 0 ? (
               <p className="text-[12.5px] leading-[1.6] text-muted">You have no photos.</p>
             ) : (
               <div className="grid grid-cols-3 gap-3">
-                {singlePhotos.map((p) => (
+                {shown.map((p) => (
                   <button
                     key={p.id}
                     type="button"
@@ -207,6 +217,24 @@ export function DeleteForm({
                 ))}
               </div>
             )}
+
+            {shown.length > 0 && shown.length < totalPhotos ? (
+              <button
+                type="button"
+                disabled={loadingMore}
+                onClick={async () => {
+                  setLoadingMore(true);
+                  try {
+                    setShown(await morePhotosAction(shown.length + 30));
+                  } finally {
+                    setLoadingMore(false);
+                  }
+                }}
+                className="mt-5 flex h-11 w-full items-center justify-center border border-rule text-[14px] active:opacity-70 disabled:opacity-40"
+              >
+                {loadingMore ? "Loading" : `Load older (${shown.length} of ${totalPhotos})`}
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -253,7 +281,15 @@ export function DeleteForm({
                 onClick={() =>
                   run(() => {
                     if (pending.kind === "photos") return deletePhotosAction();
-                    if (pending.kind === "photo") return deleteOnePhotoAction(pending.id);
+                    // Deleting from the picker keeps the sheet where it was:
+                    // re-ask for the same number rather than dropping back to
+                    // the first page, so the tile after the one just deleted
+                    // is where the eye already is.
+                    if (pending.kind === "photo") {
+                      return deleteOnePhotoAction(pending.id).then(async () => {
+                        setShown(await morePhotosAction(Math.max(shown.length, 30)));
+                      });
+                    }
                     if (pending.kind === "activity")
                       return deleteActivityHistoryAction(pending.typeKey);
                     if (pending.kind === "history") return deleteAllHistoryAction();

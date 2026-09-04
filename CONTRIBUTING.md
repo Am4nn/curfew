@@ -67,6 +67,12 @@ What each piece decides:
   outside your module ever reads it.
 - **`hint`** is optional, and it is the line under the fields on the check-in
   screen. Only your module can write "1180 so far today. The limit is 2000."
+- **`countsNow`** is optional and answers one question: would another press of
+  this step change anything right now? Default yes. Gym says no once today's
+  session is logged, because it counts one a calendar day. The engine uses it
+  to hide the button and refuse the press, so a control that cannot do anything
+  is never offered. If your `evaluate` ignores some check-ins, this is how you
+  say so.
 - **`chart`** names which of four charts the stats screen draws, and nothing
   else. `kind` is one of the four; adding a fifth is an engine change.
   `heading` is the label over it, in your words and in caps, because

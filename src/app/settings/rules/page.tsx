@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { TERMS } from "@/server/policy";
 import { CONSENT_VERSION, consentOf } from "@/server/consent";
+import { BackLink } from "@/app/back-link";
 
 // The rules, always readable. Everything a member agreed to has to be visible
 // later and not only at the gate (TRUST-SAFETY.md).
@@ -15,9 +16,7 @@ export default async function RulesPage() {
     <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-          <Link href="/settings" className="text-[14px] text-muted">
-            &lsaquo;
-          </Link>
+          <BackLink fallback="/settings" className="text-[14px] text-muted" />
           <span className="text-[14px] font-semibold tracking-[0.14em]">THE RULES</span>
         </header>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { CONSENT, CONSENT_VERSION, consentOf } from "@/server/consent";
+import { BackLink } from "@/app/back-link";
 
 // Everything a user consented to, visible later and not only at signup
 // (TRUST-SAFETY.md). Same text, one source.
@@ -14,9 +15,7 @@ export default async function StoredPage() {
     <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-          <Link href="/settings" className="text-[14px] text-muted">
-            &lsaquo;
-          </Link>
+          <BackLink fallback="/settings" className="text-[14px] text-muted" />
           <span className="text-[14px] font-semibold tracking-[0.14em]">
             WHAT CURFEW STORES
           </span>

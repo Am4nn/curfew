@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 import { getSessionUser } from "@/lib/session";
 import { groupHeader, weekStats } from "@/server/group-view";
 import { ActivityIcon } from "../../../activity-icon";
+import { BackLink } from "@/app/back-link";
 
 // Four questions a group actually asks: how did we do this week, which days
 // were bad, who is carrying it, and what is everyone failing at. Counted from
@@ -32,10 +33,10 @@ export default async function GroupStats({
   return (
     <main className="min-h-dvh pb-24">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
-        <Link href={`/group/${groupId}`} className="flex items-center gap-[9px]">
-          <span className="text-[14px] text-muted">&lsaquo;</span>
+        <div className="flex items-center gap-[9px]">
+          <BackLink fallback={`/group/${groupId}`} className="text-[14px] text-muted" />
           <span className="text-[14px] font-semibold tracking-[0.14em]">GROUP STATS</span>
-        </Link>
+        </div>
         <span className="text-[11px] text-muted">{header.name}</span>
       </header>
 

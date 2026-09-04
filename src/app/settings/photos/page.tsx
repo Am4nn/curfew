@@ -4,6 +4,7 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { ownPhotos, countOwnPhotos } from "@/server/own-photos";
 import { RETENTION_DAYS } from "@/server/evidence";
 import { PhotoGrid } from "../../photo-tile";
+import { BackLink } from "@/app/back-link";
 
 // One page of photographs. The group evidence tab loads twenty and offers the
 // rest; this loaded every photo a person had ever taken, which is a few hundred
@@ -38,9 +39,7 @@ export default async function OwnPhotosPage({
   return (
     <main className="min-h-dvh pb-24">
       <header className="flex items-center gap-[9px] border-b border-rule px-5 pb-[11px] pt-5">
-        <Link href="/settings" className="text-[14px] text-muted">
-          &lsaquo;
-        </Link>
+        <BackLink fallback="/settings" className="text-[14px] text-muted" />
         <span className="text-[14px] font-semibold tracking-[0.14em]">YOUR PHOTOS</span>
       </header>
 

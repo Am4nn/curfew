@@ -7,6 +7,7 @@ import { acceptedTypes } from "@/server/sharing";
 import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { JoinForm, type JoinRow } from "./join-form";
+import { BackLink } from "@/app/back-link";
 
 // Joining is where sharing is chosen, so the invite has to show exactly what
 // the group accepts before anything is agreed to. A type the person does not
@@ -51,9 +52,7 @@ export default async function JoinPage({
   return (
     <main className="min-h-dvh pb-24">
       <header className="flex items-center gap-[9px] border-b border-rule px-5 pb-[11px] pt-5">
-        <Link href="/groups" className="text-[14px] text-muted">
-          &lsaquo;
-        </Link>
+        <BackLink fallback="/groups" className="text-[14px] text-muted" />
         <span className="text-[14px] font-semibold tracking-[0.14em]">
           JOIN {invite.groupName.toUpperCase()}
         </span>

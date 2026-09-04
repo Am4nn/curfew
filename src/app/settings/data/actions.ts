@@ -8,11 +8,25 @@ import { getSessionUser } from "@/lib/session";
 import { previewEnabled } from "@/lib/preview";
 import { deletePhotos, deleteHistory, deleteAccount } from "@/server/deletion";
 import { deleteOnePhoto } from "@/server/evidence";
+import { ownPhotos, type SignedPhoto } from "@/server/own-photos";
 
 async function me() {
   const user = await getSessionUser();
   if (!user) throw new Error("Please sign in again.");
   return user;
+}
+
+/**
+ * The next page of the delete picker.
+ *
+ * `limit` is how many the sheet wants in total, not an offset, so a re-request
+ * after a delete returns a consistent list rather than skipping whatever moved
+ * up. Clamped, because it arrives from the client.
+ */
+export async function morePhotosAction(limit: number): Promise<SignedPhoto[]> {
+  const user = await me();
+  const want = Number.isFinite(limit) ? Math.min(Math.max(Math.trunc(limit), 30), 600) : 30;
+  return ownPhotos(user.id, { limit: want });
 }
 
 export async function deletePhotosAction(): Promise<void> {

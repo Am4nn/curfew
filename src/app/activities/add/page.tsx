@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { catalogFor } from "@/server/activities";
 import { ActivityIcon } from "../../activity-icon";
+import { BackLink } from "@/app/back-link";
 
 // The catalog. A type appears only when it has an enabled row in
 // activity_types (decision 63), so an admin switching one off removes it from
@@ -20,9 +21,7 @@ export default async function CatalogPage() {
     <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-          <Link href="/activities" className="text-[14px] text-muted">
-            &lsaquo;
-          </Link>
+          <BackLink fallback="/activities" className="text-[14px] text-muted" />
           <span className="text-[14px] font-semibold tracking-[0.14em]">ADD ACTIVITY</span>
         </header>
 

@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { RANKS, IMMACULATE_FROM, rankFor, isImmaculate } from "@/domain";
 import { globalScore } from "@/server/scoring";
 import { RankIcon, RANK_TEXT } from "../rank-icon";
+import { BackLink } from "@/app/back-link";
 
 // A crown, gold, glowing: the mock's own icon for IMMACULATE, deliberately
 // distinct from UNBROKEN's mountain even though it is "a title inside
@@ -42,9 +43,7 @@ export default async function RanksPage() {
     <main className="min-h-dvh px-5 pb-24 pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-          <Link href="/settings" className="text-[14px] text-muted">
-            &lsaquo;
-          </Link>
+          <BackLink fallback="/settings" className="text-[14px] text-muted" />
           <span className="text-[14px] font-semibold tracking-[0.14em]">
             HOW REPUTATION WORKS
           </span>

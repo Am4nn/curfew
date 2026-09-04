@@ -12,15 +12,23 @@ import { ReportButton } from "./report-button";
 //
 // Today and yesterday load immediately; older days come on demand, so the tab
 // never pulls the whole retention window.
+/** One page of the log. */
+const PAGE = 20;
+
 export default async function EvidenceTab({
   params,
   searchParams,
 }: {
   params: Promise<{ groupId: string }>;
-  searchParams: Promise<{ older?: string }>;
+  searchParams: Promise<{ show?: string }>;
 }) {
   const { groupId } = await params;
-  const { older } = await searchParams;
+  // One number, clamped, so a hand-edited query string cannot ask for the
+  // whole retention window in one page.
+  const asked = Number((await searchParams).show);
+  const limit = Number.isFinite(asked)
+    ? Math.min(Math.max(Math.trunc(asked), PAGE), PAGE * 20)
+    : PAGE;
   const user = await getSessionUser();
   if (!user) redirect("/signin");
 
@@ -31,17 +39,17 @@ export default async function EvidenceTab({
   const today = DateTime.now().setZone(timezone).toFormat("yyyy-MM-dd");
   const yesterday = DateTime.now().setZone(timezone).minus({ days: 1 }).toFormat("yyyy-MM-dd");
 
-  const items = await groupEvidence(groupId, user.id, {
-    since: older
-      ? undefined
-      : DateTime.now().setZone(timezone).minus({ days: 1 }).startOf("day").toJSDate(),
-    limit: older ? 60 : 20,
-  });
+  // Newest first, a page at a time. There is no `since` window any more: it
+  // meant the first page could only ever be today and yesterday, so a quiet
+  // group showed an empty tab with a Load older button under it.
+  const items = await groupEvidence(groupId, user.id, { limit: limit + 1 });
+  const more = items.length > limit;
+  const page = more ? items.slice(0, limit) : items;
 
   // A presign failure (a stale key, a storage outage) must not take down the
   // whole tab over one bad photo; drop it rather than crash the page.
   const withUrl: (EvidenceItem & { url: string })[] = [];
-  for (const item of items) {
+  for (const item of page) {
     try {
       withUrl.push({ ...item, url: readUrl(item.objectKey) });
     } catch {
@@ -104,10 +112,10 @@ export default async function EvidenceTab({
         ))
       )}
 
-      {!older && days.length > 0 ? (
+      {more ? (
         <a
-          href={`/group/${groupId}/evidence?older=1`}
-          className="flex h-11 w-full items-center justify-center border border-rule text-[14px]"
+          href={`/group/${groupId}/evidence?show=${limit + PAGE}`}
+          className="flex h-11 w-full items-center justify-center border border-rule text-[14px] active:opacity-70"
         >
           Load older
         </a>

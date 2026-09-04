@@ -1,8 +1,13 @@
-# Next session — queued by Aman, 2026-09-04
+# Next session
 
-## The big one, after the UI is finished
+Last updated 2026-09-04, after the phase 5 to 8 pass and the Home review.
 
-Full verification of the engine, then simulation.
+## Still open
+
+### The big one, and the only thing left from the original queue
+
+Full verification of the engine, then simulation. Explicitly queued for after
+the UI, and the UI is now finished.
 
 - Verify scoring, reputation, streak and money calculation end to end, not
   screen by screen. `bun run verify` proves stored rows match a recompute; it
@@ -12,90 +17,77 @@ Full verification of the engine, then simulation.
   reputation, fines and balances in each scenario. Joining, leaving, sharing
   and un-sharing, grace running out, an activity switched off mid-month.
 
-## Numbered items from the second review
+### Small, carried
 
-- **#34, #37** — no such page. Both are manifest routes, same class of fault as
-  the four fixed in round 3.
-- **#49** — spacing between the admin nav and the first control is wrong on
-  every admin page. Match the mock. **#51** has the same fault with a little
-  more space than the others.
-- **#51** — remove the footer note beginning "Everything here is counted…".
-- **#54** — move the Evidence block above the Drift block on Ops.
-- **#1** — the group invite on Home needs a better design.
-- **#4** — home-empty is meant to be an empty page, and the empty page needs
-  something designed on it rather than nothing.
-- Group settings page is too cluttered.
+- **The Home `+1` tick is not optimistic.** It disables, says what it is doing
+  and refreshes, so it has feedback, but the count does not move until the
+  round trip lands. The other reversible controls (sharing toggles, evidence
+  checkboxes, invite dismiss) do move on the press. Admin Controls is
+  deliberately not on this list: it is draft-then-Save with a consequences
+  sheet, so its toggles are local state and already instant.
+- **The seeded group ledger dates every entry to the day it was seeded**,
+  because the fixture writes the whole history's fines in one scoring pass.
+  Fixture debt, not app behaviour, and it makes the ledger screen a poor test
+  of date grouping.
 
-## Known bugs still open, not raised by Aman
+### Found while working, not yet ruled on
 
-- `ownerMoneyToggle()` resolves with `resolveAt(rows, new Date())`, so the
-  owner half of the money toggle is read as it stands NOW rather than as it
-  stood on the period being scored. Same family as the #54 fix. Pre-existing,
-  but the round-3 money fix now depends on it, so it matters more than it did.
-- `numericValue()` in `src/app/stats/charts.tsx` guesses the module's field by
-  trying `steps ?? minutes ?? amount ?? calories ?? glasses`. That is the
-  engine knowing what a type means, which invariant 6 forbids. A `numeric`
-  chart kind should declare one canonical field name.
-- The seeded group ledger dates every entry to the day it was seeded, because
-  the fixture writes the whole history's fines in one scoring pass. Fixture
-  debt, not app behaviour.
+- **Nine live routes have no artboard and so no drift entry**: `/balances`,
+  `/ledger`, `/settings/personal`, `/settings/stored`, `/settings/rules`,
+  `/checkin`, `/admin/reports`, `/admin/groups/[id]`, `/admin/users/[id]`.
+  Four have v1/v2 boards in `.design/`, but those are the old design language,
+  so pairing one against a v3 screen would report permanent drift. `/signin`
+  and `/pending` also need a signed-out fixture the harness does not have.
+  Roughly nine new artboards plus a fixture.
+- **The drift harness cannot tell a rendered error page from a rendered
+  screen.** It photographed `error.tsx` and reported a pass during the Home
+  work; only looking at the image caught it. Same class of blindness as the
+  fixture bug behind #34 and #37. It should fail when the error boundary is on
+  screen.
+- **`/settings/photos` has no pagination.** 68 tiles in one scroll on the
+  fixture, and the group evidence tab has "Load older" while this does not.
+- **`V3Data.dc.html` still says "with your name removed where it can be".**
+  The app no longer does that, as of the ledger name freeze. Left alone rather
+  than edited; needs either a corrected board or a decision to edit it.
 
-## Answered by Aman, 2026-09-04
+## Done, for the record
 
-1. **`/ranks` stays global.** The artboard is group-scoped; we keep what is
-   built, because the page is reached from Settings where there is no group to
-   scope it to. A deliberate, agreed drift from the mock.
-2. **One section order on all four stats detail screens**: chart, weekday bars,
-   tiles, as built. The four artboards disagree with each other on this, and we
-   are not copying the inconsistency.
-3. **A module names its own chart heading.** Add it to the module interface
-   beside `icon` and `chart`, so Steps can read "STEPS A DAY, 21 DAYS" without
-   the engine learning what a step is. Replaces the generic
-   "LAST N PERIODS". Touches all twelve modules and `CONTRIBUTING`.
+Everything below shipped between 2026-09-03 and 2026-09-04.
 
-## Second batch from testing, 2026-09-04
+### The numbered list
 
-### Evidence and camera, all found by hand
+- **#34, #37** — never wrong routes. `run-all.mjs` reseeds per fixture and
+  `shots.ts` was being run directly, so those screens were photographed against
+  the wrong world, which looks exactly like a real 404. The harness now records
+  the seeded fixture and refuses to capture a screen that needs another.
+- **#49** admin nav spacing, **#51** footer note, **#54** Evidence above Drift.
+- **#1** the Home invite, three times over. It is a plain box with three
+  controls now: Accept opens the join screen, Decline revokes, and the cross
+  hides it while the invite stays pending (migration 0016).
+- **#4** the empty Home, redesigned around the catalog, with an invite variant.
+  New boards `V3HomeStart` and `V3HomeStartInvite`, and a `new-user-invite`
+  fixture for a state that could not be photographed before.
+- **Group settings** reduced to the mock's shape, with a confirmation on leave.
 
-- **No switch-camera control.** Front/back cannot be chosen.
-- **Retake hangs the app.** Reproducible, blocks the flow entirely.
-- **Upload fails: "Network failed", nothing recorded.** The presigned PUT to R2
-  is not completing, and the check-in that was meant to be its callback never
-  lands. This is the one that makes evidence unusable, so it goes first.
-- **Image quality is poor.** The canvas compression step is too aggressive, or
-  is compressing an already-small capture.
-- **Note boxes everywhere in evidence.** Same complaint as the configure
-  screens in round 3. Cut them.
-- **Nowhere to see your own evidence.** A person can send a photo and never
-  look at it again. Aman's suggestion: a section under Stats.
+### The second testing batch
 
-### Behaviour
+Camera switch, retake, upload, image quality, the note boxes, your own evidence
+in both places, the untracked-sharing bug, one shared button kit with pending
+and pressed states everywhere, and the ledger name freeze.
 
-- **A group offers to share an activity you do not track.** Sharing should only
-  be offered for something you have actually set up. Real bug.
-- **No optimistic UI anywhere.** A tick or a toggle should move the moment it
-  is pressed, then call the API and reconcile, not wait on the round trip.
-- **Buttons give no feedback.** "Stop tracking" is the example: pressing it
-  looks identical to not pressing it. Every button needs a pressed and a
-  pending state.
+The upload failure was an environment fault, not a product one: `.env.local`
+carries no R2 credentials, so `presign()` threw and the client reported
+"Network failed". `src/server/r2.ts` has a `LOCAL_MODE` branch now, which is
+why the three camera bugs behind it were findable at all.
 
-### To settle before building: leaving and deletion
+### The three answered questions and the two known bugs
 
-Aman: leaving a group or deleting an account must not erase what is owed or
-owing, and the person's name has to survive so the remaining members can see
-who a debt belongs to.
+`/ranks` stays global. One section order on all four stats screens. Each module
+names its own chart heading, which also removed `numericValue()`'s field
+guessing. `ownerMoneyToggle()` resolves per day rather than as it stands now.
 
-That is right by invariant 3, since `ledger_entries` is append-only and nothing
-is ever removed from it. What needs deciding is the name, because it collides
-head-on with the "delete your data" promise in the consent gate and on
-`/settings/data`. Options, none of them free:
+### The panels
 
-1. Keep the display name on the ledger rows forever. Simple, honest to the
-   other members, and means "delete my data" is not literally true.
-2. Tombstone the account and show "a former member" everywhere. Keeps the
-   deletion promise, and leaves a debt nobody can attach to a person.
-3. Snapshot the name onto the ledger row at the time the entry is written, and
-   keep only that. The account goes, the historical name on settled and
-   outstanding rows stays.
-
-Needs Aman's call, and the consent copy has to match whichever wins.
+The tinted block with a coloured bar down its side is gone from fifteen app
+screens and nineteen artboards. Footnotes are plain muted text; a penalty keeps
+its colour, because that one is a warning rather than small print.

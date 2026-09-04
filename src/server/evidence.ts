@@ -20,8 +20,13 @@ export const RETENTION_DAYS = 60;
 /** Two formats, because those are the two a canvas can encode to. */
 const CONTENT_TYPES = ["image/webp", "image/jpeg"] as const;
 
-/** After compression. A 1600px photo at quality 0.80 is nowhere near this. */
-export const MAX_UPLOAD_BYTES = 2_000_000;
+/**
+ * After compression. The default is 1920px at quality 0.85, which lands around
+ * 400 KB for a photograph and well over the old 2 MB ceiling for a busy frame.
+ * Raise this and `compressionFor` together, or the browser produces a file the
+ * server refuses to sign for.
+ */
+export const MAX_UPLOAD_BYTES = 4_000_000;
 
 /** Presigned URLs a user may ask for in an hour. */
 const UPLOADS_PER_HOUR = 60;
@@ -346,5 +351,5 @@ export async function sweepEvidence(): Promise<SweepResult> {
 /** What the browser should compress to, for one type (decision 97). */
 export function compressionFor(typeKey: string): { maxEdge: number; quality: number } {
   const rule = getActivityType(typeKey).evidence;
-  return { maxEdge: rule.maxEdge ?? 1280, quality: rule.quality ?? 0.75 };
+  return { maxEdge: rule.maxEdge ?? 1920, quality: rule.quality ?? 0.85 };
 }

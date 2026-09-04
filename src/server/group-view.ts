@@ -271,7 +271,12 @@ export interface EvidenceItem {
 export async function groupEvidence(
   groupId: string,
   viewerId: string,
-  opts: { since?: string; limit?: number } = {},
+  // `since` is an INSTANT, not a period. A photo's periodStart is the period it
+  // evidences, which for a weekly type is that week's Monday, so windowing on
+  // it hid every gym photo taken after Tuesday from a "today and yesterday"
+  // view. The tab already sorts and groups by confirmedAt; this now filters on
+  // the same field.
+  opts: { since?: Date; limit?: number } = {},
 ): Promise<EvidenceItem[]> {
   await assertMember(groupId, viewerId);
 
@@ -303,7 +308,7 @@ export async function groupEvidence(
       and(
         inArray(evidence.userId, [...allowed.keys()]),
         isNull(evidence.deletedAt),
-        opts.since ? gte(evidence.periodStart, opts.since) : sql`true`,
+        opts.since ? gte(evidence.confirmedAt, opts.since) : sql`true`,
       ),
     )
     .orderBy(desc(evidence.confirmedAt))

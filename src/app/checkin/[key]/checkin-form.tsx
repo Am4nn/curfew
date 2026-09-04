@@ -15,6 +15,9 @@ import { checkInAction } from "./actions";
 // (decision 91): that is what turns "1180 so far today" into "1700 of 2000 once
 // this is sent" without a second implementation of the same sentence.
 
+/** How long an upload may stall before we give up and say so. */
+const UPLOAD_TIMEOUT_MS = 60_000;
+
 function newIdem(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID().replace(/-/g, "");
@@ -180,9 +183,12 @@ export function CheckinForm({
   const busy = sending || pending;
 
   const evidenceRule = getActivityType(state.typeKey).evidence;
+  // These two defaults are mirrored in src/server/evidence.ts, which rejects an
+  // upload larger than MAX_UPLOAD_BYTES. Move them together or the client
+  // produces a file the server refuses.
   const compression = {
-    maxEdge: evidenceRule.maxEdge ?? 1280,
-    quality: evidenceRule.quality ?? 0.75,
+    maxEdge: evidenceRule.maxEdge ?? 1920,
+    quality: evidenceRule.quality ?? 0.85,
   };
 
   // The module's own line, recomputed as the number is typed.
@@ -219,6 +225,10 @@ export function CheckinForm({
     setError(null);
     setSending(true);
     const idem = newIdem();
+    // Whether a photo reached the bucket. A throw AFTER this is true means the
+    // file is up and only the check-in is missing, which is a different fact
+    // from "nothing was recorded" and has to read differently.
+    let uploaded = false;
 
     try {
       let evidenceKey: string | undefined;
@@ -246,15 +256,33 @@ export function CheckinForm({
           return;
         }
 
-        const put = await fetch(body.url, {
-          method: "PUT",
-          headers: { "content-type": shot.contentType },
-          body: shot.blob,
-        });
+        // A plain fetch has no timeout, so a stalled upload on bad mobile data
+        // would sit on "Sending" forever with no way back.
+        const abort = new AbortController();
+        const timer = setTimeout(() => abort.abort(), UPLOAD_TIMEOUT_MS);
+        let put: Response;
+        try {
+          put = await fetch(body.url, {
+            method: "PUT",
+            headers: { "content-type": shot.contentType },
+            body: shot.blob,
+            signal: abort.signal,
+          });
+        } catch {
+          setError(
+            abort.signal.aborted
+              ? "The upload timed out. Nothing was recorded."
+              : "The photo did not upload. Nothing was recorded.",
+          );
+          return;
+        } finally {
+          clearTimeout(timer);
+        }
         if (!put.ok) {
           setError("The photo did not upload. Try again.");
           return;
         }
+        uploaded = true;
         evidenceKey = body.objectKey;
       }
 
@@ -275,7 +303,11 @@ export function CheckinForm({
       }
       setError(result.message);
     } catch {
-      setError("Network failed. Nothing was recorded.");
+      setError(
+        uploaded
+          ? "The photo went up, the check-in did not. Send it again."
+          : "Network failed. Nothing was recorded.",
+      );
     } finally {
       setSending(false);
     }

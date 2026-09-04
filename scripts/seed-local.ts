@@ -28,6 +28,9 @@
 //   NOTICE_MAINTENANCE     = "00000000-0000-0000-0000-0000000000c1"  (fixture "notice-active" only)
 // ---------------------------------------------------------------------------
 
+import { mkdir, writeFile } from "node:fs/promises";
+import { deflateSync } from "node:zlib";
+import path from "node:path";
 import { DateTime } from "luxon";
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
@@ -248,12 +251,94 @@ async function checkin(
 }
 
 /**
- * A fake evidence row for a historical check-in. R2 keys are blank locally:
- * the object never actually exists in storage, only this row and the
- * `evidence_key` on the check-in's own payload. That is enough for a list or
- * thumbnail screen to render structurally; the harness (or a stub of
- * `readUrl`) decides what image, if any, actually loads for that key.
+ * A stand-in photo for a historical check-in: the row, the `evidence_key` on
+ * the check-in's own payload, and a real file under `.r2-local/` so the
+ * thumbnail actually loads. LOCAL_MODE serves that directory in place of the
+ * bucket (see `src/server/r2.ts`), so every evidence screen renders with
+ * pictures rather than broken tiles.
  */
+/**
+ * A tiny PNG in one flat colour. Hand-encoded rather than pulled from a
+ * dependency: it is three chunks and a zlib deflate, and the alternative is an
+ * image library in a seed script.
+ */
+function flatPng(size: number, rgb: [number, number, number]): Buffer {
+  const raw = Buffer.alloc((size * 3 + 1) * size);
+  for (let y = 0; y < size; y++) {
+    const row = y * (size * 3 + 1);
+    raw[row] = 0; // filter: none
+    for (let x = 0; x < size; x++) {
+      raw[row + 1 + x * 3] = rgb[0];
+      raw[row + 2 + x * 3] = rgb[1];
+      raw[row + 3 + x * 3] = rgb[2];
+    }
+  }
+
+  const chunk = (type: string, body: Buffer) => {
+    const length = Buffer.alloc(4);
+    length.writeUInt32BE(body.length);
+    const typed = Buffer.concat([Buffer.from(type, "ascii"), body]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(typed));
+    return Buffer.concat([length, typed, crc]);
+  };
+
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(size, 0);
+  ihdr.writeUInt32BE(size, 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 2; // truecolour
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", deflateSync(raw)),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+const CRC_TABLE = (() => {
+  const table = new Int32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    table[n] = c;
+  }
+  return table;
+})();
+
+function crc32(buffer: Buffer): number {
+  let c = 0xffffffff;
+  for (const byte of buffer) c = CRC_TABLE[(c ^ byte) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+async function writeFixturePhoto(objectKey: string, seq: number): Promise<void> {
+  const file = path.join(process.cwd(), ".r2-local", objectKey);
+  await mkdir(path.dirname(file), { recursive: true });
+  // Each one a different shade, so a wall of tiles reads as separate photos
+  // rather than one repeated. Warm and dim: these sit on a near-black ground.
+  const hue = (seq * 47) % 360;
+  await writeFile(file, flatPng(64, hsl(hue, 0.32, 0.34)));
+}
+
+function hsl(h: number, s: number, l: number): [number, number, number] {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  const [r, g, b] =
+    h < 60 ? [c, x, 0]
+    : h < 120 ? [x, c, 0]
+    : h < 180 ? [0, c, x]
+    : h < 240 ? [0, x, c]
+    : h < 300 ? [x, 0, c]
+    : [c, 0, x];
+  return [
+    Math.round((r + m) * 255),
+    Math.round((g + m) * 255),
+    Math.round((b + m) * 255),
+  ];
+}
+
 async function addEvidence(
   userId: string,
   typeKey: string,
@@ -262,7 +347,8 @@ async function addEvidence(
   at: Date,
 ): Promise<string> {
   evidenceSeq++;
-  const objectKey = `local-fixture/${evidenceSeq}.jpg`;
+  const objectKey = `local-fixture/${evidenceSeq}.png`;
+  await writeFixturePhoto(objectKey, evidenceSeq);
   await db.insert(evidence).values({
     userId,
     typeKey,
@@ -343,7 +429,15 @@ async function seedSleepEvents(
       const fraction =
         w.step === "wake" ? 0.15 + deterministicFraction(`${userId}:${i}`) * 0.7 : 0.5;
       const at = new Date(w.opensAt.getTime() + span * fraction);
-      await checkin(userId, "sleep", w.step, at, SLEEP_SCHEDULE, {});
+      // Sleep REQUIRES a photo on confirm and nowhere else (decision 45), so a
+      // seeded confirm without one is data the app itself could never produce.
+      // It is also the only type anybody in the fixture shares evidence for,
+      // which is why the group evidence tab had nothing to show.
+      const key =
+        w.step === "confirm"
+          ? await addEvidence(userId, "sleep", "confirm", period, at)
+          : undefined;
+      await checkin(userId, "sleep", w.step, at, SLEEP_SCHEDULE, {}, key);
       n++;
     }
   }

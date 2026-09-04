@@ -149,10 +149,10 @@ export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
         </div>
       ) : null}
 
-      <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-[11.5px] leading-[1.55] text-muted">
         Photos off leaves your streak shared. Turning an activity off keeps your
         record in that group, it just stops growing.
-      </div>
+      </p>
     </div>
   );
 }

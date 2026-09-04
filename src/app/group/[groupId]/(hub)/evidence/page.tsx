@@ -32,7 +32,9 @@ export default async function EvidenceTab({
   const yesterday = DateTime.now().setZone(timezone).minus({ days: 1 }).toFormat("yyyy-MM-dd");
 
   const items = await groupEvidence(groupId, user.id, {
-    since: older ? undefined : yesterday,
+    since: older
+      ? undefined
+      : DateTime.now().setZone(timezone).minus({ days: 1 }).startOf("day").toJSDate(),
     limit: older ? 60 : 20,
   });
 

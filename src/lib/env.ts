@@ -33,9 +33,10 @@ const raw = {
   EMAIL_FROM: opt(process.env.EMAIL_FROM),
 
   // v3 services. Optional at boot on purpose: production still runs v2.5, which
-  // uses neither, and local mode disables uploads and rate limiting entirely.
-  // The modules that need them (src/server/r2.ts, src/server/ratelimit.ts)
-  // check at first use and throw naming the key.
+  // uses neither, and local mode does not rate limit. Uploads DO run locally:
+  // src/server/r2.ts swaps the bucket for a directory under LOCAL_MODE rather
+  // than failing, so the evidence path is exercised without credentials. The
+  // modules that need these check at first use and throw naming the key.
   R2_ACCOUNT_ID: opt(process.env.R2_ACCOUNT_ID),
   R2_ACCESS_KEY_ID: opt(process.env.R2_ACCESS_KEY_ID),
   R2_SECRET_ACCESS_KEY: opt(process.env.R2_SECRET_ACCESS_KEY),

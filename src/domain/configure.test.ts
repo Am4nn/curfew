@@ -80,7 +80,7 @@ describe("the twelve configure screens", () => {
     // Decision 97. A plate carries detail; a gym mirror does not.
     const bigger = registeredKeys().filter((k) => getActivityType(k).evidence.maxEdge);
     expect(bigger).toEqual(["food"]);
-    expect(getActivityType("food").evidence).toMatchObject({ maxEdge: 1600, quality: 0.8 });
+    expect(getActivityType("food").evidence).toMatchObject({ maxEdge: 2400, quality: 0.9 });
   });
 
   it("every type that takes a photo says where it may come from", () => {

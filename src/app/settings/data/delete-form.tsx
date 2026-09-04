@@ -167,23 +167,19 @@ export function DeleteForm({
         </div>
       </section>
 
-      {outstanding.length > 0 ? (
-        <div className="border-l-[3px] border-l-penalty bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-penalty">
-          Money owed is never deleted. You owe{" "}
-          {outstanding.join(", ")}. Ledger entries stay, with your name removed
-          where it can be.
-        </div>
-      ) : (
-        <div className="border-l-[3px] border-l-penalty bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-penalty">
-          Money owed is never deleted. Ledger entries stay, with your name removed
-          where it can be.
-        </div>
-      )}
+      {/* The money warning keeps its colour, because it is the one thing here
+          that survives the deletion. The rest is plain text: three stacked
+          boxes on one screen is what made this page shout. */}
+      <p className="text-[11.5px] leading-[1.55] text-penalty">
+        Money owed is never deleted.
+        {outstanding.length > 0 ? ` You owe ${outstanding.join(", ")}.` : ""} Ledger
+        entries stay, with your name removed where it can be.
+      </p>
 
-      <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-[11.5px] leading-[1.55] text-muted">
         Photos go within minutes. Habit history goes with them. Nothing here can be
         undone.
-      </div>
+      </p>
 
       {pending && (pending.kind === "photo-pick" || pending.kind === "photo") ? (
         <div className="fixed inset-0 z-40 flex flex-col bg-bg">

@@ -42,3 +42,6 @@ Thumbs.db
 # drizzle
 drizzle/meta/
 .shots/
+
+# LOCAL_MODE evidence store, standing in for the R2 bucket.
+.r2-local/

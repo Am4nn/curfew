@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useServerAction } from "@/app/ui";
 import { REPORT_REASONS, type ReportReason } from "@/lib/report-reasons";
 import { reportEvidenceAction } from "./actions";
 
@@ -17,13 +17,11 @@ export function ReportButton({
   groupId: string;
   who: string;
 }) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>("nsfw");
   const [note, setNote] = useState("");
   const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, startTransition] = useTransition();
+  const { run, pending: busy, error } = useServerAction();
 
   if (done) {
     return <span className="text-[10px] text-muted">reported</span>;
@@ -96,18 +94,13 @@ export function ReportButton({
                 type="button"
                 disabled={busy}
                 onClick={() =>
-                  startTransition(async () => {
-                    try {
-                      await reportEvidenceAction({ evidenceId, groupId, reason, note });
-                      setOpen(false);
-                      setDone(true);
-                      router.refresh();
-                    } catch (e) {
-                      setError(e instanceof Error ? e.message : "That did not send.");
-                    }
+                  run(async () => {
+                    await reportEvidenceAction({ evidenceId, groupId, reason, note });
+                    setOpen(false);
+                    setDone(true);
                   })
                 }
-                className="h-[46px] flex-1 border border-penalty bg-penalty text-[13.5px] font-semibold text-bg disabled:opacity-50"
+                className="h-[46px] flex-1 border border-penalty bg-penalty text-[13.5px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
               >
                 {busy ? "Sending" : "Report"}
               </button>

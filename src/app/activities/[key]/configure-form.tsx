@@ -13,6 +13,7 @@ import {
 } from "@/domain";
 import { CameraIcon, StreakNumber } from "../../activity-icon";
 import { saveActivityAction, stopTrackingAction } from "./actions";
+import { SubmitButton } from "@/app/ui";
 
 // One configure screen, twelve types. Five controls, drawn from the module's
 // declared fields (decision 88): a day picker, a stepper, a typed box, a
@@ -525,12 +526,16 @@ export function ConfigureForm({
         </button>
       ) : (
         <form action={stopTrackingAction.bind(null, typeKey)}>
-          <button
-            type="submit"
-            className="h-11 w-full border border-rule text-[14px] text-penalty"
+          {/* A bare <form action> never sets this component's own transition
+              flag, so SubmitButton (useFormStatus) is the only thing that can
+              know this press happened. */}
+          <SubmitButton
+            variant="destructive"
+            full
+            pendingLabel={`Stopping ${name}`}
           >
             Stop tracking {name}
-          </button>
+          </SubmitButton>
         </form>
       )}
     </div>

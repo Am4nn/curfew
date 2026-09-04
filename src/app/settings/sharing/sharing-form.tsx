@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ActivityIcon } from "../../activity-icon";
 import { setShareAction } from "../../group/[groupId]/(hub)/settings/actions";
+import { CheckRow, Toggle, useServerAction } from "@/app/ui";
 
 export interface ShareRow {
   typeKey: string;
@@ -26,57 +26,48 @@ export interface GroupShares {
   rows: ShareRow[];
 }
 
-function Toggle({
-  on,
-  onClick,
-  disabled,
-}: {
-  on: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      disabled={disabled}
-      onClick={onClick}
-      className={
-        "flex h-[22px] w-10 flex-none items-center p-[2px] disabled:opacity-40 " +
-        (on ? "justify-end border border-fg bg-fg" : "justify-start border border-rule")
-      }
-    >
-      <span className={"h-4 w-4 " + (on ? "bg-bg" : "bg-muted")} />
-    </button>
-  );
-}
+/** One row's new state, applied before the server has agreed to it. */
+type Patch = { groupId: string; typeKey: string } & Partial<
+  Pick<ShareRow, "shared" | "shareEvidence">
+>;
 
 export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const { run: runAction, error } = useServerAction();
 
-  function run(fn: () => Promise<void>) {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await fn();
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "That did not save.");
-      }
+  // The switch moves on the press, not when the round trip finishes. Before
+  // this, the pending flag was discarded (`const [, startTransition]`) and the
+  // toggle sat still through a server action AND a refresh, so it read as a
+  // press that did nothing. React rolls the patch back on its own if the
+  // action throws.
+  const [view, patch] = useOptimistic(blocks, (state, p: Patch) =>
+    state.map((b) =>
+      b.groupId !== p.groupId
+        ? b
+        : {
+            ...b,
+            rows: b.rows.map((r) => (r.typeKey === p.typeKey ? { ...r, ...p } : r)),
+          },
+    ),
+  );
+
+  // useOptimistic's patch has to be applied inside a transition, and the shared
+  // hook already runs `fn` inside one, so applying it first thing here is
+  // exactly the right place.
+  function run(next: Patch, fn: () => Promise<void>) {
+    runAction(async () => {
+      patch(next);
+      await fn();
     });
   }
 
   return (
     <div className="flex flex-col gap-6 px-5 pb-6 pt-[18px]">
-      {blocks.length === 0 ? (
+      {view.length === 0 ? (
         <p className="text-[13px] leading-[1.6] text-muted">
           You are not in a group, so nothing is shared anywhere.
         </p>
       ) : (
-        blocks.map((block) => (
+        view.map((block) => (
           <section key={block.groupId} className="flex flex-col gap-[10px]">
             <span className="text-[10px] tracking-[0.16em] text-muted">
               {block.groupName.toUpperCase()}
@@ -104,13 +95,15 @@ export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
                         <Toggle
                           on={row.shared}
                           onClick={() =>
-                            run(() =>
-                              setShareAction({
-                                groupId: block.groupId,
-                                typeKey: row.typeKey,
-                                shared: !row.shared,
-                                shareEvidence: row.shareEvidence,
-                              }),
+                            run(
+                              { groupId: block.groupId, typeKey: row.typeKey, shared: !row.shared },
+                              () =>
+                                setShareAction({
+                                  groupId: block.groupId,
+                                  typeKey: row.typeKey,
+                                  shared: !row.shared,
+                                  shareEvidence: row.shareEvidence,
+                                }),
                             )
                           }
                         />
@@ -128,38 +121,28 @@ export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
                     </div>
 
                     {row.shared && row.takesEvidence ? (
-                      <button
-                        type="button"
+                      <CheckRow
+                        on={row.shareEvidence}
+                        className="pb-[13px] pl-[29px]"
                         onClick={() =>
-                          run(() =>
-                            setShareAction({
+                          run(
+                            {
                               groupId: block.groupId,
                               typeKey: row.typeKey,
-                              shared: true,
                               shareEvidence: !row.shareEvidence,
-                            }),
+                            },
+                            () =>
+                              setShareAction({
+                                groupId: block.groupId,
+                                typeKey: row.typeKey,
+                                shared: true,
+                                shareEvidence: !row.shareEvidence,
+                              }),
                           )
                         }
-                        className="flex items-center gap-[9px] pb-[13px] pl-[29px]"
                       >
-                        <span
-                          className={
-                            "flex h-4 w-4 flex-none items-center justify-center border " +
-                            (row.shareEvidence ? "border-fg bg-fg" : "border-rule")
-                          }
-                        >
-                          {row.shareEvidence ? (
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="3">
-                              <path d="M4 12.5 9 17.5 20 6.5" />
-                            </svg>
-                          ) : null}
-                        </span>
-                        <span
-                          className={"text-[12px] " + (row.shareEvidence ? "text-fg" : "text-muted")}
-                        >
-                          Share evidence with this group
-                        </span>
-                      </button>
+                        Share evidence with this group
+                      </CheckRow>
                     ) : null}
                   </div>
                 ))}

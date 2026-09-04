@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 // The one-tap check-in on Home. An explicit press, POSTed, never a GET and
@@ -31,11 +31,17 @@ export function CheckinButton({
   className?: string;
 }) {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const [sending, setSending] = useState(false);
+  // router.refresh() is a transition, so this stays true until the new server
+  // render actually arrives. Without it the button un-busied the instant the
+  // POST resolved while the row behind it still read "not done", which looked
+  // like a press that had done nothing.
+  const [refreshing, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const pending = sending || refreshing;
 
   async function submit() {
-    setPending(true);
+    setSending(true);
     setError(null);
     try {
       const res = await fetch("/api/checkin", {
@@ -43,23 +49,27 @@ export function CheckinButton({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ typeKey, step, idem: newIdem(), evidence: {} }),
       });
-      if (res.ok) {
-        router.refresh();
-        return;
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        setError(body.message ?? "That did not go through.");
       }
-      const body = (await res.json().catch(() => ({}))) as { message?: string };
-      setError(body.message ?? "That did not go through.");
-      router.refresh();
+      startTransition(() => router.refresh());
     } catch {
       setError("Network failed. Try again.");
     } finally {
-      setPending(false);
+      setSending(false);
     }
   }
 
   return (
     <div>
-      <button onClick={submit} disabled={pending} className={className}>
+      <button
+        type="button"
+        onClick={submit}
+        disabled={pending}
+        aria-busy={pending || undefined}
+        className={className + " active:opacity-70"}
+      >
         {pending ? "Recording" : label}
       </button>
       {error ? <p className="mt-3 text-[13px] text-penalty">{error}</p> : null}

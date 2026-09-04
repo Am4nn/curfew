@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useServerAction } from "@/app/ui";
 import { reviewReportAction, banUserAction } from "./actions";
 
 // Deciding a report. Removing a photo and removing a person are separate acts
@@ -18,23 +18,9 @@ export function ReviewForm({
   subjectName: string;
   hasPhoto: boolean;
 }) {
-  const router = useRouter();
   const [banning, setBanning] = useState(false);
   const [reason, setReason] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, startTransition] = useTransition();
-
-  function run(fn: () => Promise<void>) {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await fn();
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "That did not go through.");
-      }
-    });
-  }
+  const { run, pending: busy, error } = useServerAction();
 
   return (
     <div className="flex flex-col gap-3">
@@ -49,9 +35,9 @@ export function ReviewForm({
               reviewReportAction({ reportId, outcome: "dismissed", removePhoto: false }),
             )
           }
-          className="h-[38px] flex-1 border border-rule px-3 text-[12.5px] disabled:opacity-50"
+          className="h-[38px] flex-1 border border-rule px-3 text-[12.5px] active:opacity-70 disabled:opacity-40"
         >
-          Nothing wrong with it
+          {busy ? "Working" : "Nothing wrong with it"}
         </button>
         <button
           type="button"
@@ -61,9 +47,9 @@ export function ReviewForm({
               reviewReportAction({ reportId, outcome: "upheld", removePhoto: hasPhoto }),
             )
           }
-          className="h-[38px] flex-1 border border-penalty bg-penalty px-3 text-[12.5px] font-semibold text-bg disabled:opacity-50"
+          className="h-[38px] flex-1 border border-penalty bg-penalty px-3 text-[12.5px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
         >
-          {hasPhoto ? "Remove the photo" : "Uphold"}
+          {busy ? "Working" : hasPhoto ? "Remove the photo" : "Uphold"}
         </button>
       </div>
 
@@ -102,7 +88,7 @@ export function ReviewForm({
                   });
                 })
               }
-              className="h-[38px] flex-1 border border-penalty bg-penalty text-[12.5px] font-semibold text-bg disabled:opacity-50"
+              className="h-[38px] flex-1 border border-penalty bg-penalty text-[12.5px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
             >
               Ban {subjectName}
             </button>

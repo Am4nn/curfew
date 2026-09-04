@@ -1,6 +1,7 @@
 import { getSessionUser } from "@/lib/session";
 import { pendingNotices } from "@/server/notices";
 import { acknowledgeNoticesAction } from "./notice-actions";
+import { SubmitButton } from "@/app/ui";
 
 // The blocking overlay (decision 58). It sits over every route and the app does
 // nothing until it is acknowledged. There is no cross and no dismiss, only
@@ -58,12 +59,12 @@ export async function NoticeOverlay() {
 
         <div className="px-[18px] pb-[18px]">
           <form action={acknowledgeNoticesAction}>
-            <button
-              type="submit"
+            <SubmitButton
               className="h-11 w-full border border-fg bg-fg text-[13.5px] font-semibold text-bg"
+              pendingLabel="Saving"
             >
               Got it
-            </button>
+            </SubmitButton>
           </form>
         </div>
       </div>

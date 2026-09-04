@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useServerAction } from "@/app/ui";
 import type { MoneyOverride } from "@/server/group-controls";
 import { setMoneyOverrideAction, setArchivedAction } from "./actions";
 
@@ -39,7 +39,7 @@ export function GroupRow({
   canWrite: boolean;
   canArchive: boolean;
 }) {
-  const [pending, startTransition] = useTransition();
+  const { run, pending, error } = useServerAction();
 
   return (
     <div className="flex flex-col gap-[10px] border-b border-rule py-[14px]">
@@ -55,14 +55,10 @@ export function GroupRow({
           <button
             type="button"
             disabled={pending}
-            onClick={() =>
-              startTransition(async () => {
-                await setArchivedAction(group.groupId, true);
-              })
-            }
-            className="flex-none text-[11px] text-muted disabled:opacity-40"
+            onClick={() => run(() => setArchivedAction(group.groupId, true))}
+            className="flex-none text-[11px] text-muted active:opacity-70 disabled:opacity-40"
           >
-            Archive
+            {pending ? "Archiving" : "Archive"}
           </button>
         ) : null}
       </div>
@@ -88,15 +84,14 @@ export function GroupRow({
                 type="button"
                 title={option.hint}
                 disabled={!canWrite || pending || active}
-                onClick={() =>
-                  startTransition(async () => {
-                    await setMoneyOverrideAction(group.groupId, option.value);
-                  })
-                }
+                onClick={() => run(() => setMoneyOverrideAction(group.groupId, option.value))}
                 className={
-                  "h-[30px] border px-[10px] text-[11.5px] disabled:opacity-100 " +
+                  // The active chip is disabled because it is already the
+                  // current value, which is not the same as unavailable, so it
+                  // keeps full opacity. Every other disabled state fades.
+                  "h-[30px] border px-[10px] text-[11.5px] active:opacity-70 " +
                   (active
-                    ? "border-fg bg-fg font-semibold text-bg"
+                    ? "border-fg bg-fg font-semibold text-bg disabled:opacity-100"
                     : "border-rule text-muted disabled:opacity-40")
                 }
               >
@@ -106,6 +101,9 @@ export function GroupRow({
           })}
         </div>
       ) : null}
+
+      {/* Both actions here used to swallow their failure entirely. */}
+      {error ? <span className="text-[11px] text-penalty">{error}</span> : null}
     </div>
   );
 }

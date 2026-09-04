@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import type { ControlsState, PendingChange } from "@/server/controls";
 import { saveControlsAction } from "./actions";
+import { Toggle as SharedToggle } from "@/app/ui";
 import {
   settingConsequence,
   retentionConsequence,
@@ -54,6 +55,9 @@ const UNSAVED = (
   </span>
 );
 
+// The shared switch, with this screen's onChange shape. Admin controls are a
+// batched draft behind an explicit Save, so these never touch the server on
+// press and take no pending state.
 function Toggle({
   on,
   disabled,
@@ -65,22 +69,7 @@ function Toggle({
   onChange: (next: boolean) => void;
   label: string;
 }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => onChange(!on)}
-      className={
-        "flex h-[22px] w-[38px] flex-none items-center border p-[2px] disabled:opacity-40 " +
-        (on ? "justify-end border-fg bg-fg" : "justify-start border-rule bg-transparent")
-      }
-    >
-      <span className={"h-[16px] w-[16px] " + (on ? "bg-bg" : "bg-muted")} />
-    </button>
-  );
+  return <SharedToggle on={on} disabled={disabled} label={label} onClick={() => onChange(!on)} />;
 }
 
 export function ControlsForm({

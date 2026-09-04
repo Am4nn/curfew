@@ -2,6 +2,7 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { CONSENT, hasConsented } from "@/server/consent";
 import { TERMS } from "@/server/policy";
 import { acceptConsentAction } from "./consent/actions";
+import { SubmitButton } from "@/app/ui";
 
 // The consent gate, over every route, the same way a notice is (decision 58).
 //
@@ -80,12 +81,12 @@ export async function ConsentGate() {
 
       <div className="border-t border-rule px-5 pb-5 pt-[14px]">
         <form action={acceptConsentAction}>
-          <button
-            type="submit"
+          <SubmitButton
             className="h-12 w-full border border-fg bg-fg text-[14px] font-semibold text-bg"
+            pendingLabel="Saving"
           >
             I am 18 or older and I agree
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

@@ -1,31 +1,283 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useCallback, useEffect, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 
 export type FormState = { ok?: boolean; error?: string; note?: string };
 export type FormAction = (state: FormState, formData: FormData) => Promise<FormState>;
 
+// ---------------------------------------------------------------------------
+// The button. One component, because the house style was hand-written about
+// fifteen times across the app with three different disabled opacities and no
+// pressed state at all, so half the controls looked identical whether you had
+// touched them or not.
+//
+// Every button that reaches the server takes `pending`. While it is true the
+// button is disabled, announces itself busy, and says what it is doing.
+// ---------------------------------------------------------------------------
+
+export type ButtonVariant = "primary" | "secondary" | "destructive" | "quiet";
+export type ButtonSize = "lg" | "md" | "sm";
+
+const VARIANT: Record<ButtonVariant, string> = {
+  primary: "border border-fg bg-fg font-semibold text-bg",
+  secondary: "border border-rule text-fg",
+  destructive: "border border-rule text-penalty",
+  quiet: "text-fg",
+};
+
+const SIZE: Record<ButtonSize, string> = {
+  lg: "h-11 px-4 text-[14px]",
+  md: "h-[38px] px-3 text-[13px]",
+  sm: "h-[30px] px-[10px] text-[11.5px]",
+};
+
+// `active:` is the whole point of the pressed state: a press that is waiting on
+// a round trip has to look different from one that never registered.
+const BASE =
+  "inline-flex items-center justify-center whitespace-nowrap active:opacity-70 " +
+  "disabled:opacity-40 disabled:active:opacity-40";
+
+export function buttonClass(
+  variant: ButtonVariant = "secondary",
+  size: ButtonSize = "lg",
+  extra?: string,
+): string {
+  return [BASE, VARIANT[variant], SIZE[size], extra ?? ""].join(" ").trim();
+}
+
+export function Button({
+  children,
+  variant = "secondary",
+  size = "lg",
+  full,
+  pending,
+  pendingLabel,
+  className,
+  disabled,
+  ...rest
+}: {
+  children: React.ReactNode;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  full?: boolean;
+  pending?: boolean;
+  pendingLabel?: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...rest}
+      disabled={disabled || pending}
+      aria-busy={pending || undefined}
+      className={buttonClass(variant, size, [full ? "w-full" : "", className ?? ""].join(" "))}
+    >
+      {pending ? (pendingLabel ?? children) : children}
+    </button>
+  );
+}
+
 // Submit button that reflects the form's pending state: disabled and relabelled
-// while the server action runs, so every action gives feedback.
+// while the server action runs, so every action gives feedback. Callers that
+// pass `className` keep their own styling; the rest get the house one.
 export function SubmitButton({
   children,
   pendingLabel,
   className,
+  variant,
+  size,
+  full,
 }: {
   children: React.ReactNode;
   pendingLabel?: string;
   className?: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  full?: boolean;
 }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
-      aria-busy={pending}
-      className={(className ?? "") + (pending ? " opacity-60" : "")}
+      aria-busy={pending || undefined}
+      className={
+        className
+          ? className + " active:opacity-70 disabled:opacity-40" + (pending ? " opacity-60" : "")
+          : buttonClass(variant, size, full ? "w-full" : "")
+      }
     >
       {pending ? (pendingLabel ?? children) : children}
+    </button>
+  );
+}
+
+/**
+ * Everything a control that talks to the server has to do, in one place:
+ * run it inside a transition so `pending` stays true until the new server
+ * render actually lands, refresh, and catch the failure as a string rather
+ * than an unhandled rejection.
+ *
+ * This block was copy-pasted into five files with small differences, and in
+ * two of them the pending flag was discarded entirely, which is why half the
+ * app looked identical whether you had pressed it or not.
+ */
+export function useServerAction(): {
+  run: (fn: () => Promise<void>) => void;
+  pending: boolean;
+  error: string | null;
+  clearError: () => void;
+} {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  const run = useCallback(
+    (fn: () => Promise<void>) => {
+      setError(null);
+      startTransition(async () => {
+        try {
+          await fn();
+          router.refresh();
+        } catch (e) {
+          setError(e instanceof Error ? e.message : "That did not save.");
+        }
+      });
+    },
+    [router],
+  );
+
+  return { run, pending, error, clearError: () => setError(null) };
+}
+
+/**
+ * A button that calls the server and reports on itself. Press it and it
+ * disables, relabels, refreshes when the action lands, and renders the failure
+ * underneath. The caller supplies the async function and nothing else.
+ *
+ * Use this for one-off actions. A group of controls that share one pending
+ * state (a settings screen, a row of chips) should take `useServerAction()`
+ * once and pass `pending` down instead.
+ */
+export function ActionButton({
+  action,
+  children,
+  pendingLabel,
+  onDone,
+  ...rest
+}: {
+  action: () => Promise<void>;
+  children: React.ReactNode;
+  pendingLabel?: string;
+  /** Called after the action resolves, for closing a menu or clearing a draft. */
+  onDone?: () => void;
+} & Omit<React.ComponentProps<typeof Button>, "pending" | "onClick">) {
+  const { run, pending, error } = useServerAction();
+  return (
+    <span className="flex flex-col gap-2">
+      <Button
+        {...rest}
+        pending={pending}
+        pendingLabel={pendingLabel}
+        onClick={() =>
+          run(async () => {
+            await action();
+            onDone?.();
+          })
+        }
+      >
+        {children}
+      </Button>
+      {error ? <span className="text-[11.5px] text-penalty">{error}</span> : null}
+    </span>
+  );
+}
+
+/**
+ * A checkbox with its label as one press target. Was hand-rolled identically
+ * in both sharing surfaces.
+ */
+export function CheckRow({
+  on,
+  onClick,
+  children,
+  disabled,
+  className,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={on}
+      disabled={disabled}
+      onClick={onClick}
+      className={
+        "flex items-center gap-[9px] active:opacity-70 disabled:opacity-40 " + (className ?? "")
+      }
+    >
+      <span
+        className={
+          "flex h-4 w-4 flex-none items-center justify-center border " +
+          (on ? "border-fg bg-fg" : "border-rule")
+        }
+      >
+        {on ? (
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--bg)"
+            strokeWidth="3"
+            aria-hidden="true"
+          >
+            <path d="M4 12.5 9 17.5 20 6.5" />
+          </svg>
+        ) : null}
+      </span>
+      <span className={"text-[12px] " + (on ? "text-fg" : "text-muted")}>{children}</span>
+    </button>
+  );
+}
+
+/**
+ * The switch. Was copied verbatim into four files, only two of which accepted
+ * `disabled` and none of which showed anything while the server answered.
+ */
+export function Toggle({
+  on,
+  onClick,
+  disabled,
+  pending,
+  label,
+}: {
+  on: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  pending?: boolean;
+  label?: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      aria-busy={pending || undefined}
+      disabled={disabled}
+      onClick={onClick}
+      className={
+        "flex h-[22px] w-10 flex-none items-center p-[2px] active:opacity-70 disabled:opacity-40 " +
+        (on ? "justify-end border border-fg bg-fg" : "justify-start border border-rule")
+      }
+    >
+      <span className={"h-4 w-4 " + (on ? "bg-bg" : "bg-muted")} />
     </button>
   );
 }

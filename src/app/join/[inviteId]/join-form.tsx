@@ -6,6 +6,7 @@ import { ceilingFor, rankFor, START_SCORE } from "@/domain";
 import { ActivityIcon } from "../../activity-icon";
 import { RANK_TEXT } from "../../rank-icon";
 import { joinAction, declineAction } from "./actions";
+import { SubmitButton, Toggle } from "@/app/ui";
 
 export interface JoinRow {
   typeKey: string;
@@ -15,24 +16,6 @@ export interface JoinRow {
   tracked: boolean;
   takesEvidence: boolean;
   sub: string;
-}
-
-function Toggle({ on, onClick, disabled }: { on: boolean; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      disabled={disabled}
-      onClick={onClick}
-      className={
-        "flex h-[22px] w-10 flex-none items-center p-[2px] disabled:opacity-40 " +
-        (on ? "justify-end border border-fg bg-fg" : "justify-start border border-rule")
-      }
-    >
-      <span className={"h-4 w-4 " + (on ? "bg-bg" : "bg-muted")} />
-    </button>
-  );
 }
 
 export function JoinForm({
@@ -186,9 +169,12 @@ export function JoinForm({
       </button>
 
       <form action={declineAction.bind(null, inviteId)}>
-        <button type="submit" className="h-11 w-full border border-rule text-[14px] text-muted">
+        <SubmitButton
+          className="h-11 w-full border border-rule text-[14px] text-muted"
+          pendingLabel="Declining"
+        >
           Decline
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

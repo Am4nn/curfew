@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
+import { useServerAction } from "@/app/ui";
 import { ActivityIcon } from "../../activity-icon";
 import {
   deletePhotosAction,
@@ -79,19 +80,15 @@ export function DeleteForm({
   }) {
   const [pending, setPending] = useState<Pending>(null);
   const [typed, setTyped] = useState("");
-  const [busy, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const { run: runAction, pending: busy, error } = useServerAction();
 
+  // The shared hook, plus what this screen does after a delete lands: step to
+  // the next confirmation, and clear the typed-name box.
   function run(fn: () => Promise<void>, after: Pending = null) {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await fn();
-        setPending(after);
-        setTyped("");
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "That did not go through.");
-      }
+    runAction(async () => {
+      await fn();
+      setPending(after);
+      setTyped("");
     });
   }
 

@@ -347,21 +347,25 @@ export function CheckinForm({
         </div>
 
         <div className="flex flex-col gap-[10px]">
+          {/* Both said nothing at all while sending: a 40% fade on a 52px
+              button is not a press anybody notices. */}
           <button
             type="button"
             disabled={busy}
+            aria-busy={busy || undefined}
             onClick={() => send({ held: true })}
-            className="h-[52px] w-full border border-fg bg-fg text-[15px] font-semibold text-bg disabled:opacity-60"
+            className="h-[52px] w-full border border-fg bg-fg text-[15px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
           >
-            It held
+            {busy ? "Recording" : "It held"}
           </button>
           <button
             type="button"
             disabled={busy}
+            aria-busy={busy || undefined}
             onClick={() => send({ held: false })}
-            className="h-[52px] w-full border border-rule bg-transparent text-[15px] text-penalty disabled:opacity-60"
+            className="h-[52px] w-full border border-rule bg-transparent text-[15px] text-penalty active:opacity-70 disabled:opacity-40"
           >
-            I slipped
+            {busy ? "Recording" : "I slipped"}
           </button>
         </div>
 

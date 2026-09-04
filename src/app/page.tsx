@@ -199,10 +199,14 @@ export default async function Home() {
   );
 }
 
-// An invite waiting. It was a one-line link reading "View ›", which sat above
-// the day's count looking like a notification and said nothing about what
-// accepting would cost. It is the group's own block now: who asked, which
-// group, what a group can see, and one way in.
+// An invite waiting. This was a one-line link reading "View ›" that said
+// nothing about what accepting would cost, then a tinted panel with a left bar,
+// which was the only block on Home shaped like that and read as a banner.
+//
+// Home is a small-caps label and rows separated by hairlines everywhere else on
+// the screen, so the invite is that too. The accent survives on the label
+// alone, which is all the signal it needs. Every invite gets its own row rather
+// than one being promoted and the rest counted.
 //
 // Accepting still happens on the join screen rather than here, because joining
 // means choosing what to share, and that is not a decision to take from a
@@ -212,33 +216,27 @@ function InviteCard({
 }: {
   invites: { id: string; inviterName: string; groupName: string }[];
 }) {
-  const first = invites[0];
   return (
-    <section className="flex flex-col gap-[11px] border-l-[3px] border-l-accent bg-surface px-[13px] py-3">
-      <div className="flex flex-col gap-[5px]">
-        <span className="text-[10px] tracking-[0.16em] text-accent">
-          {invites.length === 1 ? "AN INVITE" : `${invites.length} INVITES`}
-        </span>
-        <span className="text-[13.5px] leading-[1.5]">
-          {first.inviterName} invited you to{" "}
-          <span className="font-semibold">{first.groupName}</span>.
-        </span>
-        <span className="text-[11.5px] leading-[1.5] text-muted">
-          They only ever see the activities you choose to share.
-        </span>
-      </div>
-      <div className="flex items-center gap-[9px]">
-        <Link
-          href={`/join/${first.id}`}
-          className="flex h-[34px] flex-none items-center border border-fg bg-fg px-[14px] text-[12px] font-semibold text-bg active:opacity-70"
-        >
-          Open the invite
-        </Link>
-        {invites.length > 1 ? (
-          <Link href="/groups" className="text-[12px] text-muted">
-            {invites.length - 1} more &rsaquo;
+    <section className="flex flex-col gap-[11px]">
+      <span className="text-[10px] tracking-[0.16em] text-accent">
+        {invites.length === 1 ? "AN INVITE" : `${invites.length} INVITES`}
+      </span>
+      <div className="flex flex-col">
+        {invites.map((invite) => (
+          <Link
+            key={invite.id}
+            href={`/join/${invite.id}`}
+            className="flex items-center gap-3 border-b border-rule pb-[14px] [&+a]:pt-[14px]"
+          >
+            <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+              <span className="text-[14px]">{invite.groupName}</span>
+              <span className="truncate text-[11.5px] leading-[1.45] text-muted">
+                {invite.inviterName} invited you
+              </span>
+            </div>
+            <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
           </Link>
-        ) : null}
+        ))}
       </div>
     </section>
   );
@@ -311,13 +309,21 @@ function NewUser({ hasInvite }: { hasInvite: boolean }) {
         </div>
       </div>
 
-      {/* The invite block above already carries this sentence. */}
-      {hasInvite ? null : (
-        <div className="border-l-[3px] border-l-accent bg-surface px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-muted">
-          Groups are invite-only. They only ever see the activities you choose to
-          share.
-        </div>
-      )}
+      {/* Making a group is the other half of the app, and a new arrival had no
+          way to reach it from here at all. The footnote is plain text: every
+          other line of small print on Home is, and the tinted panel this wore
+          was emphasis it did not need. */}
+      <Link
+        href="/groups"
+        className="flex h-11 w-full items-center justify-center border border-rule text-[14px] active:opacity-70"
+      >
+        Create a group
+      </Link>
+      <p className="text-[11.5px] leading-[1.55] text-muted">
+        {hasInvite
+          ? "Groups only ever see the activities you choose to share. You can make one of your own too."
+          : "Groups are invite-only, and they only ever see the activities you choose to share. Make one and invite the people who will notice when you stop."}
+      </p>
     </section>
   );
 }

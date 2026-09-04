@@ -4,6 +4,7 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { getActivityType } from "@/domain";
 import { listUserGroups } from "@/server/groups";
 import { acceptedTypes, sharesFor } from "@/server/sharing";
+import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { SharingForm, type GroupShares } from "./sharing-form";
 
@@ -15,6 +16,13 @@ export default async function SharingPage() {
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
   const groups = await listUserGroups(user.id);
+  // A group's accepted list is not the same as the list you could share: you
+  // can only share what you actually track. Without this, an untracked type
+  // rendered as an ordinary row reading "private here", which says you keep it
+  // to yourself rather than that you have never set it up.
+  const tracked = new Set(
+    (await listUserActivities(user.id)).filter((a) => a.enabled).map((a) => a.typeKey),
+  );
   const blocks: GroupShares[] = [];
 
   for (const g of groups) {
@@ -29,15 +37,21 @@ export default async function SharingPage() {
       const type = getActivityType(a.typeKey);
       const share = byKey.get(a.typeKey);
       const shared = share?.shared === true;
-      const standing = shared ? await standingFor(user.id, a.typeKey) : null;
+      const isTracked = tracked.has(a.typeKey);
+      const standing = shared && isTracked ? await standingFor(user.id, a.typeKey) : null;
       rows.push({
         typeKey: a.typeKey,
         name: a.name,
         icon: a.icon,
         shared,
+        tracked: isTracked,
         shareEvidence: share?.shareEvidence === true,
         takesEvidence: type.evidence.level !== "none",
-        sub: shared ? `${standing?.streak ?? 0} day streak` : "private here",
+        sub: !isTracked
+          ? "You do not track this yet"
+          : shared
+            ? `${standing?.streak ?? 0} day streak`
+            : "private here",
       });
     }
 

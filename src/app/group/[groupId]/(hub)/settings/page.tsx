@@ -48,6 +48,10 @@ export default async function GroupSettingsTab({
       icon: a.icon,
       accepted: true,
       shared,
+      // Computed here already, but until now it only reached the subtitle: the
+      // row said "you do not track this yet" and still offered a live switch
+      // beside it, which the server accepted.
+      tracked: tracked.has(a.typeKey),
       shareEvidence: share?.shareEvidence === true,
       takesEvidence: type.evidence.level !== "none",
       sub: !tracked.has(a.typeKey)

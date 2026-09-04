@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatMoney, minorUnitExponent } from "@/domain";
 import { ActivityIcon } from "../../../../activity-icon";
@@ -22,6 +23,10 @@ export interface ShareRow {
   icon: string;
   accepted: boolean;
   shared: boolean;
+  /** Whether the viewer actually tracks this. An untracked type has no
+   *  schedule to check in against, so sharing it could only ever be a miss.
+   *  The server refuses it too. */
+  tracked: boolean;
   shareEvidence: boolean;
   takesEvidence: boolean;
   /** "18 day streak", or why it is not shared. */
@@ -37,15 +42,24 @@ export interface AcceptedRow {
   currency: string;
 }
 
-function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
+function Toggle({
+  on,
+  onClick,
+  disabled,
+}: {
+  on: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={on}
+      disabled={disabled}
       onClick={onClick}
       className={
-        "flex h-[22px] w-10 flex-none items-center p-[2px] " +
+        "flex h-[22px] w-10 flex-none items-center p-[2px] disabled:opacity-40 " +
         (on ? "justify-end border border-fg bg-fg" : "justify-start border border-rule")
       }
     >
@@ -113,19 +127,31 @@ export function SettingsForm({
                     <span className="text-[13.5px]">{row.name}</span>
                     <span className="text-[11px] text-muted">{row.sub}</span>
                   </div>
-                  <Toggle
-                    on={row.shared}
-                    onClick={() =>
-                      run(() =>
-                        setShareAction({
-                          groupId,
-                          typeKey: row.typeKey,
-                          shared: !row.shared,
-                          shareEvidence: row.shareEvidence,
-                        }),
-                      )
-                    }
-                  />
+                  {row.tracked ? (
+                    <Toggle
+                      on={row.shared}
+                      onClick={() =>
+                        run(() =>
+                          setShareAction({
+                            groupId,
+                            typeKey: row.typeKey,
+                            shared: !row.shared,
+                            shareEvidence: row.shareEvidence,
+                          }),
+                        )
+                      }
+                    />
+                  ) : (
+                    // The join screen's affordance: the way out of an untracked
+                    // row is to set the activity up, not a switch that cannot
+                    // mean anything.
+                    <Link
+                      href={`/activities/${row.typeKey}`}
+                      className="flex-none text-[11.5px] text-accent underline underline-offset-2"
+                    >
+                      Set it up first
+                    </Link>
+                  )}
                 </div>
 
                 {row.shared && row.takesEvidence ? (

@@ -9,6 +9,7 @@ import {
 } from "@/db/schema";
 import { resolveAt, resolveConfig, getActivityType } from "@/domain";
 import { assertMember, memberRole } from "./membership";
+import { listUserActivities } from "./activities";
 
 // The two toggles, and only two (decision 16).
 //
@@ -135,6 +136,18 @@ export async function setShare(input: {
   const accepted = await acceptedTypes(input.groupId);
   if (input.shared && !accepted.some((a) => a.typeKey === input.typeKey)) {
     throw new Error("This group does not accept that activity.");
+  }
+
+  // You cannot share what you do not do. Without this, a member could switch
+  // sharing on for a type they never set up: the row counts toward the group's
+  // breadth and its sharer count while no schedule exists to check in against,
+  // so it is a share that can only ever be a miss. The join screen has always
+  // disabled that toggle; this is the same rule where it cannot be skipped.
+  if (input.shared) {
+    const mine = await listUserActivities(input.userId);
+    if (!mine.some((a) => a.typeKey === input.typeKey && a.enabled)) {
+      throw new Error("Set that activity up before sharing it.");
+    }
   }
 
   // A type with no evidence at all cannot share evidence, whatever is ticked.

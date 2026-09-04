@@ -69,18 +69,7 @@ export default async function Home() {
           ) : null}
         </header>
 
-        {invites.length > 0 ? (
-          <Link
-            href="/groups"
-            className="flex items-center justify-between gap-3 border-l-[3px] border-l-accent bg-surface px-[13px] py-3 text-[13px]"
-          >
-            <span>
-              {invites[0].inviterName} invited you to{" "}
-              <span className="font-semibold">{invites[0].groupName}</span>
-            </span>
-            <span className="whitespace-nowrap text-accent">View &rsaquo;</span>
-          </Link>
-        ) : null}
+        {invites.length > 0 ? <InviteCard invites={invites} /> : null}
 
         {today.rows.length === 0 ? (
           <NewUser hasGroup={groups.length > 0} />
@@ -207,6 +196,51 @@ export default async function Home() {
         ) : null}
       </div>
     </main>
+  );
+}
+
+// An invite waiting. It was a one-line link reading "View ›", which sat above
+// the day's count looking like a notification and said nothing about what
+// accepting would cost. It is the group's own block now: who asked, which
+// group, what a group can see, and one way in.
+//
+// Accepting still happens on the join screen rather than here, because joining
+// means choosing what to share, and that is not a decision to take from a
+// button on the home page.
+function InviteCard({
+  invites,
+}: {
+  invites: { id: string; inviterName: string; groupName: string }[];
+}) {
+  const first = invites[0];
+  return (
+    <section className="flex flex-col gap-[11px] border-l-[3px] border-l-accent bg-surface px-[13px] py-3">
+      <div className="flex flex-col gap-[5px]">
+        <span className="text-[10px] tracking-[0.16em] text-accent">
+          {invites.length === 1 ? "AN INVITE" : `${invites.length} INVITES`}
+        </span>
+        <span className="text-[13.5px] leading-[1.5]">
+          {first.inviterName} invited you to{" "}
+          <span className="font-semibold">{first.groupName}</span>.
+        </span>
+        <span className="text-[11.5px] leading-[1.5] text-muted">
+          They only ever see the activities you choose to share.
+        </span>
+      </div>
+      <div className="flex items-center gap-[9px]">
+        <Link
+          href={`/join/${first.id}`}
+          className="flex h-[34px] flex-none items-center border border-fg bg-fg px-[14px] text-[12px] font-semibold text-bg active:opacity-70"
+        >
+          Open the invite
+        </Link>
+        {invites.length > 1 ? (
+          <Link href="/groups" className="text-[12px] text-muted">
+            {invites.length - 1} more &rsaquo;
+          </Link>
+        ) : null}
+      </div>
+    </section>
   );
 }
 

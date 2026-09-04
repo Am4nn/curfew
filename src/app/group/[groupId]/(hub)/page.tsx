@@ -6,6 +6,7 @@ import { acceptedTypes } from "@/server/sharing";
 import { groupHeader, memberStandings, standingIn, weekStats } from "@/server/group-view";
 import { ActivityIcon } from "../../../activity-icon";
 import { RankScore, RANK_TEXT } from "../../../rank-icon";
+import { InviteForm } from "./invite-form";
 
 export default async function GroupOverview({
   params,
@@ -107,12 +108,13 @@ export default async function GroupOverview({
         <span className="text-[13px] text-muted">&rsaquo;</span>
       </Link>
 
-      <Link
-        href={`/group/${groupId}/settings`}
-        className="flex h-11 w-full items-center justify-center border border-rule text-[14px]"
-      >
-        Invite someone
-      </Link>
+      {/* The artboard puts inviting here, on Overview. It sat on the Settings
+          tab, which is why that screen carried five sections and read as a
+          control panel. */}
+      <section className="flex flex-col gap-[10px]">
+        <span className="text-[10px] tracking-[0.16em] text-muted">INVITE SOMEONE</span>
+        <InviteForm groupId={groupId} inviterName={user.name} />
+      </section>
     </div>
   );
 }

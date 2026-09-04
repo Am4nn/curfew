@@ -7,7 +7,6 @@ import { getAppConfig, resolveAppSettingAt } from "@/server/app-config";
 import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { listGroupMembers } from "@/server/ledger";
-import { InviteForm } from "../invite-form";
 import { SettingsForm, type ShareRow, type AcceptedRow } from "./settings-form";
 
 export default async function GroupSettingsTab({
@@ -97,19 +96,14 @@ export default async function GroupSettingsTab({
     });
 
   return (
-    <>
-      <SettingsForm
-        groupId={groupId}
-        isOwner={header.role === "owner"}
-        moneyOn={header.moneyOn}
-        appMoneyOn={appMoney === true}
-        shares={shareRows}
-        accepted={acceptedRows}
-        addable={addable}
-      />
-      <div className="px-5 pb-6">
-        <InviteForm groupId={groupId} inviterName={user.name} />
-      </div>
-    </>
+    <SettingsForm
+      groupId={groupId}
+      isOwner={header.role === "owner"}
+      moneyOn={header.moneyOn}
+      appMoneyOn={appMoney === true}
+      shares={shareRows}
+      accepted={acceptedRows}
+      addable={addable}
+    />
   );
 }

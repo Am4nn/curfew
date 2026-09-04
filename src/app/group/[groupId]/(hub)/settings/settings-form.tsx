@@ -64,6 +64,7 @@ export function SettingsForm({
 }) {
   const { run: runAction, pending: busy, error } = useServerAction();
   const [adding, setAdding] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   // What you share is yours and reversible, so those two controls move on the
   // press. Everything below them changes the group for everybody or touches
@@ -269,12 +270,6 @@ export function SettingsForm({
                 />
               ))
             : null}
-          {moneyOn ? (
-            <span className="text-[11.5px] leading-[1.55] text-muted">
-              A fine change takes effect from tomorrow, so it cannot rewrite a period
-              already running.
-            </span>
-          ) : null}
         </section>
       ) : null}
 
@@ -284,18 +279,45 @@ export function SettingsForm({
         </div>
       ) : null}
 
-      <form action={leaveGroupAction.bind(null, groupId)}>
-        {/* `busy` is this component's shared transition flag and a bare
-            <form action> submit never sets it, so the old disabled here was
-            decorative. useFormStatus knows about this form specifically. */}
-        <SubmitButton variant="destructive" full pendingLabel="Leaving">
+      {/* Leaving used to happen on one press, with its consequence sitting on
+          the page as permanent text. It asks now, and the consequence is in
+          the question, which is where a consequence belongs. */}
+      {leaving ? (
+        <div className="flex flex-col gap-[11px] border border-penalty p-[13px]">
+          <span className="text-[12.5px] leading-[1.55]">
+            Leave this group? What you owe and what you are owed stay. Your streaks,
+            standing and photos stop being visible here at once.
+          </span>
+          <div className="flex gap-[10px]">
+            <button
+              type="button"
+              onClick={() => setLeaving(false)}
+              className="h-11 flex-1 border border-rule text-[14px] active:opacity-70"
+            >
+              Stay
+            </button>
+            <form action={leaveGroupAction.bind(null, groupId)} className="flex-1">
+              {/* `busy` is this component's shared transition flag and a bare
+                  <form action> submit never sets it, so a disabled bound to it
+                  here would be decorative. useFormStatus knows this form. */}
+              <SubmitButton
+                className="h-11 w-full border border-penalty bg-penalty text-[14px] font-semibold text-bg"
+                pendingLabel="Leaving"
+              >
+                Leave
+              </SubmitButton>
+            </form>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setLeaving(true)}
+          className="h-11 w-full border border-rule text-[14px] text-penalty active:opacity-70"
+        >
           Leave group
-        </SubmitButton>
-      </form>
-      <span className="text-[11px] leading-[1.55] text-muted">
-        Leaving keeps what you owe and what you are owed. Your streaks, standing and
-        photos stop being visible here at once.
-      </span>
+        </button>
+      )}
     </div>
   );
 }

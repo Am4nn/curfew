@@ -1187,6 +1187,14 @@ async function main() {
   console.log(`seeding fixture: ${fixture}`);
   await builder();
   await ensureTypesEnabled();
+  // Leave a note of which world is in the database. The drift harness reads it
+  // and refuses to photograph a screen that needs a different one: running
+  // shots.ts directly instead of run-all.mjs used to capture those against
+  // whatever happened to be seeded, and produce a confident "No such page".
+  await writeFile(
+    path.join(process.cwd(), "scripts", "drift", ".seeded.json"),
+    JSON.stringify({ fixture, at: new Date().toISOString() }, null, 2) + "\n",
+  );
   console.log(`fixture "${fixture}" seeded`);
 }
 

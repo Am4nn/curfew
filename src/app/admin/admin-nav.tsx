@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function AdminNav({ tabs }: { tabs: [string, string][] }) {
   const pathname = usePathname() ?? "";
   return (
-    <nav className="-mx-5 mb-7 flex gap-[12px] overflow-x-auto border-b border-rule px-5">
+    <nav className="-mx-5 mb-[18px] flex gap-[12px] overflow-x-auto border-b border-rule px-5">
       {tabs.map(([href, label]) => {
         const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
         return (

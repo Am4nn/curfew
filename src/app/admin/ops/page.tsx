@@ -82,8 +82,26 @@ export default async function AdminOps({
         </p>
       </section>
 
+      <section className="mb-8 flex flex-col gap-[10px]">
+        <h2 className="text-[13px] font-semibold tracking-[0.1em]">EVIDENCE</h2>
+        <div className="flex flex-col">
+          <OpsRow label="Stored" value={`${humanBytes(ev.bytes)} across ${ev.stored} photos`} />
+          <OpsRow label="Retention" value={`deleted after ${ev.retentionDays} days`} />
+          <OpsRow
+            label="Last sweep"
+            value={ev.lastSweep ? `${ev.lastSweep.deleted} deleted` : "nothing swept yet"}
+            right={ev.lastSweep ? ev.lastSweep.at.toISOString().slice(0, 10) : ""}
+          />
+          <OpsRow
+            label="Orphaned objects"
+            value={ev.orphaned === 0 ? "none" : `${ev.orphaned} uploads with no check-in`}
+            right={ev.orphaned === 0 ? "ok" : "review"}
+          />
+        </div>
+      </section>
+
       {canVerify ? (
-        <section className="mb-8 flex flex-col gap-[10px]">
+        <section className="flex flex-col gap-[10px]">
           <h2 className="text-[13px] font-semibold tracking-[0.1em]">DRIFT, LAST RUN</h2>
           {driftReport.rows.length === 0 ? (
             <p className="text-[14px] text-muted">
@@ -114,24 +132,6 @@ export default async function AdminOps({
           )}
         </section>
       ) : null}
-
-      <section className="flex flex-col gap-[10px]">
-        <h2 className="text-[13px] font-semibold tracking-[0.1em]">EVIDENCE</h2>
-        <div className="flex flex-col">
-          <OpsRow label="Stored" value={`${humanBytes(ev.bytes)} across ${ev.stored} photos`} />
-          <OpsRow label="Retention" value={`deleted after ${ev.retentionDays} days`} />
-          <OpsRow
-            label="Last sweep"
-            value={ev.lastSweep ? `${ev.lastSweep.deleted} deleted` : "nothing swept yet"}
-            right={ev.lastSweep ? ev.lastSweep.at.toISOString().slice(0, 10) : ""}
-          />
-          <OpsRow
-            label="Orphaned objects"
-            value={ev.orphaned === 0 ? "none" : `${ev.orphaned} uploads with no check-in`}
-            right={ev.orphaned === 0 ? "ok" : "review"}
-          />
-        </div>
-      </section>
 
       <div className="mt-8 border-l-2 border-penalty bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
         Rebuild rewrites derived tables only. Events and ledger entries are never touched.

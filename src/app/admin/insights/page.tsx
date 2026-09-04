@@ -54,11 +54,6 @@ export default async function Insights() {
       <AbandonmentList title="ABANDONED WITHIN 14 DAYS" rows={abandonment.slice(0, 4)} />
 
       <GroupsSummaryRows title="GROUPS" stats={groupStats} />
-
-      <div className="border-l-[3px] border-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
-        Everything here is counted, never read. No screen in admin shows what a check-in
-        contained or what a photo is of.
-      </div>
     </>
   );
 }

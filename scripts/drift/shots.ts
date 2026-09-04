@@ -22,6 +22,8 @@ const DESIGN_DIR = path.join(ROOT, ".design");
 const SHOTS_DIR = path.join(ROOT, ".shots");
 const MANIFEST_PATH = path.join(ROOT, "scripts", "drift", "manifest.json");
 const FIXTURE_IDS_PATH = path.join(ROOT, "scripts", "drift", "fixture-ids.json");
+// Written by `bun run local:seed`, naming the world currently in the database.
+const SEEDED_PATH = path.join(ROOT, "scripts", "drift", ".seeded.json");
 const APP_ORIGIN = "http://localhost:3000";
 
 // The twelve real activity type keys. routeKey hints for /checkin/[key] carry
@@ -76,6 +78,16 @@ function resolveTypeKey(hint: string): string {
   const stripped = hint.split("-")[0];
   if (TYPE_KEYS.includes(stripped)) return stripped;
   return hint; // best effort; will 404 and be logged
+}
+
+/** The fixture named by the last `bun run local:seed`, or null if unknown. */
+async function loadSeededFixture(): Promise<string | null> {
+  if (!existsSync(SEEDED_PATH)) return null;
+  try {
+    return (JSON.parse(await readFile(SEEDED_PATH, "utf8")) as { fixture?: string }).fixture ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function loadFixtureIds(): Promise<Record<string, string>> {
@@ -614,6 +626,35 @@ async function main() {
   const fixtureIds = await loadFixtureIds();
   if (!existsSync(FIXTURE_IDS_PATH)) {
     console.warn(`Note: ${FIXTURE_IDS_PATH} does not exist yet. Entries with [id]/[inviteId] routes will skip their app-side capture.`);
+  }
+
+  // Which world is actually in the database. A screen whose fixture is not the
+  // seeded one is photographed against the wrong data, and the result looks
+  // like a real screenshot: "No such page" for a group that only exists in
+  // another fixture. That was reported twice as an app bug. Refuse instead.
+  const seeded = await loadSeededFixture();
+  const wrongFixture = entries.filter((e) => seeded !== null && e.fixture !== seeded);
+  if (wrongFixture.length > 0) {
+    const byFixture = [...new Set(wrongFixture.map((e) => e.fixture))].map(
+      (f) =>
+        `  ${f}: ${wrongFixture.filter((e) => e.fixture === f).map((e) => e.slug).join(", ")}`,
+    );
+    console.error(
+      [
+        "",
+        `${wrongFixture.length} of ${entries.length} entries need a fixture other than "${seeded}":`,
+        ...byFixture,
+        "",
+        "Capturing them now would photograph the wrong world. Either:",
+        "  bun run scripts/drift/run-all.mjs        (reseeds per fixture, the full pass)",
+        "  bun run local:seed -- --fixture=<name>   (then rerun this for those slugs)",
+        "",
+      ].join("\n"),
+    );
+    process.exit(1);
+  }
+  if (seeded === null) {
+    console.warn("Note: no .seeded.json yet, so the fixture cannot be checked. Run bun run local:seed.");
   }
 
   // --use-fake-device-for-media-stream feeds getUserMedia() a synthetic video

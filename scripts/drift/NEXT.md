@@ -30,6 +30,14 @@ the UI, and the UI is now finished.
   Fixture debt, not app behaviour, and it makes the ledger screen a poor test
   of date grouping.
 
+### Known, and deliberate
+
+- **Per-commit `*.vercel.app` preview URLs cannot upload a photo.** Each
+  environment's R2 bucket allowlists only its own domain, so a preview
+  deployment that is not aliased to `dev.curfew.amanarya.com` fails the CORS
+  preflight. Fixable by allowing the `*.vercel.app` pattern, at the cost of
+  letting any deployment in the account write to the bucket. Left as is.
+
 ### Found while working, not yet ruled on
 
 - **Nine live routes have no artboard and so no drift entry**: `/balances`,

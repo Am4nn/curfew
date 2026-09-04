@@ -103,6 +103,16 @@ and promotes. Three things about it are not obvious:
 - **A production deployment is staged until promoted.** Deploying alone leaves
   the live domains on the previous build. The promote step is what makes a
   release live; Instant Rollback is the way back.
+- **R2's CORS allowlist is a fourth environment, and nothing in this repo can
+  see it.** The browser PUTs the photo straight to R2, so every origin the app
+  is served from has to be named in the bucket's CORS policy in the Cloudflare
+  dashboard. A missing origin fails the preflight and the browser reports a bare
+  network error, indistinguishable from bad credentials or a dead bucket. It has
+  already cost an evening: uploads were broken on `dev.curfew.amanarya.com`
+  while every check passed, because the two origins anyone tested from,
+  `localhost:3000` and `curfew.amanarya.com`, were the two on the list. Adding a
+  domain means adding it there too. `bun run check:cors` says.
+
 - **`vercel.json` pins `sin1`, and production's database is still in
   `us-east-2`.** That pairing is wrong, and it is safe only because no tag is
   cut until v3 is code complete. A tag before the cutover would put every
@@ -201,7 +211,16 @@ sync       bun run sync:activities — registry into activity_types, disabled
 verify     bun run verify          — recompute a range and diff stored rows
 seed       bun run local:seed      — mock data into the local database
 mocks      node .design/build-v3.mjs — regenerate every artboard
+cors       bun run check:cors      — can a browser upload from this origin
 ```
+
+`check:cors` takes origins as arguments and defaults to the one in
+`BETTER_AUTH_URL`; `check:cors:production` is the same against the live bucket.
+Each environment has its own bucket and its own allowlist, and they are
+deliberately not interchangeable: `curfew-evidence-dev` accepts
+`dev.curfew.amanarya.com` and `localhost:3000`, `curfew-evidence` accepts only
+`curfew.amanarya.com`. Per-commit `*.vercel.app` preview URLs are on neither, so
+uploads do not work from them.
 
 Three environment files, all gitignored, all carrying the same keys in the same
 order. Only the values differ, and `.env.example` is the key list.

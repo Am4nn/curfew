@@ -92,7 +92,14 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   // No windows. A session counts whenever it happens, so the step spans the
   // whole day rather than pretending to a schedule nobody set.
   steps(): CheckinStep[] {
-    return [{ key: GYM_STEP, label: "Session", open: "00:00", close: "23:59" }];
+    // The period is a WEEK, and the point of the type is several sessions in
+    // it, so the step repeats. Without this the engine's one-arrival-per-period
+    // guard allowed exactly one gym session a week through the UI, however many
+    // the config asked for. `countsNow` is what limits it to one a day; this
+    // says the week is not done after the first.
+    return [
+      { key: GYM_STEP, label: "Session", open: "00:00", close: "23:59", repeats: true },
+    ];
   },
 
   windows(_config, periodStart, timezone): CheckinWindow[] {

@@ -39,10 +39,15 @@ describe("every type can be checked in", () => {
       const type = getActivityType(key);
       return type.steps(type.defaults.config, DAY).some((s) => s.repeats);
     });
-    // Office arrives once, a gym session is one a day, and each sleep window
-    // happens once a night. Everything else can honestly happen again.
+    // `repeats` is per PERIOD, which is the distinction this list got wrong.
+    // Office arrives once a day and each sleep window happens once a night, so
+    // those do not repeat. Gym does: its period is a week and it wants several
+    // sessions in it. That gym is also limited to one a day is countsNow's
+    // job, not this flag's, and reading it as "one a day" here is what let the
+    // engine refuse every gym session after the first in a week.
     expect(repeating.sort()).toEqual([
       "food",
+      "gym",
       "nightfast",
       "reading",
       "screen",

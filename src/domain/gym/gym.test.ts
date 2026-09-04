@@ -37,6 +37,33 @@ describe("gym declaration", () => {
     expect(steps[0].key).toBe(GYM_STEP);
   });
 
+  // The engine refuses a second check-in against a step that does not repeat,
+  // once per PERIOD, and gym's period is the week. Without this the type could
+  // never reach its own minimum through the UI: one session would be recorded
+  // and every later press refused as a duplicate, while the config asked for
+  // three. Found by pressing Save twice on two different days.
+  it("repeats, because its period is a week and it needs several", () => {
+    const [step] = gymActivity.steps(gymActivity.defaults.config, WEEK);
+    expect(step.repeats).toBe(true);
+    expect(gymActivity.defaults.config.sessionsPerWeek).toBeGreaterThan(1);
+  });
+
+  // The one-a-day limit is countsNow's job, not the step's. Both have to be
+  // true at once or the type is wrong in one direction or the other.
+  it("still counts at most one session a day", () => {
+    const config = gymActivity.defaults.config;
+    const today = new Date();
+    const input = {
+      periodStart: WEEK,
+      timezone: IST,
+      config,
+      step: GYM_STEP,
+      checkins: [{ step: GYM_STEP, at: today, evidence: {} }],
+    };
+    expect(gymActivity.countsNow?.(input)).toBe(false);
+    expect(gymActivity.countsNow?.({ ...input, checkins: [] })).toBe(true);
+  });
+
   it("its window covers the whole week", () => {
     const [w] = gymActivity.windows(gymActivity.defaults.config, WEEK, IST);
     const spanDays = (w.closesAt.getTime() - w.opensAt.getTime()) / 86_400_000;

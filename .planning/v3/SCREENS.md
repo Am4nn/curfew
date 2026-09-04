@@ -74,7 +74,7 @@ different module spec, which is the point of the declarative model.
 | Check-in (photo optional) | `/checkin/[activity]` | Empty slot marked optional, Send works | [ ] |
 | Check-in (photo required, blocked) | `/checkin/[activity]` | Slot marked required in penalty, Send dead, reason named | [ ] |
 | Camera | `/checkin/[activity]/capture` | Full bleed, one shutter, one close | [ ] |
-| Confirm the frame | `/checkin/[activity]/capture` | Retake or use, nothing recorded yet | [ ] |
+| Confirm the frame | `/checkin/[activity]` | Retake, Discard or Save. For a photo-only step this IS the check-in | [ ] |
 | Ready to send | `/checkin/[activity]` | Photo attached with the red cross, fields filled, Send live | [ ] |
 | Check-in (abstinence) | `/checkin/[activity]` | It held, I slipped, streak shown | [ ] |
 

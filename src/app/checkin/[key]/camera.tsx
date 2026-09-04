@@ -45,6 +45,11 @@ export function Camera({
   quality,
   onUse,
   onClose,
+  useLabel = "Use this photo",
+  onDiscard,
+  busy = false,
+  error = null,
+  footnote = "Nothing is recorded yet. The check-in happens when you send it.",
 }: {
   title: string;
   closesLabel: string | null;
@@ -53,6 +58,18 @@ export function Camera({
   quality: number;
   onUse: (shot: Compressed) => void;
   onClose: () => void;
+  /** What the confirming button says. "Save" when it records the check-in. */
+  useLabel?: string;
+  /**
+   * Offered beside Retake when this camera IS the check-in screen, rather than
+   * a step inside one. Without it there is nothing on the confirm view that
+   * throws the photo away and leaves.
+   */
+  onDiscard?: () => void;
+  /** The send is in flight: every control here is dead until it lands. */
+  busy?: boolean;
+  error?: string | null;
+  footnote?: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -141,8 +158,9 @@ export function Camera({
   }
 
   function use(shot: Compressed) {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
+    // The stream is stopped by the unmount effect, not here. On the fast path
+    // this camera IS the check-in screen, so a failed send leaves it open and
+    // Retake has to still have something to retake.
     onUse(shot);
   }
 
@@ -159,6 +177,15 @@ export function Camera({
         muted
         className="absolute inset-0 h-full w-full object-cover"
       />
+
+      {/* The video stays mounted and running underneath, so Retake is a state
+          change and not a restart. It also has to stop being VISIBLE: the still
+          is object-contain, so a portrait frame left the live feed playing down
+          both sides of the photo just taken. This sits between the feed and
+          everything else, which is why it is here and not in the block below:
+          later positioned siblings paint over earlier ones, so a backdrop
+          declared after the header covers the header too. */}
+      {captured ? <div className="absolute inset-0 bg-black" /> : null}
 
       <div className="relative flex items-center justify-between p-5">
         {captured ? (
@@ -192,8 +219,6 @@ export function Camera({
 
       {captured ? (
         <>
-          {/* Drawn over the live video, which keeps running underneath so that
-              Retake is a state change and not a restart. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={captured.url}
@@ -201,25 +226,44 @@ export function Camera({
             className="relative mx-5 min-h-0 flex-1 bg-black object-contain"
           />
 
+          {error ? (
+            <p className="relative px-5 pt-3 text-[11.5px] leading-[1.5] text-penalty">
+              {error}
+            </p>
+          ) : null}
+
           <div className="relative flex gap-[10px] p-5">
             <button
               type="button"
+              disabled={busy}
               onClick={() => retake(captured)}
-              className="h-[46px] flex-1 border border-rule bg-transparent text-[13.5px] text-fg active:opacity-60"
+              className="h-[46px] flex-1 border border-rule bg-transparent text-[13.5px] text-fg active:opacity-60 disabled:opacity-40"
             >
               Retake
             </button>
+            {onDiscard ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onDiscard}
+                className="h-[46px] flex-1 border border-rule bg-transparent text-[13.5px] text-penalty active:opacity-60 disabled:opacity-40"
+              >
+                Discard
+              </button>
+            ) : null}
             <button
               type="button"
+              disabled={busy}
+              aria-busy={busy || undefined}
               onClick={() => use(captured)}
-              className="h-[46px] flex-[1.6] border border-fg bg-fg text-[13.5px] font-semibold text-bg active:opacity-60"
+              className="h-[46px] flex-[1.6] border border-fg bg-fg text-[13.5px] font-semibold text-bg active:opacity-60 disabled:opacity-40"
             >
-              Use this photo
+              {busy ? "Saving" : useLabel}
             </button>
           </div>
 
           <p className="relative px-5 pb-[30px] text-center text-[11px] leading-[1.55] text-muted">
-            Nothing is recorded yet. The check-in happens when you send it.
+            {footnote}
           </p>
         </>
       ) : (

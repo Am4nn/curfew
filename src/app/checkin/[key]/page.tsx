@@ -64,14 +64,21 @@ function Closed({
   state: NonNullable<Awaited<ReturnType<typeof getCheckinState>>>;
 }) {
   const next = state.steps[0];
+  // A window can be open and still take nothing: gym's runs all week and counts
+  // one session a day. Saying "No window is open" about that is simply untrue,
+  // so the module's own line answers it instead, and the engine never writes a
+  // sentence about why (invariant 6).
+  const spent = state.steps.find((s) => s.inWindow && !s.counts) ?? null;
   return (
     <div className="flex flex-1 flex-col gap-[18px] px-5 pb-6 pt-[18px]">
       <span className="text-[16px] leading-[1.5]">
-        {state.scheduled
-          ? "No window is open."
-          : `${state.name} is not scheduled today.`}
+        {!state.scheduled
+          ? `${state.name} is not scheduled today.`
+          : spent
+            ? (spent.hint ?? `${spent.label} is already recorded for today.`)
+            : "No window is open."}
       </span>
-      {state.scheduled && next ? (
+      {state.scheduled && !spent && next ? (
         <span className="text-[11.5px] leading-[1.55] text-muted">
           {next.label} runs {next.opensLabel} to {next.closesLabel}. Nothing recorded
           outside it counts.

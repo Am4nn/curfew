@@ -1115,6 +1115,54 @@ async function buildCheckinOpenSleepConfirm(): Promise<void> {
   }
 }
 
+/**
+ * Fixture: checkin-open-food -- the photo-slot screen, still.
+ *
+ * Sleep's confirm used to stand in for "photo required, Send dead until you
+ * attach one". It cannot any more: a step that asks for a photo and nothing
+ * else opens the camera directly now, with no slot and no Send. Food still has
+ * the slot, because it asks for a number as well, and the two boards were
+ * drawn as Food all along.
+ *
+ * Two meals on the target day totalling 1180 calories, which is the number the
+ * artboards print under the field.
+ */
+async function buildCheckinOpenFood(): Promise<void> {
+  await wipe();
+  await assembleDefaultWorld({ moneyOn: true });
+  await consentApproved(PEOPLE.filter((p) => p.status !== "pending").map((p) => p.id));
+  await runScoring();
+
+  // Food's window is the whole local day, so any instant inside the target
+  // date works. The harness is given 15:34:00.000Z, which is 9:04 PM IST and
+  // matches the time printed on the artboards.
+  const target = DateTime.fromISO(CHECKIN_TARGET_DATE, { zone: TZ });
+  const effectiveFrom = target.minus({ days: 60 }).toFormat("yyyy-MM-dd");
+  const config = { meals: 3, calorieLimit: 2000 };
+  await trackType("preview-admin", "food", DAILY_SCHEDULE, config, effectiveFrom);
+
+  // History up to, not including, the target day.
+  for (let i = 20; i >= 1; i--) {
+    const day = target.minus({ days: i });
+    if (i % 7 === 0) continue; // an occasional day nobody logged
+    const meals = i % 5 === 0 ? [520, 610] : [430, 520, 640];
+    for (const [n, calories] of meals.entries()) {
+      const at = day.set({ hour: 8 + n * 5 }).toJSDate();
+      const period = periodStart(at, TZ, { unit: "day", boundary: "midnight" });
+      const key = await addEvidence("preview-admin", "food", "meal", period, at);
+      await checkin("preview-admin", "food", "meal", at, DAILY_SCHEDULE, { calories }, key);
+    }
+  }
+
+  // The target day itself: two meals in, the third still to log.
+  for (const [n, calories] of [560, 620].entries()) {
+    const at = target.set({ hour: 8 + n * 5 }).toJSDate();
+    const period = periodStart(at, TZ, { unit: "day", boundary: "midnight" });
+    const key = await addEvidence("preview-admin", "food", "meal", period, at);
+    await checkin("preview-admin", "food", "meal", at, DAILY_SCHEDULE, { calories }, key);
+  }
+}
+
 async function buildCheckinOpenSugarfree(): Promise<void> {
   await wipe();
   await assembleDefaultWorld({ moneyOn: true }); // sugarfree is untracked by default; nothing to skip
@@ -1206,6 +1254,7 @@ const BUILDERS: Record<string, () => Promise<void>> = {
   admin: buildDefault,
   "checkin-open-steps": buildCheckinOpenSteps,
   "checkin-open-sleep-confirm": buildCheckinOpenSleepConfirm,
+  "checkin-open-food": buildCheckinOpenFood,
   "checkin-open-sugarfree": buildCheckinOpenSugarfree,
   "invite-tracked-type": buildInviteTracked,
   "invite-untracked-type": buildInviteUntracked,

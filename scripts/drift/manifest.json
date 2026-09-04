@@ -221,32 +221,34 @@
     "mock": "V3CheckinRequired.dc.html",
     "route": "/checkin/[key]",
     "state": "Slot marked required in penalty, Send dead, reason named",
-    "fixture": "checkin-open-sleep-confirm",
-    "routeKey": "sleep-confirm",
-    "clock": "2026-01-15T02:07:00.000Z",
-    "interaction": "checkin-required-blocked"
+    "fixture": "checkin-open-food",
+    "routeKey": "food",
+    "clock": "2026-01-15T15:34:00.000Z",
+    "interaction": "checkin-required-blocked",
+    "note": "Was sleep-confirm. A step that asks for a photo and nothing else has no slot and no Send now, so the blocked state only exists where a field is asked for too."
   },
   {
     "slug": "camera",
     "section": "Evidence and check-in",
     "mock": "V3Camera.dc.html",
     "route": "/checkin/[key]",
-    "state": "Full bleed, one shutter, one close",
+    "state": "Opened straight from Home: full bleed, one shutter, one close",
     "fixture": "checkin-open-sleep-confirm",
     "routeKey": "sleep-confirm",
     "clock": "2026-01-15T02:07:00.000Z",
-    "interaction": "camera"
+    "interaction": "camera-direct"
   },
   {
     "slug": "capture-confirm",
     "section": "Evidence and check-in",
     "mock": "V3CaptureConfirm.dc.html",
     "route": "/checkin/[key]",
-    "state": "Retake or use, nothing recorded yet",
+    "state": "Retake, Discard or Save, nothing recorded yet",
     "fixture": "checkin-open-sleep-confirm",
     "routeKey": "sleep-confirm",
     "clock": "2026-01-15T02:07:00.000Z",
-    "interaction": "capture-confirm"
+    "interaction": "capture-confirm-direct",
+    "note": "The confirm view of a photo-only step, which is the whole check-in for sleep's confirm, gym's session and supplements' dose."
   },
   {
     "slug": "checkin-ready",
@@ -254,9 +256,9 @@
     "mock": "V3CheckinReady.dc.html",
     "route": "/checkin/[key]",
     "state": "Photo attached with the red cross, fields filled, Send live",
-    "fixture": "checkin-open-sleep-confirm",
-    "routeKey": "sleep-confirm",
-    "clock": "2026-01-15T02:07:00.000Z",
+    "fixture": "checkin-open-food",
+    "routeKey": "food",
+    "clock": "2026-01-15T15:34:00.000Z",
     "interaction": "checkin-ready"
   },
   {

@@ -14,7 +14,6 @@ export async function checkInAction(input: {
   typeKey: string;
   step: string;
   idem: string;
-  note?: string;
   evidenceKey?: string;
   evidence: unknown;
 }): Promise<CheckinResult> {

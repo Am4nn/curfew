@@ -160,7 +160,6 @@ export function CheckinForm({
 }) {
   const router = useRouter();
   const [values, setValues] = useState<Record<string, string>>({});
-  const [note, setNote] = useState("");
   const [shot, setShot] = useState<Compressed | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -221,7 +220,8 @@ export function CheckinForm({
    * (decision 71): a file with no check-in is an orphan and is swept, and a
    * check-in that needs a photo never exists without one.
    */
-  async function send(evidence: Record<string, unknown>) {
+  async function send(evidence: Record<string, unknown>, taken?: Compressed) {
+    const photo = taken ?? shot;
     setError(null);
     setSending(true);
     const idem = newIdem();
@@ -233,7 +233,7 @@ export function CheckinForm({
     try {
       let evidenceKey: string | undefined;
 
-      if (shot) {
+      if (photo) {
         const ticket = await fetch("/api/evidence/upload-url", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -241,8 +241,8 @@ export function CheckinForm({
             typeKey: state.typeKey,
             step: step.key,
             idem,
-            contentType: shot.contentType,
-            bytes: shot.blob.size,
+            contentType: photo.contentType,
+            bytes: photo.blob.size,
           }),
         });
         const body = (await ticket.json().catch(() => ({}))) as {
@@ -264,8 +264,8 @@ export function CheckinForm({
         try {
           put = await fetch(body.url, {
             method: "PUT",
-            headers: { "content-type": shot.contentType },
-            body: shot.blob,
+            headers: { "content-type": photo.contentType },
+            body: photo.blob,
             signal: abort.signal,
           });
         } catch {
@@ -290,7 +290,6 @@ export function CheckinForm({
         typeKey: state.typeKey,
         step: step.key,
         idem,
-        note: note.trim() === "" ? undefined : note.trim(),
         evidenceKey,
         evidence,
       });
@@ -393,6 +392,33 @@ export function CheckinForm({
     );
   }
 
+  // A step that asks for a photo and nothing else does not need a screen to
+  // ask on. The camera IS the check-in: it opens straight from Home, and the
+  // frame it takes confirms with Retake, Discard and Save.
+  //
+  // Three steps qualify today (gym's session, supplements' dose, sleep's
+  // confirm) and the condition is what qualifies them, not a list: photo
+  // required on THIS step, no fields, no question, and a live source, since a
+  // gallery pick opens the system picker rather than a camera.
+  if (photoRequired && step.fields.length === 0 && !gallery) {
+    return (
+      <Camera
+        title={`${state.name.toUpperCase()} · ${step.label.toUpperCase()}`}
+        closesLabel={step.closesLabel}
+        nowLabel={state.nowLabel}
+        maxEdge={compression.maxEdge}
+        quality={compression.quality}
+        useLabel="Save"
+        busy={busy}
+        error={error}
+        footnote="Nothing is recorded until you save."
+        onClose={() => router.back()}
+        onDiscard={() => router.back()}
+        onUse={(taken) => send({}, taken)}
+      />
+    );
+  }
+
   const needsPhoto = photoRequired && shot === null;
   const blocked =
     needsPhoto && missing.length > 0
@@ -457,22 +483,6 @@ export function CheckinForm({
           required={photoRequired}
         />
       ))}
-
-      {/* Your own line, never scored. */}
-      <div className="flex flex-col gap-[7px]">
-        <span className="text-[11px] tracking-[0.06em] text-muted">Note</span>
-        <div className="flex items-center justify-between gap-[10px] border border-rule bg-bg px-3 py-[11px]">
-          <input
-            type="text"
-            maxLength={200}
-            value={note}
-            placeholder="Optional"
-            aria-label="Note"
-            onChange={(e) => setNote(e.target.value)}
-            className="w-full bg-transparent text-[14px] text-fg outline-none placeholder:text-muted"
-          />
-        </div>
-      </div>
 
       {step.fields.length === 0 && step.hint ? (
         <span className="text-[11px] leading-[1.5] text-muted">{step.hint}</span>

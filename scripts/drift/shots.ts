@@ -245,6 +245,26 @@ async function runInteraction(page: Page, tag: string): Promise<void> {
     return;
   }
 
+  if (tag === "camera-direct" || tag === "capture-confirm-direct") {
+    // A step that asks for a photo and nothing else IS the camera: there is no
+    // slot to press and nothing to open. Wait for the shutter instead, and for
+    // capture-confirm take the shot so the Retake / Discard / Save view shows.
+    const shutter = page.getByRole("button", { name: /take the photo/i });
+    try {
+      await shutter.first().waitFor({ state: "visible", timeout: 6000 });
+    } catch {
+      console.warn(`  ${tag}: the camera never reached the live state (no shutter).`);
+      return;
+    }
+    if (tag === "camera-direct") {
+      await page.waitForTimeout(300); // let the first frames land
+      return;
+    }
+    await shutter.first().click();
+    await page.waitForTimeout(350);
+    return;
+  }
+
   if (tag === "camera") {
     // Open the camera from the photo slot. Headless Chromium is launched
     // with a fake video device (see chromium.launch args), so this reaches

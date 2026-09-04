@@ -53,8 +53,19 @@ export interface CheckinStepView {
   label: string;
   opensLabel: string;
   closesLabel: string;
-  /** Is this step's window open at the moment this was read? */
+  /**
+   * Is this step's window open AND would another press count?
+   *
+   * The two are separate below, because collapsing them here made the check-in
+   * screen say "No window is open" about a gym session on a Tuesday evening,
+   * when the window was open all week and the real answer was that Tuesday was
+   * already logged.
+   */
   open: boolean;
+  /** Is the clock inside this step's window? */
+  inWindow: boolean;
+  /** Would another press of it change anything? The module decides. */
+  counts: boolean;
   /** How many check-ins this step already has this period. */
   count: number;
   repeats: boolean;
@@ -157,6 +168,18 @@ export async function getCheckinState(
   const views: CheckinStepView[] = steps.map((step) => {
     const window = windows.find((w) => w.step === step.key);
     const mine = checkins.filter((c) => c.step === step.key);
+    const inWindow = window
+      ? instant >= window.opensAt && instant <= window.closesAt
+      : false;
+    const counts =
+      type.countsNow?.({
+        periodStart: period,
+        timezone,
+        config: activity.config,
+        checkins,
+        step: step.key,
+        pending: null,
+      }) ?? true;
     return {
       key: step.key,
       label: step.label,
@@ -165,16 +188,9 @@ export async function getCheckinState(
       // Open means the window is open AND another press would count. Gym's
       // window is the whole week, but only one session a day counts, so a
       // Tuesday evening press after a Tuesday morning one is not "open".
-      open:
-        (window ? instant >= window.opensAt && instant <= window.closesAt : false) &&
-        (type.countsNow?.({
-          periodStart: period,
-          timezone,
-          config: activity.config,
-          checkins,
-          step: step.key,
-          pending: null,
-        }) ?? true),
+      open: inWindow && counts,
+      inWindow,
+      counts,
       count: mine.length,
       repeats: step.repeats ?? false,
       fields: step.fields ?? [],
@@ -237,9 +253,6 @@ export const checkinInputSchema = z
     typeKey: z.string().min(1).max(40),
     step: z.string().min(1).max(40),
     idem: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/, "expected an idempotency key"),
-    // A line of your own, for your own record. Optional everywhere, never
-    // scored, and never read by the admin console.
-    note: z.string().trim().max(200).optional(),
     /** The object key returned when the photo's upload URL was issued. */
     evidenceKey: z.string().min(1).max(300).optional(),
     evidence: z.unknown().optional(),
@@ -466,7 +479,6 @@ export async function performCheckin(
       step: input.step,
       period_start: period,
       idem: input.idem,
-      note: input.note && input.note !== "" ? input.note : undefined,
       evidence_key: photo?.objectKey,
       evidence: evidence.data,
     },

@@ -5,7 +5,7 @@ import { listUserGroups, listInvitesForEmail, userBalances } from "@/server/grou
 import { hasAdminAccess, pendingApprovalCount } from "@/server/admin";
 import { todayFor } from "@/server/today";
 import { standingIn } from "@/server/group-view";
-import { formatMoney } from "@/domain";
+import { formatMoney, getActivityType, registeredKeys } from "@/domain";
 import { QuorumMark } from "./mark";
 import { ActivityIcon, Flame } from "./activity-icon";
 import { RankScore } from "./rank-icon";
@@ -72,7 +72,7 @@ export default async function Home() {
         {invites.length > 0 ? <InviteCard invites={invites} /> : null}
 
         {today.rows.length === 0 ? (
-          <NewUser hasGroup={groups.length > 0} />
+          <NewUser hasInvite={invites.length > 0} />
         ) : (
           <>
             <section className="flex flex-col gap-[6px]">
@@ -244,9 +244,27 @@ function InviteCard({
   );
 }
 
-// Nothing tracked yet. One thing to do, and the group prompt only once there is
-// something to share.
-function NewUser({ hasGroup }: { hasGroup: boolean }) {
+// Nothing tracked yet. The mock is V3HomeStart, and V3HomeStartInvite for the
+// same screen with an invite waiting.
+//
+// This led with a paragraph and a button reading "Add an activity", which
+// answers neither question a new arrival actually has: what does this track,
+// and what happens if I miss. Four real activities naming what they measure,
+// each going straight to its own setup, answer both without prose.
+//
+// The four are chosen here rather than by the modules, because "which four to
+// show a stranger first" is a decision about this screen, not a property of a
+// type. Nothing here reads a type's config or its detail (invariant 6): the
+// name and the line under it are the module's own words.
+const FIRST_FOUR = ["sleep", "water", "gym", "steps"];
+
+function NewUser({ hasInvite }: { hasInvite: boolean }) {
+  const available = new Set(registeredKeys());
+  const starters = FIRST_FOUR.filter((key) => available.has(key)).map((key) => {
+    const type = getActivityType(key);
+    return { key, name: type.name, description: type.description, icon: type.icon };
+  });
+
   return (
     <section className="flex flex-col gap-5">
       <div className="flex flex-col gap-[3px]">
@@ -256,38 +274,50 @@ function NewUser({ hasGroup }: { hasGroup: boolean }) {
         </span>
       </div>
 
-      <div className="flex flex-col gap-[14px] border border-rule p-[14px]">
-        <p className="text-[13px] leading-[1.6] text-muted">
-          Pick an activity, set what counts as done, and check in. Streaks are
-          yours. Groups come later, and only see what you share.
-        </p>
-        <Link
-          href="/activities"
-          className="flex h-11 w-full items-center justify-center border border-fg bg-fg text-[14px] font-semibold text-bg"
-        >
-          Add an activity
-        </Link>
-      </div>
-
-      {hasGroup ? null : (
-        <div className="flex flex-col gap-[14px] border border-rule p-[14px]">
-          <p className="text-[13px] leading-[1.6] text-muted">
-            Keeping it up alone is harder. Start a group and invite the friends
-            who will notice when you stop.
-          </p>
+      <div className="flex flex-col gap-[11px]">
+        <span className="text-[10px] tracking-[0.16em] text-muted">
+          PICK ONE TO START
+        </span>
+        <div className="flex flex-col">
+          {starters.map((s) => (
+            <Link
+              key={s.key}
+              href={`/activities/${s.key}`}
+              className="flex items-center gap-3 border-b border-rule py-[14px]"
+            >
+              <span className="flex flex-none">
+                <ActivityIcon name={s.icon} size={20} />
+              </span>
+              <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                <span className="text-[14px]">{s.name}</span>
+                <span className="text-[11.5px] leading-[1.45] text-muted">
+                  {s.description}
+                </span>
+              </div>
+              <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
+            </Link>
+          ))}
+          {/* The catalog, not /activities: a person tracking nothing has an
+              empty list of their own, and the thing to show them is the menu. */}
           <Link
-            href="/groups"
-            className="flex h-11 w-full items-center justify-center border border-rule text-[14px]"
+            href="/activities/add"
+            className="flex items-center gap-3 border-b border-rule py-[14px]"
           >
-            Create a group
+            <span className="flex-1 text-[13.5px] text-muted">
+              See every activity
+            </span>
+            <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
           </Link>
         </div>
-      )}
-
-      <div className="border-l-[3px] border-l-accent bg-surface px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-muted">
-        Groups are invite-only. They only ever see the activities you choose to
-        share.
       </div>
+
+      {/* The invite block above already carries this sentence. */}
+      {hasInvite ? null : (
+        <div className="border-l-[3px] border-l-accent bg-surface px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-muted">
+          Groups are invite-only. They only ever see the activities you choose to
+          share.
+        </div>
+      )}
     </section>
   );
 }

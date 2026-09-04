@@ -26,10 +26,18 @@
   {
     "slug": "home-empty",
     "section": "Home",
-    "mock": "V3HomeEmpty.dc.html",
+    "mock": "V3HomeStart.dc.html",
     "route": "/",
-    "state": "No activities, no groups. Add an activity, create a group",
+    "state": "Nothing tracked. Four activities to start with, and the catalog",
     "fixture": "new-user"
+  },
+  {
+    "slug": "home-empty-invite",
+    "section": "Home",
+    "mock": "V3HomeStartInvite.dc.html",
+    "route": "/",
+    "state": "Nothing tracked, one invite waiting above the catalog",
+    "fixture": "new-user-invite"
   },
   {
     "slug": "notice-home",
@@ -389,6 +397,14 @@
     "mock": "V3SettingsSharing.dc.html",
     "route": "/settings/sharing",
     "state": "Every group, every type, the evidence checkbox",
+    "fixture": "default"
+  },
+  {
+    "slug": "settings-photos",
+    "section": "Settings",
+    "mock": "V3SettingsPhotos.dc.html",
+    "route": "/settings/photos",
+    "state": "Every photo you have taken, newest first, read-only",
     "fixture": "default"
   },
   {

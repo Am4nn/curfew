@@ -29,7 +29,8 @@ artboard catches what a diff never would.
 | Home (today) | `/` | Some done, some due, one not scheduled today greyed | [ ] |
 | Home (all done) | `/` | Everything passed, next window named, balances still shown | [ ] |
 | Home (no money anywhere) | `/` | No group tracks money: no balances block at all | [ ] |
-| Home (new user) | `/` | No activities, no groups. Add an activity, create a group | [ ] |
+| Home (new user) | `/` | Nothing tracked. Four activities to start with, and the catalog | [ ] |
+| Home (new user, invite waiting) | `/` | Nothing tracked, one invite waiting above the catalog | [ ] |
 | Notice, over Home | any | Blocking overlay, Got it only | [ ] |
 | Notice, over a group | any | Same overlay on another route | [ ] |
 
@@ -110,6 +111,7 @@ different module spec, which is the point of the declarative model.
 |---|---|---|---|
 | Settings | `/settings` | Appearance, personal, your data, sign out | [ ] |
 | What you share | `/settings/sharing` | Every group, every type, the evidence checkbox | [ ] |
+| Your photos | `/settings/photos` | Every photo you have taken, newest first, read-only | [ ] |
 | Delete data | `/settings/data` | Photos, history, account, the money-is-never-deleted note | [ ] |
 
 ## Admin

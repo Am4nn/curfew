@@ -24,6 +24,7 @@
 //   INVITE_WEEKEND_CLUB    = "00000000-0000-0000-0000-0000000000b0"  -> /join/00000000-0000-0000-0000-0000000000b0  (default's incoming invite to admin)
 //   INVITE_TRACKED         = "00000000-0000-0000-0000-0000000000b1"  -> /join/00000000-0000-0000-0000-0000000000b1  (fixture "invite-tracked-type" only)
 //   INVITE_UNTRACKED       = "00000000-0000-0000-0000-0000000000b2"  -> /join/00000000-0000-0000-0000-0000000000b2  (fixture "invite-untracked-type" only)
+//   INVITE_NEW_USER        = "00000000-0000-0000-0000-0000000000b3"  -> /join/00000000-0000-0000-0000-0000000000b3  (fixture "new-user-invite" only)
 //
 //   NOTICE_MAINTENANCE     = "00000000-0000-0000-0000-0000000000c1"  (fixture "notice-active" only)
 // ---------------------------------------------------------------------------
@@ -105,6 +106,8 @@ const GROUP_INVITE_UNTRACKED = "00000000-0000-0000-0000-0000000000a6";
 const INVITE_WEEKEND_CLUB = "00000000-0000-0000-0000-0000000000b0";
 const INVITE_TRACKED = "00000000-0000-0000-0000-0000000000b1";
 const INVITE_UNTRACKED = "00000000-0000-0000-0000-0000000000b2";
+const GROUP_NEW_USER_INVITE = "00000000-0000-0000-0000-0000000000a7";
+const INVITE_NEW_USER = "00000000-0000-0000-0000-0000000000b3";
 
 const NOTICE_MAINTENANCE = "00000000-0000-0000-0000-0000000000c1";
 
@@ -937,6 +940,38 @@ async function buildNewUser(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Fixture: new-user-invite -- an empty account with an invite waiting
+//
+// The awkward first-run state, and the reason the redesigned empty Home keeps
+// the catalog in view: accepting this invite while tracking nothing lands on
+// the join screen with nothing to share.
+// ---------------------------------------------------------------------------
+
+async function buildNewUserInvite(): Promise<void> {
+  await wipe();
+  await insertPerson(PEOPLE[0]); // preview-admin, and nothing of their own
+  await insertPerson(PEOPLE[3]); // preview-riya, who does the inviting
+  await consentApproved(["preview-admin", "preview-riya"]);
+
+  await createGroup(GROUP_NEW_USER_INVITE, "Night Owls", "preview-riya", [
+    { id: "preview-riya", role: "owner" },
+  ], configFrom);
+  await db.insert(groupActivityTypes).values({
+    groupId: GROUP_NEW_USER_INVITE,
+    typeKey: "sleep",
+    accepted: true,
+    changedBy: "preview-riya",
+  });
+  await db.insert(groupInvites).values({
+    id: INVITE_NEW_USER,
+    groupId: GROUP_NEW_USER_INVITE,
+    email: "preview@curfew.local",
+    invitedBy: "preview-riya",
+    status: "pending",
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Fixture: notice-active -- a blocking, unacknowledged notice
 // ---------------------------------------------------------------------------
 
@@ -1142,6 +1177,7 @@ const BUILDERS: Record<string, () => Promise<void>> = {
   "all-done": buildAllDone,
   "no-money": buildNoMoney,
   "new-user": buildNewUser,
+  "new-user-invite": buildNewUserInvite,
   "notice-active": buildNoticeActive,
   // Admin screens are covered by the default world (preview-admin is already
   // an admin, Pat is pending, Dana is disabled, and there is real scored

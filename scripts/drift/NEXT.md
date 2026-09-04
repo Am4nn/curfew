@@ -1,6 +1,6 @@
 # Next session
 
-Last updated 2026-09-04, after the phase 5 to 8 pass and the Home review.
+Last updated 2026-09-05, after the check-in feedback work.
 
 ## Still open
 
@@ -17,28 +17,15 @@ the UI, and the UI is now finished.
   reputation, fines and balances in each scenario. Joining, leaving, sharing
   and un-sharing, grace running out, an activity switched off mid-month.
 
-### Small, carried
+### The review gate
 
-- **The Home `+1` tick is not optimistic.** It disables, says what it is doing
-  and refreshes, so it has feedback, but the count does not move until the
-  round trip lands. The other reversible controls (sharing toggles, evidence
-  checkboxes, invite dismiss) do move on the press. Admin Controls is
-  deliberately not on this list: it is draft-then-Save with a consequences
-  sheet, so its toggles are local state and already instant.
-- **The seeded group ledger dates every entry to the day it was seeded**,
-  because the fixture writes the whole history's fines in one scoring pass.
-  Fixture debt, not app behaviour, and it makes the ledger screen a poor test
-  of date grouping.
+`SCREENS.md` is ticked by a person opening each screen beside its artboard, not
+by the harness. Unticked on purpose: every Configure and Check-in row, plus the
+four added for the check-in feedback (Recorded partial day, The day is
+complete, and the two motion boards). The motion boards have no route and never
+will: they are a spec for durations that live in `globals.css`.
 
-### Known, and deliberate
-
-- **Per-commit `*.vercel.app` preview URLs cannot upload a photo.** Each
-  environment's R2 bucket allowlists only its own domain, so a preview
-  deployment that is not aliased to `dev.curfew.amanarya.com` fails the CORS
-  preflight. Fixable by allowing the `*.vercel.app` pattern, at the cost of
-  letting any deployment in the account write to the bucket. Left as is.
-
-### Found while working, not yet ruled on
+### Coverage the harness does not have
 
 - **Nine live routes have no artboard and so no drift entry**: `/balances`,
   `/ledger`, `/settings/personal`, `/settings/stored`, `/settings/rules`,
@@ -47,55 +34,42 @@ the UI, and the UI is now finished.
   so pairing one against a v3 screen would report permanent drift. `/signin`
   and `/pending` also need a signed-out fixture the harness does not have.
   Roughly nine new artboards plus a fixture.
-- **The drift harness cannot tell a rendered error page from a rendered
-  screen.** It photographed `error.tsx` and reported a pass during the Home
-  work; only looking at the image caught it. Same class of blindness as the
-  fixture bug behind #34 and #37. It should fail when the error boundary is on
-  screen.
-- **`/settings/photos` has no pagination.** 68 tiles in one scroll on the
-  fixture, and the group evidence tab has "Load older" while this does not.
-- **`V3Data.dc.html` still says "with your name removed where it can be".**
-  The app no longer does that, as of the ledger name freeze. Left alone rather
-  than edited; needs either a corrected board or a decision to edit it.
+- **The error-page guard is unproven end to end.** `wrongPage()` checks for the
+  error and not-found copy after every capture, which is the blindness that let
+  a crashed Home pass. Two attempts to trigger it on purpose both timed out
+  before the guard ran, because a dev error page never reaches `networkidle`.
+  The guard is written and reviewed; it has never actually fired.
 
-## Done, for the record
+### Known, and deliberate
 
-Everything below shipped between 2026-09-03 and 2026-09-04.
+- **Per-commit `*.vercel.app` preview URLs cannot upload a photo.** Each
+  environment's R2 bucket allowlists only its own domain, so a preview
+  deployment that is not aliased to `dev.curfew.amanarya.com` fails the CORS
+  preflight. Fixable by allowing the `*.vercel.app` pattern, at the cost of
+  letting any deployment in the account write to the bucket. Left as is.
+- **The complete-day stamp remembers it fired in localStorage**, per device.
+  Clearing site data, or a second device, shows it again for the same day. It
+  is a display and not a fact about the record, so it earns no event and no
+  column (invariant 1), and showing twice is the harmless failure.
 
-### The numbered list
+## Needs a person, not code
 
-- **#34, #37** — never wrong routes. `run-all.mjs` reseeds per fixture and
-  `shots.ts` was being run directly, so those screens were photographed against
-  the wrong world, which looks exactly like a real 404. The harness now records
-  the seeded fixture and refuses to capture a screen that needs another.
-- **#49** admin nav spacing, **#51** footer note, **#54** Evidence above Drift.
-- **#1** the Home invite, three times over. It is a plain box with three
-  controls now: Accept opens the join screen, Decline revokes, and the cross
-  hides it while the invite stays pending (migration 0016).
-- **#4** the empty Home, redesigned around the catalog, with an invite variant.
-  New boards `V3HomeStart` and `V3HomeStartInvite`, and a `new-user-invite`
-  fixture for a state that could not be photographed before.
-- **Group settings** reduced to the mock's shape, with a confirmation on leave.
+- `JURISDICTION.city` in `src/server/policy.ts` is a placeholder.
+- The terms have not been read by a lawyer.
+- **The production cutover.** Production still serves v2.5 from the old US
+  Neon project while `vercel.json` pins `sin1`. That pairing is only safe
+  because no tag is cut before the cutover.
 
-### The second testing batch
+## Closed since the last update
 
-Camera switch, retake, upload, image quality, the note boxes, your own evidence
-in both places, the untracked-sharing bug, one shared button kit with pending
-and pressed states everywhere, and the ledger name freeze.
+The four-item batch: back always goes back (shared `BackLink`, 14 files), every
+photo list paginated (delete picker and the group evidence tab), Gym stops
+offering a check-in that cannot count (`countsNow` on the module interface).
 
-The upload failure was an environment fault, not a product one: `.env.local`
-carries no R2 credentials, so `presign()` threw and the client reported
-"Network failed". `src/server/r2.ts` has a `LOCAL_MODE` branch now, which is
-why the three camera bugs behind it were findable at all.
+Then the check-in feedback, which replaced the receipt screen: a partial day
+gets no overlay at all, and a complete day is stamped once. Both mocked,
+reviewed, built and captured.
 
-### The three answered questions and the two known bugs
-
-`/ranks` stays global. One section order on all four stats screens. Each module
-names its own chart heading, which also removed `numericValue()`'s field
-guessing. `ownerMoneyToggle()` resolves per day rather than as it stands now.
-
-### The panels
-
-The tinted block with a coloured bar down its side is gone from fifteen app
-screens and nineteen artboards. Footnotes are plain muted text; a penalty keeps
-its colour, because that one is a warning rather than small print.
+Also closed: the Home `+1` is optimistic now, `/settings/photos` paginates, the
+seeded ledger spans real dates, and `V3Data` no longer promises a name removal
+the app stopped doing.

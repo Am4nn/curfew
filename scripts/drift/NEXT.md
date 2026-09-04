@@ -52,3 +52,50 @@ Full verification of the engine, then simulation.
    beside `icon` and `chart`, so Steps can read "STEPS A DAY, 21 DAYS" without
    the engine learning what a step is. Replaces the generic
    "LAST N PERIODS". Touches all twelve modules and `CONTRIBUTING`.
+
+## Second batch from testing, 2026-09-04
+
+### Evidence and camera, all found by hand
+
+- **No switch-camera control.** Front/back cannot be chosen.
+- **Retake hangs the app.** Reproducible, blocks the flow entirely.
+- **Upload fails: "Network failed", nothing recorded.** The presigned PUT to R2
+  is not completing, and the check-in that was meant to be its callback never
+  lands. This is the one that makes evidence unusable, so it goes first.
+- **Image quality is poor.** The canvas compression step is too aggressive, or
+  is compressing an already-small capture.
+- **Note boxes everywhere in evidence.** Same complaint as the configure
+  screens in round 3. Cut them.
+- **Nowhere to see your own evidence.** A person can send a photo and never
+  look at it again. Aman's suggestion: a section under Stats.
+
+### Behaviour
+
+- **A group offers to share an activity you do not track.** Sharing should only
+  be offered for something you have actually set up. Real bug.
+- **No optimistic UI anywhere.** A tick or a toggle should move the moment it
+  is pressed, then call the API and reconcile, not wait on the round trip.
+- **Buttons give no feedback.** "Stop tracking" is the example: pressing it
+  looks identical to not pressing it. Every button needs a pressed and a
+  pending state.
+
+### To settle before building: leaving and deletion
+
+Aman: leaving a group or deleting an account must not erase what is owed or
+owing, and the person's name has to survive so the remaining members can see
+who a debt belongs to.
+
+That is right by invariant 3, since `ledger_entries` is append-only and nothing
+is ever removed from it. What needs deciding is the name, because it collides
+head-on with the "delete your data" promise in the consent gate and on
+`/settings/data`. Options, none of them free:
+
+1. Keep the display name on the ledger rows forever. Simple, honest to the
+   other members, and means "delete my data" is not literally true.
+2. Tombstone the account and show "a former member" everywhere. Keeps the
+   deletion promise, and leaves a debt nobody can attach to a person.
+3. Snapshot the name onto the ledger row at the time the entry is written, and
+   keep only that. The account goes, the historical name on settled and
+   outstanding rows stays.
+
+Needs Aman's call, and the consent copy has to match whichever wins.

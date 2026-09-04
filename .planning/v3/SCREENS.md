@@ -33,7 +33,8 @@ artboard catches what a diff never would.
 | Home (new user, invite waiting) | `/` | Nothing tracked, one invite waiting above the catalog | [ ] |
 | Recorded, partial day | `/?done=<key>` | A check-in just landed: the count rolls, the filled segment grows, the row carries a rule | [ ] |
 | The day is complete | `/` | The last scheduled activity closed: the stamp, over a dimmed Home | [ ] |
-| The stamp, frame by frame | none | A motion spec, not a screen. The four frames of the stamp landing, and the rules around it | [ ] |
+| Partial day, running | none | A motion spec, not a screen. The count roll, the segment fill and the rule, on a 6s loop | [ ] |
+| The stamp, running | none | A motion spec, not a screen. The stamp landing, holding and going, on a 5.2s loop | [ ] |
 | Notice, over Home | any | Blocking overlay, Got it only | [ ] |
 | Notice, over a group | any | Same overlay on another route | [ ] |
 

@@ -8,6 +8,7 @@ import {
   inviteToGroup,
   acceptInvite,
   declineInvite,
+  dismissInvite,
   leaveGroup,
   revokeInvite,
   makeOwner,
@@ -91,14 +92,26 @@ export async function declineInviteAction(
   }
 }
 
+// The invite card's three controls. Accept is a link to the join screen, so it
+// needs no action. These two are promises that throw rather than FormStates,
+// which is what the shared client component wants; the FormState versions above
+// stay for the plain-form callers.
+
+/** Refuse it. The invite is revoked and the sender can see that. */
+export async function refuseInviteAction(inviteId: string): Promise<void> {
+  const user = await approvedUser();
+  await declineInvite(inviteId, user.email);
+  revalidatePath("/");
+  revalidatePath("/groups");
+}
+
 /**
- * The same decline, for the shared invite rows, which are a client component
- * and want a promise that throws rather than a FormState. `declineInviteAction`
- * above stays for the plain-form callers.
+ * Hide it. The invite stays pending, the sender sees no change, and a link
+ * already in hand still works. It just stops being listed.
  */
 export async function dismissInviteAction(inviteId: string): Promise<void> {
   const user = await approvedUser();
-  await declineInvite(inviteId, user.email);
+  await dismissInvite(inviteId, user.email);
   revalidatePath("/");
   revalidatePath("/groups");
 }

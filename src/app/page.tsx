@@ -113,7 +113,11 @@ export default async function Home() {
                   <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                     <div className="flex items-center gap-[9px]">
                       <span className="text-[14px]">{row.name}</span>
-                      {row.scheduled && row.streak > 0 ? (
+                      {/* A rest day is not a broken streak, so an unscheduled
+                          row still carries its count. The whole row is at
+                          0.42, so the flame dims with it rather than needing
+                          a duller treatment of its own. */}
+                      {row.streak > 0 ? (
                         <span className="flex items-center gap-1">
                           <Flame size={13} />
                           <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">

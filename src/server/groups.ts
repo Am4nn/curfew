@@ -234,7 +234,33 @@ export async function listInvitesForEmail(email: string): Promise<PendingInvite[
     })
     .from(groupInvites)
     .innerJoin(groups, eq(groups.id, groupInvites.groupId))
-    .where(and(eq(groupInvites.email, email.toLowerCase()), eq(groupInvites.status, "pending")));
+    .where(
+      and(
+        eq(groupInvites.email, email.toLowerCase()),
+        eq(groupInvites.status, "pending"),
+        // Dismissed means the recipient hid it. It is still pending and an
+        // invite link already in hand still works; it is just not listed.
+        isNull(groupInvites.dismissedAt),
+      ),
+    );
+}
+
+/**
+ * Hide a pending invite without answering it.
+ *
+ * Distinct from declining, which revokes the invite and tells the sender no.
+ * Someone who dismisses has decided only that they do not want to look at it.
+ */
+export async function dismissInvite(inviteId: string, userEmail: string): Promise<void> {
+  const [inv] = await db.select().from(groupInvites).where(eq(groupInvites.id, inviteId));
+  if (!inv || inv.status !== "pending") return;
+  if (inv.email.toLowerCase() !== userEmail.toLowerCase()) {
+    throw new Error("invite is for a different email");
+  }
+  await db
+    .update(groupInvites)
+    .set({ dismissedAt: new Date() })
+    .where(eq(groupInvites.id, inviteId));
 }
 
 export async function getGroupName(groupId: string): Promise<string | null> {

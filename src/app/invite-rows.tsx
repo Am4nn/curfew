@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useOptimistic } from "react";
 import { useServerAction, buttonClass } from "./ui";
-import { dismissInviteAction } from "./actions";
+import { dismissInviteAction, refuseInviteAction } from "./actions";
 
 export interface InviteRow {
   id: string;
@@ -18,11 +18,17 @@ export interface InviteRow {
  * explaining what a group can see, which read as a permanent notice rather
  * than as a thing you deal with and it goes.
  *
- * It is a plain box with a cross now. The box is what separates it from the
- * screen without shouting, the cross is what makes it read as dismissable, and
- * Accept is the only button, because a word beside a button was the chunky
- * part. Declining removes the box on the press and reconciles when the server
- * answers; the section goes when the last one does.
+ * It is a plain box with three controls, and they mean three different things.
+ *
+ * Accept opens the join screen. Decline refuses it: the invite is revoked and
+ * the sender can see that. The cross only hides it: the invite stays pending,
+ * the sender sees no change, and a link already in hand still works, it just
+ * stops being listed anywhere in the app.
+ *
+ * The cross exists because declining to clear a card off your home screen is
+ * the wrong reason to decline, and the sender cannot tell that apart from a
+ * refusal. Both removals take the box away on the press and reconcile when the
+ * server answers; the section goes when the last one does.
  *
  * Accept opens the join screen rather than joining on the spot, because joining
  * means choosing what to share, and that is not a decision to take from a
@@ -51,13 +57,13 @@ export function InviteRows({ invites }: { invites: InviteRow[] }) {
                 {invite.inviterName} invited you
               </span>
             </div>
-            {/* Declining is the cross, not a second button. A dismiss is what
-                makes the box read as something that goes away, and one word
-                beside one button was the chunky part. */}
+            {/* Hide, not refuse. Deliberately the quietest control on the
+                box, because it is the one that answers nobody. */}
             <button
               type="button"
               disabled={pending}
-              aria-label={`Decline the invite to ${invite.groupName}`}
+              aria-label={`Hide the invite to ${invite.groupName} without answering it`}
+              title="Hide this. The invite stays open."
               onClick={() =>
                 run(async () => {
                   dismiss(invite.id);
@@ -81,13 +87,28 @@ export function InviteRows({ invites }: { invites: InviteRow[] }) {
               </svg>
             </button>
           </div>
-          <Link
-            href={`/join/${invite.id}`}
-            className={buttonClass("primary", "sm", "self-start")}
-            aria-disabled={pending}
-          >
-            Accept
-          </Link>
+          <div className="flex items-center gap-[8px]">
+            <Link
+              href={`/join/${invite.id}`}
+              className={buttonClass("primary", "sm")}
+              aria-disabled={pending}
+            >
+              Accept
+            </Link>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                run(async () => {
+                  dismiss(invite.id);
+                  await refuseInviteAction(invite.id);
+                })
+              }
+              className={buttonClass("secondary", "sm")}
+            >
+              {pending ? "Working" : "Decline"}
+            </button>
+          </div>
         </div>
       ))}
       {error ? <span className="text-[11.5px] text-penalty">{error}</span> : null}

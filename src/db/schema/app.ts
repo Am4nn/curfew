@@ -87,6 +87,9 @@ export const groupInvites = pgTable("group_invites", {
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   respondedAt: timestamp("responded_at", { withTimezone: true }),
+  // The recipient hid it without answering (migration 0016). The row stays
+  // pending and the sender sees no change; it just stops being listed.
+  dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
 });
 
 export const userSettings = pgTable("user_settings", {

@@ -3,13 +3,14 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { listUserGroups, listInvitesForEmail, userBalances } from "@/server/groups";
 import { hasAdminAccess, pendingApprovalCount } from "@/server/admin";
-import { todayFor } from "@/server/today";
+import { todayFor, todayDate } from "@/server/today";
 import { standingIn } from "@/server/group-view";
 import { formatMoney, getActivityType, registeredKeys } from "@/domain";
 import { QuorumMark } from "./mark";
 import { ActivityIcon } from "./activity-icon";
 import { RankScore } from "./rank-icon";
-import { ActivityRow } from "./activity-row";
+import { TodayBoard } from "./today-board";
+import { DayComplete } from "./day-complete";
 import { InviteRows } from "./invite-rows";
 import { buttonClass } from "./button-style";
 
@@ -18,16 +19,25 @@ import { buttonClass } from "./button-style";
 //
 // Every status line is written by the activity's own module, so nothing here
 // knows what a meal or a window is (invariant 6).
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  // `?done=<typeKey>` is set by the check-in screen on its way back here, and
+  // says which row to mark. It records nothing and never could: a check-in is
+  // a POST (invariant 9), and this is read only to decide what to draw.
+  searchParams: Promise<{ done?: string }>;
+}) {
+  const { done: doneParam } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const [today, groups, invites, admin] = await Promise.all([
+  const [today, groups, invites, admin, date] = await Promise.all([
     todayFor(user.id),
     listUserGroups(user.id),
     listInvitesForEmail(user.email),
     hasAdminAccess(user.id),
+    todayDate(user.id),
   ]);
 
   const pendingAdminWork = admin ? await pendingApprovalCount() : 0;
@@ -48,6 +58,21 @@ export default async function Home() {
   const owed = balances.reduce((s, b) => s + Math.max(-b.netOwed, 0), 0);
   const currency = balances.find((b) => b.currency)?.currency ?? "INR";
   const showMoney = balances.length > 0;
+
+  // The day is complete when everything that was due today is done. Not "every
+  // activity": a rest day is not a miss, and an activity that was never
+  // scheduled cannot hold the day open.
+  const dayComplete = today.of > 0 && today.done === today.of;
+  const dueIcons = today.rows.filter((r) => r.scheduled).map((r) => r.icon);
+  // The stamp's own line. Formatted here because the day is the server's, in
+  // the user's own zone (invariant 8): a client clock could stamp yesterday.
+  const dateLabel = new Date(`${date}T12:00:00Z`)
+    .toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" })
+    .toUpperCase();
+
+  // A row was marked from the URL only if it is a row that exists.
+  const recorded =
+    doneParam && today.rows.some((r) => r.typeKey === doneParam) ? doneParam : null;
 
   return (
     <main className="min-h-dvh px-5 pb-24 pt-5">
@@ -76,31 +101,12 @@ export default async function Home() {
         {today.rows.length === 0 ? (
           <NewUser inAGroup={groups.length > 0} />
         ) : (
-          <>
-            <section className="flex flex-col gap-[6px]">
-              <span className="text-[10px] tracking-[0.16em] text-muted">TODAY</span>
-              <div className="flex items-baseline gap-[10px]">
-                <span className="text-[38px] font-semibold leading-none tabular-nums">
-                  {today.done}
-                </span>
-                <span className="text-[15px] text-muted">of {today.of} done</span>
-              </div>
-              <div className="mt-[6px] flex gap-1">
-                {Array.from({ length: today.of }, (_, i) => (
-                  <div
-                    key={i}
-                    className={"h-[3px] flex-1 " + (i < today.done ? "bg-fg" : "bg-rule")}
-                  />
-                ))}
-              </div>
-            </section>
-
-            <section className="flex flex-col">
-              {today.rows.map((row) => (
-                <ActivityRow key={row.typeKey} row={row} />
-              ))}
-            </section>
-          </>
+          <TodayBoard
+            rows={today.rows}
+            done={today.done}
+            of={today.of}
+            initialRecorded={recorded}
+          />
         )}
 
         {showMoney ? (
@@ -145,6 +151,10 @@ export default async function Home() {
           </section>
         ) : null}
       </div>
+
+      {dayComplete ? (
+        <DayComplete dateKey={date} dateLabel={dateLabel} icons={dueIcons} />
+      ) : null}
     </main>
   );
 }

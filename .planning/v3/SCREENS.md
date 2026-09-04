@@ -31,6 +31,9 @@ artboard catches what a diff never would.
 | Home (no money anywhere) | `/` | No group tracks money: no balances block at all | [ ] |
 | Home (new user) | `/` | Nothing tracked. Four activities to start with, and the catalog | [ ] |
 | Home (new user, invite waiting) | `/` | Nothing tracked, one invite waiting above the catalog | [ ] |
+| Recorded, partial day | `/?done=<key>` | A check-in just landed: the count rolls, the filled segment grows, the row carries a rule | [ ] |
+| The day is complete | `/` | The last scheduled activity closed: the stamp, over a dimmed Home | [ ] |
+| The stamp, frame by frame | none | A motion spec, not a screen. The four frames of the stamp landing, and the rules around it | [ ] |
 | Notice, over Home | any | Blocking overlay, Got it only | [ ] |
 | Notice, over a group | any | Same overlay on another route | [ ] |
 

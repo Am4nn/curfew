@@ -19,6 +19,9 @@
      notice overlay must actually dim what's behind it). */
   --scrim: #0b0a09e6;
   --scrim-85: #0b0a09d9;
+  /* The complete-day stamp sits on this one: dark enough that the stamp owns
+     the screen, light enough that Home is still legible behind it. */
+  --scrim-93: #0b0a09ed;
   --surface: #17150f;
   --fg: #f2f2f2;
   --muted: #8c8c8c;
@@ -50,6 +53,7 @@
   --bg: #e8e6e1;
   --scrim: #e8e6e1e6;
   --scrim-85: #e8e6e1d9;
+  --scrim-93: #e8e6e1ed;
   --surface: #dcd8d0;
   --fg: #1a1917;
   --muted: #5a5751;
@@ -122,6 +126,91 @@
   @media (prefers-reduced-motion: reduce) {
     .flame {
       animation: none;
+    }
+  }
+
+  /* What a check-in looks like once it has landed.
+     A partial day gets no overlay: the count rolls, the newly-filled segment
+     grows, and the row that changed carries a rule for a few seconds. The
+     complete day is stamped, once, on the last activity of the day. */
+  @keyframes roll-out {
+    from {
+      opacity: 0.35;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes roll-in {
+    from {
+      opacity: 0;
+      transform: translateY(9px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fill-right {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+  @keyframes stamp-in {
+    0% {
+      opacity: 0;
+      transform: rotate(-7deg) scale(1.35);
+    }
+    60% {
+      opacity: 1;
+      transform: rotate(-7deg) scale(0.97);
+    }
+    100% {
+      opacity: 1;
+      transform: rotate(-7deg) scale(1);
+    }
+  }
+  @keyframes scrim-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .roll-out {
+    animation: roll-out 1.4s ease-in forwards;
+  }
+  .roll-in {
+    animation: roll-in 0.4s ease-out;
+  }
+  /* The width is the resting state; the animation only walks it up to it, so
+     the segment stays full once it lands. */
+  .fill-right {
+    width: 100%;
+    animation: fill-right 0.45s ease-out;
+  }
+  .stamp-in {
+    animation: stamp-in 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  }
+  .scrim-in {
+    animation: scrim-in 0.22s ease-out both;
+  }
+  /* Reduced motion keeps every end state and drops the movement: the count
+     still reads 4, the segment is still full, the stamp is still there. */
+  @media (prefers-reduced-motion: reduce) {
+    .roll-out,
+    .roll-in,
+    .fill-right,
+    .stamp-in,
+    .scrim-in {
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
     }
   }
 

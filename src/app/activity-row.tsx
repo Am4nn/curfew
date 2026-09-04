@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import type { TodayRow } from "@/server/today";
 import { ActivityIcon, Flame } from "./activity-icon";
 import { CheckinButton } from "./checkin-button";
@@ -9,29 +8,45 @@ import { CheckinButton } from "./checkin-button";
 /**
  * One activity on Home: where it stands, and the one thing to do about it.
  *
- * It is a client component for one reason. A counter's `+1` used to leave the
+ * It is a client component for two reasons. A counter's `+1` used to leave the
  * old count on screen until the server round trip returned, so pressing it
  * looked like nothing had happened for as long as the network took. The row
- * now shows `nextStatus` the moment the press lands and the server's own text
- * replaces it when the refresh arrives.
+ * shows `nextStatus` the moment the press lands and the server's own text
+ * replaces it when the refresh arrives. And a row that has just been recorded
+ * carries a rule down its left for a few seconds, so the eye finds the thing
+ * that changed without anything covering the screen (mock: V3Recorded).
+ *
+ * `recorded` is owned by TodayBoard, because the count above the list has to
+ * move at the same moment and for the same reason.
  *
  * `nextStatus` is written by the activity's module, like `status` is, so
  * nothing here knows what a glass or a meal is (invariant 6). The optimism is
  * only ever a display: the check-in is still an explicit POST (invariant 9),
  * and if it fails the button says so and the real status comes back.
  */
-export function ActivityRow({ row }: { row: TodayRow }) {
-  const [pressed, setPressed] = useState(false);
-
+export function ActivityRow({
+  row,
+  recorded = false,
+  onRecord,
+}: {
+  row: TodayRow;
+  /** This row is the one that just landed. */
+  recorded?: boolean;
+  /** A press on this row was recorded, before the refresh lands. */
+  onRecord?: () => void;
+}) {
   // The server's text wins the moment it arrives. A row that has been
   // re-rendered with a new status is no longer the row that was pressed.
-  const status = pressed && row.nextStatus ? row.nextStatus : row.status;
+  const status = recorded && row.nextStatus ? row.nextStatus : row.status;
 
   return (
     <div
       className={
         "flex items-center gap-3 border-b border-rule py-[13px] " +
-        (row.scheduled ? "" : "opacity-[0.42]")
+        (row.scheduled ? "" : "opacity-[0.42]") +
+        // The rule sits in the left margin, so marking a row never shifts the
+        // text under it.
+        (recorded ? " -ml-[11px] border-l-2 border-l-pass pl-[9px]" : "")
       }
     >
       <Link
@@ -80,7 +95,7 @@ export function ActivityRow({ row }: { row: TodayRow }) {
             label="+1"
             typeKey={row.typeKey}
             step={row.step}
-            onPressed={() => setPressed(true)}
+            onPressed={onRecord}
             className="flex h-[34px] flex-none items-center border border-fg bg-fg px-[13px] text-[12px] font-semibold text-bg disabled:opacity-60"
           />
         ) : (

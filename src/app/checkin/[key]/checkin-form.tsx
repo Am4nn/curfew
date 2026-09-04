@@ -295,8 +295,12 @@ export function CheckinForm({
         evidence,
       });
       if (result.ok) {
+        // Home, not the activity screen. What a person wants to see after Send
+        // is that it counted and what it did to the day, and Home already
+        // holds both. `?done=` marks the row that just changed; on a day this
+        // completes, Home stamps it (mocks: V3Recorded, V3DayComplete).
         startTransition(() => {
-          router.push(`/activities/${state.typeKey}`);
+          router.push(`/?done=${encodeURIComponent(state.typeKey)}`);
           router.refresh();
         });
         return;

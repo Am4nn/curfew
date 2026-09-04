@@ -336,6 +336,26 @@ async function runInteraction(page: Page, tag: string): Promise<void> {
   console.warn(`  unknown interaction tag "${tag}"; capturing page as loaded.`);
 }
 
+/**
+ * Whether the page is a screen at all, rather than the app's own error or
+ * not-found boundary wearing a 200.
+ *
+ * Matched on the copy those two boundaries ship, because Next serves both with
+ * an ordinary status and there is nothing else to tell them apart from a real
+ * screen. If that copy changes, this has to change with it, which is why both
+ * strings live here rather than being guessed at.
+ */
+async function wrongPage(page: Page): Promise<string | null> {
+  const text = await page.evaluate(() => document.body.innerText);
+  if (text.includes("Something failed while loading this page")) {
+    return "the app's error boundary rendered, not the screen";
+  }
+  if (text.includes("No such page")) {
+    return "the app's not-found boundary rendered, not the screen";
+  }
+  return null;
+}
+
 async function screenshotApp(
   browser: Browser,
   entry: ManifestEntry,
@@ -413,6 +433,14 @@ async function screenshotApp(
 
     const shot = await page.screenshot({ fullPage: false }); // viewport now grown to fit, so this still captures everything
     await writeFile(outPath, shot);
+
+    // A rendered error page is a 200 with a screenshot in it, so until now it
+    // came back as a pass and only a person looking at the image would catch
+    // it. That is how a crash on Home survived a full green run. Written after
+    // the file so the picture is still there to look at.
+    const wrong = await wrongPage(page);
+    if (wrong) return { ok: false, error: wrong, outPath };
+
     return { ok: true, error: null, outPath };
   } catch (err) {
     return { ok: false, error: String(err instanceof Error ? err.message : err), outPath };

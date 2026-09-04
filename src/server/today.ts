@@ -28,6 +28,12 @@ export interface TodayRow {
   /** The step to check in, when one is open. */
   step: string | null;
   status: string;
+  /**
+   * `status` as it would read once one more press of the open step lands.
+   * Home shows it the moment the tick is pressed. Null when there is nothing
+   * to press, or when the module writes no hint.
+   */
+  nextStatus: string | null;
 }
 
 export interface Today {
@@ -72,6 +78,8 @@ export async function todayFor(userId: string): Promise<Today> {
       open: open !== null && !state.passed,
       step: open?.key ?? null,
       status,
+      nextStatus:
+        state.scheduled && !state.passed ? (open?.nextHint ?? null) : null,
     });
   }
 

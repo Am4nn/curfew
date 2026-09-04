@@ -64,6 +64,8 @@ export interface CheckinStepView {
   consequence: string | null;
   /** The module's own line under the fields, for what is recorded so far. */
   hint: string | null;
+  /** `hint` as it would read after one more press of this step. */
+  nextHint: string | null;
 }
 
 export interface ActivityCheckinState {
@@ -173,6 +175,22 @@ export async function getCheckinState(
           timezone,
           config: activity.config,
           checkins,
+          step: step.key,
+          pending: null,
+        }) ?? null,
+      // The same line, as it would read if one more press of this step had
+      // landed. Home shows it the instant the tick is pressed, instead of
+      // leaving the old count on screen until the round trip returns.
+      //
+      // The engine only asks the question. The module writes both sentences
+      // from the same code, so nothing here learns what a glass or a meal is
+      // (invariant 6), and a type that has no hint gets null for both.
+      nextHint:
+        type.hint?.({
+          periodStart: period,
+          timezone,
+          config: activity.config,
+          checkins: [...checkins, { step: step.key, at: instant }],
           step: step.key,
           pending: null,
         }) ?? null,

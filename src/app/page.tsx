@@ -7,9 +7,9 @@ import { todayFor } from "@/server/today";
 import { standingIn } from "@/server/group-view";
 import { formatMoney, getActivityType, registeredKeys } from "@/domain";
 import { QuorumMark } from "./mark";
-import { ActivityIcon, Flame } from "./activity-icon";
+import { ActivityIcon } from "./activity-icon";
 import { RankScore } from "./rank-icon";
-import { CheckinButton } from "./checkin-button";
+import { ActivityRow } from "./activity-row";
 import { InviteRows } from "./invite-rows";
 import { buttonClass } from "./button-style";
 
@@ -97,63 +97,7 @@ export default async function Home() {
 
             <section className="flex flex-col">
               {today.rows.map((row) => (
-                <div
-                  key={row.typeKey}
-                  className={
-                    "flex items-center gap-3 border-b border-rule py-[13px] " +
-                    (row.scheduled ? "" : "opacity-[0.42]")
-                  }
-                >
-                  <Link
-                    href={`/activities/${row.typeKey}`}
-                    className={"flex flex-none " + (row.scheduled ? "text-fg" : "text-muted")}
-                  >
-                    <ActivityIcon name={row.icon} size={20} />
-                  </Link>
-                  <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                    <div className="flex items-center gap-[9px]">
-                      <span className="text-[14px]">{row.name}</span>
-                      {/* A rest day is not a broken streak, so an unscheduled
-                          row still carries its count. The whole row is at
-                          0.42, so the flame dims with it rather than needing
-                          a duller treatment of its own. */}
-                      {row.streak > 0 ? (
-                        <span className="flex items-center gap-1">
-                          <Flame size={13} />
-                          <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">
-                            {row.streak}
-                          </span>
-                        </span>
-                      ) : null}
-                    </div>
-                    <span className="truncate text-[11.5px] text-muted">{row.status}</span>
-                  </div>
-
-                  {row.done ? (
-                    <span className="flex flex-none items-center gap-[6px] text-[12px] text-pass">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square">
-                        <path d="M4 12.5 9 17.5 20 6.5" />
-                      </svg>
-                      done
-                    </span>
-                  ) : row.open && row.step ? (
-                    row.kind === "counter" ? (
-                      <CheckinButton
-                        label="+1"
-                        typeKey={row.typeKey}
-                        step={row.step}
-                        className="flex h-[34px] flex-none items-center border border-fg bg-fg px-[13px] text-[12px] font-semibold text-bg disabled:opacity-60"
-                      />
-                    ) : (
-                      <Link
-                        href={`/checkin/${row.typeKey}`}
-                        className="flex h-[34px] flex-none items-center gap-[6px] border border-fg bg-fg px-[13px] text-[12px] font-semibold text-bg"
-                      >
-                        {row.kind === "camera" ? "Log" : "Check in"}
-                      </Link>
-                    )
-                  ) : null}
-                </div>
+                <ActivityRow key={row.typeKey} row={row} />
               ))}
             </section>
           </>

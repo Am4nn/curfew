@@ -1,5 +1,8 @@
 import { DateTime } from "luxon";
 import { getActivityType } from "@/domain";
+import { db } from "@/db";
+import { evidence } from "@/db/schema";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { listOwnPhotos, readUrl } from "./evidence";
 
 /** One of a person's own photographs, signed and ready to render. */
@@ -44,4 +47,22 @@ export async function ownPhotos(
     }
   }
   return out;
+}
+
+/**
+ * How many photographs the person has, for "30 of 214" without signing 214
+ * URLs to find out. Same predicate as `listOwnPhotos`.
+ */
+export async function countOwnPhotos(userId: string): Promise<number> {
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(evidence)
+    .where(
+      and(
+        eq(evidence.userId, userId),
+        isNull(evidence.deletedAt),
+        sql`${evidence.confirmedAt} is not null`,
+      ),
+    );
+  return row?.n ?? 0;
 }

@@ -24,11 +24,14 @@ export function CheckinButton({
   typeKey,
   step,
   className = DEFAULT_CLASS,
+  onPressed,
 }: {
   label: string;
   typeKey: string;
   step: string;
   className?: string;
+  /** Called once the press is recorded, before the refresh lands. */
+  onPressed?: () => void;
 }) {
   const router = useRouter();
   const [sending, setSending] = useState(false);
@@ -52,6 +55,8 @@ export function CheckinButton({
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { message?: string };
         setError(body.message ?? "That did not go through.");
+      } else {
+        onPressed?.();
       }
       startTransition(() => router.refresh());
     } catch {

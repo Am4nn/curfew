@@ -784,6 +784,27 @@ async function runScoring(): Promise<void> {
   console.log("scoring the seeded history");
   const result = await scoreAll({});
   console.log(`scored ${result.users} user(s), ${result.fines} fine(s) written`);
+  await backdateFines();
+}
+
+/**
+ * Give every seeded fine the date of the period it punishes.
+ *
+ * The whole history is scored in one pass here, so `created_at` defaults to
+ * the moment the seed ran and the ledger screen showed months of fines stacked
+ * on a single day. Nothing about date grouping could be reviewed against it.
+ *
+ * This is a fixture-only UPDATE and it does not weaken invariant 3. The app
+ * never rewrites a ledger row; this script is not the app, and it has just
+ * wiped and rebuilt the table from nothing. Settlements keep the seed's clock,
+ * because a settlement is not tied to a period.
+ */
+async function backdateFines(): Promise<void> {
+  await db.execute(sql`
+    UPDATE ledger_entries
+       SET created_at = (period_start::timestamptz + interval '21 hours')
+     WHERE kind = 'fine' AND period_start IS NOT NULL
+  `);
 }
 
 // ---------------------------------------------------------------------------

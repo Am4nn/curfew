@@ -78,7 +78,7 @@ export function GroupsDirectory({
       </div>
 
       {!appWideMoneyOn ? (
-        <div className="border-l-[3px] border-l-penalty bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-[11.5px] leading-[1.55] text-muted">
           Money is off app-wide. A group switched on here keeps it, and its members still
           see everything about money.
         </div>

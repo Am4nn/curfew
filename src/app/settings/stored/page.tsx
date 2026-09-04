@@ -40,7 +40,7 @@ export default async function StoredPage() {
           </section>
         ))}
 
-        <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-[11.5px] leading-[1.55] text-muted">
           {consent
             ? `You accepted version ${consent.version} of this on ${consent.acceptedAt.toISOString().slice(0, 10)}. This is version ${CONSENT_VERSION}.`
             : "You have not accepted this yet."}

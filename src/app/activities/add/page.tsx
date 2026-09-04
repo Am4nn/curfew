@@ -75,7 +75,7 @@ export default async function CatalogPage() {
           </section>
         ) : null}
 
-        <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-[11.5px] leading-[1.55] text-muted">
           Missing something you track? Ask an admin to add it.
         </div>
       </div>

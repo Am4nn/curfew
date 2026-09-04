@@ -104,7 +104,7 @@ export default async function StandingTab({
           </Link>
         </section>
       ) : (
-        <div className="border-l-[3px] border-l-pass bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-[11.5px] leading-[1.55] text-muted">
           A miss costs your streak and your standing here.
         </div>
       )}

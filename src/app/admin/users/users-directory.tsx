@@ -99,7 +99,7 @@ export function UsersDirectory({ users }: { users: AdminUserRow[] }) {
         )}
       </div>
 
-      <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+      <div className="text-[11.5px] leading-[1.55] text-muted">
         A user&apos;s activities and evidence are never visible here. Admin sees that they
         exist, not what they contain.
       </div>

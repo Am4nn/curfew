@@ -274,7 +274,7 @@ export function SettingsForm({
       ) : null}
 
       {error ? (
-        <div className="border-l-[3px] border-l-penalty bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-penalty">
+        <div className="text-[11.5px] leading-[1.55] text-penalty">
           {error}
         </div>
       ) : null}

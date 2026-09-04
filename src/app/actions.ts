@@ -91,6 +91,18 @@ export async function declineInviteAction(
   }
 }
 
+/**
+ * The same decline, for the shared invite rows, which are a client component
+ * and want a promise that throws rather than a FormState. `declineInviteAction`
+ * above stays for the plain-form callers.
+ */
+export async function dismissInviteAction(inviteId: string): Promise<void> {
+  const user = await approvedUser();
+  await declineInvite(inviteId, user.email);
+  revalidatePath("/");
+  revalidatePath("/groups");
+}
+
 export async function leaveGroupAction(
   _state: FormState,
   formData: FormData,

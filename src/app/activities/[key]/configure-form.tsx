@@ -256,19 +256,18 @@ function EvidenceFact({ rule }: { rule: EvidenceRule }) {
   );
 }
 
+// Small print, and nothing more. This wore a tinted panel with a coloured bar
+// down its side, which is emphasis a footnote does not need and which appeared
+// on so many screens that it stopped meaning anything.
 function Note({ children, tone = "accent" }: { children: React.ReactNode; tone?: "accent" | "pass" | "penalty" }) {
-  const border =
-    tone === "pass" ? "border-l-pass" : tone === "penalty" ? "border-l-penalty" : "border-l-accent";
   return (
-    <div
+    <p
       className={
-        "border-l-[3px] bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] " +
-        border +
-        (tone === "penalty" ? " text-penalty" : " text-muted")
+        "text-[11.5px] leading-[1.55] " + (tone === "penalty" ? "text-penalty" : "text-muted")
       }
     >
       {children}
-    </div>
+    </p>
   );
 }
 

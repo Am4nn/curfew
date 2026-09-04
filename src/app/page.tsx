@@ -10,6 +10,8 @@ import { QuorumMark } from "./mark";
 import { ActivityIcon, Flame } from "./activity-icon";
 import { RankScore } from "./rank-icon";
 import { CheckinButton } from "./checkin-button";
+import { InviteRows } from "./invite-rows";
+import { buttonClass } from "./ui";
 
 // Home is the day: how much of it is done, every activity with where it stands
 // and the one thing to do about it, then money and groups.
@@ -69,10 +71,10 @@ export default async function Home() {
           ) : null}
         </header>
 
-        {invites.length > 0 ? <InviteCard invites={invites} /> : null}
+        {invites.length > 0 ? <InviteRows invites={invites} /> : null}
 
         {today.rows.length === 0 ? (
-          <NewUser hasInvite={invites.length > 0} />
+          <NewUser inAGroup={groups.length > 0} />
         ) : (
           <>
             <section className="flex flex-col gap-[6px]">
@@ -199,49 +201,6 @@ export default async function Home() {
   );
 }
 
-// An invite waiting. This was a one-line link reading "View ›" that said
-// nothing about what accepting would cost, then a tinted panel with a left bar,
-// which was the only block on Home shaped like that and read as a banner.
-//
-// Home is a small-caps label and rows separated by hairlines everywhere else on
-// the screen, so the invite is that too. The accent survives on the label
-// alone, which is all the signal it needs. Every invite gets its own row rather
-// than one being promoted and the rest counted.
-//
-// Accepting still happens on the join screen rather than here, because joining
-// means choosing what to share, and that is not a decision to take from a
-// button on the home page.
-function InviteCard({
-  invites,
-}: {
-  invites: { id: string; inviterName: string; groupName: string }[];
-}) {
-  return (
-    <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-accent">
-        {invites.length === 1 ? "AN INVITE" : `${invites.length} INVITES`}
-      </span>
-      <div className="flex flex-col">
-        {invites.map((invite) => (
-          <Link
-            key={invite.id}
-            href={`/join/${invite.id}`}
-            className="flex items-center gap-3 border-b border-rule pb-[14px] [&+a]:pt-[14px]"
-          >
-            <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-              <span className="text-[14px]">{invite.groupName}</span>
-              <span className="truncate text-[11.5px] leading-[1.45] text-muted">
-                {invite.inviterName} invited you
-              </span>
-            </div>
-            <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 // Nothing tracked yet. The mock is V3HomeStart, and V3HomeStartInvite for the
 // same screen with an invite waiting.
 //
@@ -256,7 +215,7 @@ function InviteCard({
 // name and the line under it are the module's own words.
 const FIRST_FOUR = ["sleep", "water", "gym", "steps"];
 
-function NewUser({ hasInvite }: { hasInvite: boolean }) {
+function NewUser({ inAGroup }: { inAGroup: boolean }) {
   const available = new Set(registeredKeys());
   const starters = FIRST_FOUR.filter((key) => available.has(key)).map((key) => {
     const type = getActivityType(key);
@@ -310,20 +269,27 @@ function NewUser({ hasInvite }: { hasInvite: boolean }) {
       </div>
 
       {/* Making a group is the other half of the app, and a new arrival had no
-          way to reach it from here at all. The footnote is plain text: every
-          other line of small print on Home is, and the tinted panel this wore
-          was emphasis it did not need. */}
-      <Link
-        href="/groups"
-        className="flex h-11 w-full items-center justify-center border border-rule text-[14px] active:opacity-70"
-      >
-        Create a group
-      </Link>
-      <p className="text-[11.5px] leading-[1.55] text-muted">
-        {hasInvite
-          ? "Groups only ever see the activities you choose to share. You can make one of your own too."
-          : "Groups are invite-only, and they only ever see the activities you choose to share. Make one and invite the people who will notice when you stop."}
-      </p>
+          way to reach it from here at all.
+
+          Both of these go once someone is already in a group: the sentence is
+          an explanation of what groups are, and it stops being news the moment
+          you are in one. The whole block goes once anything is tracked, since
+          this branch only renders on an empty day. */}
+      {inAGroup ? null : (
+        <>
+          <Link
+            href="/groups"
+            className={buttonClass("secondary", "lg", "w-full")}
+          >
+            Create a group
+          </Link>
+          <p className="text-[11.5px] leading-[1.55] text-muted">
+            Groups are invite-only, and they only ever see the activities you
+            choose to share. Make one and invite the people who will notice when
+            you stop.
+          </p>
+        </>
+      )}
     </section>
   );
 }

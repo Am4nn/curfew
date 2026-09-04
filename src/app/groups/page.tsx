@@ -7,7 +7,8 @@ import { standingIn } from "@/server/group-view";
 import { QuorumMark } from "../mark";
 import { RankScore } from "../rank-icon";
 import { ActionForm, SubmitButton } from "../ui";
-import { createGroupAction, declineInviteAction } from "../actions";
+import { InviteRows } from "../invite-rows";
+import { createGroupAction } from "../actions";
 
 // Groups are invite-only and nobody finds one by searching, so this is the
 // whole surface: what you were invited to, what you are in, and a way to start
@@ -40,33 +41,7 @@ export default async function GroupsPage() {
           <h1 className="text-[14px] font-semibold tracking-[0.16em]">GROUPS</h1>
         </header>
 
-        {invites.map((invite) => (
-          <div
-            key={invite.id}
-            className="flex flex-col gap-[10px] border-l-[3px] border-l-accent bg-surface p-[13px]"
-          >
-            <span className="text-[13px] leading-[1.5]">
-              {invite.inviterName} invited you to{" "}
-              <span className="font-semibold">{invite.groupName}</span>.
-            </span>
-            <div className="flex gap-[9px]">
-              {/* Joining is where sharing is chosen, so Accept opens the join
-                  screen rather than joining on the spot. */}
-              <Link
-                href={`/join/${invite.id}`}
-                className="flex h-[34px] items-center border border-fg bg-fg px-[14px] text-[12px] font-semibold text-bg"
-              >
-                Accept
-              </Link>
-              <ActionForm action={declineInviteAction}>
-                <input type="hidden" name="inviteId" value={invite.id} />
-                <SubmitButton className="h-[34px] border border-rule px-[14px] text-[12px] text-muted">
-                  Decline
-                </SubmitButton>
-              </ActionForm>
-            </div>
-          </div>
-        ))}
+        {invites.length > 0 ? <InviteRows invites={invites} /> : null}
 
         <section className="flex flex-col gap-[10px]">
           <span className="text-[10px] tracking-[0.16em] text-muted">YOUR GROUPS</span>
@@ -117,7 +92,7 @@ export default async function GroupsPage() {
           </ActionForm>
         </details>
 
-        <div className="border-l-[3px] border-l-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-[11.5px] leading-[1.55] text-muted">
           Groups are invite-only. Nobody finds one by searching.
         </div>
       </div>

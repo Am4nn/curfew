@@ -381,9 +381,9 @@ export function CheckinForm({
         <div className="flex-1" />
 
         {step.consequence ? (
-          <div className="border-l-[3px] border-muted bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+          <p className="text-[11.5px] leading-[1.55] text-muted">
             {step.consequence}
-          </div>
+          </p>
         ) : null}
       </div>
     );

@@ -24,7 +24,7 @@ export default async function Pending() {
           <QuorumMark size={26} />
           CURFEW
         </div>
-        <div className="border-l-[3px] border-accent bg-surface px-4 py-[14px] text-[14px] leading-relaxed">
+        <div className="text-[14px] leading-relaxed">
           {message}
         </div>
         <p className="text-[12px] text-muted">Signed in as {user.email}</p>

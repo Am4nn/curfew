@@ -81,12 +81,12 @@ export async function getControlsState(): Promise<ControlsState> {
   // (decision 82).
   const types = registeredKeys()
     .map((key) => {
-      const module = getActivityType(key);
+      const activity = getActivityType(key);
       const row = resolveAt(typeRows.filter((r) => r.typeKey === key), now);
       return {
         key,
-        name: module.name,
-        icon: module.icon,
+        name: activity.name,
+        icon: activity.icon,
         enabled: row?.enabled === true,
         tracking: trackingByType.get(key) ?? 0,
       };

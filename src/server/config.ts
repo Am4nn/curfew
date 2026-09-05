@@ -7,8 +7,7 @@ import {
   resolveConfig,
   sleepConfigSchema,
   type SleepConfig,
-  type FineRules,
-} from "@/domain";
+  } from "@/domain";
 import { now } from "@/lib/clock";
 
 // A stored config row is either the module's config directly (the seed's own

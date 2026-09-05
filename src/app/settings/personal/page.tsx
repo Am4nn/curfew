@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { getPersonalSettings } from "@/server/settings";
+import { supportedZones } from "@/lib/zones";
 import { ActionForm, InfoHint, SubmitButton } from "../../ui";
 import { TimezoneSelect } from "../timezone-select";
 import { updateTimezoneAction, updateWindowsAction } from "../actions";
@@ -22,10 +23,7 @@ export default async function PersonalSettings() {
 
   const personal = await getPersonalSettings(user.id);
 
-  const intl = Intl as unknown as { supportedValuesOf?: (k: string) => string[] };
-  const zones = intl.supportedValuesOf
-    ? intl.supportedValuesOf("timeZone")
-    : ["Asia/Kolkata", "Europe/London", "America/New_York", "UTC"];
+  const zones = supportedZones();
 
   return (
     <main className="min-h-dvh px-5 pb-24 pt-5">

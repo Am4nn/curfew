@@ -76,7 +76,7 @@ export function daysInPeriod(periodStartDate: string, unit: PeriodUnit): string[
 export function weekdayOf(date: string): Weekday {
   const dt = DateTime.fromISO(date, { zone: "utc" });
   if (!dt.isValid) throw new Error(`weekdayOf: invalid date '${date}'`);
-  return dt.weekday as Weekday;
+  return dt.weekday;
 }
 
 // The calendar month a period charges its grace to, "yyyy-MM". A week takes the

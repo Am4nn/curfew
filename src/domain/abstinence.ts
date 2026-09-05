@@ -6,7 +6,6 @@ import {
   oneWindow,
   windowInstants,
   within,
-  clockLabel,
   HHMM,
   type Window,
 } from "./windows";

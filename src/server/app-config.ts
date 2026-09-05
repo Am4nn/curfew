@@ -157,7 +157,7 @@ export async function resolveGroupSettingAt(
   groupId: string,
   key: string,
   instant: Date,
-): Promise<unknown | null> {
+): Promise<unknown> {
   const rows = await db
     .select({
       id: groupSettings.id,

@@ -14,6 +14,7 @@ import {
 } from "@/server/admin";
 import { isRole, type Capability } from "@/lib/capabilities";
 import type { FormState } from "../ui";
+import { field, trimmed } from "@/lib/form";
 
 async function guard(capability: Capability) {
   const user = await getSessionUser();
@@ -33,8 +34,8 @@ export async function decideAction(
 ): Promise<FormState> {
   try {
     const user = await guard("users.approve");
-    const userId = String(formData.get("userId"));
-    const approve = String(formData.get("approve")) === "true";
+    const userId = field(formData, "userId");
+    const approve = field(formData, "approve") === "true";
     await decideApproval(user.id, userId, approve);
     revalidatePath("/admin");
     revalidatePath("/admin/users");
@@ -50,8 +51,8 @@ export async function setRoleAction(
 ): Promise<FormState> {
   try {
     const user = await guard("users.set_role");
-    const targetUserId = String(formData.get("userId"));
-    const role = String(formData.get("role"));
+    const targetUserId = field(formData, "userId");
+    const role = field(formData, "role");
     if (!isRole(role)) return { error: "Unknown role." };
     await setRole(user.id, targetUserId, role);
     revalidatePath("/admin/users");
@@ -68,9 +69,10 @@ export async function disableUserAction(
 ): Promise<FormState> {
   try {
     const user = await guard("users.disable");
-    await disableUser(user.id, String(formData.get("userId")));
+    const userId = field(formData, "userId");
+    await disableUser(user.id, userId);
     revalidatePath("/admin/users");
-    revalidatePath(`/admin/users/${formData.get("userId")}`);
+    revalidatePath(`/admin/users/${userId}`);
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not remove the user." };
@@ -83,9 +85,10 @@ export async function restoreUserAction(
 ): Promise<FormState> {
   try {
     const user = await guard("users.disable");
-    await restoreUser(user.id, String(formData.get("userId")));
+    const userId = field(formData, "userId");
+    await restoreUser(user.id, userId);
     revalidatePath("/admin/users");
-    revalidatePath(`/admin/users/${formData.get("userId")}`);
+    revalidatePath(`/admin/users/${userId}`);
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not restore the user." };
@@ -98,9 +101,10 @@ export async function archiveGroupAction(
 ): Promise<FormState> {
   try {
     const user = await guard("groups.archive");
-    await archiveGroup(user.id, String(formData.get("groupId")));
+    const groupId = field(formData, "groupId");
+    await archiveGroup(user.id, groupId);
     revalidatePath("/admin/groups");
-    revalidatePath(`/admin/groups/${formData.get("groupId")}`);
+    revalidatePath(`/admin/groups/${groupId}`);
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not archive the group." };
@@ -113,9 +117,10 @@ export async function restoreGroupAction(
 ): Promise<FormState> {
   try {
     const user = await guard("groups.archive");
-    await restoreGroup(user.id, String(formData.get("groupId")));
+    const groupId = field(formData, "groupId");
+    await restoreGroup(user.id, groupId);
     revalidatePath("/admin/groups");
-    revalidatePath(`/admin/groups/${formData.get("groupId")}`);
+    revalidatePath(`/admin/groups/${groupId}`);
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not restore the group." };
@@ -128,8 +133,8 @@ export async function runRebuildAction(
 ): Promise<FormState> {
   try {
     const user = await guard("ops.score");
-    const from = String(formData.get("from") || "").trim() || undefined;
-    const to = String(formData.get("to") || "").trim() || undefined;
+    const from = trimmed(formData, "from") || undefined;
+    const to = trimmed(formData, "to") || undefined;
     const result = await runRebuild(user.id, { from, to });
     revalidatePath("/admin/ops");
     return {

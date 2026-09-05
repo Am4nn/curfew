@@ -15,6 +15,8 @@ if (drift.length === 0) {
 
 console.log(`${drift.length} drift row(s):`);
 for (const d of drift) {
-  console.log(`  ${d.kind} ${d.key} ${d.field}: stored=${d.stored} computed=${d.computed}`);
+  console.log(
+    `  ${d.kind} ${d.key} ${d.field}: stored=${JSON.stringify(d.stored)} computed=${JSON.stringify(d.computed)}`,
+  );
 }
 process.exit(1);

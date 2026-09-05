@@ -125,7 +125,8 @@ async function recordedFor(
   const out: RecordedCheckin[] = [];
   for (const row of rows) {
     const payload = (row.payload ?? {}) as Record<string, unknown>;
-    const step = String(payload.step ?? row.type.split(".").pop());
+    const step =
+      typeof payload.step === "string" ? payload.step : (row.type.split(".").pop() ?? "");
     const evidence = (payload.evidence ?? {}) as Record<string, unknown>;
     checkins.push({ step, at: row.occurredAt, evidence });
     out.push({ step, at: row.occurredAt.toISOString(), atLabel: "", evidence });

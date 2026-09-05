@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { updateTimezone, updateSleepWindows } from "@/server/settings";
-import { minorUnitExponent } from "@/domain";
 import type { FormState } from "../ui";
+import { field, trimmed } from "@/lib/form";
 
 async function approvedUser() {
   const user = await getSessionUser();
@@ -21,7 +21,7 @@ export async function updateTimezoneAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    const tz = String(formData.get("timezone") || "").trim();
+    const tz = trimmed(formData, "timezone");
     if (!tz) return { error: "Enter a timezone." };
     await updateTimezone(user.id, tz);
     revalidatePath("/settings/personal");
@@ -32,13 +32,28 @@ export async function updateTimezoneAction(
   }
 }
 
+/**
+ * Adopt the zone this device reports, from the mismatch bar on Home.
+ *
+ * Effective from tomorrow, like every other config change (invariant 4): the day
+ * in progress was already being judged on the old midnight and moving it now
+ * would rewrite periods that have opened.
+ */
+export async function adoptDeviceTimezoneAction(formData: FormData): Promise<void> {
+  const user = await approvedUser();
+  const tz = trimmed(formData, "timezone");
+  if (!tz) return;
+  await updateTimezone(user.id, tz);
+  revalidatePath("/", "layout");
+}
+
 export async function updateWindowsAction(
   _state: FormState,
   formData: FormData,
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    const f = (k: string) => String(formData.get(k) || "");
+    const f = (k: string) => field(formData, k);
     await updateSleepWindows(user.id, {
       night_open: f("night_open"),
       night_close: f("night_close"),

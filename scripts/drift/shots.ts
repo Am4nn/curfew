@@ -12,7 +12,7 @@
 // Requires a dev server already running against .env.local (`bun run local`)
 // at http://localhost:3000. This script does not start or stop it.
 
-import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
+import { chromium, type Browser, type Page } from "playwright";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -93,7 +93,7 @@ async function loadSeededFixture(): Promise<string | null> {
 async function loadFixtureIds(): Promise<Record<string, string>> {
   if (!existsSync(FIXTURE_IDS_PATH)) return {};
   try {
-    return JSON.parse(await readFile(FIXTURE_IDS_PATH, "utf8"));
+    return JSON.parse(await readFile(FIXTURE_IDS_PATH, "utf8")) as Record<string, string>;
   } catch {
     console.warn(`WARNING: ${FIXTURE_IDS_PATH} exists but is not valid JSON. Ignoring it.`);
     return {};
@@ -322,7 +322,6 @@ async function runInteraction(page: Page, tag: string): Promise<void> {
     // Flip one toggle so the unsaved-changes bar appears, click Save to open
     // the confirmation sheet, screenshot happens after this returns. Never
     // click through the sheet's own confirm.
-    const toggle = page.locator('button[aria-label]').filter({ hasText: "" }).first();
     // The Toggle component's accessible name is the field label; grab the
     // first toggle-shaped button (small, aria-label set, not the nav).
     const toggles = page.locator("button[aria-label]");
@@ -402,7 +401,9 @@ async function screenshotApp(
   // clock, matching whatever the seed actually wrote.
   let clock = entry.clock;
   if (clock !== undefined && !isIsoInstant(clock)) {
-    console.warn(`WARNING [${entry.slug}]: clock "${clock}" is not a valid ISO instant; ignoring it, capturing with the real clock instead.`);
+    console.warn(
+      `WARNING [${entry.slug}]: clock "${String(clock)}" is not a valid ISO instant; ignoring it, capturing with the real clock instead.`,
+    );
     clock = undefined;
   }
 
@@ -480,10 +481,6 @@ async function checkServerUp(): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-function relShots(p: string): string {
-  return path.basename(p);
 }
 
 function buildGallery(entries: ManifestEntry[], results: CaptureResult[]): string {
@@ -651,7 +648,7 @@ async function main() {
   const { section, slugs } = parseArgs();
 
   const manifestRaw = await readFile(MANIFEST_PATH, "utf8");
-  const allEntries: ManifestEntry[] = JSON.parse(manifestRaw);
+  const allEntries = JSON.parse(manifestRaw) as ManifestEntry[];
 
   const entries = allEntries.filter((e) => {
     if (section && e.section !== section) return false;
@@ -745,7 +742,7 @@ async function main() {
   let existingLog: CaptureResult[] = [];
   if (existsSync(logPath)) {
     try {
-      existingLog = JSON.parse(await readFile(logPath, "utf8"));
+      existingLog = JSON.parse(await readFile(logPath, "utf8")) as CaptureResult[];
     } catch {
       // Corrupt or unreadable: start fresh rather than block the run.
     }
@@ -766,4 +763,5 @@ async function main() {
   console.log(`Gallery: ${path.join(SHOTS_DIR, "index.html")}`);
 }
 
-main();
+// Top level, so a rejection is an unhandled rejection and the run exits loud.
+void main();

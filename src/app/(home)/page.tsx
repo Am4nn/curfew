@@ -11,6 +11,8 @@ import { ActivityIcon } from "@/app/activity-icon";
 import { RankScore } from "@/app/rank-icon";
 import { TodayBoard } from "@/app/today-board";
 import { InviteRows } from "@/app/invite-rows";
+import { TimezoneMismatch } from "@/app/timezone-mismatch";
+import { resolveUserTimezone } from "@/server/config";
 import { buttonClass } from "@/app/button-style";
 
 // Home is the day: how much of it is done, every activity with where it stands
@@ -40,6 +42,11 @@ export default async function Home({
   ]);
 
   const pendingAdminWork = admin ? await pendingApprovalCount() : 0;
+
+  // The zone every line on this screen was worked out in. Handed to the client
+  // so it can say when the device disagrees; cached per request, so it costs
+  // nothing on top of what the day already resolved.
+  const zone = await resolveUserTimezone(user.id, date);
 
   const [balances, standings] = await Promise.all([
     userBalances(user.id),
@@ -98,6 +105,10 @@ export default async function Home({
             </Link>
           ) : null}
         </header>
+
+        {/* Above everything, because if this is wrong every deadline below it
+            is being read on the wrong midnight. */}
+        <TimezoneMismatch stored={zone} />
 
         {invites.length > 0 ? <InviteRows invites={invites} /> : null}
 

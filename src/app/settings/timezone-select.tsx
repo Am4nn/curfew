@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { zonesIncluding } from "@/lib/zones";
 
 // Themed, searchable timezone combobox. Opens on click or focus, filters as you
 // type, and submits whatever is in the field (the server validates it). Native
@@ -9,12 +10,19 @@ export function TimezoneSelect({
   zones,
   defaultValue,
   name = "timezone",
+  onChange,
 }: {
   zones: string[];
   defaultValue: string;
   name?: string;
+  /** Told whatever is in the field, so a caller can show it elsewhere. */
+  onChange?: (zone: string) => void;
 }) {
   const [query, setQuery] = useState(defaultValue);
+  const set = (value: string) => {
+    setQuery(value);
+    onChange?.(value);
+  };
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -26,8 +34,14 @@ export function TimezoneSelect({
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
+  // The list is built on the server and the value usually comes from a browser,
+  // and the two spell some zones differently, so the current one is put back in
+  // rather than being a value with no row. Derived from the prop, not from the
+  // runtime, or the server and the client would render different lists.
   const q = query.trim().toLowerCase();
-  const filtered = zones.filter((z) => z.toLowerCase().includes(q)).slice(0, 200);
+  const filtered = zonesIncluding(zones, defaultValue)
+    .filter((z) => z.toLowerCase().includes(q))
+    .slice(0, 200);
 
   return (
     <div ref={ref} className="relative w-56">
@@ -35,7 +49,7 @@ export function TimezoneSelect({
       <input
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value);
+          set(e.target.value);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
@@ -55,7 +69,7 @@ export function TimezoneSelect({
                   type="button"
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    setQuery(z);
+                    set(z);
                     setOpen(false);
                   }}
                   className={

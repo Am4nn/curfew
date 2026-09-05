@@ -22,6 +22,11 @@ import { SubmitButton } from "@/app/ui";
 
 const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 
+/** One configured value as text for an input. Anything not a scalar is nothing. */
+function text(value: unknown): string {
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+}
+
 function get(obj: unknown, path: string): unknown {
   return path.split(".").reduce<unknown>(
     (acc, part) => (acc == null ? undefined : (acc as Record<string, unknown>)[part]),
@@ -558,14 +563,14 @@ function ModuleField({
         <div className="flex items-center gap-[9px]">
           <TimeBox
             label={`${field.label} opens`}
-            value={String(get(config, field.openKey) ?? "")}
+            value={text(get(config, field.openKey))}
             invalid={Boolean(error)}
             onChange={(v) => onChange(set(config, field.openKey, v))}
           />
           <span className="text-[11px] text-muted">to</span>
           <TimeBox
             label={`${field.label} closes`}
-            value={String(get(config, field.closeKey) ?? "")}
+            value={text(get(config, field.closeKey))}
             invalid={Boolean(error)}
             onChange={(v) => onChange(set(config, field.closeKey, v))}
           />
@@ -580,7 +585,7 @@ function ModuleField({
         <div className="flex">
           <TimeBox
             label={field.label}
-            value={String(get(config, field.key) ?? "")}
+            value={text(get(config, field.key))}
             invalid={Boolean(error)}
             onChange={(v) => onChange(set(config, field.key, v))}
           />
@@ -594,7 +599,7 @@ function ModuleField({
       <FieldWrap label={field.label} hint={field.hint} error={error}>
         <Segmented
           options={field.options}
-          value={String(get(config, field.key) ?? "")}
+          value={text(get(config, field.key))}
           onChange={(v) => onChange(set(config, field.key, v))}
         />
       </FieldWrap>

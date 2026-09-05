@@ -57,7 +57,9 @@ try {
   `);
 
   const applied = new Set(
-    (await pool.query("SELECT name FROM _migrations")).rows.map((r) => r.name),
+    (await pool.query<{ name: string }>("SELECT name FROM _migrations")).rows.map(
+      (r) => r.name,
+    ),
   );
 
   for (const file of files) {

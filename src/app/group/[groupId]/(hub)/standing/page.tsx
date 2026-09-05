@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { rankFor, nextRank, formatMoney, isImmaculate, daysToImmaculate } from "@/domain";
 import { groupHeader, standingIn, groupBalances } from "@/server/group-view";
-import { RankIcon, RANK_TEXT, RANK_BG, rankText } from "../../../../rank-icon";
+import { RankIcon, RANK_BG, rankText } from "../../../../rank-icon";
 import { CleanBar } from "@/app/clean-bar";
 
 const REASON: Record<string, string> = {

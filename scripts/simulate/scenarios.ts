@@ -72,7 +72,6 @@ const WEEKLY3: ScheduleShape = {
   dayBoundary: "midnight",
   grace: 2,
 };
-const WEEKLY3_NO_GRACE: ScheduleShape = { ...WEEKLY3, grace: 0 };
 const WEEKDAY: ScheduleShape = { schedule: WEEKDAYS, dayBoundary: "midnight", grace: 2 };
 
 const STEPS_CONFIG = { target: 8000, direction: "atLeast" as const };
@@ -750,6 +749,10 @@ export const SCENARIOS: Scenario[] = [
     group: "Money",
     title: "An amount that does not divide",
     question: "Where does the leftover minor unit go?",
+    // Every scenario is `async run()` so the runner can treat them alike. This
+    // one happens to need no database, which is not a reason to make it the odd
+    // shape out.
+    // eslint-disable-next-line @typescript-eslint/require-await
     async run() {
       const shares = splitFine(5000, ["u3", "u1", "u2"]);
       const total = shares.reduce((s, x) => s + x.amount, 0);

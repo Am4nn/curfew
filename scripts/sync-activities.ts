@@ -41,9 +41,11 @@ try {
   const keys = registeredKeys().sort();
 
   const known = new Set(
-    (await pool.query("SELECT DISTINCT type_key FROM activity_types")).rows.map(
-      (r) => r.type_key as string,
-    ),
+    (
+      await pool.query<{ type_key: string }>(
+        "SELECT DISTINCT type_key FROM activity_types",
+      )
+    ).rows.map((r) => r.type_key),
   );
 
   const missing = keys.filter((k) => !known.has(k));

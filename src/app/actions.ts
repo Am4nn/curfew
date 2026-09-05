@@ -14,6 +14,7 @@ import {
   makeOwner,
 } from "@/server/groups";
 import type { FormState } from "./ui";
+import { field, trimmed } from "@/lib/form";
 
 async function approvedUser() {
   const user = await getSessionUser();
@@ -32,7 +33,7 @@ export async function createGroupAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    const name = String(formData.get("name") || "").trim();
+    const name = trimmed(formData, "name");
     if (!name) return { error: "Enter a group name." };
     if (name.length > 60) return { error: "Group name is too long." };
     await createGroup(user.id, name);
@@ -49,8 +50,8 @@ export async function inviteAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    const groupId = String(formData.get("groupId"));
-    const email = String(formData.get("email") || "").trim();
+    const groupId = field(formData, "groupId");
+    const email = trimmed(formData, "email");
     if (!email) return { error: "Enter an email." };
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       return { error: "That does not look like an email." };
@@ -70,7 +71,7 @@ export async function acceptInviteAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    await acceptInvite(String(formData.get("inviteId")), user.id, user.email);
+    await acceptInvite(field(formData, "inviteId"), user.id, user.email);
     revalidatePath("/");
     return { ok: true };
   } catch (e) {
@@ -84,7 +85,7 @@ export async function declineInviteAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    await declineInvite(String(formData.get("inviteId")), user.email);
+    await declineInvite(field(formData, "inviteId"), user.email);
     revalidatePath("/");
     return { ok: true };
   } catch (e) {
@@ -122,7 +123,7 @@ export async function leaveGroupAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    await leaveGroup(String(formData.get("groupId")), user.id);
+    await leaveGroup(field(formData, "groupId"), user.id);
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Could not leave the group." };
   }
@@ -138,8 +139,8 @@ export async function makeOwnerAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    const groupId = String(formData.get("groupId"));
-    const targetUserId = String(formData.get("targetUserId"));
+    const groupId = field(formData, "groupId");
+    const targetUserId = field(formData, "targetUserId");
     await makeOwner(groupId, user.id, targetUserId);
     revalidatePath(`/group/${groupId}`);
     return { ok: true };
@@ -154,8 +155,8 @@ export async function revokeInviteAction(
 ): Promise<FormState> {
   try {
     const user = await approvedUser();
-    const inviteId = String(formData.get("inviteId"));
-    const groupId = String(formData.get("groupId"));
+    const inviteId = field(formData, "inviteId");
+    const groupId = field(formData, "groupId");
     await revokeInvite(inviteId, user.id);
     revalidatePath(`/group/${groupId}`);
     return { ok: true };

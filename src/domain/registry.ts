@@ -5,17 +5,17 @@ import type { ActivityType, EvaluateInput } from "./types";
 // branches on the key.
 const modules = new Map<string, ActivityType<unknown, unknown>>();
 
-export function register<C, E>(module: ActivityType<C, E>): void {
-  if (modules.has(module.key)) {
-    throw new Error(`activity type '${module.key}' is already registered`);
+export function register<C, E>(activity: ActivityType<C, E>): void {
+  if (modules.has(activity.key)) {
+    throw new Error(`activity type '${activity.key}' is already registered`);
   }
-  modules.set(module.key, module as ActivityType<unknown, unknown>);
+  modules.set(activity.key, activity);
 }
 
 export function getActivityType(key: string): ActivityType<unknown, unknown> {
-  const module = modules.get(key);
-  if (!module) throw new Error(`no activity type registered for '${key}'`);
-  return module;
+  const activity = modules.get(key);
+  if (!activity) throw new Error(`no activity type registered for '${key}'`);
+  return activity;
 }
 
 export function registeredKeys(): string[] {
@@ -38,7 +38,7 @@ export function daysDoneIn(
   key: string,
   input: EvaluateInput<unknown, unknown>,
 ): string[] {
-  const module = getActivityType(key);
-  if (module.daysDone) return [...module.daysDone(input)].sort();
-  return module.evaluate(input).passed ? [input.periodStart] : [];
+  const activity = getActivityType(key);
+  if (activity.daysDone) return [...activity.daysDone(input)].sort();
+  return activity.evaluate(input).passed ? [input.periodStart] : [];
 }

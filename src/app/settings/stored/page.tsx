@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { CONSENT, CONSENT_VERSION, consentOf } from "@/server/consent";

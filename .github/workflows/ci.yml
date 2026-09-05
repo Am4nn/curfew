@@ -27,6 +27,11 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      # --max-warnings=0, so there is no second class of lint result that
+      # everybody learns to scroll past.
+      - name: Lint
+        run: bun run lint
+
       - name: Test
         run: bun run test
 

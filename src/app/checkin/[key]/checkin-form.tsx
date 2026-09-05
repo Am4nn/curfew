@@ -193,7 +193,7 @@ export function CheckinForm({
   // The module's own line, recomputed as the number is typed.
   const hints = useMemo(() => {
     const type = getActivityType(state.typeKey);
-    if (!type.hint) return {} as Record<string, string | null>;
+    if (!type.hint) return {};
     const pendingEvidence: Record<string, number> = {};
     for (const field of step.fields) {
       if (field.kind !== "number") continue;
@@ -212,7 +212,7 @@ export function CheckinForm({
       step: step.key,
       pending: Object.keys(pendingEvidence).length > 0 ? pendingEvidence : null,
     });
-    return { [step.key]: line } as Record<string, string | null>;
+    return { [step.key]: line };
   }, [state, step, values]);
 
   /**
@@ -334,7 +334,7 @@ export function CheckinForm({
       if (field.kind !== "number") continue;
       evidence[field.key] = Number(values[field.key]);
     }
-    send(evidence);
+    void send(evidence);
   }
 
   // The abstinence board: a question, two answers, the streak it moves, and

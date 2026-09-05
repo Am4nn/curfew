@@ -1,4 +1,4 @@
-import { and, eq, or, isNull, lte, gt, desc, inArray } from "drizzle-orm";
+import { and, eq, isNull, desc, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { ledgerEntries, finePostings, groups, groupMembers, users } from "@/db/schema";
 import { splitFine } from "@/domain";

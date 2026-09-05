@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, isNull, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   userApprovals,
@@ -13,7 +13,6 @@ import {
   groupActivityTypes,
   ledgerEntries,
   events,
-  balances,
   userActivities,
   evidence,
   reputationDaily,
@@ -24,7 +23,7 @@ import { accountDisabledEmail, approvalEmail, sendEmailBestEffort } from "./emai
 import { userBalances } from "./groups";
 import { scoreAll, rebuildAll } from "./scoring";
 import { verifyAll, type Drift } from "./verify";
-import { evidenceOps, humanBytes } from "./ops";
+import { evidenceOps } from "./ops";
 import {
   roleCapabilities,
   roleHas,

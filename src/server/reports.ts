@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { reports, evidence, users, userApprovals } from "@/db/schema";
+import { reports, evidence, userApprovals } from "@/db/schema";
 import { assertMember } from "./membership";
 import { deletePhotos } from "./deletion";
 import { recordEvent } from "./events";

@@ -12,7 +12,6 @@ import {
   activityOutcomes,
   userApprovals,
 } from "../../src/db/schema";
-import { getActivityType } from "../../src/domain";
 import { performCheckin } from "../../src/server/checkin";
 import { requestUpload } from "../../src/server/evidence";
 import { localPathFor } from "../../src/server/r2";
@@ -65,7 +64,7 @@ export async function run(w: World): Promise<void> {
     period_start: back,
     occurred_at: `${back}T09:00:00Z`,
     evidence: {},
-  } as never);
+  });
   check(
     "an unknown field is refused outright",
     !backdated.ok && backdated.reason === "invalid",

@@ -6,6 +6,7 @@ import { assertMember } from "@/server/membership";
 import { recordSettlement } from "@/server/ledger";
 import { minorUnitExponent } from "@/domain";
 import type { FormState } from "./ui";
+import { field } from "@/lib/form";
 
 // The payer records a settlement they made: from = the logged-in user, to = the
 // creditor. Amount comes in as major units and is converted with the currency's
@@ -21,9 +22,9 @@ export async function settleAction(
       return { error: "Your account is not approved." };
     }
 
-    const groupId = String(formData.get("groupId"));
-    const toUserId = String(formData.get("toUserId"));
-    const currency = String(formData.get("currency") || "INR");
+    const groupId = field(formData, "groupId");
+    const toUserId = field(formData, "toUserId");
+    const currency = (field(formData, "currency") || "INR");
     const amountMajor = Number(formData.get("amount"));
 
     if (!Number.isFinite(amountMajor) || amountMajor <= 0) {

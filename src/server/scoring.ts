@@ -296,7 +296,7 @@ export async function recomputeUser(
   const byTypePeriod = new Map<string, Checkin<unknown>[]>();
   for (const row of checkins) {
     const payload = (row.payload ?? {}) as Record<string, unknown>;
-    const key = `${payload.type_key}|${payload.period_start}`;
+    const key = `${String(payload.type_key)}|${String(payload.period_start)}`;
     const list = byTypePeriod.get(key) ?? [];
     list.push({
       step: String(payload.step),

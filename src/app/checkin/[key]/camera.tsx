@@ -121,7 +121,7 @@ export function Camera({
       }
     }
 
-    start();
+    void start();
     return () => {
       cancelled = true;
     };

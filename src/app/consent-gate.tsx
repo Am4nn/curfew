@@ -1,7 +1,11 @@
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { CONSENT, hasConsented } from "@/server/consent";
 import { TERMS } from "@/server/policy";
+import { resolveUserTimezone } from "@/server/config";
+import { nowUTC } from "@/lib/clock";
+import { supportedZones } from "@/lib/zones";
 import { acceptConsentAction } from "./consent/actions";
+import { TimezoneField } from "./consent/timezone-field";
 import { SubmitButton } from "@/app/ui";
 
 // The consent gate, over every route, the same way a notice is (decision 58).
@@ -16,6 +20,12 @@ export async function ConsentGate() {
   // A pending account has its own screen and nothing to consent to yet.
   if ((await getApprovalStatus(user.id)) !== "approved") return null;
   if (await hasConsented(user.id)) return null;
+
+  // What the field falls back to before hydration reads the device.
+  const fallback = await resolveUserTimezone(
+    user.id,
+    (await nowUTC()).toFormat("yyyy-MM-dd"),
+  );
 
   return (
     <div
@@ -80,7 +90,8 @@ export async function ConsentGate() {
       </div>
 
       <div className="border-t border-rule px-5 pb-5 pt-[14px]">
-        <form action={acceptConsentAction}>
+        <form action={acceptConsentAction} className="flex flex-col gap-[14px]">
+          <TimezoneField zones={supportedZones()} fallback={fallback} />
           <SubmitButton
             className="h-12 w-full border border-fg bg-fg text-[14px] font-semibold text-bg"
             pendingLabel="Saving"

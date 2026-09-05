@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, reason: "not_approved" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
+  const body: unknown = await request.json().catch(() => null);
   const ticket = await requestUpload(userId, body);
   if (!ticket.ok) {
     return NextResponse.json(ticket, { status: 409 });

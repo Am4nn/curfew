@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, reason: "not_approved" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => null);
+  const body: unknown = await request.json().catch(() => null);
   const result = await performCheckin(userId, sessionId, body);
   if (!result.ok) {
     // A closed window, a duplicate or a bad entry is not a server fault.

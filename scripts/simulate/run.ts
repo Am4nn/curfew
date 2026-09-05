@@ -90,7 +90,9 @@ for (const scenario of chosen) {
     }
     if (drift.length > 0) {
       for (const d of drift.slice(0, 5)) {
-        console.log(`    drift ${d.kind} ${d.key} ${d.field}: stored=${d.stored} computed=${d.computed}`);
+        console.log(
+          `    drift ${d.kind} ${d.key} ${d.field}: stored=${JSON.stringify(d.stored)} computed=${JSON.stringify(d.computed)}`,
+        );
       }
     }
 

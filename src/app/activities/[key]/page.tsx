@@ -1,5 +1,4 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
 import { getActivityType, registeredKeys } from "@/domain";
 import { getAppConfig } from "@/server/app-config";

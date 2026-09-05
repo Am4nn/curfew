@@ -34,8 +34,13 @@ import {
   type DayReason,
 } from "@/domain";
 import { resolveUserTimezone } from "./config";
-import { acceptedTypes, sharesFor, fineRuleFor, ownerMoneyToggleAsOf } from "./sharing";
-import { moneyOnFor } from "./app-config";
+import {
+  acceptedTypesAsOf,
+  sharesAsOf,
+  fineRulesAsOf,
+  ownerMoneyToggleAsOf,
+} from "./sharing";
+import { moneyOnAsOf } from "./app-config";
 import { writeFines, type OutcomeRow } from "./ledger";
 import { closeStreaks } from "./streak";
 import { now } from "@/lib/clock";
@@ -516,18 +521,30 @@ async function recomputeGroups(
     // Read once, resolved per day below: an owner turning money on today must
     // not make a period that closed last week read as though it had been on
     // (invariant 5).
-    const ownerToggleAt = await ownerMoneyToggleAsOf(m.groupId);
+    // Everything effective-dated about this group, read ONCE.
+    //
+    // All five of these were queried inside the day loop below, which meant the
+    // same four or five round trips for every day of a member's history to get
+    // back rows that had not changed. Two hundred days in two groups was on the
+    // order of a thousand sequential queries to draw Home.
+    //
+    // They are all append-only histories with an effective instant, so reading
+    // one and resolving it per day is arithmetic and gives the same answer.
+    // Invariant 5 is untouched: every one of them is still read as it stood on
+    // the day being judged, never as it stands now.
+    const [ownerToggleAt, acceptedAt, sharesAt, fineRuleAt, moneyAt] = await Promise.all([
+      ownerMoneyToggleAsOf(m.groupId),
+      acceptedTypesAsOf(m.groupId),
+      sharesAsOf(m.groupId, userId),
+      fineRulesAsOf(m.groupId),
+      moneyOnAsOf(m.groupId),
+    ]);
 
-    // Sharing and acceptance are resolved as they stood on each day, so a
-    // change today never rewrites what a past period was judged against.
-    const shareOn = async (day: string) => {
+    const shareOn = (day: string) => {
       const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
-      const [accepted, shares] = await Promise.all([
-        acceptedTypes(m.groupId, at),
-        sharesFor(m.groupId, userId, at),
-      ]);
+      const accepted = acceptedAt(at);
       const sharedKeys = new Set(
-        shares.filter((sh) => sh.shared).map((sh) => sh.typeKey),
+        sharesAt(at).filter((sh) => sh.shared).map((sh) => sh.typeKey),
       );
       const counted = accepted.filter((a) => sharedKeys.has(a.typeKey));
       return {
@@ -550,7 +567,7 @@ async function recomputeGroups(
     let idleDays = opening?.idleDays ?? 0;
 
     for (const day of dayList(start, end)) {
-      const { shared, breadth } = await shareOn(day);
+      const { shared, breadth } = shareOn(day);
       const ceiling = ceilingFor(breadth);
 
       // Every period of a shared type that concluded today.
@@ -562,10 +579,10 @@ async function recomputeGroups(
       );
 
       const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
-      const moneyOn = await moneyOnFor(m.groupId, ownerToggleAt(at), at);
+      const moneyOn = moneyAt(ownerToggleAt(at), at);
 
       for (const sc of todays) {
-        const rule = await fineRuleFor(m.groupId, sc.typeKey, sc.periodStart);
+        const rule = fineRuleAt(sc.typeKey, sc.periodStart);
         // Grace protects the streak, never the fine (decision 5). A group
         // with money off never accrues one either, whatever the rule says.
         const fine = sc.passed || !moneyOn

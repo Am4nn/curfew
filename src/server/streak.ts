@@ -379,32 +379,91 @@ export async function bumpStreak(
  * walk to save that would be trading a correct number for a cheaper one.
  */
 export async function closeStreak(userId: string, typeKey: string): Promise<void> {
-  const [stored, activity] = await Promise.all([
-    readStreak(userId, typeKey),
-    getUserActivity(userId, typeKey),
-  ]);
+  const activity = await getUserActivity(userId, typeKey);
   if (!activity) return;
-
-  if (stored?.closedThrough) {
-    const [latest] = await db
-      .select({ periodEnd: sql<string>`max(${activityScores.periodEnd})` })
-      .from(activityScores)
-      .where(and(eq(activityScores.userId, userId), eq(activityScores.typeKey, typeKey)));
-    const scoredThrough = latest?.periodEnd ? addDays(String(latest.periodEnd).slice(0, 10), -1) : null;
-    // Nothing has closed since the last time, so there is nothing to account
-    // for and the press keeps whatever it added.
-    if (scoredThrough !== null && scoredThrough <= stored.closedThrough) return;
-  }
-
+  const [stored, scoredThrough] = await Promise.all([
+    readStreak(userId, typeKey),
+    scoredThroughFor(userId).then((m) => m.get(typeKey) ?? null),
+  ]);
+  if (!needsClosing(stored, scoredThrough)) return;
   await rebuildStreak(userId, typeKey);
 }
 
-/** Close every type this user tracks. The nightly job's half of the repair. */
+/**
+ * Has anything closed since this type was last accounted for?
+ *
+ * `closedThrough` is what makes the close idempotent: nothing new means nothing
+ * to do, and the counter keeps whatever the press added.
+ */
+function needsClosing(stored: StoredStreak | null, scoredThrough: string | null): boolean {
+  if (!stored?.closedThrough) return true;
+  if (scoredThrough === null) return false;
+  return scoredThrough > stored.closedThrough;
+}
+
+/**
+ * The last day each type has been scored through, in one query for the user.
+ *
+ * Asking per type meant one round trip each to learn something a single GROUP
+ * BY answers, and Home asks for six.
+ */
+async function scoredThroughFor(userId: string): Promise<Map<string, string>> {
+  const rows = await db
+    .select({
+      typeKey: activityScores.typeKey,
+      periodEnd: sql<string>`max(${activityScores.periodEnd})`,
+    })
+    .from(activityScores)
+    .where(eq(activityScores.userId, userId))
+    .groupBy(activityScores.typeKey);
+  return new Map(
+    rows
+      .filter((r) => r.periodEnd)
+      .map((r) => [r.typeKey, addDays(String(r.periodEnd).slice(0, 10), -1)]),
+  );
+}
+
+/**
+ * Every stored counter for a user, in one query.
+ *
+ * Home draws a row per activity and each one wants a streak. Read once.
+ */
+export async function allStreaks(userId: string): Promise<Map<string, StoredStreak>> {
+  const rows = await db
+    .select()
+    .from(activityStreaks)
+    .where(eq(activityStreaks.userId, userId));
+  return new Map(
+    rows.map((row) => [
+      row.typeKey,
+      {
+        current: row.current,
+        best: row.best,
+        graceSpent: row.graceSpent ?? {},
+        closedThrough: row.closedThrough,
+        weekStart: row.weekStart,
+        weekSessions: row.weekSessions,
+      },
+    ]),
+  );
+}
+
+/**
+ * Close every type this user tracks, reading what it needs once rather than
+ * once per type. The nightly job's half of the repair, and the read path's.
+ */
 export async function closeStreaks(userId: string): Promise<void> {
-  const activities = await listUserActivities(userId);
+  const [activities, stored, scoredThrough] = await Promise.all([
+    listUserActivities(userId),
+    allStreaks(userId),
+    scoredThroughFor(userId),
+  ]);
   for (const a of activities) {
     if (!a.enabled) continue;
-    await closeStreak(userId, a.typeKey);
+    if (!needsClosing(stored.get(a.typeKey) ?? null, scoredThrough.get(a.typeKey) ?? null)) {
+      continue;
+    }
+    await rebuildStreak(userId, a.typeKey);
   }
 }
 

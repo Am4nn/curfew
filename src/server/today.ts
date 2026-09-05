@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { getActivityType, type CheckinKind } from "@/domain";
 import { listUserActivities } from "./activities";
 import { getCheckinState } from "./checkin";
-import { standingFor } from "./standing";
+import { standingsFor } from "./standing";
 import { resolveUserTimezone } from "./config";
 import { now } from "@/lib/clock";
 
@@ -46,14 +46,19 @@ export async function todayFor(userId: string): Promise<Today> {
   const activities = (await listUserActivities(userId)).filter((a) => a.enabled);
   if (activities.length === 0) return { rows: [], done: 0, of: 0 };
 
+  // Every standing at once, then every check-in state at once. The rows do not
+  // depend on each other, and awaiting them one activity at a time made Home
+  // as slow as its longest chain of round trips rather than its slowest query.
+  const standings = await standingsFor(userId);
+  const states = await Promise.all(
+    activities.map((a) => getCheckinState(userId, a.typeKey)),
+  );
+
   const rows: TodayRow[] = [];
-  for (const activity of activities) {
+  activities.forEach((activity, i) => {
     const type = getActivityType(activity.typeKey);
-    const [state, standing] = await Promise.all([
-      getCheckinState(userId, activity.typeKey),
-      standingFor(userId, activity.typeKey),
-    ]);
-    if (!state) continue;
+    const state = states[i];
+    if (!state) return;
 
     const open = state.steps.find((s) => s.open) ?? null;
     const hint = state.steps.find((s) => s.hint)?.hint ?? null;
@@ -72,7 +77,7 @@ export async function todayFor(userId: string): Promise<Today> {
       name: type.name,
       icon: type.icon,
       kind: type.checkin.kind,
-      streak: standing?.streak ?? 0,
+      streak: standings.get(activity.typeKey)?.streak ?? 0,
       scheduled: state.scheduled,
       done: state.passed,
       open: open !== null && !state.passed,
@@ -81,7 +86,7 @@ export async function todayFor(userId: string): Promise<Today> {
       nextStatus:
         state.scheduled && !state.passed ? (open?.nextHint ?? null) : null,
     });
-  }
+  });
 
   // Everything due today, and how much of it is done. An unscheduled activity
   // is not a miss and is not counted.

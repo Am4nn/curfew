@@ -177,6 +177,12 @@ These are not style preferences. Breaking one is a bug even if tests pass.
   changes per environment, the name never does.
 - An activity type is a **declarative module**: one file, no React. The engine
   draws every screen from `checkin.kind`. Adding a type never edits the engine.
+- **The React Compiler is on.** It memoises components for us, and it silently
+  skips any component it cannot prove obeys the rules of React. The lint is the
+  only place that shows, which is why `eslint-plugin-react-hooks` runs at its
+  full ruleset and why lint failures there are not style opinions. A browser
+  value the server cannot know goes through `useClientValue`, never through an
+  effect that calls `setState`.
 - A type is only offered when it has a row in `activity_types` and that row is
   enabled. `bun run sync:activities` reconciles the registry, disabled by
   default, and runs inside `bun run migrate`.
@@ -208,6 +214,9 @@ Package manager is bun.
 dev        bun run dev             — Next.js against .env.preview (APAC)
 local      bun run local           — Next.js against .env.local (docker, mock data)
 test       bun run test            — Vitest, domain core, no database
+lint       bun run lint            — ESLint, type-aware, --max-warnings=0
+deps       bun run check:deps      — fails on a deprecated dependency
+audit      bun audit               — published advisories against the lockfile
 migrate    bun run migrate         — migrations, then sync, against .env.preview
 break-in   bun run break-in        — the security round; non-zero if anything gives
 break-in   bun run break-in:local  — the same round against docker, and it sweeps HTTP
@@ -217,6 +226,11 @@ seed       bun run local:seed      — mock data into the local database
 mocks      node .design/build-v3.mjs — regenerate every artboard
 cors       bun run check:cors      — can a browser upload from this origin
 ```
+
+CI runs typecheck, lint, test, build, the migration job, `break-in`, the 30
+simulation scenarios, `verify` against a seeded database, and the two dependency
+checks. A version tag will not deploy unless that whole run passed on the same
+SHA.
 
 `break-in` builds its own people and groups and deletes them again, so it is
 safe against any database and runs in CI on every push. Its HTTP half needs a

@@ -14,7 +14,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -60,7 +60,7 @@ jobs:
   deps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -106,7 +106,7 @@ jobs:
       LOCAL_MODE: "1"
       DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -170,7 +170,7 @@ jobs:
       RESEND_API_KEY: ci-resend-key
       EMAIL_FROM: "Curfew <notices@example.com>"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -231,7 +231,7 @@ jobs:
       RESEND_API_KEY: ci-resend-key
       EMAIL_FROM: "Curfew <notices@example.com>"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2

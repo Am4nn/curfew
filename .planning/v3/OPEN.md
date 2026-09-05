@@ -1,8 +1,7 @@
 # OPEN.md — what is not done
 
-Everything known-open at the end of the 2026-09-05 session: defects, security
-gaps, work that needs a person, and two things to talk through before they are
-designed. Nothing here is being implemented yet.
+Everything known-open: defects, security gaps, work that needs a person, and
+what is designed but not decided. Updated 2026-09-06.
 
 `SCOPE.md` is the decision log; this file is the to-do list. When an item here
 is settled it becomes a decision there and leaves this file.
@@ -11,8 +10,9 @@ is settled it becomes a decision there and leaves this file.
 
 ## 1. Defects
 
-**Five of the six are fixed** (2026-09-06, commits `60ab7ec` and `e79d5bf`).
-Only §1.6, the timezone stamp, is still open.
+**Five of the original six are fixed** (2026-09-06, commits `60ab7ec` and
+`e79d5bf`). §1.6, the timezone stamp, is still open, and §1.7 was found while
+building the consent-gate zone.
 
 ### 1.1 Rejoining a group silently does nothing — FIXED
 
@@ -84,6 +84,24 @@ the member's zone for today and replays every past period in it, so moving
 country re-judges history. The research answer is to stamp the local date on
 each check-in as it is recorded: a payload field, a migration for old rows, and
 the replay reading it.
+
+**More urgent than it was.** The mismatch bar on Home (decision 128) now offers
+a zone change to anyone whose device disagrees, so a change that used to need
+somebody to find the Settings screen is one press on the first screen they open.
+This is the last of the six.
+
+### 1.7 `tomorrow()` in `settings.ts` is a UTC day — OPEN
+
+Found while building the consent-gate zone. Every effective-dated config write
+lands on `nowUTC().plus({ days: 1 })`, which is the UTC tomorrow rather than the
+member's. For anybody far enough east, a change saved late in their evening is
+dated to what is already their today, and for anybody far enough west it lands
+two of their days out. It is the same class as §1.2 and the fix is the same:
+`userDay(userId)` plus one, which already exists.
+
+Small, and it only ever moves a config change by one day in one direction. Not
+fixed in the same commit as the gate, because it touches every config write and
+deserves its own check.
 
 ---
 
@@ -219,29 +237,33 @@ The join grace period is the precedent for all of this: one boundary in
 `recomputeGroups`, visible to the whole group, and it gates the outcome rather
 than being subtracted afterwards.
 
-### 7.2 CI, and what it should be allowed to gate
+### 7.2 CI, and what it should gate — SETTLED 2026-09-06
 
-Three separate questions that arrived together.
+All three questions are answered and built. Decisions 129 to 132.
 
-**Production should not deploy unless CI passes.** Today `deploy.yml` runs on a
-tag and does its own typecheck and test inline; `ci.yml` runs on push and pull
-request. They are two lists that can drift. The obvious shape is for the deploy
-workflow to require the CI workflow's result for that commit rather than
-repeating a subset of it.
+- **The deploy workflow requires CI's own result for the tagged SHA.** It no
+  longer runs its own shorter copy of typecheck and test, so a tag now carries
+  the migration, security, simulation and dependency jobs it never did.
+- **`simulate` and `verify` run on every push**, in their own job with their own
+  Postgres. The whole CI run is about 90 seconds.
+- **Unit tests were not the gap.** The domain is pure and well covered by 240 of
+  them. The server layer is covered by the simulation and `break-in`, both of
+  which need a database, and both now run on every push. That is the right
+  shape: a unit test of `recomputeGroups` with a mocked database would test the
+  mock.
 
-**Should CI run everything?** It now runs typecheck, test, build, the migration
-job and `break-in`. The candidates not in it are `bun run simulate` (30
-scenarios, ~2 minutes, needs a database, and it is the only thing that would
-catch a change to the curve) and `bun run verify` against a seeded database.
-Both are integration tests in everything but name. The question is which of them
-is worth the minutes on every push, and which belongs on a tag.
+**Still open in this area:**
 
-**Should unit tests be enhanced?** There are 232 domain tests and they cover the
-domain well, because the domain is pure. What has no unit tests at all is the
-server layer: `scoring.ts`, `streak.ts`, `ledger.ts`, `grace.ts` and
-`clean-run.ts` are exercised only by the simulation and by `break-in`, both of
-which need a database. Whether that is a gap or the right shape is worth
-deciding on purpose rather than by default.
+- **`bun run lint` is new and there are two rules it does not enforce.** The two
+  `useActionState` sheets keep a `setState` inside an effect, with the reason
+  written above them: React gives no way to reset an action's result, so "the
+  action finished" is only observable as a change to `state`. Revisit when React
+  ships a reset.
+- **`check:deps` reads the live npm registry**, so its job can go red on a
+  morning nothing in the repo changed. That is why it is its own job and not
+  part of `check`. If it turns out to be noisy, move it to a schedule.
+- **Nothing checks GitHub Actions for deprecation.** `actions/checkout@v4` being
+  on an EOL Node was found by a run annotation, not by a check.
 
 ---
 

@@ -86,7 +86,7 @@ jobs:
       TARGET: ${{ github.event_name == 'push' && 'production' || 'preview' }}
       PROD: ${{ github.event_name == 'push' && '--prod' || '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2

@@ -586,9 +586,20 @@ function concludesOn(score: ScoreRow): string {
  * the thing: closing is idempotent, so doing it once is doing it enough. Outside
  * a request (the nightly job, `bun run verify`, the scripts) there is nothing to
  * dedupe against and every call runs, which is what those want anyway.
+ *
+ * IT NEVER WRITES MONEY, and that is not an optimisation.
+ *
+ * A fine is split among the members who passed the same period, so it can only
+ * be settled once every one of them has been scored. `scoreAll` does that in two
+ * passes for exactly this reason. A read closes ONE user, so settling from here
+ * splits among whoever happened to be scored already: the first reader's fine
+ * went to one peer in full, and a later pass split the same fine among two and
+ * inserted the second share beside the first, because the unique index is per
+ * payer-payee pair rather than per fine. 500 charged as 750, which is invariant
+ * 7 broken by a page load.
  */
 export const closeOutstanding = cache(async (userId: string): Promise<void> => {
-  await scoreUser(userId);
+  await scoreUser(userId, { fines: false });
 });
 
 /** Idempotent: recompute, then upsert. Safe to run twice, or half. */

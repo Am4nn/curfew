@@ -7,7 +7,7 @@
 // property of the design rather than of the tuning ("shares sum to the fine",
 // "a streak adds one or goes to zero") the assertion says the property, so
 // re-tuning the constants does not need the scenario rewritten.
-import { EVERY_DAY, WEEKDAYS, splitFine, rankFor } from "@/domain";
+import { EVERY_DAY, WEEKDAYS, splitFine, rankFor, CONSTANTS } from "@/domain";
 import { scoreAll } from "@/server/scoring";
 import {
   wipe,
@@ -495,15 +495,38 @@ export const SCENARIOS: Scenario[] = [
       const curve = await curveOf(A, null);
       const idle = curve.filter((p) => p.reason === "idle");
       const neutral = curve.filter((p) => p.reason === "neutral");
+      // The decay is a SHARE of the score, so it shrinks as the score does.
+      // Under the flat rate this replaced, every one of these deltas was the
+      // same number, and "decay is downward" passed either way: the two checks
+      // below are the ones that can tell the two curves apart.
+      const first = idle[0];
+      const last = idle[idle.length - 1];
+      const proportional = idle.every((p) => {
+        const before = p.score - p.delta;
+        return Math.abs(-p.delta - before * CONSTANTS.idleRate) < 0.01;
+      });
       return {
         checks: [
           holds("quiet days do nothing at first", neutral.length >= 7, neutral.length, ">= 7"),
           holds("then the score decays", idle.length > 0, idle.length, "> 0"),
           holds("decay is downward", idle.every((p) => p.delta < 0)),
+          holds(
+            "each quiet day costs a share of the score, not a flat amount",
+            proportional,
+            `${(-first.delta).toFixed(3)} then ${(-last.delta).toFixed(3)}`,
+            `${(CONSTANTS.idleRate * 100).toFixed(0)}% of the day's opening score`,
+          ),
+          holds(
+            "so it costs less every day, and never quite arrives",
+            idle.length > 1 && -last.delta < -first.delta,
+            `${(-first.delta).toFixed(3)} -> ${(-last.delta).toFixed(3)}`,
+            "falling",
+          ),
         ],
         notes: [
           "A week of nothing scheduled is a quiet week, not an idle one.",
           "That is what keeps a weekly activity from decaying on its six quiet days.",
+          "The decay is 1% of the score a day, so a high score fades faster than a low one.",
         ],
         series: [
           { label: "Global score", points: curve.map((p) => ({ day: p.day, value: p.score })) },

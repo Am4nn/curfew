@@ -26,8 +26,10 @@ Reputation is always on in a group. Money is a separate toggle
   a long record. It still costs real ground.
 - **Breadth sets a ceiling.** Sharing one activity out of five caps you well
   below the top by construction.
-- **Inactivity decays.** Without this, someone reaches a high score, stops
-  logging, and sits there forever because there are no misses to punish.
+- **Inactivity decays**, in proportion to the score. Without this, someone
+  reaches a high score, stops logging, and sits there forever because there are
+  no misses to punish. In proportion, because otherwise a quiet month costs a
+  fading 900 and an already-low 300 the same number of points.
 
 ## The formula
 
@@ -52,7 +54,7 @@ Daily delta:
 ```
 S > C (ceiling dropped)            ->  S -= DRIFT, until S == C
 nothing scheduled today            ->  neutral, no change
-  ... and nothing for 7 days       ->  S -= IDLE per day
+  ... and nothing for 7 days       ->  S -= max(S * IDLE_RATE, 0.001)
 d == 1 (a clean day)               ->  S += day
 d <  1                             ->  S -= (1 - d) * costDays * day'
 ```
@@ -60,7 +62,21 @@ d <  1                             ->  S -= (1 - d) * costDays * day'
 where `costDays = 2 + 5 * (S / 1000)` and `day'` is `day` with `h` floored at
 0.03, so a miss still costs something to someone sitting on their ceiling.
 
-Constants, tunable: `G = 20`, `DRIFT = 2`, `IDLE = 3`.
+Constants, tunable: `G = 20`, `DRIFT = 2`, `IDLE_RATE = 0.01`.
+
+**The idle decay is a share of the score, not a flat amount** (decision 135).
+A flat figure took the same 90 points off a 900 and a 300 over the same thirty
+quiet days, which prices a large claim and a small one identically. A score is
+a claim about recent conduct, so the larger the claim, the faster it should
+fade without one. It is the same shape the gains already have, pointed the
+other way.
+
+Two months of silence takes 900 to 523 and 500 to 291. A year takes 900 to 24.
+
+The `0.001` floor is not a tuning choice. `reputation_daily.score` is
+`numeric(7,3)`, so at 0.001 a one-percent loss quantises straight back to 0.001
+and parks there. One representable unit is the smallest step that lets silence
+actually arrive at zero.
 
 Clamp to `[0, 1000]` after every step.
 

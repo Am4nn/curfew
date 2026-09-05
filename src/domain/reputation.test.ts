@@ -243,7 +243,29 @@ describe("quiet days", () => {
       idleDays: 7,
     });
     expect(seven.reason).toBe("idle");
-    expect(seven.delta).toBe(-CONSTANTS.idle);
+    expect(seven.delta).toBeCloseTo(-500 * CONSTANTS.idleRate, 3);
+  });
+
+  it("a quiet day costs a share of the score, not a flat amount", () => {
+    // The whole point of the change: the bigger the claim, the faster it fades
+    // without one. A flat figure docked both of these the same number.
+    const quiet = (score: number) =>
+      applyDay({ score, ceiling: MAX_SCORE, completion: null, idleDays: 9 });
+    const high = quiet(900);
+    const low = quiet(300);
+    expect(high.delta).toBeCloseTo(-9, 3);
+    expect(low.delta).toBeCloseTo(-3, 3);
+    expect(Math.abs(high.delta)).toBeGreaterThan(Math.abs(low.delta) * 2.5);
+  });
+
+  it("silence reaches zero rather than parking at a thousandth", () => {
+    // A pure share never arrives: the stored score has three decimals, so 1%
+    // of 0.001 quantises straight back to 0.001. The floor is what ends it.
+    let score = 0.002;
+    for (let i = 0; i < 10 && score > 0; i++) {
+      score = applyDay({ score, ceiling: MAX_SCORE, completion: null, idleDays: 9 }).score;
+    }
+    expect(score).toBe(0);
   });
 
   it("a partly complete day loses less than an empty one", () => {

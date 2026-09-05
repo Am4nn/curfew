@@ -45,8 +45,26 @@ export const CONSTANTS = {
   headroomFloor: 0.03,
   /** Per day, while the score sits above a ceiling that dropped. */
   drift: 2,
-  /** Per day, once nothing has been scheduled for a week. */
-  idle: 3,
+  /**
+   * A SHARE of the score per day, once nothing has been scheduled for a week.
+   *
+   * Proportional rather than flat, which is the same shape the gains already
+   * have, pointed the other way. A flat figure docked a 900 and a 300 the same
+   * 90 points for the same thirty quiet days, which reads as the app being
+   * indifferent to what was being lost. A score is a claim about recent
+   * conduct, so the bigger the claim, the faster it fades without one.
+   *
+   * Two months of silence takes 900 to 523 and 500 to 291.
+   */
+  idleRate: 0.01,
+  /**
+   * The least a quiet day can take, so silence reaches zero in finite time.
+   *
+   * A pure share never arrives: `score` is stored to three decimals, so at
+   * 0.001 a 1% loss quantises straight back to 0.001 and parks there forever.
+   * One representable unit is the smallest step that cannot do that.
+   */
+  idleFloor: 0.001,
   /** Days before nothing-scheduled counts as idle. */
   idleAfterDays: 7,
   /** A newly added activity cannot move reputation for this long (decision 54). */
@@ -68,7 +86,7 @@ export const START_SCORE = 200;
  * Forgetting to bump this does not fail loudly. It silently carries a number
  * computed under the old rules, and `bun run verify` is what says so.
  */
-export const LOGIC_VERSION = 1;
+export const LOGIC_VERSION = 2;
 
 /**
  * The score is a number with three decimals, not a float shown to three.
@@ -158,7 +176,8 @@ export function applyDay(input: DayInput): DayResult {
     // Nothing scheduled. Idle only once a week has passed with nothing due,
     // or a weekly activity would decay on its six quiet days.
     if (idleDays >= CONSTANTS.idleAfterDays) {
-      const next = clamp(score - CONSTANTS.idle);
+      const lost = Math.max(score * CONSTANTS.idleRate, CONSTANTS.idleFloor);
+      const next = clamp(score - lost);
       return { score: next, delta: next - score, reason: "idle" };
     }
     return { score, delta: 0, reason: "neutral" };

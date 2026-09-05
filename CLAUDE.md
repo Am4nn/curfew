@@ -216,6 +216,7 @@ local      bun run local           — Next.js against .env.local (docker, mock 
 test       bun run test            — Vitest, domain core, no database
 lint       bun run lint            — ESLint, type-aware, --max-warnings=0
 deps       bun run check:deps      — fails on a deprecated dependency
+version    bun run check:logic-version — a curve change repairs itself
 audit      bun audit               — published advisories against the lockfile
 migrate    bun run migrate         — migrations, then sync, against .env.preview
 break-in   bun run break-in        — the security round; non-zero if anything gives

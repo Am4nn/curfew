@@ -215,13 +215,17 @@ scheduled.** Not a miss. Everything else falls out of that rather than needing a
 rule: no fine can arise because nothing was scheduled to miss, and reputation is
 not marked down because there was nothing to mark.
 
-- **Every streak ends.** A streak is consecutive days, a pause is a gap, and
-  grace does not cover one.
+- **Every streak ends**, when the first paused day closes rather than when the
+  pause is declared. A streak is consecutive days, a pause is a gap, and grace
+  does not cover one.
 - **Reputation still settles** after seven quiet days, and that decay changes
   from a flat 3 a day to **1% of the score a day**.
 - **No money**, which needs no rule.
 - **Three days minimum, in advance, no quota.** One declaration covers every
-  group and the personal record. The group sees it, with its dates.
+  group and the personal record. The group sees it on the members list, with its
+  dates, beside the score rather than instead of it.
+- **Home keeps the rest of itself.** Money and standing do not stop existing
+  while somebody is away, and Extend and Come back early are on it.
 - **Extend** while it runs. **Come back early** takes effect tomorrow; the days
   already passed stay paused and the streak that ended does not come back.
 

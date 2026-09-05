@@ -364,6 +364,34 @@ export const evidence = pgTable("evidence", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
+// The streak, stored rather than derived on every read (migration 0019).
+// Derived and replayable (invariant 1): the press moves it, the nightly close
+// repairs it, streakOver rebuilds it from events, and verify diffs the two.
+export const activityStreaks = pgTable(
+  "activity_streaks",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    typeKey: text("type_key").notNull(),
+    current: integer("current").notNull().default(0),
+    best: integer("best").notNull().default(0),
+    lastDay: date("last_day", { mode: "string" }),
+    // The week in flight, for a weekly type: which week, and how many days of
+    // it are done. A weekly streak adds a day as it happens and the week is
+    // judged when it ends, so the count has to survive between presses.
+    weekStart: date("week_start", { mode: "string" }),
+    weekSessions: integer("week_sessions").notNull().default(0),
+    graceSpent: jsonb("grace_spent")
+      .$type<Record<string, number>>()
+      .notNull()
+      .default({}),
+    closedThrough: date("closed_through", { mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.typeKey] })],
+);
+
 // Reputation, one row a day per scope. Derived and replayable (invariant 1);
 // a null groupId is the global score. See migrations/0011.
 export const reputationDaily = pgTable(

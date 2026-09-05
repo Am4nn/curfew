@@ -15,12 +15,14 @@ import {
   type CheckinKind,
   type ConfigField,
   type EvidenceRule,
+  daysDoneIn,
 } from "@/domain";
 import { getUserActivity } from "./activities";
 import { resolveUserTimezone } from "./config";
 import { recordEvent } from "./events";
 import { rateLimit } from "./ratelimit";
 import { pendingFor, confirmEvidence } from "./evidence";
+import { bumpStreak } from "./streak";
 import { now } from "@/lib/clock";
 
 // The check-in path, one implementation for all twelve types. Nothing here
@@ -495,5 +497,53 @@ export async function performCheckin(
   // unconfirmed and the sweep repairs it from the event.
   if (photo) await confirmEvidence(photo.id, row.occurredAt);
 
+  // And the streak moves now, because a streak is a count of things you did and
+  // this press is one of them. Nothing else in the app moves on a press: the
+  // day's reputation is not a result until the day ends, and a fine cannot be
+  // split until everyone else is scored.
+  //
+  // Not atomic with the event above, and it cannot be: this codebase has no
+  // transactions available (`src/db/index.ts`, the Neon HTTP driver refuses
+  // them). The event is the truth and the counter is a cache, so the failure
+  // falls the right way. A crash here leaves the streak one behind until the
+  // next close rebuilds it, and `verify` reports it in the meantime. The same
+  // trade `confirmEvidence` takes one line above.
+  await bumpForPress(userId, input.typeKey, period, timezone, config, row.occurredAt, input.step);
+
   return { ok: true, step: input.step, atLabel: label(row.occurredAt, timezone) };
+}
+
+/**
+ * How much this press added to the streak: the days that count now, minus the
+ * days that counted before it.
+ *
+ * Usually nothing or one. A fourth glass of an eight-glass day completes no
+ * day and adds nothing; the eighth completes it and adds one. A gym session
+ * adds a day, and a second session that evening adds nothing, because the
+ * module counts at most one session a calendar day.
+ *
+ * The module decides, and the engine only subtracts (invariant 6).
+ */
+async function bumpForPress(
+  userId: string,
+  typeKey: string,
+  period: string,
+  timezone: string,
+  config: unknown,
+  at: Date,
+  step: string,
+): Promise<void> {
+  const { checkins } = await recordedFor(userId, typeKey, period);
+  const input = { periodStart: period, timezone, config, checkins };
+
+  // The same period as it stood a moment ago: everything except the press that
+  // just landed. Identified by its server timestamp, which is unique to it.
+  const before = {
+    ...input,
+    checkins: checkins.filter((c) => !(c.step === step && c.at.getTime() === at.getTime())),
+  };
+
+  const had = new Set(daysDoneIn(typeKey, before));
+  const gained = daysDoneIn(typeKey, input).filter((d) => !had.has(d));
+  if (gained.length > 0) await bumpStreak(userId, typeKey, gained);
 }

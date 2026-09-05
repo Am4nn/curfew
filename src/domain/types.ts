@@ -265,4 +265,22 @@ export interface ActivityType<Config, Evidence> {
   // Resolve every step's window to absolute instants for the given period.
   windows(config: Config, periodStart: string, timezone: string): CheckinWindow[];
   evaluate(input: EvaluateInput<Config, Evidence>): EvaluateResult;
+  /**
+   * The calendar days in this period that count toward a streak.
+   *
+   * A streak counts DAYS you did the thing, and for eleven of the twelve types
+   * a period IS a day, so the answer is "this day, if it passed" and the engine
+   * works that out from `evaluate`. Gym is the exception: its period is a week,
+   * its streak adds a day per session (decision 77), and only the module knows
+   * that two presses on a Tuesday are one day at the gym.
+   *
+   * So the module answers, and the engine never guesses (invariant 6). It was
+   * guessing before, by handing the streak one row per PERIOD, which arrived as
+   * a single Monday, fell below its own weekly minimum, and reported three
+   * passed gym weeks as a streak of 1.
+   *
+   * Return days in any order; the caller sorts. Days outside the period are
+   * ignored.
+   */
+  daysDone?(input: EvaluateInput<Config, Evidence>): string[];
 }

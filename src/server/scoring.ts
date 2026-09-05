@@ -37,6 +37,7 @@ import { resolveUserTimezone } from "./config";
 import { acceptedTypes, sharesFor, fineRuleFor, ownerMoneyToggleAsOf } from "./sharing";
 import { moneyOnFor } from "./app-config";
 import { writeFines, type OutcomeRow } from "./ledger";
+import { closeStreaks } from "./streak";
 import { now } from "@/lib/clock";
 
 // Closing and scoring periods, then moving reputation. One pass, per user, for
@@ -884,6 +885,10 @@ export async function scoreAll(
   // means a fine lands the night it is due rather than the night after.
   for (const u of users) {
     await scoreUser(u.userId, { from: opts.from, fines: false });
+    // The streak counter is moved by a press and repaired here. The press
+    // cannot be transactional with the event that caused it, so a night that
+    // rebuilds is what keeps the number honest.
+    await closeStreaks(u.userId);
   }
   let fines = 0;
   for (const u of users) {

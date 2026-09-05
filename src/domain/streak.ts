@@ -8,8 +8,17 @@ import { isScheduledDay, periodUnit, type Schedule } from "./schedule";
 // judged daily or weekly, and it is why a six-session week adds six even when
 // the minimum is three.
 //
+// THE NUMBER ONLY EVER ADDS ONE OR GOES TO ZERO. Grace makes it do neither: it
+// holds where it is. There is no third movement, and nothing rolls it back to
+// an earlier value. A number the user watched climb must not fall while the app
+// tells them grace protected it.
+//
 // Grace protects the streak only (decision 5). The fine still applies and
 // reputation still dips; none of that lives here.
+//
+// This walks days and is the REBUILD, not the read path. The stored counter in
+// activity_streaks is what a screen reads; this is what fills it and what
+// `bun run verify` diffs it against.
 
 /** One activity-day, already judged. `done` means the user did it that day. */
 export interface StreakDay {
@@ -114,7 +123,6 @@ export function streakOver(
   const closedThrough = asOf ?? sorted.at(-1)?.date ?? "";
 
   for (const [monday, week] of weeks) {
-    const opening = state.current;
     let sessions = 0;
 
     for (const day of week) {
@@ -131,9 +139,15 @@ export function streakOver(
     // ends, so a good week shows progress and a bad one has time to recover.
     if (sundayOf(monday) > closedThrough) continue;
 
-    // The week failed. Everything it added comes back off.
+    // The week failed. Without grace the run ends. With it the run HOLDS where
+    // it is, keeping the days this week did add.
+    //
+    // It used to roll back to the value the week opened on, taking those days
+    // away again. That makes the number fall while the app says grace protected
+    // it, which reads as a bug whatever the rule says. A streak only ever adds
+    // one or goes to zero; grace is what makes it do neither.
     const graceUsed = spend(state, graceMonth(monday), gracePerMonth);
-    state.current = graceUsed ? opening : 0;
+    if (!graceUsed) state.current = 0;
     steps.push({ at: monday, current: state.current, graceUsed });
   }
 

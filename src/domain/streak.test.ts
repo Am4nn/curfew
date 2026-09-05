@@ -124,12 +124,34 @@ describe("frequency activities", () => {
     expect(week3.current).toBe(0);
   });
 
-  it("grace returns the run to the value the week opened on", () => {
+  it("grace holds the run where it is, keeping the days the week did add", () => {
     const start = { current: 21, best: 21, graceSpent: {} };
     const r = streakOver(days("2026-09-21", "xx....."), ANY3, 1, start);
-    // Not 23: the week failed, so its two days do not count. Not 0: grace held.
-    expect(r.current).toBe(21);
+    // 23, not 21. The week missed its minimum and grace absorbed that, so the
+    // run does not end. It does not rewind either: those two days happened, the
+    // user watched the number climb to 23, and grace protecting a streak cannot
+    // mean the streak falls. A streak adds one or goes to zero, and grace is
+    // what makes it do neither.
+    expect(r.current).toBe(23);
     expect(r.steps.at(-1)?.graceUsed).toBe(true);
+  });
+
+  it("only ever adds one or drops to zero", () => {
+    // Six weeks of every shape: full, short with grace, short without, empty.
+    const weeks = "xxx....xx.....xxxx.......xxxxx..x......";
+    const r = streakOver(days("2026-09-07", weeks), ANY3, 2);
+    let previous = 0;
+    for (const step of r.steps) {
+      const moved = step.current - previous;
+      const legal = moved === 1 || step.current === 0 || moved === 0;
+      expect({ at: step.at, from: previous, to: step.current, legal }).toEqual({
+        at: step.at,
+        from: previous,
+        to: step.current,
+        legal: true,
+      });
+      previous = step.current;
+    }
   });
 
   it("best keeps the high water mark even when days are taken back", () => {

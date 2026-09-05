@@ -7,11 +7,13 @@ import {
   userActivities,
   ledgerEntries,
   finePostings,
+  activityStreaks,
 } from "@/db/schema";
-import { recomputeUser, type OutcomeWrite } from "./scoring";
+import { recomputeUser, type OutcomeWrite, type ScoreRow } from "./scoring";
+import { recomputeStreak } from "./streak";
 
 export interface Drift {
-  kind: "score" | "reputation" | "outcome" | "ledger";
+  kind: "score" | "reputation" | "outcome" | "ledger" | "streak";
   userId: string;
   key: string;
   field: string;
@@ -149,6 +151,67 @@ export async function verifyUser(
 
   drift.push(...(await verifyOutcomes(userId, outcomes)));
   drift.push(...(await verifyLedger(userId, outcomes)));
+  drift.push(...(await verifyStreaks(userId, scores)));
+
+  return drift;
+}
+
+/**
+ * The stored counter against a rebuild from events.
+ *
+ * The counter is moved by a press and repaired by the close, neither of which
+ * can be atomic with the event that caused it, so this is the thing that says
+ * when they have come apart. It is also the check that would have caught the
+ * weekly bug: `streakOver` counts days and was handed one row per period, so
+ * three passed gym weeks stored a 1 and a rebuild would have said 3.
+ */
+async function verifyStreaks(userId: string, scores: ScoreRow[]): Promise<Drift[]> {
+  const typeKeys = [...new Set(scores.map((s) => s.typeKey))];
+  if (typeKeys.length === 0) return [];
+  const drift: Drift[] = [];
+
+  const stored = await db
+    .select()
+    .from(activityStreaks)
+    .where(
+      and(eq(activityStreaks.userId, userId), inArray(activityStreaks.typeKey, typeKeys)),
+    );
+  const byType = new Map(stored.map((s) => [s.typeKey, s]));
+
+  for (const typeKey of typeKeys) {
+    const computed = await recomputeStreak(userId, typeKey);
+    if (!computed) continue;
+    const s = byType.get(typeKey);
+    if (!s) {
+      // Nothing counted yet is only worth reporting once there is something to
+      // count. A zero streak with no row is the same as a zero streak.
+      if (computed.current !== 0 || computed.best !== 0) {
+        drift.push({
+          kind: "streak",
+          userId,
+          key: typeKey,
+          field: "*",
+          stored: null,
+          computed: computed.current,
+        });
+      }
+      continue;
+    }
+    const fields: [string, unknown, unknown][] = [
+      ["current", s.current, computed.current],
+      ["best", s.best, computed.best],
+      [
+        "graceSpent",
+        JSON.stringify(s.graceSpent ?? {}),
+        JSON.stringify(computed.graceSpent),
+      ],
+    ];
+    for (const [field, was, now] of fields) {
+      if (was !== now) {
+        drift.push({ kind: "streak", userId, key: typeKey, field, stored: was, computed: now });
+      }
+    }
+  }
 
   return drift;
 }

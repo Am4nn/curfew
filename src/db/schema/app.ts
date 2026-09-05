@@ -200,6 +200,32 @@ export const ledgerEntries = pgTable("ledger_entries", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// One row per fine, and the reason a fine can only be charged once
+// (migration 0017). A fine is split among the members who passed, so the
+// number of shares depends on who has been scored when the split runs;
+// ledger_one_fine_idx makes each SHARE idempotent and the fine as a whole not.
+// This carries the identity, so a second split conflicts here and leaves the
+// ledger alone. It is a guard: ledger_entries is still the money.
+export const finePostings = pgTable(
+  "fine_postings",
+  {
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    typeKey: text("type_key").notNull(),
+    periodStart: date("period_start", { mode: "string" }).notNull(),
+    fromUserId: text("from_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    currency: char("currency", { length: 3 }).notNull().default("INR"),
+    postedAt: timestamp("posted_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.groupId, t.typeKey, t.periodStart, t.fromUserId] }),
+  ],
+);
+
 // Per group, per currency. Mutual failures net to zero here. Created by
 // migration 0002; declared existing so Drizzle reads it but never manages it.
 export const balances = pgView("balances", {

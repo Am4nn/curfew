@@ -1,5 +1,5 @@
 import { check, section, skipped } from "./harness";
-import type { World } from "./world";
+import { fixedHttpIdentity, type World } from "./world";
 
 // The other half: real requests to a running server.
 //
@@ -138,22 +138,37 @@ export async function run(
 async function sweepAsFixedIdentity(w: World, base: string): Promise<void> {
   section("HTTP: another person's things, as the fixed local identity");
 
-  // The positive control, first. Every check below says "this string was not in
-  // the response", and a string that is never in ANY response makes all of them
-  // pass for the wrong reason. So prove the detector works on a group this
-  // identity is genuinely in before trusting it on one they are not.
-  if (w.control) {
-    const control = await get(`${base}/group/${w.control}`);
-    check(
-      "the detector works: a group you ARE in shows its name",
-      control.status === 200 && control.body.includes(`${w.tag} control`),
-      `${control.status}`,
-    );
-  } else {
+  // The positive control, first, and the sweep does not run without it.
+  //
+  // Every check below says "this string was not in the response", and a string
+  // that is never in ANY response makes all of them pass for the wrong reason.
+  // That is not hypothetical: run this against a server reading a different
+  // database and every group route 404s, which looks exactly like an app with
+  // airtight access control.
+  //
+  // So the detector is proved on a group the identity is genuinely in, and a
+  // control that cannot be established means the sweep is skipped rather than
+  // reported green.
+  if (!w.control) {
     skipped(
-      "the positive control",
-      "no fixed identity in this database, so the sweep below proves less",
+      "the disclosure sweep",
+      `no positive control: ${fixedHttpIdentity()} is not in this database, so a green sweep would prove nothing`,
     );
+    return;
+  }
+  const control = await get(`${base}/group/${w.control}`);
+  const controlOk = control.status === 200 && control.body.includes(`${w.tag} control`);
+  check(
+    "the detector works: a group you ARE in shows its name",
+    controlOk,
+    `${control.status}`,
+  );
+  if (!controlOk) {
+    skipped(
+      "the disclosure sweep",
+      `${base} did not return a group this identity owns, so it is reading a different database`,
+    );
+    return;
   }
 
   let leaked = 0;

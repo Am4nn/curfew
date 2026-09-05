@@ -122,12 +122,21 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    # `src/lib/env.ts` validates the whole set at module load, so every key has
+    # to be here even for the ones this round never reaches. Locally that is
+    # invisible: bun loads `.env.local` on its own, which is why a run that
+    # looked like this one passed on a laptop and failed here.
     env:
       LOCAL_MODE: "1"
       DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
       DATABASE_URL_POOLED: postgresql://ci:ci@localhost:5432/ci
       BETTER_AUTH_SECRET: ci-break-in-secret
       BETTER_AUTH_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: ci-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-google-client-secret
+      CRON_SECRET: ci-cron-secret
+      RESEND_API_KEY: ci-resend-key
+      EMAIL_FROM: "Curfew <notices@example.com>"
     steps:
       - uses: actions/checkout@v4
 

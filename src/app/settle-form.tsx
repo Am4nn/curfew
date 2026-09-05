@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { settleAction } from "./actions";
-import { ActionForm, SubmitButton } from "../ui";
+import { settleAction } from "./settle-actions";
+import { ActionForm, SubmitButton } from "./ui";
 
 // Payer settles a debt. Amount is in major units, defaulting to the full
 // outstanding balance but editable for a partial payment.

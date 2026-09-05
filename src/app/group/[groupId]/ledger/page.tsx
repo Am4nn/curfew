@@ -6,7 +6,7 @@ import { assertMember } from "@/server/membership";
 import { getGroupLedgerRows } from "@/server/ledger";
 import { groupHeader, groupBalances } from "@/server/group-view";
 import { formatMoney, minorUnitExponent, getActivityType } from "@/domain";
-import { SettleForm } from "../../../ledger/settle-form";
+import { SettleForm } from "@/app/settle-form";
 import { BackLink } from "@/app/back-link";
 
 // Every fine, settlement and correction ever recorded here. Entries are never

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { TodayRow } from "@/server/today";
 import { ActivityRow } from "./activity-row";
+import { DayComplete } from "./day-complete";
 
 /**
  * Today's count and today's rows, and the only thing on Home that knows a
@@ -30,14 +31,34 @@ export function TodayBoard({
   done,
   of,
   initialRecorded,
+  dateLabel,
+  dueIcons,
 }: {
   rows: TodayRow[];
   done: number;
   of: number;
   /** The type key named by `?done=`, when Home was reached from a check-in. */
   initialRecorded: string | null;
+  /** The day, for the stamp, spelled by the server (invariant 8). */
+  dateLabel: string;
+  /** The activities that were due today, for the stamp's one line of icons. */
+  dueIcons: string[];
 }) {
   const [recorded, setRecorded] = useState<string | null>(initialRecorded);
+
+  // `?done=` describes a moment, and a moment does not survive a reload. Taking
+  // it out of the URL means refreshing this page does not replay the roll or
+  // re-stamp a day that was finished ten minutes ago. history.replaceState
+  // rather than router.replace: nothing needs re-fetching, only the address bar
+  // is wrong.
+  useEffect(() => {
+    if (!initialRecorded) return;
+    try {
+      window.history.replaceState(null, "", "/");
+    } catch {
+      // Nothing depends on it. Worst case a reload replays the moment.
+    }
+  }, [initialRecorded]);
 
   // The mark is a moment, not a state. It goes on its own, so a screen left
   // open does not sit there claiming something just happened.
@@ -53,6 +74,11 @@ export function TodayBoard({
   // count, and nothing needs to.
   const rolled = recorded !== null && rows.some((r) => r.typeKey === recorded && r.done);
   const from = rolled && done > 0 ? done - 1 : null;
+
+  // The stamp marks the check-in that finished the day, so it needs both: one
+  // just landed, and there is nothing left open. Opening Home on a day already
+  // finished shows nothing, because nothing just happened.
+  const justFinishedTheDay = recorded !== null && of > 0 && done === of;
 
   return (
     <>
@@ -111,6 +137,10 @@ export function TodayBoard({
           />
         ))}
       </section>
+
+      {justFinishedTheDay ? (
+        <DayComplete dateLabel={dateLabel} icons={dueIcons} />
+      ) : null}
     </>
   );
 }

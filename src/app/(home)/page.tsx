@@ -10,7 +10,6 @@ import { QuorumMark } from "@/app/mark";
 import { ActivityIcon } from "@/app/activity-icon";
 import { RankScore } from "@/app/rank-icon";
 import { TodayBoard } from "@/app/today-board";
-import { DayComplete } from "@/app/day-complete";
 import { InviteRows } from "@/app/invite-rows";
 import { buttonClass } from "@/app/button-style";
 
@@ -59,10 +58,9 @@ export default async function Home({
   const currency = balances.find((b) => b.currency)?.currency ?? "INR";
   const showMoney = balances.length > 0;
 
-  // The day is complete when everything that was due today is done. Not "every
-  // activity": a rest day is not a miss, and an activity that was never
-  // scheduled cannot hold the day open.
-  const dayComplete = today.of > 0 && today.done === today.of;
+  // The activities that were due today, for the stamp's one line of icons. Not
+  // "every activity": a rest day is not a miss, and an activity that was never
+  // scheduled was never part of the day.
   const dueIcons = today.rows.filter((r) => r.scheduled).map((r) => r.icon);
   // The stamp's own line. Formatted here because the day is the server's, in
   // the user's own zone (invariant 8): a client clock could stamp yesterday.
@@ -106,6 +104,8 @@ export default async function Home({
             done={today.done}
             of={today.of}
             initialRecorded={recorded}
+            dateLabel={dateLabel}
+            dueIcons={dueIcons}
           />
         )}
 
@@ -151,10 +151,6 @@ export default async function Home({
           </section>
         ) : null}
       </div>
-
-      {dayComplete ? (
-        <DayComplete dateKey={date} dateLabel={dateLabel} icons={dueIcons} />
-      ) : null}
     </main>
   );
 }

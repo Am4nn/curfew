@@ -214,37 +214,6 @@ async function runInteraction(page: Page, tag: string): Promise<void> {
     return;
   }
 
-  if (tag === "day-complete" || tag === "dismiss-day-stamp") {
-    // The complete-day stamp shows once a day and remembers that it did, on
-    // the device, so a capture cannot simply hope to arrive inside its 2.6
-    // second hold. Clear that memory and reload: the stamp is up before the
-    // first paint after it, which is deterministic in a way waiting is not.
-    await page.evaluate(() => {
-      try {
-        window.localStorage.removeItem("curfew:day-complete");
-      } catch {
-        // Storage off. The stamp shows anyway, which is what we want here.
-      }
-    });
-    await page.reload({ waitUntil: "domcontentloaded" });
-    const stamp = page.locator('[role="status"]').filter({ hasText: "COMPLETE" });
-    try {
-      await stamp.first().waitFor({ state: "visible", timeout: 4000 });
-    } catch {
-      console.warn(`  ${tag}: the complete-day stamp never appeared; capturing what is there.`);
-      return;
-    }
-    if (tag === "day-complete") return;
-    // dismiss-day-stamp wants the screen underneath it instead. A tap is how a
-    // person gets rid of it, so a tap is how this does too.
-    await stamp.first().click();
-    await stamp.first().waitFor({ state: "detached", timeout: 3000 }).catch(() => {
-      console.warn("  dismiss-day-stamp: the stamp did not go away on a tap.");
-    });
-    await page.waitForTimeout(150);
-    return;
-  }
-
   if (tag === "camera-direct" || tag === "capture-confirm-direct") {
     // A step that asks for a photo and nothing else IS the camera: there is no
     // slot to press and nothing to open. Wait for the shutter instead, and for

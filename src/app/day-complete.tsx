@@ -12,57 +12,42 @@ import { ActivityIcon } from "./activity-icon";
  * legible, so it reads as something that happened to the screen you were on
  * instead of a place you were sent to.
  *
- * It fires when the last scheduled activity closes, which is once a day at
- * most and on a bad day never. That scarcity is the whole design. Curfew does
- * not congratulate, so there is no sentence here telling anyone they did well:
- * it states the date and the fact, and goes.
+ * It marks a MOMENT, not a state, and that distinction is the whole design.
+ * The first version asked "has this day been stamped yet" and kept the answer
+ * in localStorage, which made it a state, and a state kept per browser: a
+ * second device had never written the key, so it stamped the same day again on
+ * a day nothing had happened. Storing it properly would mean a row per user per
+ * day, which is mutable state for a display, and invariant 1 says to say so
+ * rather than add it.
  *
- * Seen-ness is kept in localStorage, per day, and nowhere else. It is a
- * per-device display nicety, not a fact about the record, so it earns no event
- * and no column (invariant 1). Storage that throws or comes back empty means
- * the stamp shows again, which is the harmless failure of the two.
+ * So it stores nothing. It fires when a check-in lands in this session and that
+ * check-in completed the day, which is the moment it is describing. Opening
+ * Home later, on any device, shows nothing, because nothing just happened.
  */
 
-const KEY = "curfew:day-complete";
 /** How long it sits there before it starts leaving. */
 const HOLD_MS = 2600;
 /** And how long it takes to go. Matches .overlay-out in globals.css. */
 const LEAVE_MS = 360;
 
 export function DayComplete({
-  /** The user's own day, as the server resolved it. Client clocks are not used. */
-  dateKey,
-  /** The same day, spelled the way the stamp says it. */
+  /** The day the stamp names, as the server resolved it. Client clocks are not used. */
   dateLabel,
   /** One per activity that was due today, in the order Home lists them. */
   icons,
 }: {
-  dateKey: string;
   dateLabel: string;
   icons: string[];
 }) {
   // "in" is the stamp landing and holding, "out" is it going. It has to be a
   // phase rather than an unmount, because a stamp that cuts makes the screen
   // flick instead of clear.
-  const [phase, setPhase] = useState<"none" | "in" | "out">("none");
+  const [phase, setPhase] = useState<"in" | "out" | "none">("in");
 
   useEffect(() => {
-    let seen: string | null = null;
-    try {
-      seen = window.localStorage.getItem(KEY);
-    } catch {
-      // A private window, or site data switched off. Show it.
-    }
-    if (seen === dateKey) return;
-    try {
-      window.localStorage.setItem(KEY, dateKey);
-    } catch {
-      // Nothing to do. Worst case it appears again on the next load.
-    }
-    setPhase("in");
     const timer = setTimeout(() => setPhase("out"), HOLD_MS);
     return () => clearTimeout(timer);
-  }, [dateKey]);
+  }, []);
 
   // Leaving is timed rather than hung off animationend, so a browser that
   // refuses the animation still gets rid of it.

@@ -13,9 +13,7 @@
     "mock": "V3HomeDone.dc.html",
     "route": "/",
     "state": "Everything passed, next window named, balances still shown",
-    "fixture": "all-done",
-    "interaction": "dismiss-day-stamp",
-    "note": "all-done is also a complete day, so Home stamps it on load. Dismissed first: this entry is the resting screen underneath, and day-complete is the stamp itself."
+    "fixture": "all-done"
   },
   {
     "slug": "home-recorded",
@@ -30,11 +28,10 @@
     "slug": "day-complete",
     "section": "Home",
     "mock": "V3DayComplete.dc.html",
-    "route": "/",
+    "route": "/?done=sleep",
     "state": "The last scheduled activity of the day closed: the stamp, over a dimmed Home",
     "fixture": "all-done",
-    "interaction": "day-complete",
-    "note": "Shown once a day and remembered per device, so the interaction clears that memory and reloads rather than hoping the stamp is still up."
+    "note": "Fires on the check-in that finished the day, so this is the URL that check-in lands on. It keeps nothing, so there is nothing to clear first."
   },
   {
     "slug": "home-no-money",

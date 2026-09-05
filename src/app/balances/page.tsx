@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { getUserDebts, type Debt } from "@/server/ledger";
 import { formatMoney, minorUnitExponent } from "@/domain";
-import { SettleForm } from "../ledger/settle-form";
+import { SettleForm } from "../settle-form";
 
 // Who you owe and who owes you, across every group, with a per-debt settle. The
 // dashboard balance tiles land here. Debts are per person, per group, because a

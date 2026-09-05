@@ -5,7 +5,7 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { assertMember } from "@/server/membership";
 import { recordSettlement } from "@/server/ledger";
 import { minorUnitExponent } from "@/domain";
-import type { FormState } from "../ui";
+import type { FormState } from "./ui";
 
 // The payer records a settlement they made: from = the logged-in user, to = the
 // creditor. Amount comes in as major units and is converted with the currency's

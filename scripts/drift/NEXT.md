@@ -43,9 +43,7 @@ check-in feedback work.
 - **`/settings/personal` sets the same three sleep windows that
   `/activities/sleep` sets**, through a different control, and both are live.
   Two ways to change one thing is one too many. The artboard is drawn as it
-  stands and marked, rather than quietly redesigned.
-- **`/checkin` and `/ledger` are v2.5 redirects** that render nothing. They
-  cost nothing, and deleting them breaks any old link. Left alone deliberately.
+  stands and marked, rather than quietly redesigned. Deliberately parked.
 
 ### Known, and deliberate
 
@@ -54,10 +52,6 @@ check-in feedback work.
   deployment that is not aliased to `dev.curfew.amanarya.com` fails the CORS
   preflight. Fixable by allowing the `*.vercel.app` pattern, at the cost of
   letting any deployment in the account write to the bucket. Left as is.
-- **The complete-day stamp remembers it fired in localStorage**, per device.
-  Clearing site data, or a second device, shows it again for the same day. It
-  is a display and not a fact about the record, so it earns no event and no
-  column (invariant 1), and showing twice is the harmless failure.
 
 ## Needs a person, not code
 
@@ -68,6 +62,18 @@ check-in feedback work.
   because no tag is cut before the cutover.
 
 ## Closed since the last update
+
+- The complete-day stamp no longer keeps anything. It used to ask "has this day
+  been stamped" and keep the answer in localStorage, which made it a state, and
+  a state per browser: a second device stamped the same day again. It marks a
+  moment now, firing on the check-in that finished the day and never on merely
+  opening Home, so there is nothing to store and nothing to disagree across
+  devices.
+- `/checkin` and `/ledger` are gone, along with the folder the second one left
+  behind. Both were v2.5 redirects rendering nothing, and nothing linked to
+  either. The settle form and its action moved up to `src/app/`, beside the
+  other shared components, since `/balances` and the group ledger tab both use
+  them and the folder they lived in no longer has a page.
 
 - **Nothing in the test suite exercises the real write path.** Still true, and
   still where the gym bugs lived, but both of those are now covered by domain

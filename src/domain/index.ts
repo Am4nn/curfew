@@ -87,6 +87,7 @@ export {
   joiningScore,
   CONSTANTS,
   START_SCORE,
+  LOGIC_VERSION,
   MIN_SCORE,
   MAX_SCORE,
   type DayInput,

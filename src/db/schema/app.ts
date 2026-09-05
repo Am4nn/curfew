@@ -379,6 +379,10 @@ export const reputationDaily = pgTable(
     reason: text("reason").notNull(),
     ceiling: numeric("ceiling", { precision: 7, scale: 3 }).notNull(),
     completion: numeric("completion", { precision: 4, scale: 3 }),
+    // Which version of the curve produced this number (migration 0018). The
+    // incremental close carries yesterday's score forward and will not carry a
+    // row whose version it does not recognise.
+    logicVersion: integer("logic_version").notNull().default(1),
     computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   },
 );

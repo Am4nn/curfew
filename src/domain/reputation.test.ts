@@ -280,3 +280,47 @@ describe("replay is the whole model", () => {
     expect(rest.at(-1)!.score).toBe(whole.at(-1)!.score);
   });
 });
+
+describe("the stored score is the state, not a picture of it", () => {
+  // reputation_daily.score is numeric(7,3), and the close now carries the
+  // stored value forward instead of replaying the curve. A score with more
+  // precision than the column would come back rounded and the next day would
+  // be built on a different number than the replay used. verify caught that
+  // as a thousandth of drift a week after a resume; these two keep it caught.
+  const decimals = (n: number) => (String(n).split(".")[1] ?? "").length;
+
+  it("never produces more precision than the column can hold", () => {
+    let score = START_SCORE;
+    for (let day = 0; day < 400; day += 1) {
+      const result = applyDay({
+        score,
+        ceiling: 1000,
+        // A mix of clean, short and idle days, so every branch is exercised.
+        completion: day % 7 === 0 ? null : day % 3 === 0 ? 0.5 : 1,
+        idleDays: day % 7 === 0 ? 8 : 0,
+      });
+      expect(decimals(result.score)).toBeLessThanOrEqual(3);
+      score = result.score;
+    }
+  });
+
+  it("a joining score is storable too, because an idle day returns it untouched", () => {
+    for (const global of [0, 1, 137, 499.7, 683.19, 1000]) {
+      expect(decimals(joiningScore(global))).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it("resuming from a stored day matches replaying through it", () => {
+    const days: ReplayDay[] = Array.from({ length: 30 }, (_, i) => ({
+      date: DAY(i + 1),
+      ceiling: 1000,
+      completion: i % 4 === 0 ? 0.5 : 1,
+      idleDays: 0,
+    }));
+    const whole = replay(START_SCORE, days);
+    // What a resume does: read the stored day back, carry on from it.
+    const stored = Number(whole[9].score.toFixed(3));
+    const resumed = replay(stored, days.slice(10));
+    expect(resumed.at(-1)!.score).toBe(whole.at(-1)!.score);
+  });
+});

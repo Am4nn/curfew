@@ -55,7 +55,44 @@ export const CONSTANTS = {
 
 export const START_SCORE = 200;
 
-const clamp = (n: number) => Math.min(MAX_SCORE, Math.max(MIN_SCORE, n));
+/**
+ * The version of the curve. BUMP IT whenever `applyDay` or `CONSTANTS` change.
+ *
+ * The stored score is carried forward rather than replayed, which is safe only
+ * while the rules that produced it are the rules in force. Idempotent is not
+ * the same as still correct: re-running a close gives the same answer, and
+ * changing the maths does not. Every stored day records the version that made
+ * it, and the incremental close refuses to build on a version it does not
+ * recognise, replaying that user from the beginning instead.
+ *
+ * Forgetting to bump this does not fail loudly. It silently carries a number
+ * computed under the old rules, and `bun run verify` is what says so.
+ */
+export const LOGIC_VERSION = 1;
+
+/**
+ * The score is a number with three decimals, not a float shown to three.
+ *
+ * `reputation_daily.score` is `numeric(7,3)`, so a stored day is rounded. While
+ * the whole curve was replayed from the join date every time, that rounding was
+ * only ever a display detail: the replay carried full precision from day to
+ * day and rounded once, at the end.
+ *
+ * Carrying yesterday's STORED score forward makes the rounding an input.
+ * Reading back 214.994 and continuing from it is not the same as continuing
+ * from 214.9944, and over a week the two answers separate by a thousandth.
+ * `bun run verify` found exactly that, which is the first thing it caught that
+ * nothing else would have.
+ *
+ * So three decimals is the value, not the picture of it. Rounded here, every
+ * day, the stored row IS the state and an opening balance is exact. This is why
+ * a closing record has to be a faithful summary rather than a nearly faithful
+ * one.
+ */
+const quantise = (n: number) => Math.round(n * 1000) / 1000;
+
+const clamp = (n: number) =>
+  quantise(Math.min(MAX_SCORE, Math.max(MIN_SCORE, n)));
 
 /**
  * The highest score this breadth allows. b = 0 caps at 250, b = 1 at 1000.
@@ -74,7 +111,9 @@ export function ceilingFor(breadth: number): number {
  * one cannot be escaped by leaving and rejoining.
  */
 export function joiningScore(global: number): number {
-  return Math.min(300, Math.max(100, 100 + (global / MAX_SCORE) * 200));
+  // Quantised for the same reason applyDay is: a day on which nothing was
+  // scheduled returns this number untouched, and it is then stored rounded.
+  return quantise(Math.min(300, Math.max(100, 100 + (global / MAX_SCORE) * 200)));
 }
 
 export type DayReason = "clean" | "incomplete" | "drift" | "idle" | "neutral";

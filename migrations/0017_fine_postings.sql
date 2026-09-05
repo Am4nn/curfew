@@ -39,3 +39,18 @@ CREATE TABLE IF NOT EXISTS fine_postings (
 -- verify walks postings by group to check the shares sum to the amount.
 CREATE INDEX IF NOT EXISTS fine_postings_group_idx
     ON fine_postings (group_id, period_start DESC);
+
+-- Every fine already charged gets its posting, so history is self-consistent
+-- and `verify` does not report the whole ledger as unposted.
+--
+-- The amount is the sum of the shares AS CHARGED, not what the period is owed
+-- now. Those are the same number for a fine written correctly, and different
+-- for one written by the bug this table exists to stop. Recording what was
+-- actually taken is what lets verify say so; writing the recomputed figure
+-- here would paper over exactly the case worth finding.
+INSERT INTO fine_postings (group_id, type_key, period_start, from_user_id, amount, currency, posted_at)
+SELECT group_id, type_key, period_start, from_user_id, SUM(amount), MIN(currency), MIN(created_at)
+FROM ledger_entries
+WHERE kind = 'fine' AND type_key IS NOT NULL AND period_start IS NOT NULL
+GROUP BY group_id, type_key, period_start, from_user_id
+ON CONFLICT DO NOTHING;

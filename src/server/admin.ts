@@ -203,11 +203,17 @@ async function checkinsScoredPct(): Promise<number | null> {
  * "LAST NIGHT'S RUN", read live from the derived tables the nightly job
  * writes. Scoring, reputation and the retention sweep have no failure state
  * to detect (no run log persists a fault), so they read "ok" whenever there
- * is data to show; the drift check is the one row backed by a real
- * pass/fail, from an actual recompute over a recent window.
+ * is data to show; the drift check is the one row backed by a real pass/fail.
+ *
+ * That row is what the JOB found, not what this page load finds. It used to
+ * recompute seven days for every user on every Overview load, which is a lot
+ * of work to answer "did last night go well", and it got slower the moment
+ * verify started walking the ledger too. The nightly job records
+ * `ops.verify.ran`; this reads it. Ops still verifies live, because that is
+ * the screen you open to ask on purpose.
  */
 export async function getLastRun(): Promise<LastRun> {
-  const [scoringRow, reputationRow, ev, drift] = await Promise.all([
+  const [scoringRow, reputationRow, ev, verifyRun] = await Promise.all([
     db
       .select({ periodEnd: activityScores.periodEnd, n: sql<number>`count(*)` })
       .from(activityScores)
@@ -221,15 +227,22 @@ export async function getLastRun(): Promise<LastRun> {
       .orderBy(desc(reputationDaily.day))
       .limit(1),
     evidenceOps(),
-    // Scoped to a recent window rather than full history: this runs on every
-    // Overview load, and a full recompute per user is not something to pay
-    // for on every page view.
-    verifyAll({ from: new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) }),
+    db
+      .select({ payload: events.payload })
+      .from(events)
+      .where(eq(events.type, "ops.verify.ran"))
+      .orderBy(desc(events.occurredAt))
+      .limit(1),
   ]);
 
   // Every kind, not just "score": counting only period drift reported "0
   // differ" on a window where Ops was listing a hundred reputation rows.
-  const periodsDiffer = drift.length;
+  //
+  // No recorded run yet means the job has not run since this shipped, not that
+  // everything is fine. It reads as ok with nothing to report, the same as the
+  // three rows above, and Ops is a click away for a real answer.
+  const recorded = (verifyRun[0]?.payload ?? {}) as { rows?: number };
+  const periodsDiffer = Number(recorded.rows ?? 0);
 
   return {
     scoring: { periodsClosed: Number(scoringRow[0]?.n ?? 0), ok: true },

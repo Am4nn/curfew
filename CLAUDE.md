@@ -15,6 +15,9 @@ Money is optional and can be switched off entirely.
   jobs, uploads.
 - `.planning/v3/SCREENS.md` — every mock, its route, and the review gate that
   stops the build drifting from the design.
+- `.planning/v3/OPEN.md` — **what is not done.** Known defects, what the
+  security round cannot say, what is untested, what needs a person, and the
+  two features not yet designed. Start here.
 - `.planning/PRD.md` — v1's what and why. Still the reasoning behind the
   invariants; superseded on scope.
 - `.planning/schema.sql` — the data model, with the immutability rules in

@@ -205,37 +205,41 @@ else about it is still open, in §7.1.
 
 These are not designed. They are the two things to open with.
 
-### 7.1 Pause, for a trip
+### 7.1 Pause, for a trip — DESIGNED 2026-09-06, NOT BUILT
 
-A member who is deliberately away says so, and while paused:
+Decided and mocked. Decisions 133 to 137, seven artboards on the **v3.1 Pause**
+page of the design canvas. No code yet, on purpose.
 
-- **Streaks do not break.** The days are not misses.
-- **No money.** The group does not fine them for a period they declared out of.
-- **Reputation: TBD.** The three plain options are that it freezes, that the
-  days read as "nothing scheduled" and drift after a week the way idle days
-  already do, or that it keeps counting and a pause only buys the streak and the
-  money. Freezing is closest to what the word means; drifting is closest to what
-  the curve already does.
+**The whole design is one sentence: a paused day is a day with nothing
+scheduled.** Not a miss. Everything else falls out of that rather than needing a
+rule: no fine can arise because nothing was scheduled to miss, and reputation is
+not marked down because there was nothing to mark.
 
-**Open questions to settle before any of it is built:**
+- **Every streak ends.** A streak is consecutive days, a pause is a gap, and
+  grace does not cover one.
+- **Reputation still settles** after seven quiet days, and that decay changes
+  from a flat 3 a day to **1% of the score a day**.
+- **No money**, which needs no rule.
+- **Three days minimum, in advance, no quota.** One declaration covers every
+  group and the personal record. The group sees it, with its dates.
+- **Extend** while it runs. **Come back early** takes effect tomorrow; the days
+  already passed stay paused and the streak that ended does not come back.
 
-- **A minimum length: three days.** Settled 2026-09-05. Enough for a weekend
-  trip, and not usable as a one-night excuse.
-- **Declared in advance, or after the fact?** Declaring afterwards is a way to
-  erase a miss that has already happened, which is the same exploit un-sharing
-  was closed against (decision 15). Almost certainly it has to be in advance,
-  and then a trip that gets extended is its own case.
-- **How many a year, and who can see it.** A pause the group cannot see reads as
-  a member being let off, which is the same reasoning that put the grace period
-  on the members list (decision 123).
-- **Does a pause interact with grace?** Both protect a streak. They must not
-  stack into a way to never miss.
-- **Can it be cancelled?** Coming home early should probably end it, and ending
-  it early must not retroactively judge the days already passed.
+**What the numbers say**, from the real curve. A fourteen-day trip from 900 not
+paused lands on 629 and takes **80 clean days** to undo. Paused it lands on 876
+and takes **12**.
 
-The join grace period is the precedent for all of this: one boundary in
-`recomputeGroups`, visible to the whole group, and it gates the outcome rather
-than being subtracted afterwards.
+**Still to settle before it is built:**
+
+- **Can you check in while paused?** The mocks say no: Home shows "Paused" and
+  offers nothing, and coming back early is how you make a day count again. A
+  paused day that somebody completed anyway still would not count, which is
+  confusing enough that offering the button would be worse.
+- **What a pause does to the settling window** (decision 54) for an activity
+  added just before one.
+- **The 1% decay is a change to `CONSTANTS`,** so it needs `LOGIC_VERSION`
+  bumped, the 30 scenarios re-run and `REPUTATION.md`'s target properties
+  re-checked. That is a separate commit from pause itself and can land first.
 
 ### 7.2 CI, and what it should gate — SETTLED 2026-09-06
 

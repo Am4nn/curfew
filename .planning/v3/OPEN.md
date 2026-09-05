@@ -11,7 +11,10 @@ is settled it becomes a decision there and leaves this file.
 
 ## 1. Defects
 
-### 1.1 Rejoining a group silently does nothing
+**Five of the six are fixed** (2026-09-06, commits `60ab7ec` and `e79d5bf`).
+Only §1.6, the timezone stamp, is still open.
+
+### 1.1 Rejoining a group silently does nothing — FIXED
 
 **Proved, 2026-09-05.** `acceptInvite` (`src/server/groups.ts`) inserts the
 membership with `.onConflictDoNothing()`. Somebody who has left already has a
@@ -39,7 +42,7 @@ contradicts the copy. Not setting one contradicts 110. One of them has to move.
 
 **Settled: the copy moves.** See §6 A.
 
-### 1.2 The settling window is measured in UTC
+### 1.2 The settling window is measured in UTC — FIXED
 
 `src/server/scoring.ts:120` reads an activity's first `effective_at` in UTC
 (`{ zone: "utc" }`) while every other day in the replay is the member's own.
@@ -50,7 +53,7 @@ when it should not.
 Small, and it only bites for the first week of a new activity. The fix is to
 read that instant in the member's zone, the way `userDay` now does.
 
-### 1.3 `graceUsed` is a column that lies
+### 1.3 `graceUsed` is a column that lies — FIXED
 
 `activity_outcomes.grace_used` is written `false` on every row by
 `recomputeGroups`, and `src/app/admin/users/[id]/page.tsx:137` renders "· grace"
@@ -59,7 +62,7 @@ had a true value and never will as things stand.
 
 **Settled: the column and its label go.** See §6 B.
 
-### 1.4 Leaving a group makes every page read a full replay
+### 1.4 Leaving a group makes every page read a full replay — FIXED
 
 `resumePointFor` (`src/server/scoring.ts`) refuses to resume unless every scope
 is closed through the same day. A group a member has left stops at `left_at`,
@@ -70,11 +73,11 @@ Correctness is unaffected. It undoes the performance work of the caching pass
 for anybody who has ever left a group. The fix is to expect a left group to end
 at `left_at` rather than at today.
 
-### 1.5 Dead code
+### 1.5 Dead code — FIXED
 
 `activeMembersOn` in `src/server/sharing.ts` has no callers.
 
-### 1.6 Timezone is resolved once and applied to all history
+### 1.6 Timezone is resolved once and applied to all history — OPEN
 
 Already recorded as an open question in `SCORING.md`. `recomputeUser` resolves
 the member's zone for today and replays every past period in it, so moving
@@ -151,6 +154,8 @@ proof.
 ---
 
 ## 6. Decided 2026-09-05, to build next session
+
+All four are built. What follows is what was decided and what it turned into.
 
 **A. A rejoin is a fresh start with a fresh grace day, and the money follows
 them back.** New `joined_at`, `left_at` cleared, the score starts from the
@@ -237,3 +242,29 @@ server layer: `scoring.ts`, `streak.ts`, `ledger.ts`, `grace.ts` and
 `clean-run.ts` are exercised only by the simulation and by `break-in`, both of
 which need a database. Whether that is a gap or the right shape is worth
 deciding on purpose rather than by default.
+
+---
+
+## 8. Found while fixing the above
+
+Three fixtures were measuring themselves rather than the app, and all three
+went green for the wrong reason until something moved:
+
+- Two timezone scenarios started four people in four zones at one shared
+  instant, so they began on different local dates. `trackIn` starts each at
+  their own local midnight.
+- `break-in` dated its world in UTC and compared that against a period the
+  server had resolved in the member's zone, so it reported a hole of its own at
+  half past midnight in Kolkata.
+- The simulation pins `TODAY` as a constant while the engine reads the real
+  clock. The day the real date moved past it, every scenario's last check-in
+  landed the day before yesterday and a spotless record spent grace on the gap.
+  The scenario phase now pins the clock.
+
+The pattern is the same each time: a test that passes because it is looking at
+the wrong thing, and only says so when something else changes. Worth suspecting
+first the next time a check goes red for a reason that sounds like the app.
+
+**The design canvas is one publish behind.** `.design/build-v3.mjs` carries the
+new grace copy and `.design/` is gitignored, so the published artboard still
+shows "Rejoining does not give you another" until somebody republishes it.

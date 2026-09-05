@@ -1,6 +1,6 @@
 # Next session
 
-Last updated 2026-09-05, after the performance, loading/error and coverage pass.
+Last updated 2026-09-05, after the scoring, streak and money rebuild.
 
 ## Still open
 
@@ -11,7 +11,9 @@ the UI, and the UI is now finished.
 
 - Verify scoring, reputation, streak and money calculation end to end, not
   screen by screen. `bun run verify` proves stored rows match a recompute; it
-  does not prove the recompute is right.
+  does not prove the recompute is right. It now covers outcomes, the ledger and
+  the streak as well, so the gap is narrower than it was, but the point stands:
+  agreeing with itself is not the same as being right.
 - Then simulate: several days of varied engagement across groups and
   activities, and check what happens to streaks, personal reputation, group
   reputation, fines and balances in each scenario. Joining, leaving, sharing
@@ -19,17 +21,21 @@ the UI, and the UI is now finished.
 - After that, a pass over all twelve activities, since the gym bugs were the
   kind only a real press finds.
 
-### Performance, the half that is left
+### Performance: done
 
-`closeOutstanding` now runs the scoring pass once a request instead of once per
-tracked activity, which took Home from about 10.5 seconds to about 1.9. Nearly
-all of what remains is that one pass, and it recomputes EVERY period from the
-activity's first config date on every read. Twenty days of history costs about
-a second; a year will not. Closing incrementally, from the last computed period
-forward, is the fix, and it belongs with the engine verification above rather
-than before it, because it changes what gets recomputed.
+Home was 6.8 seconds, then 1.9, then 1.2. It is 135ms cold and 88ms warm on the
+seeded local database, and a full replay of one user is 346ms rather than 2.9
+seconds. Three things did it, all in `.planning/v3/SCORING.md`:
 
-Nothing else measured above 0.2 seconds warm.
+- reputation carries the stored balance forward instead of replaying the curve
+  from the join date,
+- the streak is stored and moved by the press instead of derived on every read,
+- the effective-dated histories are read once per group rather than once per
+  day, and the read path above them once per request rather than once per
+  activity.
+
+`bun run verify` still replays everything from the beginning, which is what
+makes those three safe to trust, and the cron now runs it nightly.
 
 ### The review gate
 
@@ -62,6 +68,32 @@ check-in feedback work.
   because no tag is cut before the cutover.
 
 ## Closed since the last update
+
+- **A fine could be charged twice.** A page read settled fines, splitting among
+  whoever was scored so far, and `ledger_one_fine_idx` is per payer-payee pair,
+  so a later split with more peers inserted the new shares beside the old ones.
+  500 charged as 750, which is invariant 7 broken by a page load. Reads no
+  longer settle, and `fine_postings` gives a fine one identity so a replay
+  cannot write a second set of entries. `bun run check:money` reproduces it on
+  the commit before.
+- **Weekly streaks were wrong.** `streakOver` counts days and was handed one row
+  per period, so three passed gym weeks reported a streak of 1 while grace was
+  spent on weeks that had passed. A module says which of its days count now,
+  and the counter is stored.
+- **Grace no longer rewinds a streak.** A graced weekly failure rolled the run
+  back to the value the week opened on, so the number fell while the app said
+  grace protected it. A streak adds one or goes to zero, and grace makes it do
+  neither.
+- **verify covers the money**, and the nightly job runs it and records the
+  result. It reports and never repairs, because a job that rewrites the rows
+  every night erases the symptom while the cause runs on.
+- **The reputation curve is quantised.** Carrying a stored `numeric(7,3)` score
+  forward made its rounding an input, and a week of resumed closes drifted a
+  thousandth from a replay. verify caught it on the first run of the
+  incremental path.
+- The v2.5 streak engine in `src/server/streak.ts` is gone: a second
+  implementation with no grace, no schedule, and the type key hardcoded to
+  "sleep". Nothing imported it. The name is now the real one.
 
 - The complete-day stamp no longer keeps anything. It used to ask "has this day
   been stamped" and keep the answer in localStorage, which made it a state, and

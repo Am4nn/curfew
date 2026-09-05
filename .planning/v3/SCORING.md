@@ -95,13 +95,26 @@ daily types and, for weekly types, a new `(user, type, day)` record of days
 done. That record is the missing piece today: the streak needs days, and only
 periods are stored.
 
+**A streak only ever does `+1`, or goes to `0`. Grace means it does neither: it
+holds where it is.** There is no third movement, and in particular nothing
+rolls it back to an earlier value. A number the user watched climb must not
+fall while the app tells them grace protected them.
+
 At close (nightly, or lazily on the first read of a new day):
 
-- Daily type: a scheduled day with nothing done spends grace, or resets
-  `current` to 0.
+- Daily type: a scheduled day with nothing done spends grace and holds, or
+  resets `current` to 0.
 - Weekly type: if `week_sessions` reaches `perWeek` the week stands. If not,
-  grace holds `current` at `week_opening`, or it resets to 0. Then
-  `week_opening` becomes `current` and `week_sessions` becomes 0.
+  grace holds `current` where it is, keeping the days that week added, or it
+  resets to 0. Then `week_opening` becomes `current` and `week_sessions`
+  becomes 0.
+
+This changes the built `streakOver`, which rolls a graced weekly failure back
+to `week_opening`. `week_opening` survives as the record of where the week
+started, not as a value anything returns to.
+
+A graced short week therefore leaves the user ahead by the days they did do.
+Grace is capped per month, so it cannot be farmed.
 
 `closed_through` is what makes the close idempotent and lets a missed night
 catch up without double counting.
@@ -195,20 +208,70 @@ the reason the caches above are safe to trust.
 Run it nightly, after scoring, and report drift where drift is visible. A
 reconciliation nobody runs is a reconciliation that finds nothing.
 
+## Decided
+
+- **A read catches up.** If a day has ended and its close is not written, the
+  read closes it, then reads. One day, never a replay, and never money. A
+  failed cron stays invisible to users, which is the guarantee the lazy close
+  was built for in the first place.
+- **A streak moves `+1` or to `0`, never anything else.** Grace holds it.
+- **Nothing is shown for a fine until it posts.** The ledger gains the entry
+  the following morning, once everyone's day has closed. Until the split is
+  known the debt does not exist, so there is no pending state anywhere.
+- **`verify` runs nightly**, after scoring, and drift lands on the admin Ops
+  drift block that already exists.
+
 ## Build order
 
-1. **Stop the read path writing fines.** One line. Removes the double-charge.
-2. **`fine_postings`** and the transactional split.
-3. **`verify` covers outcomes and the ledger.** Before the caches, so the
-   caches land into something that can check them.
-4. **Reputation carries the balance**, with `logic_version` and the replay
-   fallback.
-5. **`activity_streaks`** and the day log, which fixes weekly streaks as a
-   consequence.
-6. **Delete the per-day queries in `recomputeGroups`.** Load sharing, money and
-   fine rules once per user and resolve them in memory.
+Six steps. One to three are correctness, four to six are the speed, and five is
+also a bug fix. Each ends somewhere shippable.
 
-1 to 3 are correctness. 4 to 6 are the speed, and 5 is also a bug fix.
+**1. The read path stops writing fines.**
+`scoring.ts`: `closeOutstanding` calls `scoreUser(userId, { fines: false })`.
+Money is then written by `scoreAll` and by nothing else. A test asserts that a
+`closeOutstanding` on a user with a failed period writes no `ledger_entries`.
+This alone removes the double-charge.
+
+**2. `fine_postings`, and the split becomes one posting.**
+Migration adds the table, primary key `(group_id, type_key, period_start,
+from_user_id)`. `writeFines` wraps the posting row and its `ledger_entries`
+rows in one transaction; a conflict on the posting skips the whole split rather
+than inserting the shares that do not yet exist. `ledger_one_fine_idx` stays as
+a second line of defence. A test replays a split with one peer, then with two,
+and asserts the total charged is the fine.
+
+**3. `verify` covers outcomes and the ledger.**
+`verify.ts` gains `kind: "outcome"` and `kind: "ledger"`. Outcomes diff
+`passed`, `fine_amount`, `currency`, `rules_version`. The ledger checks are
+properties rather than a diff: shares sum exactly to the posting, every payee
+passed that period and shares that type, no fine in a group with money off on
+the day it closed, no ledger row without a posting, no posting without rows.
+The cron calls `verifyAll` after `scoreAll` and stores the result where the
+admin Ops drift block already reads from.
+
+**4. Reputation carries the balance.**
+Migration adds `logic_version` to `reputation_daily`. A new `closeDay(userId,
+day)` reads the previous day's row per scope, applies `applyDay`, and inserts.
+It falls back to `recomputeUser` when the previous row is missing or its
+`logic_version` does not match. `recomputeUser` and `replay` are untouched and
+stay what `verify` uses. `verify` proves the two agree.
+
+**5. `activity_streaks` and the day log.**
+Migration adds `activity_streaks` and, for weekly types, the `(user, type,
+day)` record of days done. The check-in path increments the counter in the same
+transaction as the event, guarded by the day's unique constraint. `standingFor`
+becomes a single row read. `streakOver` stays as the rebuild used by `verify`,
+amended to the hold-on-grace rule above. Weekly streaks are correct as a
+consequence, and `verify` gains the streak diff that would have caught it.
+
+**6. `recomputeGroups` stops querying per day.**
+`acceptedTypes`, `sharesFor`, `fineRuleFor` and the money toggle load once per
+user and resolve in memory. Same answers, one round trip each instead of four
+per day per group.
+
+Verification: `bun run test` and `bun run typecheck` after every step,
+`bun run verify` at zero drift after 2, 4 and 5, and the drift harness
+recaptured after 5, which is the only step that changes a screen.
 
 ## Open questions
 

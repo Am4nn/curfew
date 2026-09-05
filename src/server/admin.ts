@@ -376,7 +376,7 @@ export interface UserInspector {
   profile: { userId: string; name: string; email: string; status: string; role: string; disabled: boolean };
   recentCheckins: { step: string; at: Date }[];
   recentScores: { periodStart: string; passed: boolean; detail: unknown }[];
-  recentOutcomes: { periodStart: string; groupName: string; typeKey: string; passed: boolean; graceUsed: boolean; fineAmount: number; currency: string }[];
+  recentOutcomes: { periodStart: string; groupName: string; typeKey: string; passed: boolean; fineAmount: number; currency: string }[];
   balances: { groupId: string; currency: string; netOwed: number }[];
 }
 
@@ -414,7 +414,6 @@ export async function getUserInspector(userId: string): Promise<UserInspector | 
         groupName: groups.name,
         typeKey: activityOutcomes.typeKey,
         passed: activityOutcomes.passed,
-        graceUsed: activityOutcomes.graceUsed,
         fineAmount: activityOutcomes.fineAmount,
         currency: activityOutcomes.currency,
       })

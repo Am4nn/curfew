@@ -25,7 +25,9 @@ import {
   userActivityConfig,
 } from "../../src/db/schema";
 import { getActivityType } from "../../src/domain";
+import { DateTime } from "luxon";
 import { previewEnabled, PREVIEW_USER } from "../../src/lib/preview";
+import { userDay } from "../../src/server/config";
 import { CONSENT_VERSION } from "../../src/server/consent";
 
 // The world every round runs against: three people it made itself, two groups,
@@ -92,9 +94,6 @@ export async function build(): Promise<World> {
   const peer = `${tag}-peer`;
   const stranger = `${tag}-stranger`;
 
-  const today = new Date().toISOString().slice(0, 10);
-  const back = new Date(Date.now() - 10 * 86_400_000).toISOString().slice(0, 10);
-
   for (const id of [admin, peer, stranger]) {
     await db.insert(users).values({
       id,
@@ -111,6 +110,16 @@ export async function build(): Promise<World> {
     });
     await db.insert(consentRecords).values({ userId: id, version: CONSENT_VERSION });
   }
+
+  // The member's own day, not the UTC one, and only once the accounts exist for
+  // the zone to be resolved against. `back-dating a check-in` compares the
+  // period the server chose against this, and the server resolves a period in
+  // the member's zone: read as UTC, the two disagree for the first hours of any
+  // morning east of Greenwich, and the round reported a hole that was its own.
+  const today = await userDay(admin);
+  const back = DateTime.fromISO(today, { zone: "utc" })
+    .minus({ days: 10 })
+    .toFormat("yyyy-MM-dd");
 
   const mine = randomUUID();
   const theirs = randomUUID();

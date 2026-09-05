@@ -165,7 +165,10 @@ export const activityOutcomes = pgTable(
     typeKey: text("type_key").notNull(),
     periodStart: date("period_start", { mode: "string" }).notNull(),
     passed: boolean("passed").notNull(),
-    graceUsed: boolean("grace_used").notNull().default(false),
+    // No grace_used here. Grace protects the streak and has never protected a
+    // fine (decision 5), so an outcome has nothing to say about it. Grace is
+    // recorded on activity_streaks.grace_spent, per calendar month, which is
+    // the thing it actually acts on. See migration 0020.
     fineAmount: bigint("fine_amount", { mode: "number" }).notNull().default(0),
     currency: char("currency", { length: 3 }).notNull().default("INR"),
     rulesVersion: integer("rules_version"),

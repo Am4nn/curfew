@@ -88,8 +88,21 @@ interface TrackedType {
   }[];
 }
 
-/** Everything needed to replay a user's activities over any range. */
-async function trackedTypes(userId: string): Promise<TrackedType[]> {
+/**
+ * Everything needed to replay a user's activities over any range.
+ *
+ * `timezone` is the member's, and it is not decoration. `startedOn` is the day
+ * an activity was first switched on, and it sets both where the replay begins
+ * and when the settling window ends. Read in UTC it was a different day for
+ * anybody east of Greenwich who added an activity after midnight: the window
+ * started on a day they had already finished, so it closed a day early and the
+ * seventh day counted when it should not have. Every other day in this file is
+ * the member's own; this one was not.
+ */
+async function trackedTypes(
+  userId: string,
+  timezone: string,
+): Promise<TrackedType[]> {
   const [switches, configs] = await Promise.all([
     db
       .select({
@@ -117,7 +130,7 @@ async function trackedTypes(userId: string): Promise<TrackedType[]> {
     const first = mine.reduce((a, b) => (a.effectiveAt < b.effectiveAt ? a : b));
     return {
       typeKey,
-      startedOn: iso(DateTime.fromJSDate(first.effectiveAt, { zone: "utc" })),
+      startedOn: iso(DateTime.fromJSDate(first.effectiveAt, { zone: timezone })),
       switches: mine,
       configs: configs
         .filter((c) => c.typeKey === typeKey)
@@ -182,7 +195,6 @@ export interface ScoreRow {
 }
 
 export interface OutcomeWrite extends OutcomeRow {
-  graceUsed: boolean;
   rulesVersion: number | null;
 }
 
@@ -242,14 +254,16 @@ export async function recomputeUser(
   outcomes: OutcomeWrite[];
   reputation: ReputationRow[];
 }> {
-  const tracked = await trackedTypes(userId);
-  if (tracked.length === 0) return { scores: [], outcomes: [], reputation: [] };
-
+  // The zone comes first: `trackedTypes` reads the day an activity started in
+  // it, and that day is the start of both the replay and the settling window.
   const instant = await now();
   const timezone = await resolveUserTimezone(
     userId,
     instant.toISOString().slice(0, 10),
   );
+
+  const tracked = await trackedTypes(userId, timezone);
+  if (tracked.length === 0) return { scores: [], outcomes: [], reputation: [] };
 
   const startedOn = tracked.map((t) => t.startedOn).sort()[0];
 
@@ -617,7 +631,6 @@ async function recomputeGroups(
           typeKey: sc.typeKey,
           periodStart: sc.periodStart,
           passed: sc.passed,
-          graceUsed: false,
           fineAmount: fine,
           currency: rule.currency,
           rulesVersion: rule.version,
@@ -714,23 +727,37 @@ export const closeOutstanding = cache(async (userId: string): Promise<void> => {
  *     resuming the group from Friday would silently skip Wednesday and
  *     Thursday. Rare, and a full replay is the right answer when it happens.
  *
+ * A group somebody LEFT is not a disagreement. Its rows stop at `left_at` by
+ * design, because scoring stops there, so comparing every scope against today
+ * meant that leaving any group cost that member the resume for good: every page
+ * read replayed their whole history, which is the thing this exists to avoid.
+ * Each scope is checked against the day it is supposed to have reached.
+ *
  * Deliberately NOT used by `verify`, which always replays from the beginning.
  * The cheap path is checked against the expensive one every night, and that
  * check is only worth anything while the two are computed differently.
  */
 async function resumePointFor(userId: string): Promise<ResumePoint | undefined> {
-  const rows = await db
-    .select({
-      groupId: reputationDaily.groupId,
-      day: reputationDaily.day,
-      score: reputationDaily.score,
-      completion: reputationDaily.completion,
-      logicVersion: reputationDaily.logicVersion,
-    })
-    .from(reputationDaily)
-    .where(eq(reputationDaily.userId, userId))
-    .orderBy(reputationDaily.day);
+  const [rows, memberships] = await Promise.all([
+    db
+      .select({
+        groupId: reputationDaily.groupId,
+        day: reputationDaily.day,
+        score: reputationDaily.score,
+        completion: reputationDaily.completion,
+        logicVersion: reputationDaily.logicVersion,
+      })
+      .from(reputationDaily)
+      .where(eq(reputationDaily.userId, userId))
+      .orderBy(reputationDaily.day),
+    db
+      .select({ groupId: groupMembers.groupId, leftAt: groupMembers.leftAt })
+      .from(groupMembers)
+      .where(eq(groupMembers.userId, userId)),
+  ]);
   if (rows.length === 0) return undefined;
+
+  const leftOn = new Map(memberships.map((m) => [m.groupId, m.leftAt]));
 
   const byScope = new Map<string, typeof rows>();
   for (const r of rows) {
@@ -740,14 +767,24 @@ async function resumePointFor(userId: string): Promise<ResumePoint | undefined> 
     byScope.set(key, list);
   }
 
+  // The global score is the reference: it runs to today and it always exists
+  // once anything has been scored. Every group is then checked against the day
+  // IT should have reached, which is today unless the member has left.
+  const global = byScope.get("global");
+  if (!global) return undefined;
+  const closedThrough = global[global.length - 1].day;
+
   const scores = new Map<string, { score: number; idleDays: number }>();
-  let closedThrough: string | null = null;
 
   for (const [key, days] of byScope) {
     const last = days[days.length - 1];
     if (last.logicVersion !== LOGIC_VERSION) return undefined;
-    if (closedThrough === null) closedThrough = last.day;
-    else if (closedThrough !== last.day) return undefined;
+
+    // `recomputeGroups` ends a left group at `left_at`, and only when that is
+    // before today, so this mirrors it exactly rather than approximately.
+    const leftAt = key === "global" ? null : (leftOn.get(key) ?? null);
+    const expected = leftAt && leftAt < closedThrough ? leftAt : closedThrough;
+    if (last.day !== expected) return undefined;
 
     // How long nothing has been scheduled, counted back off the stored rows.
     // It is not a column because it is not a fact, only a run length, and
@@ -759,7 +796,6 @@ async function resumePointFor(userId: string): Promise<ResumePoint | undefined> 
     scores.set(key, { score: Number(last.score), idleDays });
   }
 
-  if (closedThrough === null) return undefined;
   return { day: addDays(closedThrough, 1), scores };
 }
 
@@ -800,7 +836,6 @@ export async function scoreUser(
         ],
         set: {
           passed: sql`excluded.passed`,
-          graceUsed: sql`excluded.grace_used`,
           fineAmount: sql`excluded.fine_amount`,
           currency: sql`excluded.currency`,
           rulesVersion: sql`excluded.rules_version`,
@@ -859,7 +894,6 @@ export async function settleFines(userId: string): Promise<number> {
       typeKey: activityOutcomes.typeKey,
       periodStart: activityOutcomes.periodStart,
       passed: activityOutcomes.passed,
-      graceUsed: activityOutcomes.graceUsed,
       fineAmount: activityOutcomes.fineAmount,
       currency: activityOutcomes.currency,
       rulesVersion: activityOutcomes.rulesVersion,

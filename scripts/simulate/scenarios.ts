@@ -16,6 +16,7 @@ import {
   timezoneFor,
   checkinIn,
   track,
+  trackIn,
   untrack,
   checkin,
   group,
@@ -1169,7 +1170,11 @@ export const SCENARIOS: Scenario[] = [
       for (const [id, zone] of zones) {
         await person(id, id);
         await timezoneFor(id, zone);
-        await track(id, "steps", DAILY, STEPS_CONFIG, day(-60));
+        // Their own local midnight, not one shared instant. The engine reads
+        // the switch instant in the member's zone, so starting all four at
+        // midnight IST would give them four different local start days and
+        // four settling weeks covering different dates.
+        await trackIn(zone, id, "steps", DAILY, STEPS_CONFIG, day(-60));
       }
       // Everyone logs at eight in the evening, their own evening, through to
       // today. A zone twelve hours ahead is already on tomorrow's date, so a
@@ -1381,7 +1386,7 @@ export const SCENARIOS: Scenario[] = [
       for (const [id, zone] of zones) {
         await person(id, id);
         await timezoneFor(id, zone);
-        await track(id, "steps", DAILY, STEPS_CONFIG, day(-20));
+        await trackIn(zone, id, "steps", DAILY, STEPS_CONFIG, day(-20));
       }
       for (const d of days(-20, -1)) {
         for (const [id, zone] of zones) {
@@ -1413,9 +1418,12 @@ export const SCENARIOS: Scenario[] = [
           ),
         ],
         notes: [
-          "The settling window compares a period date, in the user's own zone,",
-          "against the tracking instant. Reading that instant in UTC moves the edge",
-          "by a day depending which side of Greenwich the user is on.",
+          "The settling window compares a period date against the day the",
+          "activity was switched on, both in the member's own zone.",
+          "Reading the switch instant in UTC moved that edge by a day depending",
+          "which side of Greenwich the member was on, so the window closed early",
+          "and the seventh day counted. Each of these starts at their own local",
+          "midnight, which is what makes the counts comparable at all.",
         ],
       };
     },

@@ -1,10 +1,9 @@
-import { and, eq, isNull, or, gt, lte } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
   groupActivityTypes,
   groupActivityRules,
   memberShares,
-  groupMembers,
   groupSettings,
 } from "@/db/schema";
 import { resolveAt, resolveConfig, getActivityType } from "@/domain";
@@ -392,26 +391,4 @@ export async function setOwnerMoneyToggle(input: {
     effectiveAt: new Date(),
     changedBy: input.changedBy,
   });
-}
-
-// ---------------------------------------------------------------------------
-// Membership spans
-// ---------------------------------------------------------------------------
-
-/** Members of a group on a given period: joined by then, not yet left. */
-export async function activeMembersOn(
-  groupId: string,
-  period: string,
-): Promise<string[]> {
-  const rows = await db
-    .select({ userId: groupMembers.userId })
-    .from(groupMembers)
-    .where(
-      and(
-        eq(groupMembers.groupId, groupId),
-        lte(groupMembers.joinedAt, period),
-        or(isNull(groupMembers.leftAt), gt(groupMembers.leftAt, period)),
-      ),
-    );
-  return rows.map((r) => r.userId);
 }

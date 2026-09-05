@@ -153,6 +153,41 @@ export async function track(
   });
 }
 
+/**
+ * Track a type from a date IN A NAMED ZONE, the way `checkinIn` presses in one.
+ *
+ * `track` above starts the activity at midnight in the default zone, whoever is
+ * tracking it. That is fine for one person and wrong for a scenario comparing
+ * several: four people in four zones all switching on at the same INSTANT began
+ * on different local dates, so their settling weeks covered different days, and
+ * the comparison was measuring the fixture rather than the engine.
+ *
+ * The engine reads the switch instant in the member's own zone, because that is
+ * the day they started. So a scenario that wants "the same habit, in four
+ * places" has to start each of them at their own local midnight.
+ */
+export async function trackIn(
+  zone: string,
+  userId: string,
+  typeKey: string,
+  schedule: ScheduleShape,
+  config: unknown,
+  from: string,
+): Promise<void> {
+  await db.insert(userActivityConfig).values({
+    userId,
+    typeKey,
+    config: { schedule, config },
+    effectiveFrom: from,
+  });
+  await db.insert(userActivities).values({
+    userId,
+    typeKey,
+    enabled: true,
+    effectiveAt: DateTime.fromISO(from, { zone }).toJSDate(),
+  });
+}
+
 /** Stop tracking, from a date. Append-only, like the app does it. */
 export async function untrack(
   userId: string,

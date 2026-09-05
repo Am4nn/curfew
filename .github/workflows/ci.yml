@@ -95,3 +95,55 @@ jobs:
 
       - name: Migrating twice changes nothing
         run: bun run scripts/migrate.ts
+
+  # The security round, against its own throwaway Postgres.
+  #
+  # It used to run only when somebody remembered, only against the preview
+  # database, and only as one particular person: it found "me" by a hardcoded
+  # email and then scored that account, wrote ledger rows against it and deleted
+  # its derived rows on the way out. It now creates its own three people and its
+  # own admin, so it runs anywhere and is a check rather than a ritual.
+  #
+  # No dev server here, so the HTTP half skips itself and says so. That half is
+  # run by hand against a server: `bun run break-in:local` beside `bun run
+  # local`, or `bun run break-in -- --http=<origin>` against a real-auth one.
+  break-in:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      LOCAL_MODE: "1"
+      DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL_POOLED: postgresql://ci:ci@localhost:5432/ci
+      BETTER_AUTH_SECRET: ci-break-in-secret
+      BETTER_AUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Migrate from empty
+        run: bun run scripts/migrate.ts
+
+      - name: Sync the activity registry
+        run: bun run scripts/sync-activities.ts
+
+      - name: Break in
+        run: bun run scripts/break-in/run.ts

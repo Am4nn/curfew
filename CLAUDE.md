@@ -207,12 +207,19 @@ local      bun run local           — Next.js against .env.local (docker, mock 
 test       bun run test            — Vitest, domain core, no database
 migrate    bun run migrate         — migrations, then sync, against .env.preview
 break-in   bun run break-in        — the security round; non-zero if anything gives
+break-in   bun run break-in:local  — the same round against docker, and it sweeps HTTP
 sync       bun run sync:activities — registry into activity_types, disabled
 verify     bun run verify          — recompute a range and diff stored rows
 seed       bun run local:seed      — mock data into the local database
 mocks      node .design/build-v3.mjs — regenerate every artboard
 cors       bun run check:cors      — can a browser upload from this origin
 ```
+
+`break-in` builds its own people and groups and deletes them again, so it is
+safe against any database and runs in CI on every push. Its HTTP half needs a
+server: `break-in:local` sweeps `localhost:3000` beside `bun run local`, and
+`bun run break-in -- --http=<origin>` sweeps a real-auth one. Without a server
+that half skips itself and says so.
 
 `check:cors` takes origins as arguments and defaults to the one in
 `BETTER_AUTH_URL`; `check:cors:production` is the same against the live bucket.

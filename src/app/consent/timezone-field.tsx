@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TimezoneSelect } from "@/app/settings/timezone-select";
 import { deviceZone } from "@/lib/zones";
+import { useClientValue } from "@/app/use-client-value";
 
 /**
  * The zone, on the consent gate, before anything is scored.
@@ -23,22 +24,19 @@ export function TimezoneField({
   zones: string[];
   fallback: string;
 }) {
-  const [zone, setZone] = useState(fallback);
+  // The device answers, unless they have said otherwise on this screen. The
+  // server renders the app default, which is what would have been used anyway.
+  const detected = useClientValue(deviceZone, null);
+  const [chosen, setChosen] = useState<string | null>(null);
+  const zone = chosen ?? detected ?? fallback;
   const [editing, setEditing] = useState(false);
-
-  // After hydration, because the server has no way to know. Until it runs, the
-  // field carries the app default, which is what would have been used anyway.
-  useEffect(() => {
-    const found = deviceZone();
-    if (found) setZone(found);
-  }, []);
 
   return (
     <section className="flex flex-col gap-[10px] border border-rule p-[13px]">
       <span className="text-[10px] tracking-[0.16em] text-muted">YOUR DAY</span>
 
       {editing ? (
-        <TimezoneSelect zones={zones} defaultValue={zone} onChange={setZone} />
+        <TimezoneSelect zones={zones} defaultValue={zone} onChange={setChosen} />
       ) : (
         <div className="flex items-baseline justify-between gap-[10px]">
           <input type="hidden" name="timezone" value={zone} />

@@ -1,15 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { adoptDeviceTimezoneAction } from "@/app/settings/actions";
 import { SubmitButton } from "@/app/ui";
 import { deviceZone, sameClock } from "@/lib/zones";
+import { useClientValue } from "@/app/use-client-value";
 
 // Where a dismissal is remembered. Per device and per pair of zones, because the
 // mismatch is a fact about this device: keeping Kolkata on a laptop that is
 // briefly in London says nothing about the phone, and landing somewhere new
 // makes it a different question that deserves asking again.
 const KEPT = "curfew.tz.kept";
+
+function keptPair(): string | null {
+  try {
+    return localStorage.getItem(KEPT);
+  } catch {
+    // Storage can be refused outright. Ask rather than not ask.
+    return null;
+  }
+}
 
 /**
  * The device says one thing and Curfew is judging another.
@@ -23,23 +33,17 @@ const KEPT = "curfew.tz.kept";
  * that. It clears itself the moment they agree, either way.
  */
 export function TimezoneMismatch({ stored }: { stored: string }) {
-  const [device, setDevice] = useState<string | null>(null);
+  // Both of these are the browser's to answer and neither changes while the
+  // page lives, so they are read straight rather than through an effect.
+  const device = useClientValue(deviceZone, null);
+  const dismissed = useClientValue(keptPair, null);
+  const [kept, setKept] = useState(false);
 
-  useEffect(() => {
-    const found = deviceZone();
-    // Same clock is the test, not the same name: browsers disagree about
-    // Asia/Calcutta and Asia/Kolkata, and telling somebody they have moved
-    // country because of a spelling would be worse than saying nothing.
-    if (!found || sameClock(found, stored)) return;
-    try {
-      if (localStorage.getItem(KEPT) === `${stored}|${found}`) return;
-    } catch {
-      // Storage can be refused outright. Ask again rather than not at all.
-    }
-    setDevice(found);
-  }, [stored]);
-
-  if (!device) return null;
+  // Same clock is the test, not the same name: browsers disagree about
+  // Asia/Calcutta and Asia/Kolkata, and telling somebody they have moved
+  // country because of a spelling would be worse than saying nothing.
+  if (kept || !device || sameClock(device, stored)) return null;
+  if (dismissed === `${stored}|${device}`) return null;
 
   return (
     <div className="flex flex-col gap-[9px] border border-accent p-[13px]">
@@ -66,7 +70,7 @@ export function TimezoneMismatch({ stored }: { stored: string }) {
               // Nothing to do. It asks again next time, which is the safe way
               // for this to fail.
             }
-            setDevice(null);
+            setKept(true);
           }}
           className="border border-rule px-3 py-[7px] text-[12.5px] text-muted"
         >

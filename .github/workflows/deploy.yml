@@ -17,8 +17,9 @@ name: Deploy
 # finishes the job. Rolling back is Instant Rollback in the dashboard, or a
 # promote of the previous deployment.
 #
-# Typecheck and test gate all of it. A Vercel build that fails is never promoted,
-# so production keeps serving the previous deployment either way.
+# CI's result on this exact commit gates all of it, rather than a shorter copy of
+# it running here. A Vercel build that fails is never promoted, so production
+# keeps serving the previous deployment either way.
 #
 # Two ways in:
 #   a v* tag        deploys to PRODUCTION and promotes it
@@ -34,7 +35,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Production does not ship unless CI passed on this exact commit.
+  #
+  # This used to be an inline typecheck and test here, which was a second,
+  # shorter list of the same checks: the two could drift, and the deploy's copy
+  # was always the weaker one. Requiring CI's own result instead means a tag
+  # carries everything CI runs, including the migration, security, simulation
+  # and dependency jobs that were never repeated here.
+  #
+  # CI runs on pushes to main, so the commit has to be on main and finished
+  # before the tag is pushed. It is checked by SHA rather than by ref, because a
+  # tag can be moved to a commit CI never saw.
+  ci:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: CI passed on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          conclusion="$(gh api \
+            "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA&status=completed&per_page=1" \
+            --jq '.workflow_runs[0].conclusion // "none"')"
+          if [ "$conclusion" = "success" ]; then
+            echo "CI passed on $SHA"
+            exit 0
+          fi
+          if [ "$conclusion" = "none" ]; then
+            echo "No completed CI run for $SHA."
+            echo "Push the commit to main and let CI finish before tagging it."
+          else
+            echo "CI concluded '$conclusion' on $SHA. Not deploying."
+          fi
+          exit 1
+
   deploy:
+    needs: ci
+    # `needs` on a job that is skipped skips this one too, so a manual preview
+    # run has to say it wants to go ahead without the gate.
+    if: always() && (needs.ci.result == 'success' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -53,15 +95,6 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
-
-      # A tag that fails these must not reach production. CI already ran on the
-      # commit, but a tag can be moved and this is the last gate before a
-      # deploy that real people see.
-      - name: Typecheck
-        run: bun run typecheck
-
-      - name: Test
-        run: bun run test
 
       # The admin console reads its version from package.json, so a tag that
       # disagrees with it would put a number on screen that is not what shipped.

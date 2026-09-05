@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
 
@@ -11,11 +11,15 @@ type Theme = "dark" | "light";
 export function ThemeToggle({ initial }: { initial: Theme }) {
   const [theme, setTheme] = useState<Theme>(initial);
 
-  function set(next: Theme) {
-    document.documentElement.dataset.theme = next;
-    document.cookie = `theme=${next}; path=/; max-age=31536000; samesite=lax`;
-    setTheme(next);
-  }
+  // Push the choice out to the two things that are not React: the attribute the
+  // stylesheet reads, and the cookie the server reads on the next load. Both are
+  // external systems being brought in line with state, which is exactly what an
+  // effect is for. Writing them from the click handler instead mutated values
+  // the component does not own.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.cookie = `theme=${theme}; path=/; max-age=31536000; samesite=lax`;
+  }, [theme]);
 
   return (
     <div className="flex border border-rule">
@@ -26,7 +30,7 @@ export function ThemeToggle({ initial }: { initial: Theme }) {
         <button
           key={t}
           type="button"
-          onClick={() => set(t)}
+          onClick={() => setTheme(t)}
           aria-pressed={theme === t}
           aria-label={`${label} theme`}
           className={

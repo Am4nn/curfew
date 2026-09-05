@@ -51,6 +51,33 @@ jobs:
           RESEND_API_KEY: ci-resend-key
           EMAIL_FROM: "Curfew <notices@example.com>"
 
+  # What we depend on, on the two axes a lockfile cannot answer by itself:
+  # published advisories, and packages their own authors have retired.
+  #
+  # Its own job on purpose. Both read the live npm registry, so this one can turn
+  # red on a morning when nothing in the repo changed, and that must not look
+  # like the code failing.
+  deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: No known advisories
+        run: bun audit
+
+      # Fails on anything deprecated that is not written down as deliberate, in
+      # ALLOWED in the script, with a reason.
+      - name: Nothing we chose is deprecated
+        run: bun run check:deps
+
   # Migrations and the registry sync, against a throwaway Postgres. This proves
   # `bun run migrate` applies every numbered file cleanly from empty and that
   # sync-activities reconciles every registered module into a row.
@@ -161,3 +188,72 @@ jobs:
 
       - name: Break in
         run: bun run scripts/break-in/run.ts
+
+  # The engine, end to end, against its own throwaway Postgres.
+  #
+  # These are integration tests in everything but name and they are the only
+  # things that would catch a change to the reputation curve, the fine split or
+  # the streak rules. The 232 unit tests cover the domain, which is pure; every
+  # layer above it is covered only here.
+  #
+  # Two passes, because they answer different questions. `simulate` runs 30
+  # written scenarios and asserts what each one should produce, and re-verifies
+  # after every one. `verify` then rebuilds a seeded database from its events and
+  # diffs it against what is stored, which is the check that the stored rows and
+  # a full replay still agree.
+  simulate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    # The whole set, for the same reason the break-in job carries it: env.ts
+    # validates all of it at module load, and locally bun quietly supplies the
+    # missing ones from .env.local.
+    env:
+      LOCAL_MODE: "1"
+      DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL_POOLED: postgresql://ci:ci@localhost:5432/ci
+      BETTER_AUTH_SECRET: ci-simulate-secret
+      BETTER_AUTH_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: ci-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-google-client-secret
+      CRON_SECRET: ci-cron-secret
+      RESEND_API_KEY: ci-resend-key
+      EMAIL_FROM: "Curfew <notices@example.com>"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Migrate from empty
+        run: bun run scripts/migrate.ts
+
+      - name: Sync the activity registry
+        run: bun run scripts/sync-activities.ts
+
+      # Wipes between scenarios and leaves the database empty, which is why the
+      # seed below comes after it rather than before.
+      - name: Every scenario
+        run: bun run scripts/simulate/run.ts
+
+      - name: Seed a history
+        run: bun run scripts/seed-local.ts
+
+      - name: The stored rows agree with a replay
+        run: bun run scripts/verify.ts

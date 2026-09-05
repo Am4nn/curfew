@@ -13,7 +13,6 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
-import react from "eslint-plugin-react";
 import next from "@next/eslint-plugin-next";
 import globals from "globals";
 
@@ -37,15 +36,11 @@ export default defineConfig([
       },
       globals: { ...globals.browser, ...globals.node },
     },
-    settings: { react: { version: "detect" } },
     plugins: {
-      react,
       "react-hooks": reactHooks,
       "@next/next": next,
     },
     rules: {
-      ...react.configs.flat.recommended.rules,
-      ...react.configs.flat["jsx-runtime"].rules,
       ...reactHooks.configs.recommended.rules,
       ...next.configs.recommended.rules,
       ...next.configs["core-web-vitals"].rules,
@@ -60,6 +55,12 @@ export default defineConfig([
           caughtErrors: "none",
         },
       ],
+
+      // Calling something its author has marked @deprecated. TypeScript only
+      // strikes it through in an editor, which nobody sees in CI, and this is
+      // how `tseslint.config` and every other quietly-retired API gets found
+      // while there is still a replacement rather than after it is removed.
+      "@typescript-eslint/no-deprecated": "error",
 
       // A promise dropped on the floor stays on: a write that never lands is
       // exactly the failure this codebase cannot see, because it has no

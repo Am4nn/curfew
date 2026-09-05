@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useClientValue } from "./use-client-value";
 
 /**
  * The `‹` in a screen header. Goes back to where you actually came from.
@@ -32,14 +32,11 @@ export function BackLink({
   children?: React.ReactNode;
 }) {
   const router = useRouter();
-  const [canGoBack, setCanGoBack] = useState(false);
 
-  // history.length counts entries in this tab, and a fresh tab lands on 1.
-  // Read after mount, because the server has no history to read and rendering
-  // two different things would hydrate wrong.
-  useEffect(() => {
-    setCanGoBack(window.history.length > 1);
-  }, []);
+  // history.length counts entries in this tab, and a fresh tab lands on 1. The
+  // server has no history to read, so it renders the link and the browser takes
+  // over in one pass.
+  const canGoBack = useClientValue(() => window.history.length > 1, false);
 
   if (!canGoBack) {
     return (

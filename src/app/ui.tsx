@@ -374,9 +374,20 @@ export function ConfirmButton({
   const [state, formAction] = useActionState(action, {});
   const [open, setOpen] = useState(false);
 
+  // A run that succeeded closes the sheet. This is the one place the rule below
+  // has no replacement to offer: `useActionState` gives no way to reset its
+  // result, so "the action finished" is only observable as a change to `state`,
+  // and reacting to it is what an effect is. Deriving it instead means
+  // comparing result identities across renders, which is harder to read and
+  // harder to be sure of than the two lines it replaces.
+  //
+  // It is a cascading-render rule, not a rule of React, so the React Compiler
+  // still compiles this component. Revisit when React ships a reset.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (state.ok) setOpen(false);
   }, [state]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const triggerClass =
     tone === "danger"

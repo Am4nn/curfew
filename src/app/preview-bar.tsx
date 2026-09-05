@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useClientValue } from "./use-client-value";
 
 // A dev-only floating control for the mock clock. Collapsed it is a small dot in
 // the corner (like a dev indicator) so it never covers the UI; click to expand
@@ -25,15 +26,17 @@ function toLocalInput(d: Date): string {
 }
 
 export function PreviewBar() {
-  const [value, setValue] = useState("");
-  const [mocking, setMocking] = useState(false);
+  // The cookie is the browser's to answer, and it does not change under us: the
+  // only things that write it reload the page straight afterwards.
+  const iso = useClientValue(() => readCookie(COOKIE), null);
+  const mocking = iso !== null;
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const iso = readCookie(COOKIE);
-    setMocking(!!iso);
-    setValue(toLocalInput(iso ? new Date(iso) : new Date()));
-  }, []);
+  // The field shows the mocked instant until somebody types, and then it is
+  // theirs. Seeded with "now" on first focus rather than at render, because a
+  // snapshot built from the clock would differ on every pass.
+  const [typed, setTyped] = useState<string | null>(null);
+  const value = typed ?? (iso ? toLocalInput(new Date(iso)) : "");
 
   function applyInstant(d: Date) {
     if (Number.isNaN(d.getTime())) return;
@@ -86,7 +89,10 @@ export function PreviewBar() {
           <input
             type="datetime-local"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onFocus={() => {
+              if (value === "") setTyped(toLocalInput(new Date()));
+            }}
+            onChange={(e) => setTyped(e.target.value)}
             style={{ ...btn, cursor: "text", width: "100%" }}
           />
           <div style={{ display: "flex", gap: 6 }}>

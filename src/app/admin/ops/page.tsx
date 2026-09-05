@@ -4,6 +4,7 @@ import { can, getDriftReport } from "@/server/admin";
 import { runRebuildAction } from "../actions";
 import { ActionForm, SubmitButton } from "../../ui";
 import { evidenceOps, humanBytes } from "@/server/ops";
+import { now } from "@/lib/clock";
 
 function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -27,8 +28,11 @@ export default async function AdminOps({
   if (!canVerify && !canRebuild) redirect("/admin");
 
   const sp = await searchParams;
-  const to = sp.to || isoDate(new Date());
-  const from = sp.from || isoDate(new Date(Date.now() - 30 * 864e5));
+  // The app's clock, not the machine's, so the preview clock moves this range
+  // the same way it moves every other screen (invariant 8).
+  const instant = await now();
+  const to = sp.to || isoDate(instant);
+  const from = sp.from || isoDate(new Date(instant.getTime() - 30 * 864e5));
 
   const [ev, driftReport] = await Promise.all([
     evidenceOps(),

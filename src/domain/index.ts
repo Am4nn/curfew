@@ -98,9 +98,10 @@ export {
 } from "./reputation";
 export {
   RANKS,
-  IMMACULATE_FROM,
+  IMMACULATE_CLEAN_DAYS,
   rankFor,
   isImmaculate,
+  daysToImmaculate,
   nextRank,
   type Rank,
   type RankKey,

@@ -44,10 +44,15 @@ export default async function Home({
   const [balances, standings] = await Promise.all([
     userBalances(user.id),
     Promise.all(
-      groups.map(async (g) => ({
-        ...g,
-        score: (await standingIn(g.groupId, user.id)).score,
-      })),
+      groups.map(async (g) => {
+        const standing = await standingIn(g.groupId, user.id);
+        return {
+          ...g,
+          score: standing.score,
+          cleanDays: standing.cleanDays,
+          grace: standing.grace,
+        };
+      }),
     ),
   ]);
 
@@ -109,6 +114,28 @@ export default async function Home({
           />
         )}
 
+        {/* A group that has not started counting you yet, said once, where the
+            day is. Otherwise a member checks in all day for a group that is
+            not looking, or worse, does not and expects to be fined. */}
+        {standings
+          .filter((g) => g.grace)
+          .map((g) => (
+            <div key={g.groupId} className="flex flex-col gap-[5px] border border-accent p-[13px]">
+              <div className="flex items-baseline justify-between gap-[10px]">
+                <span className="text-[12.5px] text-accent">
+                  {g.name} starts counting you at midnight.
+                </span>
+                <span className="flex-none text-[11px] text-accent">
+                  {g.grace!.hoursLeft}h
+                </span>
+              </div>
+              <span className="text-[11.5px] leading-[1.55] text-muted">
+                Nothing there can cost you money or reputation yet. Your streaks
+                count today as normal.
+              </span>
+            </div>
+          ))}
+
         {showMoney ? (
           <section className="flex flex-col gap-[10px]">
             <span className="text-[10px] tracking-[0.16em] text-muted">BALANCES</span>
@@ -144,7 +171,13 @@ export default async function Home({
                   className="flex items-center gap-3 border-b border-rule py-[13px]"
                 >
                   <span className="flex-1 text-[14px]">{g.name}</span>
-                  <RankScore score={g.score} size={15} />
+                  {g.grace ? (
+                    <span className="flex-none border border-accent px-[7px] py-[3px] text-[10px] tracking-[0.12em] text-accent">
+                      GRACE
+                    </span>
+                  ) : (
+                    <RankScore score={g.score} cleanDays={g.cleanDays} size={15} />
+                  )}
                 </Link>
               ))}
             </div>

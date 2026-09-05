@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
-import { rankFor } from "@/domain";
+import { rankFor, isImmaculate } from "@/domain";
 import { acceptedTypes } from "@/server/sharing";
 import { groupHeader, memberStandings, standingIn, weekStats } from "@/server/group-view";
 import { ActivityIcon } from "../../../activity-icon";
-import { RankScore, RANK_TEXT } from "../../../rank-icon";
+import { RankScore, rankText } from "../../../rank-icon";
 import { InviteForm } from "./invite-form";
 
 export default async function GroupOverview({
@@ -26,7 +26,9 @@ export default async function GroupOverview({
   ]);
   if (!header) redirect("/groups");
 
-  const rank = rankFor(standing.score);
+  const held = isImmaculate(standing.score, standing.cleanDays);
+  const title = held ? "IMMACULATE" : rankFor(standing.score).name;
+  const colour = rankText(standing.score, standing.cleanDays);
 
   return (
     <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
@@ -63,15 +65,37 @@ export default async function GroupOverview({
             >
               <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                 <div className="flex items-baseline gap-[7px]">
-                  <span className="text-[14px]">{m.you ? "You" : m.name}</span>
-                  {m.you ? <span className="text-[10px] text-muted">you</span> : null}
+                  <span className={"text-[14px]" + (m.grace ? " text-muted" : "")}>
+                    {m.you ? "You" : m.name}
+                  </span>
+                  {m.grace ? (
+                    <span className="text-[10px] text-accent">joined today</span>
+                  ) : m.you ? (
+                    <span className="text-[10px] text-muted">you</span>
+                  ) : null}
                 </div>
-                <span className="truncate text-[11px] text-muted">{m.streaks}</span>
+                <span className="truncate text-[11px] text-muted">
+                  {m.grace
+                    ? `Counted from midnight, ${m.grace.hoursLeft}h`
+                    : m.streaks}
+                </span>
               </div>
-              <RankScore score={m.score} />
+              {/* No score to show yet, so the slot that carries one says why. */}
+              {m.grace ? (
+                <span className="flex-none border border-accent px-[7px] py-[3px] text-[10px] tracking-[0.12em] text-accent">
+                  GRACE
+                </span>
+              ) : (
+                <RankScore score={m.score} cleanDays={m.cleanDays} />
+              )}
             </div>
           ))}
         </div>
+        {members.some((m) => m.grace) ? (
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            A member is not scored or fined here on the day they join.
+          </span>
+        ) : null}
       </section>
 
       <Link
@@ -79,16 +103,28 @@ export default async function GroupOverview({
         className="flex items-center justify-between gap-3 border border-rule p-[13px]"
       >
         <div className="flex flex-col gap-[3px]">
-          <span className="text-[12.5px]">
-            You are {Math.round(standing.score)},{" "}
-            <span className={"tracking-[0.1em] " + RANK_TEXT[rank.key]}>{rank.name}</span>{" "}
-            here
-          </span>
-          <span className="text-[11px] text-muted">
-            {standing.movements[0]
-              ? `${standing.movements[0].delta >= 0 ? "+" : ""}${Math.round(standing.movements[0].delta)} today`
-              : "nothing scored yet"}
-          </span>
+          {standing.grace ? (
+            <>
+              <span className="text-[12.5px]">
+                You are in grace for {standing.grace.hoursLeft}h
+              </span>
+              <span className="text-[11px] text-muted">
+                counting starts at midnight, at {Math.round(standing.score)}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-[12.5px]">
+                You are {Math.round(standing.score)},{" "}
+                <span className={"tracking-[0.1em] " + colour}>{title}</span> here
+              </span>
+              <span className="text-[11px] text-muted">
+                {standing.movements[0]
+                  ? `${standing.movements[0].delta >= 0 ? "+" : ""}${Math.round(standing.movements[0].delta)} today`
+                  : "nothing scored yet"}
+              </span>
+            </>
+          )}
         </div>
         <span className="text-[13px] text-muted">&rsaquo;</span>
       </Link>

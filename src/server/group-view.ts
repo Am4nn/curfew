@@ -10,10 +10,13 @@ import {
   evidence,
   ledgerEntries,
 } from "@/db/schema";
-import { getActivityType, START_SCORE, type DayReason } from "@/domain";
+import { getActivityType, joiningScore, START_SCORE, type DayReason } from "@/domain";
 import { assertMember, memberRole } from "./membership";
 import { acceptedTypes, sharesFor, ownerMoneyToggle } from "./sharing";
 import { moneyOnFor } from "./app-config";
+import { gracesIn, type GracePeriod } from "./grace";
+import { cleanRunIn, cleanRunsIn } from "./clean-run";
+import { globalScore } from "./scoring";
 
 // Everything the group hub reads. Every query here is behind assertMember
 // (invariant 10), and every one of them is scoped to what the member in
@@ -52,8 +55,12 @@ export interface MemberStanding {
   name: string;
   you: boolean;
   score: number;
+  /** Days running with nothing missed here, which is what the glow reads. */
+  cleanDays: number;
   /** "Sleep 15 · Gym 24", the streaks of what they share here. */
   streaks: string;
+  /** Set while this group is not counting them yet. They have no score here. */
+  grace: GracePeriod | null;
 }
 
 /**
@@ -76,6 +83,7 @@ export async function memberStandings(
   if (members.length === 0) return [];
 
   const ids = members.map((m) => m.userId);
+  const [graces, cleanRuns] = await Promise.all([gracesIn(groupId), cleanRunsIn(groupId)]);
   const [scores, outcomes] = await Promise.all([
     db
       .select({
@@ -125,12 +133,19 @@ export async function memberStandings(
       name: m.name,
       you: m.userId === viewerId,
       score: latest.get(m.userId) ?? START_SCORE,
+      cleanDays: cleanRuns.get(m.userId) ?? 0,
       streaks: streaks || "nothing shared yet",
+      grace: graces.get(m.userId) ?? null,
     });
   }
 
   // Ranks are comparable and competitive by decision, so the list is ordered.
-  return out.sort((a, b) => b.score - a.score);
+  // A member in grace has no score here yet and sits under everyone who does,
+  // rather than at the bottom of the ladder on a number that is not theirs.
+  return out.sort((a, b) => {
+    if ((a.grace === null) !== (b.grace === null)) return a.grace === null ? -1 : 1;
+    return b.score - a.score;
+  });
 }
 
 export interface Movement {
@@ -144,6 +159,14 @@ export interface Standing {
   ceiling: number;
   breadth: { shared: number; accepted: number };
   movements: Movement[];
+  /** Days running with nothing missed here. Zero while in grace. */
+  cleanDays: number;
+  /**
+   * Set while the group has not started counting this member. `score` is then
+   * what they will start on rather than what they hold, and nothing they do
+   * today can move it.
+   */
+  grace: GracePeriod | null;
 }
 
 export async function standingIn(
@@ -165,13 +188,22 @@ export async function standingIn(
     .orderBy(desc(reputationDaily.day))
     .limit(7);
 
-  const [accepted, shares] = await Promise.all([
+  const [accepted, shares, graces, cleanDays] = await Promise.all([
     acceptedTypes(groupId),
     sharesFor(groupId, userId),
+    gracesIn(groupId),
+    cleanRunIn(userId, groupId),
   ]);
 
+  // In grace there is no stored day yet, so the number to show is the one the
+  // group will open them on: their own record, flattened into 100..300
+  // (decision 10). Showing the bare start score instead would be a number
+  // nothing is ever going to use.
+  const grace = graces.get(userId) ?? null;
+  const opening = grace ? joiningScore(await globalScore(userId)) : START_SCORE;
+
   return {
-    score: rows[0] ? Number(rows[0].score) : START_SCORE,
+    score: rows[0] ? Number(rows[0].score) : opening,
     ceiling: rows[0] ? Number(rows[0].ceiling) : 1000,
     breadth: {
       shared: shares.filter((s) => s.shared).length,
@@ -182,6 +214,8 @@ export async function standingIn(
       delta: Number(r.delta),
       reason: r.reason as DayReason,
     })),
+    cleanDays,
+    grace,
   };
 }
 

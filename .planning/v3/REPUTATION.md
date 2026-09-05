@@ -105,8 +105,9 @@ constants, not the properties.
 | Starting score | 200, unless the hidden global score says otherwise |
 | First rank-up (200 to 350) on a perfect record | around 5 weeks |
 | Reaching 600 | around 2 months |
-| Reaching 850 | around 4 to 5 months |
+| Reaching 900, the top band | around 5 to 6 months |
 | Reaching 950 | around 7 to 8 months of near-perfect breadth-complete adherence |
+| Holding IMMACULATE | not a score at all: the top band plus 60 days with nothing missed (decision 122) |
 | Reaching 1000 | asymptotic, treated as unreachable, and said so plainly in the UI |
 | Cost of one missed day at the top | roughly a week of clean days to recover |
 | Cost of one missed day near the start | small, a couple of days to recover |

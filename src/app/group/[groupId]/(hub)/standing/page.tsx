@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
-import { rankFor, nextRank, formatMoney } from "@/domain";
+import { rankFor, nextRank, formatMoney, isImmaculate, daysToImmaculate } from "@/domain";
 import { groupHeader, standingIn, groupBalances } from "@/server/group-view";
-import { RankIcon, RANK_TEXT, RANK_BG } from "../../../../rank-icon";
+import { RankIcon, RANK_TEXT, RANK_BG, rankText } from "../../../../rank-icon";
+import { CleanBar } from "@/app/clean-bar";
 
 const REASON: Record<string, string> = {
   clean: "All shared activities done",
@@ -28,9 +29,11 @@ export default async function StandingTab({
   ]);
   if (!header) redirect("/groups");
 
+  const { grace, cleanDays } = standing;
   const rank = rankFor(standing.score);
   const next = nextRank(standing.score);
-  const colour = RANK_TEXT[rank.key];
+  const held = isImmaculate(standing.score, cleanDays);
+  const colour = rankText(standing.score, cleanDays);
   const fill = RANK_BG[rank.key];
   const owed = header.moneyOn ? await groupBalances(groupId, user.id) : [];
 
@@ -39,16 +42,42 @@ export default async function StandingTab({
 
   return (
     <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
-      <div className="flex items-center gap-[15px]">
+      {/* In grace this comes first, because it is the answer to every question
+          the rest of the screen raises. */}
+      {grace ? (
+        <div className="flex flex-col gap-2 border border-accent p-[14px]">
+          <div className="flex items-baseline justify-between gap-[10px]">
+            <span className="text-[10px] tracking-[0.16em] text-accent">GRACE PERIOD</span>
+            <span className="text-[12px] text-accent">
+              {grace.hoursLeft} {grace.hoursLeft === 1 ? "hour" : "hours"} left
+            </span>
+          </div>
+          <span className="text-[13px] leading-[1.55]">
+            {header.name} starts counting you at midnight.
+          </span>
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            Nothing today can move your score here or cost you money. The group
+            can see you are in grace.
+          </span>
+        </div>
+      ) : null}
+
+      <div className={"flex items-center gap-[15px]" + (grace ? " opacity-55" : "")}>
         <span className={"flex flex-none " + colour}>
-          <RankIcon score={standing.score} size={42} />
+          <RankIcon score={standing.score} cleanDays={cleanDays} size={42} />
         </span>
         <div className="flex flex-col gap-[5px]">
           <span className={"text-[32px] font-semibold leading-none " + colour}>
             {Math.round(standing.score)}
           </span>
           <span className="text-[10.5px] tracking-[0.14em] text-muted">
-            {next ? `${next.away} TO ${next.rank.name}` : rank.name}
+            {grace
+              ? "STARTS TOMORROW"
+              : held
+                ? "IMMACULATE"
+                : next
+                  ? `${next.away} TO ${next.rank.name}`
+                  : rank.name}
           </span>
         </div>
         <Link
@@ -59,8 +88,59 @@ export default async function StandingTab({
         </Link>
       </div>
 
+      {/* The clean run, once the score is high enough for it to be the thing
+          standing between here and the title. Below UNBROKEN the score is what
+          needs moving, and a run of clean days is how it moves anyway. */}
+      {!grace && held ? (
+        <div className="flex flex-col gap-[5px] border border-gold p-[13px]">
+          <span className="text-[12.5px] text-gold">
+            {cleanDays} days, nothing missed.
+          </span>
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            One missed day ends the run and the title. The score stays.
+          </span>
+        </div>
+      ) : null}
+
+      {!grace && !held && rank.key === "unbroken" ? (
+        <div className="flex flex-col gap-[11px] border border-rule p-[13px]">
+          <span className="text-[10px] tracking-[0.16em] text-muted">
+            TOWARD IMMACULATE
+          </span>
+          <CleanBar cleanDays={cleanDays} />
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            UNBROKEN already. {daysToImmaculate(cleanDays)} more days with
+            nothing missed.
+          </span>
+        </div>
+      ) : null}
+
+      {grace ? (
+        <section className="flex flex-col gap-[10px]">
+          <span className="text-[10px] tracking-[0.16em] text-muted">STILL COUNTING</span>
+          {[
+            ["Your streaks", "Yours, not the group's. Unaffected."],
+            ["Your own record", "The score only you can see."],
+          ].map(([what, why]) => (
+            <div
+              key={what}
+              className="flex items-center justify-between gap-[10px] border-b border-rule py-3"
+            >
+              <div className="flex flex-col gap-[2px]">
+                <span className="text-[12.5px]">{what}</span>
+                <span className="text-[10.5px] text-muted">{why}</span>
+              </div>
+              <span className="text-[13px] text-pass">Running</span>
+            </div>
+          ))}
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            Once, on the day you join. Rejoining does not give you another.
+          </span>
+        </section>
+      ) : null}
+
       {/* A group with money off never mentions it at all (decision 43). */}
-      {header.moneyOn ? (
+      {header.moneyOn && !grace ? (
         <section className="flex flex-col gap-[10px]">
           <span className="text-[10px] tracking-[0.16em] text-muted">MONEY</span>
           {owed.length === 0 ? (
@@ -103,12 +183,15 @@ export default async function StandingTab({
             <span className="text-[11px] text-muted">every fine and settlement &rsaquo;</span>
           </Link>
         </section>
-      ) : (
+      ) : grace ? null : (
         <div className="text-[11.5px] leading-[1.55] text-muted">
           A miss costs your streak and your standing here.
         </div>
       )}
 
+      {/* Neither of these exists yet in grace: no ceiling has been resolved and
+          no day has been scored. */}
+      {grace ? null : (
       <section className="flex flex-col gap-2">
         <span className="text-[10px] tracking-[0.16em] text-muted">CEILING</span>
         <div className="relative h-[6px] bg-rule">
@@ -136,7 +219,9 @@ export default async function StandingTab({
               : `You share ${standing.breadth.shared} of the ${standing.breadth.accepted} activities this group accepts. Sharing more raises the ceiling.`}
         </span>
       </section>
+      )}
 
+      {grace ? null : (
       <section className="flex flex-col gap-[10px]">
         <span className="text-[10px] tracking-[0.16em] text-muted">LAST 7 DAYS</span>
         {standing.movements.length === 0 ? (
@@ -166,6 +251,7 @@ export default async function StandingTab({
           </div>
         )}
       </section>
+      )}
     </div>
   );
 }

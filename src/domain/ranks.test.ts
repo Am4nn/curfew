@@ -18,8 +18,10 @@ describe("rank bands", () => {
     expect(rankFor(350).name).toBe("PRACTICE");
     expect(rankFor(599).name).toBe("PRACTICE");
     expect(rankFor(600).name).toBe("DISCIPLINE");
-    expect(rankFor(849).name).toBe("DISCIPLINE");
-    expect(rankFor(850).name).toBe("UNBROKEN");
+    // UNBROKEN moved from 850 to 900. At 850 a steady one-miss-a-week settles
+    // in the top band, which made the top band mean "most of the time".
+    expect(rankFor(899).name).toBe("DISCIPLINE");
+    expect(rankFor(900).name).toBe("UNBROKEN");
     expect(rankFor(1000).name).toBe("UNBROKEN");
   });
 
@@ -31,12 +33,15 @@ describe("rank bands", () => {
   it("treats IMMACULATE as a title inside UNBROKEN, not a sixth band", () => {
     expect(RANKS).toHaveLength(5);
     expect(rankFor(960).name).toBe("UNBROKEN");
-    expect(isImmaculate(949)).toBe(false);
-    expect(isImmaculate(950)).toBe(true);
+    // A title inside UNBROKEN, and it takes a clean run as well as a score.
+    expect(isImmaculate(899, 60)).toBe(false); // below UNBROKEN
+    expect(isImmaculate(960, 59)).toBe(false); // one day short
+    expect(isImmaculate(960, 60)).toBe(true);
+    expect(isImmaculate(1000, 0)).toBe(false); // a high score is not a record
   });
 
   it("says how far the next rank is, and nothing at the top", () => {
-    expect(nextRank(640)).toMatchObject({ away: 210 });
+    expect(nextRank(640)).toMatchObject({ away: 260 });
     expect(nextRank(640)?.rank.name).toBe("UNBROKEN");
     expect(nextRank(900)).toBeNull();
   });

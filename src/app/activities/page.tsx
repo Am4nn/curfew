@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { getActivityType, rankFor, type ScheduleConfig } from "@/domain";
+import { getActivityType, rankFor, isImmaculate, type ScheduleConfig } from "@/domain";
 import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { globalScore } from "@/server/scoring";
+import { cleanRunIn } from "@/server/clean-run";
 import { QuorumMark } from "../mark";
 import { ActivityIcon, Flame } from "../activity-icon";
-import { RankIcon, RANK_TEXT } from "../rank-icon";
+import { RankIcon, rankText } from "../rank-icon";
 
 /** "Daily, 3 windows, photo on confirm", from the type's own declaration. */
 function summarise(typeKey: string, schedule: ScheduleConfig, config: unknown): string {
@@ -38,12 +39,15 @@ export default async function ActivitiesPage() {
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const [mine, score] = await Promise.all([
+  const [mine, score, cleanDays] = await Promise.all([
     listUserActivities(user.id),
     globalScore(user.id),
+    cleanRunIn(user.id, null),
   ]);
   const tracked = mine.filter((a) => a.enabled);
   const rank = rankFor(score);
+  const colour = rankText(score, cleanDays);
+  const title = isImmaculate(score, cleanDays) ? "IMMACULATE" : rank.name;
 
   const rows = await Promise.all(
     tracked.map(async (a) => ({
@@ -64,16 +68,16 @@ export default async function ActivitiesPage() {
 
         {/* The global score. Its owner sees it and nobody else ever does. */}
         <Link href="/ranks" className="flex items-center gap-[13px] border border-rule p-[14px]">
-          <span className={"flex flex-none " + RANK_TEXT[rank.key]}>
-            <RankIcon score={score} size={30} />
+          <span className={"flex flex-none " + colour}>
+            <RankIcon score={score} cleanDays={cleanDays} size={30} />
           </span>
           <div className="flex flex-1 flex-col gap-[3px]">
             <div className="flex items-baseline gap-[9px]">
-              <span className={"text-[20px] font-semibold tabular-nums " + RANK_TEXT[rank.key]}>
+              <span className={"text-[20px] font-semibold tabular-nums " + colour}>
                 {Math.round(score)}
               </span>
-              <span className={"text-[10.5px] tracking-[0.14em] " + RANK_TEXT[rank.key]}>
-                {rank.name}
+              <span className={"text-[10.5px] tracking-[0.14em] " + colour}>
+                {title}
               </span>
             </div>
             <span className="text-[10.5px] leading-[1.5] text-muted">

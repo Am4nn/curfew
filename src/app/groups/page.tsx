@@ -29,7 +29,13 @@ export default async function GroupsPage() {
         groupHeader(g.groupId, user.id),
         standingIn(g.groupId, user.id),
       ]);
-      return { ...g, moneyOn: header?.moneyOn ?? false, score: standing.score };
+      return {
+        ...g,
+        moneyOn: header?.moneyOn ?? false,
+        score: standing.score,
+        cleanDays: standing.cleanDays,
+        grace: standing.grace,
+      };
     }),
   );
 
@@ -64,7 +70,13 @@ export default async function GroupsPage() {
                       {g.moneyOn ? " · money on" : ""}
                     </span>
                   </div>
-                  <RankScore score={g.score} />
+                  {g.grace ? (
+                    <span className="flex-none border border-accent px-[7px] py-[3px] text-[10px] tracking-[0.12em] text-accent">
+                      GRACE
+                    </span>
+                  ) : (
+                    <RankScore score={g.score} cleanDays={g.cleanDays} />
+                  )}
                 </Link>
               ))}
             </div>

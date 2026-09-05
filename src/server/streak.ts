@@ -458,8 +458,13 @@ export async function closeStreaks(userId: string): Promise<void> {
     allStreaks(userId),
     scoredThroughFor(userId),
   ]);
+  // Every type the user has ever tracked, not only the ones switched on.
+  //
+  // Stopping an activity does not delete what it was: the periods it was scored
+  // for are still there, so a counter for them has to be too. Skipping the
+  // disabled ones left a type with scores and no row, and `verify` reported
+  // that as drift, correctly. What the number stops doing is moving.
   for (const a of activities) {
-    if (!a.enabled) continue;
     if (!needsClosing(stored.get(a.typeKey) ?? null, scoredThrough.get(a.typeKey) ?? null)) {
       continue;
     }

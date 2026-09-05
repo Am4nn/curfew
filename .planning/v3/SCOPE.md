@@ -100,8 +100,8 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 8 | Evidence is ephemeral, auto-deleted after **60 days** (decision 101 settled the number) | 2026-09-02 |
 | 9 | Reputation is a running 0 to 1000 score, per user per group, starting at 200 | 2026-09-02 |
 | 10 | A **global reputation** sets a user's starting score in a new group, bounded 100 to 300, and never affects the live score afterwards. It is **shown to its owner** at the top of Activities and to nobody else, and is disclosed in the consent form | 2026-09-02 |
-| 11 | Gains shrink as the score climbs and losses soften too. 1000 is asymptotic. Above 950 is a distinct title | 2026-09-02 |
-| 12 | Ranks: DOUBT, INTENT, PRACTICE, DISCIPLINE, UNBROKEN, plus IMMACULATE above 950 | 2026-09-02 |
+| 11 | Gains shrink as the score climbs and losses soften too. 1000 is asymptotic. The top carries a distinct title (**decision 122** replaces the 950 threshold with a record) | 2026-09-02 |
+| 12 | Ranks: DOUBT, INTENT, PRACTICE, DISCIPLINE, UNBROKEN, plus IMMACULATE (**decision 122**: UNBROKEN from 900, and the title is 60 clean days rather than a score) | 2026-09-02 |
 | 13 | Rank is a band on the number, per group. Ranks are comparable within a group | 2026-09-02 |
 | 14 | The reputation ceiling scales with **breadth**: how many of the group's accepted types you share | 2026-09-02 |
 | 15 | On un-sharing, or an owner removing a type, the score freezes and drifts down to the new ceiling. No cliff | 2026-09-02 |
@@ -211,6 +211,9 @@ Every decision below was taken explicitly. If one is revisited, amend it here.
 | 119 | **Somebody else in frame without their agreement is a rule; your own face is guidance.** Banning faces outright fights the product, since a gym selfie is the honest way to prove a gym session. Photographing another person without their agreement is a removal | 2026-09-03 |
 | 120 | **A report is the only route by which an admin sees a photograph**, and the fact they looked is recorded on the report. Removing a photo and removing a person are separate acts, so taking down one bad picture never quietly takes down an account | 2026-09-03 |
 | 121 | **A ban never clears a debt.** Photographs go with the banned account; ledger rows stay owed and stay visible to the people owed. Otherwise getting banned would be the cheapest way to settle | 2026-09-03 |
+| 122 | **IMMACULATE is a record, not a score**, reversing decisions 11 and 12. It is UNBROKEN plus 60 consecutive days with nothing missed; a day with nothing scheduled is inside the run rather than a break in it. The simulation showed 87.5% completion settling at 969 and holding the old 950 line indefinitely, and the curve saturates near the top, so no threshold on it can mean "nothing missed". UNBROKEN moves from 850 to 900 in the same pass | 2026-09-05 |
+| 123 | **A group does not count the day you join it.** Reputation and money in that group start the following day; the member's own streaks and their own global record count the day exactly as they would have. Grace runs both ways, so somebody inside it neither pays a fine nor receives a share of one, which falls out of having no outcome for the day rather than needing a rule. It is shown to the whole group, because a member sitting at no score with no explanation reads as one being let off | 2026-09-05 |
+| 124 | **Join and leave dates are the member's own day, not UTC.** Both are read by the scorer as day boundaries and the grace period is measured off the join date, so a UTC date hands anybody east of Greenwich who joins after midnight a grace period that has already expired | 2026-09-05 |
 
 ## Invariants
 

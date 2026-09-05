@@ -15,16 +15,32 @@ so early progress is visible, the top ones are wide so they take real time.
 | 5 | DOUBT | 0-99 | Your record does not back you |
 | 4 | INTENT | 100-349 | **Start here.** You have said what you will do |
 | 3 | PRACTICE | 350-599 | You are doing it, most of the time |
-| 2 | DISCIPLINE | 600-849 | It holds when it is inconvenient |
-| 1 | UNBROKEN | 850-1000 | The record has no meaningful gaps |
-| — | IMMACULATE | 950-1000 | A title inside UNBROKEN, not a sixth band |
+| 2 | DISCIPLINE | 600-899 | It holds when it is inconvenient |
+| 1 | UNBROKEN | 900-1000 | The record has no meaningful gaps |
+| — | IMMACULATE | UNBROKEN, 60 clean days | A title inside UNBROKEN, not a sixth band |
 
 Everyone starts at 200, which is rank 4, so rank 5 is somewhere you fall to, not
 somewhere you begin. That is the intended sting: dropping to DOUBT means all you
 have left is the intention.
 
-IMMACULATE is a title, not a band. A member at 960 is UNBROKEN and IMMACULATE.
-Displays that have room show the title; compact rows show the band.
+IMMACULATE is a title, not a band, and **not a score**. It is UNBROKEN plus a
+run of 60 consecutive days with nothing missed. A day with nothing scheduled
+does not break the run and is counted inside it; a day with something due and
+not done ends it and the title with it. The score does not fall when the run
+does.
+
+That correction came out of the simulation. IMMACULATE used to be "950 or
+more", and a steady 87.5% completion, one missed day in eight, settles at 969
+and holds the glow indefinitely. The curve saturates near the top, so no line
+drawn on it can mean "nothing missed": forty-five gaps a year is not a record
+with no gaps. Perfection is measured as perfection instead.
+
+UNBROKEN moved from 850 to 900 in the same pass, for the same reason: at 850 the
+top band was reachable by a pattern with a weekly hole in it.
+
+Displays that have room show the title; compact rows show the band. Every
+surface that draws a rank icon therefore needs the clean run beside the score,
+which `cleanRunFor` answers for every scope in one query.
 
 ## Colors
 

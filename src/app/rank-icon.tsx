@@ -1,8 +1,22 @@
 import { rankFor, isImmaculate, type RankKey } from "@/domain";
 
-// The rank icons: shield slashed, sprout, target, shield ticked, summit.
-// In a list the icon and the colour carry the rank and the word is dropped
-// (decision 40).
+// The rank icons: shield slashed, sprout, target, shield ticked, summit, and a
+// crown for IMMACULATE (decision 42). In a list the icon and the colour carry
+// the rank and the word is dropped (decision 40).
+
+/**
+ * IMMACULATE, which is UNBROKEN plus sixty days with nothing missed.
+ *
+ * It is a title inside UNBROKEN rather than a band of its own, and it still
+ * gets its own icon: a summit with a halo is a summit, and the whole point of
+ * the title is that it is legible across a members list at a glance.
+ */
+const CROWN = (
+  <>
+    <path d="M3.2 7.6 7.4 13l4.6-7.6L16.6 13l4.2-5.4V19H3.2Z" />
+    <path d="M3.2 19h17.6" />
+  </>
+);
 
 const PATHS: Record<RankKey, React.ReactNode> = {
   doubt: (
@@ -60,7 +74,27 @@ export const RANK_BG: Record<RankKey, string> = {
   unbroken: "bg-rank-unbroken",
 };
 
-export function RankIcon({ score, size = 17 }: { score: number; size?: number }) {
+/**
+ * The colour class for a score, gold once the title is held.
+ *
+ * Every caller that colours a number beside the icon has to agree with the
+ * icon, so the decision is made once, here.
+ */
+export function rankText(score: number, cleanDays = 0): string {
+  return isImmaculate(score, cleanDays) ? "text-gold" : RANK_TEXT[rankFor(score).key];
+}
+
+export function RankIcon({
+  score,
+  cleanDays = 0,
+  size = 17,
+}: {
+  score: number;
+  /** Days without a missed period, in this score's scope. The title needs it. */
+  cleanDays?: number;
+  size?: number;
+}) {
+  const immaculate = isImmaculate(score, cleanDays);
   const rank = rankFor(score);
   return (
     <svg
@@ -75,19 +109,26 @@ export function RankIcon({ score, size = 17 }: { score: number; size?: number })
       aria-hidden="true"
       // IMMACULATE carries the only glow in the app, which is what makes it
       // mean anything.
-      style={isImmaculate(score) ? { filter: "drop-shadow(0 0 6px var(--gold))" } : undefined}
+      style={immaculate ? { filter: "drop-shadow(0 0 6px var(--gold))" } : undefined}
     >
-      {PATHS[rank.key]}
+      {immaculate ? CROWN : PATHS[rank.key]}
     </svg>
   );
 }
 
 /** The icon and the number, in the rank's colour. The word is dropped. */
-export function RankScore({ score, size = 17 }: { score: number; size?: number }) {
-  const rank = rankFor(score);
+export function RankScore({
+  score,
+  cleanDays = 0,
+  size = 17,
+}: {
+  score: number;
+  cleanDays?: number;
+  size?: number;
+}) {
   return (
-    <span className={"flex flex-none items-center gap-2 " + RANK_TEXT[rank.key]}>
-      <RankIcon score={score} size={size} />
+    <span className={"flex flex-none items-center gap-2 " + rankText(score, cleanDays)}>
+      <RankIcon score={score} cleanDays={cleanDays} size={size} />
       <span className="text-[15px] tabular-nums">{Math.round(score)}</span>
     </span>
   );

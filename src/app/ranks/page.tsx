@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
-import { RANKS, IMMACULATE_FROM, rankFor, isImmaculate } from "@/domain";
+import { RANKS, IMMACULATE_CLEAN_DAYS, rankFor, isImmaculate } from "@/domain";
 import { globalScore } from "@/server/scoring";
-import { RankIcon, RANK_TEXT } from "../rank-icon";
+import { cleanRunIn } from "@/server/clean-run";
+import { RankIcon, RANK_TEXT, rankText } from "../rank-icon";
+import { CleanBar } from "@/app/clean-bar";
 import { BackLink } from "@/app/back-link";
 
 // A crown, gold, glowing: the mock's own icon for IMMACULATE, deliberately
@@ -36,8 +37,13 @@ export default async function RanksPage() {
   const user = await getSessionUser();
   if (!user) redirect("/signin");
 
-  const score = await globalScore(user.id);
+  const [score, cleanDays] = await Promise.all([
+    globalScore(user.id),
+    cleanRunIn(user.id, null),
+  ]);
   const mine = rankFor(score);
+  const held = isImmaculate(score, cleanDays);
+  const colour = rankText(score, cleanDays);
 
   return (
     <main className="min-h-dvh px-5 pb-24 pt-5">
@@ -50,16 +56,16 @@ export default async function RanksPage() {
         </header>
 
         <div className="flex items-center gap-[13px] border border-rule p-[14px]">
-          <span className={"flex flex-none " + RANK_TEXT[mine.key]}>
-            <RankIcon score={score} size={30} />
+          <span className={"flex flex-none " + colour}>
+            <RankIcon score={score} cleanDays={cleanDays} size={30} />
           </span>
           <div className="flex flex-1 flex-col gap-[3px]">
             <div className="flex items-baseline gap-[9px]">
-              <span className={"text-[20px] font-semibold " + RANK_TEXT[mine.key]}>
+              <span className={"text-[20px] font-semibold " + colour}>
                 {Math.round(score)}
               </span>
-              <span className={"text-[10.5px] tracking-[0.14em] " + RANK_TEXT[mine.key]}>
-                {mine.name}
+              <span className={"text-[10.5px] tracking-[0.14em] " + colour}>
+                {held ? "IMMACULATE" : mine.name}
               </span>
             </div>
             <span className="text-[10.5px] text-muted">
@@ -110,20 +116,33 @@ export default async function RanksPage() {
                 <div className="flex items-baseline gap-[9px]">
                   <span className="text-[13.5px] tracking-[0.12em] text-gold">IMMACULATE</span>
                   <span className="text-[11px] tabular-nums text-muted">
-                    {IMMACULATE_FROM}+
+                    UNBROKEN, {IMMACULATE_CLEAN_DAYS} clean days
                   </span>
                 </div>
                 <span className="text-[11px] text-muted">
-                  A title inside UNBROKEN, not a rank of its own
+                  Not a score. A record with nothing missed in it.
                 </span>
               </div>
             </div>
           </div>
-          {isImmaculate(score) ? (
-            <span className="text-[11.5px] leading-[1.55] text-muted">
-              Yours is glowing. It is the only glow in the app.
+        </section>
+
+        {/* The run itself, because it is the half of IMMACULATE that no number
+            on this page shows. A score can be read off the top of the screen;
+            "how long since you last let a day go" cannot. */}
+        <section className="flex flex-col gap-[11px] border border-rule p-[14px]">
+          <span className="text-[10px] tracking-[0.16em] text-muted">YOUR CLEAN RUN</span>
+          {held ? (
+            <span className="text-[12.5px] text-gold">
+              {cleanDays} days, nothing missed.
             </span>
-          ) : null}
+          ) : (
+            <CleanBar cleanDays={cleanDays} />
+          )}
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            A missed day sets this back to nothing. A day with nothing scheduled
+            does not.
+          </span>
         </section>
 
         <section className="flex flex-col gap-[10px]">
@@ -132,7 +151,8 @@ export default async function RanksPage() {
             {[
               "A day where everything scheduled was done moves it up. The gain shrinks as the number climbs, so 1000 is approached and never reached.",
               "A missed day moves it down by roughly what two clean days were worth at the start, and a week's worth at the top.",
-              "Grace protects a streak. It never protects this number, and it never waives a fine.",
+              "Grace protects a streak. Never this number, never a fine, never a clean run.",
+              "A group does not count the day you join it. Your streaks and this number do.",
               "Sharing more of what a group accepts raises the ceiling you can climb to. Sharing less lowers it, and the score settles down to meet it rather than dropping.",
               "A newly added activity cannot move it for seven days, so taking on something hard is never a risk to your standing.",
               "Doing nothing for a week starts a slow decay. A high score is a record you keep, not one you reach.",

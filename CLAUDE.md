@@ -268,8 +268,9 @@ The mock is deliberately not a default AI-generated interface. Do not drift
 back toward:
 
 - Purple or indigo gradients, glassmorphism, glow effects. **One exception**:
-  IMMACULATE, the rank above 950, carries a gold halo. It is the only glow in
-  the app, which is what makes it mean anything
+  IMMACULATE, which is UNBROKEN plus 60 days with nothing missed, carries a
+  gold halo. It is the only glow in the app, which is what makes it mean
+  anything
 - Cards with rounded corners and drop shadows on everything
 - Centred hero text with a large gradient headline
 - Emoji or generic line icons as section markers

@@ -269,6 +269,11 @@ reconciliation nobody runs is a reconciliation that finds nothing.
   known the debt does not exist, so there is no pending state anywhere.
 - **`verify` runs nightly**, after scoring, and drift lands on the admin Ops
   drift block that already exists.
+- **A score of 999.999 is shown as 1000, and that is fine.** The curve
+  approaches 1000 and never touches it, which is what makes the top mean
+  something, but the UI shows no decimals so the distinction is invisible
+  where it would matter. Reports round the same way rather than exposing a
+  precision the app never shows. Aman's call.
 
 ## Built
 
@@ -316,6 +321,39 @@ shippable.
 - **Gym.** 22 where the old read path collapsed it, with three passed weeks
   reproducing as 3 rather than 1 in a domain test.
 - Drift harness 67/67, 232 domain tests, `verify` clean on a fresh seed.
+
+## After the simulation: the record, and the day you join
+
+The 30-scenario regression run answered two questions the design had left
+standing, and both changed the model.
+
+**IMMACULATE could be held while missing a day in eight.** The equilibrium
+analysis put 87.5% completion at 969, above the old 950 line, and 85.7% at 854.
+The curve saturates near the top, so widening the miss cost only moves the
+cliff. So the title stopped being a score: it is the top band plus 60
+consecutive days with nothing missed, and UNBROKEN moved from 850 to 900
+(decision 122). `isImmaculate(score, cleanDays)` is the whole rule, and every
+surface that draws a rank icon passes the run beside the score.
+
+The run is read, not stored. `reputation_daily` already holds one row a day per
+scope with `completion` null for a day that had nothing due, so `cleanRunFor`
+counts back to the last day with something missed in SQL, one query for every
+scope a user has. A day with nothing scheduled sits inside a run rather than
+breaking it.
+
+**A group could fine somebody for a day that ended before they joined it.**
+`recomputeGroups` now starts at `countsFrom(joinedAt)`, the day after, and that
+one boundary gates both halves: no outcome for the join day, so no fine, no
+reputation row, and nothing to pay a member in grace out of either (decision
+123). Join and leave dates became the member's own day rather than UTC in the
+same change, because a UTC date hands anybody east of Greenwich who joins after
+midnight a grace period that has already run out (decision 124).
+
+Two scenarios hold it: `group-join-grace` misses the join day and the day after
+in the same group and asserts one fine, not two, while the same miss moves the
+member's own record on both days; `group-grace-not-paid` has the member in grace
+pass a day somebody else missed and asserts the fine goes whole to the member
+being counted.
 
 ## Open questions
 

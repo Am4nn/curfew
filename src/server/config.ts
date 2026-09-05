@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { DateTime } from "luxon";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { userSettings, userActivityConfig } from "@/db/schema";
@@ -8,6 +9,7 @@ import {
   type SleepConfig,
   type FineRules,
 } from "@/domain";
+import { now } from "@/lib/clock";
 
 // A stored config row is either the module's config directly (the seed's own
 // userId-null default, written before saveUserActivity's wrapping existed) or
@@ -38,6 +40,24 @@ export const resolveUserTimezone = cache(async function resolveUserTimezone(
 
   return resolveConfig(rows, asOf)?.timezone ?? "Asia/Kolkata";
 });
+
+/**
+ * What day it is for this user, on the server's clock (invariant 8).
+ *
+ * Every date a person is judged on is a day in THEIR zone, so anything stored
+ * as a date has to be written this way. `new Date().toISOString().slice(0, 10)`
+ * is the UTC day, which for anyone east of Greenwich is yesterday for the first
+ * hours of their morning: a group joined at 2 AM in Kolkata recorded a join
+ * date the joiner had already finished living.
+ */
+export async function userDay(userId: string): Promise<string> {
+  const instant = await now();
+  const timezone = await resolveUserTimezone(
+    userId,
+    instant.toISOString().slice(0, 10),
+  );
+  return DateTime.fromJSDate(instant, { zone: timezone }).toFormat("yyyy-MM-dd");
+}
 
 // Resolve a user's sleep windows as they stood on the period being scored. The
 // module validates the jsonb; the DB never does (invariant: config shape is the

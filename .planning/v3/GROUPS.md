@@ -79,6 +79,28 @@ The reason photos exist in a group. Keep it plain.
   tone.
 - Photos are served by short-lived signed URLs, only to members the sharer chose.
 
+## The day you join
+
+A group starts counting a member the day AFTER they joined (decision 123).
+Somebody who accepts an invite in the evening has already lived that day, and
+its windows shut before the group existed to them.
+
+- **No outcome, no fine, no reputation** in that group for the join day. The
+  group's score series begins the next morning, opening on the joining score.
+- **Their own streaks and their own global record count the day as normal.**
+  Neither was ever the group's to judge.
+- **Nothing is received either.** A member inside the grace has no outcome for
+  the day, so they are not among the people another member's fine is split
+  between. It is the same fact seen from the other side rather than a second
+  rule.
+- **The whole group sees it**, on the members list, as a `GRACE` tag with the
+  hours left in place of a score. A member sitting at no score with no
+  explanation reads as one being let off.
+- **Once.** The grace is the join date, so rejoining sets a new one only
+  because a rejoin is a new join.
+
+The date itself is the member's own day, not UTC (decision 124).
+
 ## Leaving a group
 
 On leave (decision 17):

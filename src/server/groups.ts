@@ -3,10 +3,12 @@ import { db } from "@/db";
 import { groups, groupMembers, groupInvites, balances, users } from "@/db/schema";
 import { assertMember } from "./membership";
 import { groupInviteEmail, sendEmailBestEffort } from "./email";
+import { userDay } from "./config";
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+// Joining and leaving are dated in the MEMBER's own zone, not UTC. Both dates
+// are read by the scorer as day boundaries, and the grace period is measured
+// off the join date, so a UTC date would hand somebody in Kolkata who joined
+// at 2 AM a grace period that had already expired.
 
 // Create a group and, since v1 is sleep-only, its one sleep activity, so it is
 // usable at once. The creator is the owner, joined today.
@@ -21,7 +23,7 @@ export async function createGroup(
     .returning({ id: groups.id });
   await db
     .insert(groupMembers)
-    .values({ groupId: g.id, userId, role: "owner", joinedAt: today() });
+    .values({ groupId: g.id, userId, role: "owner", joinedAt: await userDay(userId) });
   // A new group accepts nothing yet. The owner picks its types on the settings
   // tab, and until then there is nothing for anyone to share.
   return { groupId: g.id };
@@ -101,7 +103,7 @@ export async function acceptInvite(
   }
   await db
     .insert(groupMembers)
-    .values({ groupId: inv.groupId, userId, role: "member", joinedAt: today() })
+    .values({ groupId: inv.groupId, userId, role: "member", joinedAt: await userDay(userId) })
     .onConflictDoNothing();
   await db
     .update(groupInvites)
@@ -152,7 +154,7 @@ export async function leaveGroup(groupId: string, userId: string): Promise<void>
 
   await db
     .update(groupMembers)
-    .set({ leftAt: today() })
+    .set({ leftAt: await userDay(userId) })
     .where(
       and(
         eq(groupMembers.groupId, groupId),

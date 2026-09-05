@@ -9,8 +9,30 @@ import { previewEnabled } from "./preview";
 // it simply falls back to the real clock.
 const COOKIE = "mock_now";
 
+/**
+ * A whole process pinned to an instant, for a script that fast-forwards.
+ *
+ * The cookie above scrubs ONE request. `bun run simulate` needs to live through
+ * a year a day at a time, pressing the real check-in path and running the real
+ * nightly job at each step, and there is no request to hang a cookie on.
+ *
+ * Gated by `previewEnabled()`, the same double gate as the cookie: not
+ * production, and LOCAL_MODE. Setting it anywhere else throws rather than
+ * silently moving the clock, because a clock that lies is the one bug that
+ * makes every other result meaningless.
+ */
+let pinned: Date | null = null;
+
+export function setClock(at: Date | null): void {
+  if (!previewEnabled()) {
+    throw new Error("setClock is local only: not production, and LOCAL_MODE=1.");
+  }
+  pinned = at;
+}
+
 export async function now(): Promise<Date> {
   if (previewEnabled()) {
+    if (pinned) return pinned;
     try {
       const { cookies } = await import("next/headers");
       const value = (await cookies()).get(COOKIE)?.value;

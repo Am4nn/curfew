@@ -43,6 +43,7 @@ import {
 import { moneyOnAsOf } from "./app-config";
 import { writeFines, type OutcomeRow } from "./ledger";
 import { closeStreaks } from "./streak";
+import { countsFrom } from "./grace";
 import { now } from "@/lib/clock";
 
 // Closing and scoring periods, then moving reputation. One pass, per user, for
@@ -436,6 +437,15 @@ function replayGlobal(
     if (counting.length > 0) {
       completion = counting.filter((p) => p.passed).length / counting.length;
       idleDays = 0;
+    } else if (periods.length > 0) {
+      // Everything that concluded today is still settling. Nothing moves, but
+      // the day is NOT idle: the user has activities and is doing them, and
+      // idle means nothing has been scheduled for a week.
+      //
+      // Counting it as idle docked a brand new user 3 points on the seventh day
+      // of their first week, for the crime of having just started. The
+      // simulation found it; nothing else would have.
+      idleDays = 0;
     } else {
       idleDays += 1;
     }
@@ -510,7 +520,15 @@ async function recomputeGroups(
   for (const m of memberships) {
     // A rejoin starts fresh (decision 17): the replay begins at the current
     // join date, never at an old number.
-    const start = m.joinedAt > from ? m.joinedAt : from;
+    //
+    // And a group does not count the day somebody joined it. Accepting an
+    // invite at nine in the evening would otherwise be judged on windows that
+    // shut before the group existed to that person: a fine and a reputation
+    // loss for a day they had already lived. `countsFrom` is the day after,
+    // and it gates BOTH halves below, the outcomes and the running score, so
+    // there is no way to be fined for a day that never moved the number.
+    const counted = countsFrom(m.joinedAt);
+    const start = counted > from ? counted : from;
     const end = m.leftAt && m.leftAt < today ? m.leftAt : today;
     if (start > end) continue;
 
@@ -574,7 +592,7 @@ async function recomputeGroups(
       const todays = scores.filter(
         (sc) =>
           shared.has(sc.typeKey) &&
-          sc.periodStart >= m.joinedAt &&
+          sc.periodStart >= counted &&
           concludesOn(sc) === day,
       );
 
@@ -610,6 +628,9 @@ async function recomputeGroups(
       let completion: number | null = null;
       if (counting.length > 0) {
         completion = counting.filter((sc) => sc.passed).length / counting.length;
+        idleDays = 0;
+      } else if (todays.length > 0) {
+        // Settling, not idle. See replayGlobal.
         idleDays = 0;
       } else {
         idleDays += 1;

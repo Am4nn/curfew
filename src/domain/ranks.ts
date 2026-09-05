@@ -2,6 +2,17 @@
 //
 // IMMACULATE is a title inside UNBROKEN, not a sixth band: it carries the only
 // glow in the app, which is what makes it mean anything.
+//
+// It is NOT a score threshold, and that is a deliberate correction. It used to
+// be "950 or more", and the simulation showed that a steady 87.5% completion,
+// one missed day in eight, settles at 969 and holds the glow. IMMACULATE means
+// "the record has no meaningful gaps"; forty-five gaps a year is not that. The
+// score saturates near the top, so it cannot measure perfection however the
+// line is drawn.
+//
+// So perfection is measured as perfection: the top band, plus a run of days
+// with nothing missed. A number that can be reasoned about, and one nobody
+// holds by accident.
 
 export type RankKey =
   | "doubt"
@@ -28,11 +39,11 @@ export const RANKS: Rank[] = [
     from: 600,
     meaning: "It holds when it is inconvenient",
   },
-  { key: "unbroken", name: "UNBROKEN", from: 850, meaning: "The record has no meaningful gaps" },
+  { key: "unbroken", name: "UNBROKEN", from: 900, meaning: "The record has no meaningful gaps" },
 ];
 
-/** The score at which UNBROKEN earns its title, and the app's only glow. */
-export const IMMACULATE_FROM = 950;
+/** Days without a single missed period before UNBROKEN earns its title. */
+export const IMMACULATE_CLEAN_DAYS = 60;
 
 export function rankFor(score: number): Rank {
   let found = RANKS[0];
@@ -42,8 +53,20 @@ export function rankFor(score: number): Rank {
   return found;
 }
 
-export function isImmaculate(score: number): boolean {
-  return score >= IMMACULATE_FROM;
+/**
+ * The top band, and sixty days without a miss.
+ *
+ * `cleanDays` is the run of consecutive days on which nothing scheduled was
+ * missed, in whichever scope the score belongs to. A day with nothing due does
+ * not break it: not being scheduled is not a failure.
+ */
+export function isImmaculate(score: number, cleanDays: number): boolean {
+  return rankFor(score).key === "unbroken" && cleanDays >= IMMACULATE_CLEAN_DAYS;
+}
+
+/** How many more clean days this record needs, or 0 when it already has them. */
+export function daysToImmaculate(cleanDays: number): number {
+  return Math.max(0, IMMACULATE_CLEAN_DAYS - cleanDays);
 }
 
 /**

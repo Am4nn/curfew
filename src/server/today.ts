@@ -1,10 +1,8 @@
-import { DateTime } from "luxon";
 import { getActivityType, type CheckinKind } from "@/domain";
 import { listUserActivities } from "./activities";
 import { getCheckinState } from "./checkin";
 import { standingsFor } from "./standing";
-import { resolveUserTimezone } from "./config";
-import { now } from "@/lib/clock";
+import { userDay } from "./config";
 
 // Home's list: every activity a person tracks, where it stands right now, and
 // the one thing they can do about it.
@@ -100,10 +98,5 @@ export async function todayFor(userId: string): Promise<Today> {
 
 /** The user's own date, for the header and the greeting-free copy. */
 export async function todayDate(userId: string): Promise<string> {
-  const instant = await now();
-  const timezone = await resolveUserTimezone(
-    userId,
-    instant.toISOString().slice(0, 10),
-  );
-  return DateTime.fromJSDate(instant, { zone: timezone }).toFormat("yyyy-MM-dd");
+  return userDay(userId);
 }

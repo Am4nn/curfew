@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { DateTime } from "luxon";
 import { and, eq, isNull, like, sql, inArray } from "drizzle-orm";
 import { db } from "@/db";
@@ -571,6 +572,24 @@ function concludesOn(score: ScoreRow): string {
 // ---------------------------------------------------------------------------
 // Writing
 // ---------------------------------------------------------------------------
+
+/**
+ * The lazy close, at most once a request.
+ *
+ * Every screen that reads a streak or a pass rate has to close whatever periods
+ * have ended since the last read, and `scoreUser` does that for the WHOLE user,
+ * not for one type. Six screens ask for it once per tracked activity, so a
+ * person with six activities paid for six full recomputes to draw one list.
+ * Home took six seconds of which about five were the same work five more times.
+ *
+ * React's `cache` gives one result per request, which is exactly the shape of
+ * the thing: closing is idempotent, so doing it once is doing it enough. Outside
+ * a request (the nightly job, `bun run verify`, the scripts) there is nothing to
+ * dedupe against and every call runs, which is what those want anyway.
+ */
+export const closeOutstanding = cache(async (userId: string): Promise<void> => {
+  await scoreUser(userId);
+});
 
 /** Idempotent: recompute, then upsert. Safe to run twice, or half. */
 export async function scoreUser(

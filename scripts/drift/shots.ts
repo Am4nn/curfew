@@ -398,7 +398,11 @@ async function runInteraction(page: Page, tag: string): Promise<void> {
  */
 async function wrongPage(page: Page): Promise<string | null> {
   const text = await page.evaluate(() => document.body.innerText);
-  if (text.includes("Something failed while loading this page")) {
+  // The sentence every route's error boundary prints (src/app/_route-error.tsx).
+  // There is one boundary per section now rather than one at the root, and they
+  // all share this component, so one string still covers every one of them. If
+  // that copy changes, this has to change with it.
+  if (text.includes("This did not load. Nothing was changed.")) {
     return "the app's error boundary rendered, not the screen";
   }
   if (text.includes("No such page")) {

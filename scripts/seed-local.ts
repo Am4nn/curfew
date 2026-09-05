@@ -33,7 +33,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { deflateSync } from "node:zlib";
 import path from "node:path";
 import { DateTime } from "luxon";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   users,
@@ -1163,6 +1163,28 @@ async function buildCheckinOpenFood(): Promise<void> {
   }
 }
 
+/**
+ * Fixture: pending-approval -- the waiting room.
+ *
+ * /pending redirects to Home the moment an account is approved, so the only
+ * way to photograph it is to have the signed-in user be unapproved. Local mode
+ * always signs in as preview-admin, so this is that same account with its
+ * approval set back to pending. Nothing else changes: the point of the screen
+ * is that nothing else is reachable.
+ *
+ * /signin needs no fixture of its own. It checks no session and renders for
+ * anybody, which is what a sign-in screen is.
+ */
+async function buildPendingApproval(): Promise<void> {
+  await wipe();
+  await assembleDefaultWorld({ moneyOn: true });
+  await runScoring();
+  await db
+    .update(userApprovals)
+    .set({ status: "pending", decidedAt: null, decidedBy: null })
+    .where(eq(userApprovals.userId, "preview-admin"));
+}
+
 async function buildCheckinOpenSugarfree(): Promise<void> {
   await wipe();
   await assembleDefaultWorld({ moneyOn: true }); // sugarfree is untracked by default; nothing to skip
@@ -1255,6 +1277,7 @@ const BUILDERS: Record<string, () => Promise<void>> = {
   "checkin-open-steps": buildCheckinOpenSteps,
   "checkin-open-sleep-confirm": buildCheckinOpenSleepConfirm,
   "checkin-open-food": buildCheckinOpenFood,
+  "pending-approval": buildPendingApproval,
   "checkin-open-sugarfree": buildCheckinOpenSugarfree,
   "invite-tracked-type": buildInviteTracked,
   "invite-untracked-type": buildInviteUntracked,

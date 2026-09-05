@@ -1,6 +1,6 @@
 # Next session
 
-Last updated 2026-09-05, after the check-in feedback work.
+Last updated 2026-09-05, after the performance, loading/error and coverage pass.
 
 ## Still open
 
@@ -16,29 +16,36 @@ the UI, and the UI is now finished.
   activities, and check what happens to streaks, personal reputation, group
   reputation, fines and balances in each scenario. Joining, leaving, sharing
   and un-sharing, grace running out, an activity switched off mid-month.
+- After that, a pass over all twelve activities, since the gym bugs were the
+  kind only a real press finds.
+
+### Performance, the half that is left
+
+`closeOutstanding` now runs the scoring pass once a request instead of once per
+tracked activity, which took Home from about 10.5 seconds to about 1.9. Nearly
+all of what remains is that one pass, and it recomputes EVERY period from the
+activity's first config date on every read. Twenty days of history costs about
+a second; a year will not. Closing incrementally, from the last computed period
+forward, is the fix, and it belongs with the engine verification above rather
+than before it, because it changes what gets recomputed.
+
+Nothing else measured above 0.2 seconds warm.
 
 ### The review gate
 
 `SCREENS.md` is ticked by a person opening each screen beside its artboard, not
-by the harness. Unticked on purpose: every Configure and Check-in row, plus the
-four added for the check-in feedback (Recorded partial day, The day is
-complete, and the two motion boards). The motion boards have no route and never
-will: they are a spec for durations that live in `globals.css`.
+by the harness. Everything on the Gaps page is unticked because it has never
+been reviewed, and so are the Configure and Check-in rows and the four from the
+check-in feedback work.
 
-### Coverage the harness does not have
+### Decisions nobody has made
 
-- **Nine live routes have no artboard and so no drift entry**: `/balances`,
-  `/ledger`, `/settings/personal`, `/settings/stored`, `/settings/rules`,
-  `/checkin`, `/admin/reports`, `/admin/groups/[id]`, `/admin/users/[id]`.
-  Four have v1/v2 boards in `.design/`, but those are the old design language,
-  so pairing one against a v3 screen would report permanent drift. `/signin`
-  and `/pending` also need a signed-out fixture the harness does not have.
-  Roughly nine new artboards plus a fixture.
-- **The error-page guard is unproven end to end.** `wrongPage()` checks for the
-  error and not-found copy after every capture, which is the blindness that let
-  a crashed Home pass. Two attempts to trigger it on purpose both timed out
-  before the guard ran, because a dev error page never reaches `networkidle`.
-  The guard is written and reviewed; it has never actually fired.
+- **`/settings/personal` sets the same three sleep windows that
+  `/activities/sleep` sets**, through a different control, and both are live.
+  Two ways to change one thing is one too many. The artboard is drawn as it
+  stands and marked, rather than quietly redesigned.
+- **`/checkin` and `/ledger` are v2.5 redirects** that render nothing. They
+  cost nothing, and deleting them breaks any old link. Left alone deliberately.
 
 ### Known, and deliberate
 
@@ -62,14 +69,15 @@ will: they are a spec for durations that live in `globals.css`.
 
 ## Closed since the last update
 
-The four-item batch: back always goes back (shared `BackLink`, 14 files), every
-photo list paginated (delete picker and the group evidence tab), Gym stops
-offering a check-in that cannot count (`countsNow` on the module interface).
-
-Then the check-in feedback, which replaced the receipt screen: a partial day
-gets no overlay at all, and a complete day is stamped once. Both mocked,
-reviewed, built and captured.
-
-Also closed: the Home `+1` is optimistic now, `/settings/photos` paginates, the
-seeded ledger spans real dates, and `V3Data` no longer promises a name removal
-the app stopped doing.
+- **Nothing in the test suite exercises the real write path.** Still true, and
+  still where the gym bugs lived, but both of those are now covered by domain
+  tests that assert the declaration rather than the press.
+- The nine undrawn routes: seven artboards plus the two signed-out states, all
+  on a new `v3 Gaps` page, with a `pending-approval` fixture. `/signin` needed
+  no fixture: it checks no session.
+- Every route has a loading state shaped like its own destination and an error
+  boundary of its own. Home moved into a `(home)` route group so its skeleton
+  stops flashing on the way to everywhere else.
+- **The harness error-page guard has fired.** Proven end to end by making a
+  route throw on purpose: the guard reported `the app's error boundary
+  rendered, not the screen` and the entry failed. It had never fired before.

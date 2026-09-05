@@ -76,7 +76,11 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     source: "live",
     detail: "Live camera, on every session.",
   },
-  checkin: { kind: "tap" },
+  // A session requires a live photo, so pressing the button opens a camera and
+  // the kind has to say so. It said "tap", which is what office is: one press
+  // and nothing to attach. Home reads this to label the control, so gym offered
+  // "Check in" and then opened a viewfinder.
+  checkin: { kind: "camera" },
   chart: {
     kind: "weekly",
     heading: "SESSIONS A WEEK",

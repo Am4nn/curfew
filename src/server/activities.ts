@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { db } from "@/db";
@@ -48,8 +49,18 @@ export function splitConfig(raw: unknown): { schedule: ScheduleConfig; config: u
   };
 }
 
-/** Everything this user tracks right now, enabled or not. */
-export async function listUserActivities(userId: string): Promise<UserActivity[]> {
+/**
+ * Everything this user tracks right now, enabled or not.
+ *
+ * Cached per request, because it is asked for far more often than it looks.
+ * Home calls it once itself, then `getCheckinState` and `standingFor` each call
+ * `getUserActivity` per row, and every one of those calls this again: thirteen
+ * times to draw six rows. Nothing writes to these tables and then re-reads them
+ * in the same request, so one answer a request is the right answer.
+ */
+export const listUserActivities = cache(async function listUserActivities(
+  userId: string,
+): Promise<UserActivity[]> {
   const now = new Date();
   // The user's own date, not UTC. At 23:00 in Kolkata the UTC date is still
   // yesterday, and resolving against it would return yesterday's settings.
@@ -95,7 +106,7 @@ export async function listUserActivities(userId: string): Promise<UserActivity[]
   }
 
   return out;
-}
+});
 
 export async function getUserActivity(
   userId: string,

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { userSettings, userActivityConfig } from "@/db/schema";
@@ -22,7 +23,7 @@ function moduleConfigOf(raw: unknown): unknown {
 // Resolve a user's timezone as it stood on `asOf` (a "yyyy-MM-dd" date). Reads
 // the user's own rows and the NULL default, then picks with the effective-dated
 // rule. Falls back to Asia/Kolkata, which is also the seeded default.
-export async function resolveUserTimezone(
+export const resolveUserTimezone = cache(async function resolveUserTimezone(
   userId: string,
   asOf: string,
 ): Promise<string> {
@@ -36,7 +37,7 @@ export async function resolveUserTimezone(
     .where(or(eq(userSettings.userId, userId), isNull(userSettings.userId)));
 
   return resolveConfig(rows, asOf)?.timezone ?? "Asia/Kolkata";
-}
+});
 
 // Resolve a user's sleep windows as they stood on the period being scored. The
 // module validates the jsonb; the DB never does (invariant: config shape is the

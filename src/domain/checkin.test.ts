@@ -59,6 +59,27 @@ describe("every type can be checked in", () => {
     ]);
   });
 
+  // Gym declared "tap" while requiring a live photo, so Home labelled its
+  // button "Check in" and pressing it opened a viewfinder. The kind is what the
+  // press OPENS, so a type whose only input is a required photo is a camera.
+  // Study is not caught by this and should not be: it asks for minutes too, so
+  // its screen is a number field with a photo slot above it.
+  it("declares camera wherever a photo is the only thing asked for", () => {
+    for (const key of registeredKeys()) {
+      const type = getActivityType(key);
+      if (type.evidence.level !== "required") continue;
+      const steps = type.steps(type.defaults.config, DAY);
+      const photoOnly = steps.filter(
+        (s) =>
+          (type.evidence.steps === undefined || type.evidence.steps.includes(s.key)) &&
+          (s.fields ?? []).length === 0 &&
+          !s.prompt,
+      );
+      if (photoOnly.length === 0) continue;
+      expect(type.checkin.kind, key).toBe("camera");
+    }
+  });
+
   it("asks for a number wherever the evidence carries one", () => {
     const withFields = registeredKeys().filter((key) => {
       const type = getActivityType(key);

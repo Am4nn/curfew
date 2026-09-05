@@ -144,3 +144,21 @@ the mocks and many times in code.
 | Flame and streak | The app's gradient, on every streak number | [ ] |
 | Rank icons and colours | `RANKS.md`, palette A, glow on IMMACULATE only | [ ] |
 | Form controls | Stepper, segmented, day picker with ANY, time range | [ ] |
+
+## Gaps (v3 Gaps)
+
+Nine live routes had no artboard. Two of them, `/checkin` and `/ledger`, are
+v2.5 redirects that render nothing, so seven screens and two signed-out states
+are what remain.
+
+| Artboard | Route | State | Done |
+|---|---|---|---|
+| Sign in | `/signin` | One button, and what happens after it | [ ] |
+| Waiting for approval | `/pending` | Signed in, approved by nobody, nothing else reachable | [ ] |
+| Balances | `/balances` | Per person and per group, with a settle on what you owe | [ ] |
+| What Curfew stores | `/settings/stored` | The consent text, readable at any time | [ ] |
+| The rules | `/settings/rules` | The terms, readable at any time | [ ] |
+| Personal (unresolved) | `/settings/personal` | Timezone, and the sleep windows the activity screen also sets | [ ] |
+| Admin: reports | `/admin/reports` | The one place an admin sees a photo, because a member asked | [ ] |
+| Admin: one user | `/admin/users/[id]` | How often somebody checked in, never what | [ ] |
+| Admin: one group | `/admin/groups/[id]` | Members, money, accepted types, and archive | [ ] |

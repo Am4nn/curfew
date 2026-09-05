@@ -495,5 +495,80 @@
     "route": "/admin/ops",
     "state": "Verify and rebuild, drift list, evidence sweep",
     "fixture": "admin"
+  },
+  {
+    "slug": "signin",
+    "section": "Signed out",
+    "mock": "V3Signin.dc.html",
+    "route": "/signin",
+    "state": "One button, and what happens after it",
+    "fixture": "default",
+    "note": "Checks no session and renders for anybody, so it needs no fixture of its own."
+  },
+  {
+    "slug": "pending",
+    "section": "Signed out",
+    "mock": "V3Pending.dc.html",
+    "route": "/pending",
+    "state": "Signed in, approved by nobody, nothing else reachable",
+    "fixture": "pending-approval"
+  },
+  {
+    "slug": "balances",
+    "section": "Money",
+    "mock": "V3Balances.dc.html",
+    "route": "/balances",
+    "state": "Per person and per group, with a settle on what you owe",
+    "fixture": "default"
+  },
+  {
+    "slug": "settings-stored",
+    "section": "Settings",
+    "mock": "V3SettingsStored.dc.html",
+    "route": "/settings/stored",
+    "state": "The consent text, readable at any time",
+    "fixture": "default"
+  },
+  {
+    "slug": "settings-rules",
+    "section": "Settings",
+    "mock": "V3SettingsRules.dc.html",
+    "route": "/settings/rules",
+    "state": "The terms, readable at any time",
+    "fixture": "default"
+  },
+  {
+    "slug": "settings-personal",
+    "section": "Settings",
+    "mock": "V3SettingsPersonal.dc.html",
+    "route": "/settings/personal",
+    "state": "Timezone, and the sleep windows the activity screen also sets",
+    "fixture": "default",
+    "note": "Drawn as it stands. The sleep-windows half duplicates /activities/sleep and v3 has not decided which one goes."
+  },
+  {
+    "slug": "admin-reports",
+    "section": "Admin",
+    "mock": "V3AdminReports.dc.html",
+    "route": "/admin/reports",
+    "state": "The one place an admin sees a photo, because a member asked",
+    "fixture": "admin"
+  },
+  {
+    "slug": "admin-user-one",
+    "section": "Admin",
+    "mock": "V3AdminUserOne.dc.html",
+    "route": "/admin/users/preview-sam",
+    "state": "How often somebody checked in, never what",
+    "fixture": "admin"
+  },
+  {
+    "slug": "admin-group-one",
+    "section": "Admin",
+    "mock": "V3AdminGroupOne.dc.html",
+    "route": "/admin/groups/[id]",
+    "routeKey": "weekend-club",
+    "state": "Members, money, accepted types, and archive",
+    "fixture": "admin"
   }
 ]

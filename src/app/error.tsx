@@ -1,36 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
-import { Screen } from "./_screen";
+import { RouteError } from "./_route-error";
 
-export default function Error({
-  error,
-  reset,
-}: {
+// The last boundary: Home itself, and any segment without one of its own.
+// There is no "back" here, because Home is where back would go.
+export default function Error(props: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Surfaced to the server logs / console for diagnosis.
-    console.error(error);
-  }, [error]);
-
-  return (
-    <Screen>
-      <div>
-        <p className="text-[14px] text-penalty">Something failed while loading this page.</p>
-        {error.digest ? (
-          <p className="mt-1 text-[12px] text-muted">Reference {error.digest}</p>
-        ) : null}
-      </div>
-      <div>
-        <button
-          onClick={reset}
-          className="border border-fg bg-transparent px-[15px] py-[15px] text-[14px] text-fg"
-        >
-          Try again
-        </button>
-      </div>
-    </Screen>
-  );
+  return <RouteError {...props} title="CURFEW" />;
 }

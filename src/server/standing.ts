@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { activityScores } from "@/db/schema";
 import { streakOver, graceLeft, graceMonth, type StreakDay } from "@/domain";
 import { getUserActivity } from "./activities";
-import { scoreUser } from "./scoring";
+import { closeOutstanding } from "./scoring";
 import { now } from "@/lib/clock";
 
 // A user's standing in one activity: the streak, the best it has ever been, and
@@ -31,8 +31,9 @@ export async function standingFor(
   if (!activity) return null;
 
   // Close anything outstanding first. Idempotent, so a read during the nightly
-  // job simply agrees with it.
-  await scoreUser(userId);
+  // job simply agrees with it, and request-scoped, so a screen asking for six
+  // streaks closes the user once rather than six times.
+  await closeOutstanding(userId);
 
   const rows = await db
     .select({

@@ -5,7 +5,7 @@ import { activityScores } from "@/db/schema";
 import { getActivityType, graceMonth, type ChartSpec } from "@/domain";
 import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
-import { scoreUser } from "./scoring";
+import { closeOutstanding } from "./scoring";
 import { resolveUserTimezone } from "./config";
 import { now } from "@/lib/clock";
 
@@ -31,7 +31,7 @@ export interface Overview {
 }
 
 export async function overviewFor(userId: string): Promise<Overview> {
-  await scoreUser(userId);
+  await closeOutstanding(userId);
 
   const instant = await now();
   const timezone = await resolveUserTimezone(

@@ -6,13 +6,13 @@ import { hasAdminAccess, pendingApprovalCount } from "@/server/admin";
 import { todayFor, todayDate } from "@/server/today";
 import { standingIn } from "@/server/group-view";
 import { formatMoney, getActivityType, registeredKeys } from "@/domain";
-import { QuorumMark } from "./mark";
-import { ActivityIcon } from "./activity-icon";
-import { RankScore } from "./rank-icon";
-import { TodayBoard } from "./today-board";
-import { DayComplete } from "./day-complete";
-import { InviteRows } from "./invite-rows";
-import { buttonClass } from "./button-style";
+import { QuorumMark } from "@/app/mark";
+import { ActivityIcon } from "@/app/activity-icon";
+import { RankScore } from "@/app/rank-icon";
+import { TodayBoard } from "@/app/today-board";
+import { DayComplete } from "@/app/day-complete";
+import { InviteRows } from "@/app/invite-rows";
+import { buttonClass } from "@/app/button-style";
 
 // Home is the day: how much of it is done, every activity with where it stands
 // and the one thing to do about it, then money and groups.

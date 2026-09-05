@@ -24,6 +24,7 @@ import {
   money,
   share,
   streakOf,
+  pauseFrom,
   curveOf,
   finalScore,
   ledgerOf,
@@ -478,6 +479,194 @@ export const SCENARIOS: Scenario[] = [
           "and 7. It is not zone-dependent: tz-settling-edge shows every zone",
           "agreeing. One day at the very start of one activity, so it is recorded",
           "rather than fixed.",
+        ],
+      };
+    },
+  },
+  {
+    id: "pause-not-a-miss",
+    group: "Pause",
+    title: "Four days away, declared",
+    question: "What does a declared absence cost?",
+    async run() {
+      await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
+      for (const d of days(-30, -11)) await logSteps(d, 10000);
+      // Declared the evening before it starts, through the real function.
+      await pauseFrom(A, day(-10), day(-7));
+      for (const d of days(-6, -1)) await logSteps(d, 10000);
+      await scoreAll();
+
+      const scored = await scoresOf(A, "steps");
+      const paused = scored.filter((sc) => sc.paused);
+      const curve = await curveOf(A, null);
+      const onPausedDays = curve.filter((p) => paused.some((x) => x.periodStart === p.day));
+
+      return {
+        checks: [
+          holds("the four days are marked paused", paused.length === 4, paused.length, 4),
+          holds(
+            "none of them moved the score",
+            onPausedDays.length === 4 && onPausedDays.every((p) => p.delta === 0),
+            onPausedDays.map((p) => p.delta).join(", "),
+            "0, 0, 0, 0",
+          ),
+          holds(
+            "and none of them read as a miss",
+            onPausedDays.every((p) => p.reason === "neutral"),
+            [...new Set(onPausedDays.map((p) => p.reason))].join(", "),
+            "neutral",
+          ),
+          holds(
+            "the score climbs again straight after",
+            curve.filter((p) => p.day > day(-7) && p.delta > 0).length >= 5,
+          ),
+        ],
+        notes: [
+          "A paused day is a day with nothing scheduled, so the engine needs no",
+          "rule for it: the same branch that handles a Sunday nobody scheduled.",
+          "Four days is under the seven that start the idle decay, so it is free.",
+        ],
+        series: [
+          { label: "Global score", points: curve.map((p) => ({ day: p.day, value: p.score })) },
+        ],
+      };
+    },
+  },
+  {
+    id: "pause-costs-the-streak",
+    group: "Pause",
+    title: "The price of a pause",
+    question: "Does grace save the streak, and when does it go?",
+    async run() {
+      // Grace available and unspent, so if it could cover a pause it would.
+      await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
+      for (const d of days(-30, -11)) await logSteps(d, 10000);
+      await pauseFrom(A, day(-10), day(-7));
+      for (const d of days(-6, -1)) await logSteps(d, 10000);
+      await scoreAll();
+
+      const streak = await streakOf(A, "steps");
+      return {
+        checks: [
+          holds(
+            "the run ended and restarted, so it is the days since",
+            streak?.streak === 6,
+            streak?.streak,
+            6,
+          ),
+          holds(
+            "the best is the run before the pause, kept",
+            streak?.best === 20,
+            streak?.best,
+            20,
+          ),
+          holds(
+            "grace was never spent on it",
+            Object.keys(streak?.graceSpent ?? {}).length === 0,
+            JSON.stringify(streak?.graceSpent ?? {}),
+            "{}",
+          ),
+        ],
+        notes: [
+          "This is the whole price of a pause, and why there is no quota on one.",
+          "Grace protects a streak from a miss. A pause is not a miss, it is a gap",
+          "in a run of consecutive days, so there is nothing for grace to forgive.",
+        ],
+      };
+    },
+  },
+  {
+    id: "pause-no-money",
+    group: "Pause",
+    title: "Away, in a group that fines",
+    question: "Can a declared absence cost money?",
+    async run() {
+      await wipe();
+      await defaultTimezone();
+      for (const [id, name] of [[A, "Ann"], [B, "Ben"]] as const) {
+        await person(id, name);
+        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
+      }
+      await group(G1, "Weekend Club", [
+        { id: A, role: "owner", joinedAt: day(-30) },
+        { id: B, role: "member", joinedAt: day(-30) },
+      ]);
+      await accepts(G1, "steps", { fine: 50000, from: day(-32), by: A });
+      await money(G1, true, day(-32), A);
+      for (const u of [A, B]) await share(G1, u, "steps", true, day(-32));
+
+      for (const d of days(-30, -11)) {
+        await logSteps(d, 10000);
+        await checkin(B, "steps", "count", d, "20:00", DAILY, { steps: 10000 });
+      }
+      // Ann is away for four days and back for the rest, passing every day she
+      // is here. Ben never leaves. So the ONLY days Ann did not pass are the
+      // four she declared, and any fine at all is a fine for a paused day.
+      await pauseFrom(A, day(-10), day(-7));
+      for (const d of days(-10, -1)) {
+        await checkin(B, "steps", "count", d, "20:00", DAILY, { steps: 10000 });
+      }
+      for (const d of days(-6, -1)) await logSteps(d, 10000);
+      await scoreAll();
+
+      const ledger = await ledgerOf(G1);
+      const outcomes = (await outcomesOf(G1)).filter((o) => o.user === A);
+      const paused = (await scoresOf(A, "steps")).filter((sc) => sc.paused);
+      return {
+        checks: [
+          holds("Ann's four days are paused", paused.length === 4, paused.length, 4),
+          holds(
+            "no outcome exists for any of them",
+            paused.every((sc) => !outcomes.some((o) => o.periodStart === sc.periodStart)),
+          ),
+          holds("so nobody was fined for them", ledger.length === 0, ledger.length, 0),
+        ],
+        notes: [
+          "No rule says a pause waives a fine. A fine comes from a period that",
+          "concluded and did not pass, and a paused period never reaches the group",
+          "at all, so there is nothing to charge for.",
+        ],
+      };
+    },
+  },
+  {
+    id: "pause-long-still-settles",
+    group: "Pause",
+    title: "Three weeks away",
+    question: "Is a long pause free?",
+    async run() {
+      await soloWorld("steps", DAILY, STEPS_CONFIG, -60);
+      for (const d of days(-60, -26)) await logSteps(d, 10000);
+      await pauseFrom(A, day(-25), day(-4));
+      await scoreAll();
+
+      const curve = await curveOf(A, null);
+      const paused = (await scoresOf(A, "steps")).filter((sc) => sc.paused);
+      const inside = curve.filter((p) => p.day >= day(-25) && p.day <= day(-4));
+      const quiet = inside.filter((p) => p.reason === "neutral");
+      const decaying = inside.filter((p) => p.reason === "idle");
+
+      return {
+        checks: [
+          holds("the whole stretch is paused", paused.length === 22, paused.length, 22),
+          holds("six of them cost nothing", quiet.length === 6, quiet.length, 6),
+          holds("and the rest settle", decaying.length === 16, decaying.length, 16),
+          holds(
+            "each settling day costs less than the one before",
+            decaying.length > 1 &&
+              -decaying[decaying.length - 1].delta < -decaying[0].delta,
+            `${(-decaying[0].delta).toFixed(2)} -> ${(-decaying[decaying.length - 1].delta).toFixed(2)}`,
+            "falling",
+          ),
+        ],
+        notes: [
+          "A pause is not a freeze. Away four days costs nothing; away three weeks",
+          "costs what any three quiet weeks cost, which is the idle decay and",
+          "nothing more. That is the difference between declaring an absence and",
+          "being handed a hold on your record.",
+        ],
+        series: [
+          { label: "Global score", points: curve.map((p) => ({ day: p.day, value: p.score })) },
         ],
       };
     },

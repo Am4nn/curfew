@@ -24,6 +24,16 @@ import { isScheduledDay, periodUnit, type Schedule } from "./schedule";
 export interface StreakDay {
   date: string; // "yyyy-MM-dd"
   done: boolean;
+  /**
+   * Declared away. The run ends here and grace cannot hold it.
+   *
+   * This is the only thing a pause costs, and it is what lets there be no limit
+   * on how often one is taken: a streak is consecutive days and a pause is a
+   * gap, so pausing repeatedly is visibly self-defeating. The break happens
+   * when the day CLOSES, like any missed day, because a paused day only reaches
+   * this walk once its period has been scored (decision 134).
+   */
+  paused?: boolean;
 }
 
 export interface StreakState {
@@ -91,6 +101,14 @@ export function streakOver(
       // ended by a Saturday, and a Saturday check-in adds nothing either.
       if (!isScheduledDay(schedule, weekdayOf(day.date))) continue;
 
+      // Declared away. Not a miss to be forgiven, a gap in a run of
+      // consecutive days, so grace is never even consulted.
+      if (day.paused) {
+        state.current = 0;
+        steps.push({ at: day.date, current: 0, graceUsed: false });
+        continue;
+      }
+
       let graceUsed = false;
       if (day.done) {
         state.current += 1;
@@ -123,6 +141,16 @@ export function streakOver(
   const closedThrough = asOf ?? sorted.at(-1)?.date ?? "";
 
   for (const [monday, week] of weeks) {
+    // A week entirely inside a pause. Nothing was scheduled, so nothing was
+    // missed and no grace is spent, but the run of consecutive days is broken
+    // all the same.
+    if (week.length > 0 && week.every((d) => d.paused)) {
+      if (sundayOf(monday) > closedThrough) continue;
+      state.current = 0;
+      steps.push({ at: monday, current: 0, graceUsed: false });
+      continue;
+    }
+
     let sessions = 0;
 
     for (const day of week) {

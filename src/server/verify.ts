@@ -91,6 +91,19 @@ export async function verifyUser(
           computed: c.settling,
         });
       }
+      // A stored row that disagrees about being paused is the worst kind of
+      // drift there is: it decides whether a fine was owed and whether a day
+      // counted, and both sides look perfectly ordinary on their own.
+      if (s.paused !== c.paused) {
+        drift.push({
+          kind: "score",
+          userId,
+          key,
+          field: "paused",
+          stored: s.paused,
+          computed: c.paused,
+        });
+      }
     }
   }
 

@@ -111,6 +111,7 @@ async function activityDays(
       periodStart: activityScores.periodStart,
       periodEnd: activityScores.periodEnd,
       passed: activityScores.passed,
+      paused: activityScores.paused,
     })
     .from(activityScores)
     .where(and(eq(activityScores.userId, userId), eq(activityScores.typeKey, typeKey)))
@@ -135,8 +136,14 @@ async function activityDays(
   const live = inFlight ? await daysDoneInFlight(userId, typeKey, timezone, inFlight) : [];
 
   if (unit === "day") {
-    const days = scored.map((s) => ({ date: s.periodStart, done: s.passed }));
-    for (const date of live) if (date > closedThrough) days.push({ date, done: true });
+    const days = scored.map((s) => ({
+      date: s.periodStart,
+      done: s.passed,
+      paused: s.paused,
+    }));
+    // A day in flight has not closed, so it cannot have been paused yet: the
+  // break lands when the period is scored, like any missed day.
+  for (const date of live) if (date > closedThrough) days.push({ date, done: true, paused: false });
     return { days, closedThrough };
   }
 
@@ -173,13 +180,29 @@ async function activityDays(
     for (const day of counted) done.add(day);
   }
 
+  // A weekly period is paused only when its whole week is, so every day of a
+  // paused week is one, which is what the weekly branch of streakOver looks for.
+  const pausedDays = new Set<string>();
+  for (const sc of scored) {
+    if (!sc.paused) continue;
+    for (const day of dayList(sc.periodStart, addDays(sc.periodEnd, -1))) {
+      pausedDays.add(day);
+    }
+  }
+
   const first = scored[0].periodStart;
   const last = addDays(scored[scored.length - 1].periodEnd, -1);
-  const days = dayList(first, last).map((date) => ({ date, done: done.has(date) }));
+  const days = dayList(first, last).map((date) => ({
+    date,
+    done: done.has(date),
+    paused: pausedDays.has(date),
+  }));
   // The week in flight adds its days as they happen (decision 77). It is not
   // judged: `closedThrough` is what streakOver measures a week's end against,
   // so this week stays in flight until its Sunday has closed.
-  for (const date of live) if (date > closedThrough) days.push({ date, done: true });
+  // A day in flight has not closed, so it cannot have been paused yet: the
+  // break lands when the period is scored, like any missed day.
+  for (const date of live) if (date > closedThrough) days.push({ date, done: true, paused: false });
   return { days, closedThrough };
 }
 

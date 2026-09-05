@@ -45,6 +45,7 @@ import { writeFines, type OutcomeRow } from "./ledger";
 import { closeStreaks } from "./streak";
 import { countsFrom } from "./grace";
 import { now } from "@/lib/clock";
+import { pausedDaysIn } from "./pause";
 
 // Closing and scoring periods, then moving reputation. One pass, per user, for
 // every type they track.
@@ -192,6 +193,7 @@ export interface ScoreRow {
   detail: Record<string, unknown>;
   userConfigVersion: number;
   settling: boolean;
+  paused: boolean;
 }
 
 export interface OutcomeWrite extends OutcomeRow {
@@ -306,9 +308,14 @@ export async function recomputeUser(
     byTypePeriod.set(key, list);
   }
 
+  // Every day this user declared themselves away, across the range being
+  // replayed. One query for the range: the walk below asks about every day of
+  // every period, and a predicate per day would be a round trip per day.
+  const pausedDays = await pausedDaysIn(userId, from, iso(DateTime.fromJSDate(instant, { zone: timezone })));
+
   const scores: ScoreRow[] = [];
   // day -> the periods that concluded on it, for the reputation pass.
-  const concluded = new Map<string, { passed: boolean; settling: boolean }[]>();
+  const concluded = new Map<string, { passed: boolean; settling: boolean; paused: boolean }[]>();
   // typeKey|period -> did it pass, for the per-group pass below.
   const byPeriod = new Map<string, { passed: boolean; concludesOn: string }>();
 
@@ -363,6 +370,15 @@ export async function recomputeUser(
 
       const settling = period < settlingEnds;
       const periodEnd = addDays(period, unit === "week" ? 7 : 1);
+
+      // Paused only when EVERY day of the period is inside a pause. A daily
+      // period is one day, so that is the obvious reading. A weekly one needs
+      // the whole week, which is what stops a three-day pause from erasing a
+      // gym week, and a three-day pause every weekend from erasing two.
+      const paused = dayList(period, addDays(periodEnd, -1)).every((d) =>
+        pausedDays.has(d),
+      );
+
       scores.push({
         userId,
         typeKey: t.typeKey,
@@ -372,13 +388,14 @@ export async function recomputeUser(
         detail,
         userConfigVersion: row.version,
         settling,
+        paused,
       });
 
       // A period lands on reputation the day it CONCLUDES, so a week counts
       // once, on its Sunday, rather than seven times.
       const concludesOn = unit === "week" ? daysInPeriod(period, "week").at(-1)! : period;
       const list = concluded.get(concludesOn) ?? [];
-      list.push({ passed, settling });
+      list.push({ passed, settling, paused });
       concluded.set(concludesOn, list);
       byPeriod.set(`${t.typeKey}|${period}`, { passed, concludesOn });
     }
@@ -428,7 +445,7 @@ export async function recomputeUser(
 function replayGlobal(
   userId: string,
   from: string,
-  concluded: Map<string, { passed: boolean; settling: boolean }[]>,
+  concluded: Map<string, { passed: boolean; settling: boolean; paused: boolean }[]>,
   instant: Date,
   timezone: string,
   resume?: ResumePoint,
@@ -443,7 +460,12 @@ function replayGlobal(
   let idleDays = opening?.idleDays ?? 0;
 
   for (const day of dayList(from, today)) {
-    const periods = concluded.get(day) ?? [];
+    const all = concluded.get(day) ?? [];
+    // A paused period is a period that was never scheduled, so it is not here
+    // at all: not counting, and not even "something happened but it does not
+    // move the score" the way a settling one is. That is what makes a paused
+    // stretch read as quiet days, and then as idle, with no rule of its own.
+    const periods = all.filter((p) => !p.paused);
     // A settling period is scored but does not move reputation (decision 54).
     const counting = periods.filter((p) => !p.settling);
 
@@ -603,10 +625,16 @@ async function recomputeGroups(
       const ceiling = ceilingFor(breadth);
 
       // Every period of a shared type that concluded today.
+      //
+      // A paused period is dropped here rather than filtered below, because it
+      // is not a period this group ever expected: no outcome row, so no fine
+      // can be posted from it, and nothing for the reputation pass to read. A
+      // declared absence produces the same day as a Sunday nobody scheduled.
       const todays = scores.filter(
         (sc) =>
           shared.has(sc.typeKey) &&
           sc.periodStart >= counted &&
+          !sc.paused &&
           concludesOn(sc) === day,
       );
 
@@ -818,6 +846,7 @@ export async function scoreUser(
           detail: sql`excluded.detail`,
           userConfigVersion: sql`excluded.user_config_version`,
           settling: sql`excluded.settling`,
+          paused: sql`excluded.paused`,
           computedAt: sql`now()`,
         },
       });

@@ -100,6 +100,29 @@ export const userSettings = pgTable("user_settings", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * A declared absence. Insert only, in the family of invariant 4.
+ *
+ * One row is a complete statement of one pause. Extending it or coming home
+ * early writes another with the same `pauseId`, and the one in force is the
+ * highest `version` of each `pauseId`, so what was originally declared survives
+ * rather than being overwritten. See migration 0021.
+ */
+export const userPauses = pgTable("user_pauses", {
+  version: serial("version").primaryKey(),
+  pauseId: uuid("pause_id").notNull().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  /** Inclusive, and a day in the member's own zone. */
+  startsOn: date("starts_on", { mode: "string" }).notNull(),
+  /** Inclusive. Coming home early writes an earlier one, never an update. */
+  endsOn: date("ends_on", { mode: "string" }).notNull(),
+  /** Set at insert, never updated: a pause that never started, called off. */
+  cancelled: boolean("cancelled").notNull().default(false),
+  declaredAt: timestamp("declared_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const userActivityConfig = pgTable("user_activity_config", {
   version: serial("version").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // null = default
@@ -143,6 +166,11 @@ export const activityScores = pgTable(
     // Inside the activity's first 7 days: scored, but excluded from the
     // reputation delta (decision 54). Fines still apply.
     settling: boolean("settling").notNull().default(false),
+    // Entirely inside a declared pause: scored, stored, and read by the
+    // reputation pass as nothing having concluded. No fine can arise from it.
+    // The streak is the one thing that still sees a real day, because ending
+    // the run is what a pause costs (decision 134). See migration 0021.
+    paused: boolean("paused").notNull().default(false),
     computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.typeKey, t.periodStart] })],

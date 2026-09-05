@@ -39,6 +39,8 @@ import {
   type DayBoundary,
 } from "@/domain";
 import { CONSENT_VERSION } from "@/server/consent";
+import { declarePause } from "@/server/pause";
+import { setClock } from "@/lib/clock";
 
 export const TZ = "Asia/Kolkata";
 export const EPOCH = "2000-01-01";
@@ -336,6 +338,29 @@ export interface DayScore {
   completion: number | null;
 }
 
+/**
+ * Declare a pause the way a member would, from the day before it starts.
+ *
+ * `declarePause` refuses a start date that is not in the future, which is the
+ * rule that stops a pause erasing a miss that already happened. So the clock is
+ * moved to the evening before, the declaration is made through the real
+ * function with all its checks, and the clock is handed back. A fixture that
+ * inserted the row directly would prove the engine and skip the rule.
+ */
+export async function pauseFrom(
+  userId: string,
+  startsOn: string,
+  endsOn: string,
+): Promise<void> {
+  const before = DateTime.fromISO(startsOn, { zone: TZ }).minus({ days: 1 }).set({ hour: 20 });
+  setClock(before.toJSDate());
+  try {
+    await declarePause(userId, startsOn, endsOn);
+  } finally {
+    setClock(TODAY.set({ hour: 12 }).toJSDate());
+  }
+}
+
 export async function streakOf(userId: string, typeKey: string): Promise<Standing | null> {
   const [row] = await db
     .select()
@@ -451,7 +476,7 @@ export async function outcomesOf(
 export async function scoresOf(
   userId: string,
   typeKey: string,
-): Promise<{ periodStart: string; passed: boolean; settling: boolean }[]> {
+): Promise<{ periodStart: string; passed: boolean; settling: boolean; paused: boolean }[]> {
   const rows = await db
     .select()
     .from(activityScores)
@@ -461,5 +486,6 @@ export async function scoresOf(
     periodStart: r.periodStart,
     passed: r.passed,
     settling: r.settling,
+    paused: r.paused,
   }));
 }

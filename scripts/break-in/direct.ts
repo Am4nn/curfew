@@ -27,7 +27,7 @@ import { assertMember } from "../../src/server/membership";
 import { requireCapability, hasAdminAccess } from "../../src/server/admin";
 import { roleCapabilities } from "../../src/lib/capabilities";
 import { CAPABILITIES_FOR_TEST } from "./capabilities";
-import { check, refuses, section, skipped } from "./harness";
+import { allows, check, refuses, section, skipped } from "./harness";
 import type { World } from "./world";
 
 // Everything that can be attacked by calling the server's own functions. No
@@ -335,6 +335,67 @@ export async function run(w: World): Promise<void> {
     .from(ledgerEntries)
     .where(eq(ledgerEntries.groupId, mine));
   check("leaving does not erase the ledger", debtSurvives[0].n > 0, `${debtSurvives[0].n} rows`);
+
+  // Rejoining. This used to be a silent no-op: the row already existed with
+  // left_at set, the insert conflicted and did nothing, and the invite was
+  // marked accepted anyway.
+  const ledgerBeforeRejoin = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(ledgerEntries)
+    .where(eq(ledgerEntries.groupId, mine));
+  const backIn = await db
+    .insert(groupInvites)
+    .values({ groupId: mine, email: `${stranger}@example.invalid`, invitedBy: admin })
+    .returning({ id: groupInvites.id });
+  await acceptInvite(backIn[0].id, stranger, `${stranger}@example.invalid`);
+  const [rejoined] = await db
+    .select({ joinedAt: groupMembers.joinedAt, leftAt: groupMembers.leftAt })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, mine), eq(groupMembers.userId, stranger)));
+  check("an invite back in actually puts them back", rejoined?.leftAt === null, `left_at ${rejoined?.leftAt}`);
+  check(
+    "and it is a fresh start, dated today",
+    rejoined?.joinedAt === today,
+    `${rejoined?.joinedAt}`,
+  );
+  await allows("they can read the group again", () => standingIn(mine, stranger));
+  const ledgerAfterRejoin = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(ledgerEntries)
+    .where(eq(ledgerEntries.groupId, mine));
+  check(
+    "rejoining touches no ledger row",
+    ledgerAfterRejoin[0].n === ledgerBeforeRejoin[0].n,
+    `${ledgerBeforeRejoin[0].n} -> ${ledgerAfterRejoin[0].n}`,
+  );
+
+  // And an active member accepting one does not reset the date their history
+  // in this group starts from.
+  const stillIn = await db
+    .insert(groupInvites)
+    .values({ groupId: mine, email: `${stranger}@example.invalid`, invitedBy: admin })
+    .returning({ id: groupInvites.id });
+  await db
+    .update(groupMembers)
+    .set({ joinedAt: back })
+    .where(and(eq(groupMembers.groupId, mine), eq(groupMembers.userId, stranger)));
+  await acceptInvite(stillIn[0].id, stranger, `${stranger}@example.invalid`);
+  const [unmoved] = await db
+    .select({ joinedAt: groupMembers.joinedAt })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, mine), eq(groupMembers.userId, stranger)));
+  check(
+    "an invite to somebody already in does not move their join date",
+    unmoved?.joinedAt === back,
+    `${unmoved?.joinedAt}, wanted ${back}`,
+  );
+
+  // Out again, because the moderation round below needs somebody who is not a
+  // member of `mine` to try to report into it. Putting the stranger back in and
+  // leaving them there quietly turned that round's premise false, and four
+  // checks went red for the right reason: they were no longer testing what they
+  // said they were.
+  await leaveGroup(mine, stranger);
 
   section("16. the admin console's gate");
   check("a plain member has no admin access", (await hasAdminAccess(peer)) === false);

@@ -134,7 +134,8 @@ export default async function StandingTab({
             </div>
           ))}
           <span className="text-[11.5px] leading-[1.55] text-muted">
-            Once, on the day you join. Rejoining does not give you another.
+            One day, each time you join. Anything you owed here comes back with
+            you.
           </span>
         </section>
       ) : null}

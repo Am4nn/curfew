@@ -101,10 +101,46 @@ export async function acceptInvite(
   if (inv.email.toLowerCase() !== userEmail.toLowerCase()) {
     throw new Error("invite is for a different email");
   }
-  await db
-    .insert(groupMembers)
-    .values({ groupId: inv.groupId, userId, role: "member", joinedAt: await userDay(userId) })
-    .onConflictDoNothing();
+  // Three cases, and the middle one used to be silent.
+  //
+  // `onConflictDoNothing` meant that somebody who had LEFT already had a row,
+  // with left_at set, so the insert did nothing while the invite was still
+  // marked accepted: the invite was spent and the person was not in the group,
+  // with no error anywhere.
+  //
+  // A rejoin starts fresh (decision 110): a new join date, so the score opens
+  // from the hidden global score rather than the old number, and the group does
+  // not count the day they came back (decision 123). The role is left as it
+  // stands, because a rejoin invite can only come from somebody still inside
+  // the group, so a returning owner is one of several rather than the last one.
+  //
+  // NOTHING TOUCHES THE LEDGER. What they owed and were owed comes back with
+  // them, which needs no work at all: ledger_entries is append-only and leaving
+  // never deleted a row. `/balances` hid the group only because getUserGroups
+  // filters on left_at being null, so clearing it makes the debts visible again.
+  const [existing] = await db
+    .select({ leftAt: groupMembers.leftAt })
+    .from(groupMembers)
+    .where(
+      and(eq(groupMembers.groupId, inv.groupId), eq(groupMembers.userId, userId)),
+    );
+
+  if (!existing) {
+    await db
+      .insert(groupMembers)
+      .values({ groupId: inv.groupId, userId, role: "member", joinedAt: await userDay(userId) });
+  } else if (existing.leftAt !== null) {
+    await db
+      .update(groupMembers)
+      .set({ joinedAt: await userDay(userId), leftAt: null })
+      .where(
+        and(eq(groupMembers.groupId, inv.groupId), eq(groupMembers.userId, userId)),
+      );
+  }
+  // An active member accepting an invite is a no-op on the membership. Their
+  // join date must not move: it is where their history in this group starts,
+  // and resetting it would hand them a second grace day and rewrite the lot.
+
   await db
     .update(groupInvites)
     .set({ status: "accepted", respondedAt: new Date() })

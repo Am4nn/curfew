@@ -21,7 +21,8 @@ import {
 import { render, type ScenarioResult } from "./report";
 import { runLive, type LiveResult } from "./live";
 import { verifyAll } from "@/server/verify";
-import { wipe, TZ } from "./world";
+import { wipe, TZ, TODAY } from "./world";
+import { setClock } from "@/lib/clock";
 
 if (process.env.LOCAL_MODE !== "1") {
   console.error("Refusing to simulate: LOCAL_MODE is not 1. This wipes the database it runs against.");
@@ -42,6 +43,20 @@ if (chosen.length === 0) {
 // --live=0 skips it; --live=N lives N days.
 const liveArg = process.argv.find((a) => a.startsWith("--live="))?.split("=")[1];
 const liveDays = liveArg === undefined ? 180 : Number(liveArg);
+
+// Pin the clock to the day the scenarios are written against.
+//
+// `TODAY` is a constant so the report reads the same every run, but the ENGINE
+// reads the real clock, and the two only agreed on the day this was written.
+// The moment the real date moved past it, every scenario logged its last
+// check-in on what the engine considered the day before yesterday, so a
+// spotless record acquired a missed day and spent grace on it. Four scenarios
+// went red for a fixture reason, which is exactly the failure this suite is
+// supposed to make impossible.
+//
+// Local only, gated the same way the mock-clock cookie is, and released before
+// the live pass takes it over.
+setClock(TODAY.set({ hour: 12 }).toJSDate());
 
 const results: ScenarioResult[] = [];
 
@@ -104,6 +119,9 @@ for (const scenario of chosen) {
     });
   }
 }
+
+// The live pass drives the clock itself, a day at a time, so hand it back.
+setClock(null);
 
 let live: LiveResult[] = [];
 if (liveDays > 0 && !only) {

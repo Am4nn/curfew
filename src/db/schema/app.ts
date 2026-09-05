@@ -200,6 +200,32 @@ export const ledgerEntries = pgTable("ledger_entries", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// One row per fine, and the reason a fine can only be charged once
+// (migration 0017). A fine is split among the members who passed, so the
+// number of shares depends on who has been scored when the split runs;
+// ledger_one_fine_idx makes each SHARE idempotent and the fine as a whole not.
+// This carries the identity, so a second split conflicts here and leaves the
+// ledger alone. It is a guard: ledger_entries is still the money.
+export const finePostings = pgTable(
+  "fine_postings",
+  {
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    typeKey: text("type_key").notNull(),
+    periodStart: date("period_start", { mode: "string" }).notNull(),
+    fromUserId: text("from_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    currency: char("currency", { length: 3 }).notNull().default("INR"),
+    postedAt: timestamp("posted_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.groupId, t.typeKey, t.periodStart, t.fromUserId] }),
+  ],
+);
+
 // Per group, per currency. Mutual failures net to zero here. Created by
 // migration 0002; declared existing so Drizzle reads it but never manages it.
 export const balances = pgView("balances", {
@@ -338,6 +364,34 @@ export const evidence = pgTable("evidence", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
+// The streak, stored rather than derived on every read (migration 0019).
+// Derived and replayable (invariant 1): the press moves it, the nightly close
+// repairs it, streakOver rebuilds it from events, and verify diffs the two.
+export const activityStreaks = pgTable(
+  "activity_streaks",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    typeKey: text("type_key").notNull(),
+    current: integer("current").notNull().default(0),
+    best: integer("best").notNull().default(0),
+    lastDay: date("last_day", { mode: "string" }),
+    // The week in flight, for a weekly type: which week, and how many days of
+    // it are done. A weekly streak adds a day as it happens and the week is
+    // judged when it ends, so the count has to survive between presses.
+    weekStart: date("week_start", { mode: "string" }),
+    weekSessions: integer("week_sessions").notNull().default(0),
+    graceSpent: jsonb("grace_spent")
+      .$type<Record<string, number>>()
+      .notNull()
+      .default({}),
+    closedThrough: date("closed_through", { mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.typeKey] })],
+);
+
 // Reputation, one row a day per scope. Derived and replayable (invariant 1);
 // a null groupId is the global score. See migrations/0011.
 export const reputationDaily = pgTable(
@@ -353,6 +407,10 @@ export const reputationDaily = pgTable(
     reason: text("reason").notNull(),
     ceiling: numeric("ceiling", { precision: 7, scale: 3 }).notNull(),
     completion: numeric("completion", { precision: 4, scale: 3 }),
+    // Which version of the curve produced this number (migration 0018). The
+    // incremental close carries yesterday's score forward and will not carry a
+    // row whose version it does not recognise.
+    logicVersion: integer("logic_version").notNull().default(1),
     computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
   },
 );

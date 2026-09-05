@@ -87,6 +87,7 @@ export {
   joiningScore,
   CONSTANTS,
   START_SCORE,
+  LOGIC_VERSION,
   MIN_SCORE,
   MAX_SCORE,
   type DayInput,
@@ -104,7 +105,7 @@ export {
   type Rank,
   type RankKey,
 } from "./ranks";
-export { getActivityType, registeredKeys, register } from "./registry";
+export { getActivityType, registeredKeys, register, daysDoneIn } from "./registry";
 export type {
   ActivityType,
   CheckinStep,

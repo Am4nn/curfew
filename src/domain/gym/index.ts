@@ -152,4 +152,11 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
       detail: { sessions: result.count, days, required: input.config.sessionsPerWeek },
     };
   },
+
+  // A session day is a streak day, whether or not the week goes on to meet its
+  // minimum. Days add as they happen (decision 77), and the week is judged at
+  // week end; the engine does that judging, this only says which days counted.
+  daysDone(input: EvaluateInput<GymConfig, GymEvidence>) {
+    return [...sessionDays(input.checkins, input.timezone)].sort();
+  },
 };

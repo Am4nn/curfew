@@ -28,14 +28,21 @@ import {
   fineFor,
   CONSTANTS,
   START_SCORE,
+  LOGIC_VERSION,
   type Checkin,
   type ScheduleConfig,
   type DayReason,
 } from "@/domain";
 import { resolveUserTimezone } from "./config";
-import { acceptedTypes, sharesFor, fineRuleFor, ownerMoneyToggleAsOf } from "./sharing";
-import { moneyOnFor } from "./app-config";
+import {
+  acceptedTypesAsOf,
+  sharesAsOf,
+  fineRulesAsOf,
+  ownerMoneyToggleAsOf,
+} from "./sharing";
+import { moneyOnAsOf } from "./app-config";
 import { writeFines, type OutcomeRow } from "./ledger";
+import { closeStreaks } from "./streak";
 import { now } from "@/lib/clock";
 
 // Closing and scoring periods, then moving reputation. One pass, per user, for
@@ -190,15 +197,45 @@ export interface ReputationRow {
 }
 
 /**
- * Recompute every closed period for a user, without writing.
+ * Where a scope's running score stood when it was last closed, so the next day
+ * can be built on it instead of on a replay of everything before it.
+ *
+ * `idleDays` is not stored, because it is derivable: it is the run of days
+ * ending at `day` on which nothing was scheduled. `resumePointFor` counts it
+ * back off the stored rows.
+ */
+export interface ResumePoint {
+  /** The first day to compute. Everything before it is taken as already stored. */
+  day: string;
+  /** "global" or a groupId, to where that scope's score stood the day before. */
+  scores: Map<string, { score: number; idleDays: number }>;
+}
+
+const scopeKey = (groupId: string | null) => groupId ?? "global";
+
+/**
+ * Recompute closed periods for a user, without writing.
  *
  * The write path and `bun run verify` both come through here, so verify uses
  * the same effective-dated lookups and never reports history as drift after a
  * config change (invariant 5).
+ *
+ * WITHOUT `resume` it computes from the beginning, whatever range was asked
+ * for, because reputation is a running score: day D depends on D-1, so a replay
+ * that starts halfway would start from the wrong number and every day after it
+ * would be wrong. `from` and `to` narrow what is RETURNED, never what is
+ * computed. That is what "rebuildable by replaying daily deltas from the join
+ * date" means, and it is what `verify` relies on.
+ *
+ * WITH `resume` it starts from a day whose score is already stored, which is
+ * the accounting move of carrying an opening balance rather than re-reading the
+ * whole book. `closeOutstanding` passes one; verify never does, and that
+ * asymmetry is the point: the cheap path is checked nightly against the
+ * expensive one.
  */
 export async function recomputeUser(
   userId: string,
-  opts: { from?: string; to?: string } = {},
+  opts: { from?: string; to?: string; resume?: ResumePoint } = {},
 ): Promise<{
   scores: ScoreRow[];
   outcomes: OutcomeWrite[];
@@ -213,14 +250,17 @@ export async function recomputeUser(
     instant.toISOString().slice(0, 10),
   );
 
-  // ALWAYS compute from the beginning, whatever range was asked for.
-  //
-  // Reputation is a running score: day D depends on D-1, so a replay that
-  // starts halfway would start from the wrong number and every day after it
-  // would be wrong. `from` and `to` narrow what is RETURNED, never what is
-  // computed. That is what "rebuildable by replaying daily deltas from the
-  // join date" means, and it is why verify can be trusted.
-  const from = tracked.map((t) => t.startedOn).sort()[0];
+  const startedOn = tracked.map((t) => t.startedOn).sort()[0];
+
+  // The first day the running score is computed for.
+  const dayFrom = opts.resume && opts.resume.day > startedOn ? opts.resume.day : startedOn;
+
+  // Periods are scanned from a week earlier than that, because a WEEK that
+  // concludes on the first computed day began six days before it. Scanning from
+  // `dayFrom` would miss that week entirely and the day would look empty.
+  // Rescoring a few settled periods is idempotent and costs one module call
+  // each.
+  const from = dayFrom === startedOn ? startedOn : addDays(dayFrom, -7);
 
   // Every check-in in range, once, rather than a query per type per period.
   const checkins = await db
@@ -329,14 +369,22 @@ export async function recomputeUser(
     }
   }
 
-  const reputation = replayGlobal(userId, from, concluded, instant, timezone);
+  const reputation = replayGlobal(
+    userId,
+    dayFrom,
+    concluded,
+    instant,
+    timezone,
+    opts.resume,
+  );
   const { outcomes, groupReputation } = await recomputeGroups(
     userId,
-    from,
+    dayFrom,
     scores,
     instant,
     timezone,
     reputation,
+    opts.resume,
   );
   reputation.push(...groupReputation);
 
@@ -368,13 +416,16 @@ function replayGlobal(
   concluded: Map<string, { passed: boolean; settling: boolean }[]>,
   instant: Date,
   timezone: string,
+  resume?: ResumePoint,
 ): ReputationRow[] {
   const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));
   const ceiling = ceilingFor(1);
   const rows: ReputationRow[] = [];
 
-  let score = START_SCORE;
-  let idleDays = 0;
+  // The opening balance, or where everyone starts when there is not one.
+  const opening = resume?.scores.get("global");
+  let score = opening?.score ?? START_SCORE;
+  let idleDays = opening?.idleDays ?? 0;
 
   for (const day of dayList(from, today)) {
     const periods = concluded.get(day) ?? [];
@@ -421,6 +472,7 @@ async function recomputeGroups(
   instant: Date,
   timezone: string,
   globalSeries: ReputationRow[],
+  resume?: ResumePoint,
 ): Promise<{ outcomes: OutcomeWrite[]; groupReputation: ReputationRow[] }> {
   // The global score on each day of this same replay. Read from here rather
   // than from `reputation_daily`, so a recompute is a pure function of events
@@ -469,18 +521,30 @@ async function recomputeGroups(
     // Read once, resolved per day below: an owner turning money on today must
     // not make a period that closed last week read as though it had been on
     // (invariant 5).
-    const ownerToggleAt = await ownerMoneyToggleAsOf(m.groupId);
+    // Everything effective-dated about this group, read ONCE.
+    //
+    // All five of these were queried inside the day loop below, which meant the
+    // same four or five round trips for every day of a member's history to get
+    // back rows that had not changed. Two hundred days in two groups was on the
+    // order of a thousand sequential queries to draw Home.
+    //
+    // They are all append-only histories with an effective instant, so reading
+    // one and resolving it per day is arithmetic and gives the same answer.
+    // Invariant 5 is untouched: every one of them is still read as it stood on
+    // the day being judged, never as it stands now.
+    const [ownerToggleAt, acceptedAt, sharesAt, fineRuleAt, moneyAt] = await Promise.all([
+      ownerMoneyToggleAsOf(m.groupId),
+      acceptedTypesAsOf(m.groupId),
+      sharesAsOf(m.groupId, userId),
+      fineRulesAsOf(m.groupId),
+      moneyOnAsOf(m.groupId),
+    ]);
 
-    // Sharing and acceptance are resolved as they stood on each day, so a
-    // change today never rewrites what a past period was judged against.
-    const shareOn = async (day: string) => {
+    const shareOn = (day: string) => {
       const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
-      const [accepted, shares] = await Promise.all([
-        acceptedTypes(m.groupId, at),
-        sharesFor(m.groupId, userId, at),
-      ]);
+      const accepted = acceptedAt(at);
       const sharedKeys = new Set(
-        shares.filter((sh) => sh.shared).map((sh) => sh.typeKey),
+        sharesAt(at).filter((sh) => sh.shared).map((sh) => sh.typeKey),
       );
       const counted = accepted.filter((a) => sharedKeys.has(a.typeKey));
       return {
@@ -494,11 +558,16 @@ async function recomputeGroups(
     // latest value instead moves a group's starting point every time the
     // global score moves, which rewrites every day of that group's history
     // after the fact.
-    let score = joiningScore(globalBefore(m.joinedAt));
-    let idleDays = 0;
+    //
+    // A resumed replay opens on the balance this group's score already carried,
+    // which has that joining score inside it already. Recomputing the joining
+    // score here would throw away everything earned since.
+    const opening = resume?.scores.get(scopeKey(m.groupId));
+    let score = opening?.score ?? joiningScore(globalBefore(m.joinedAt));
+    let idleDays = opening?.idleDays ?? 0;
 
     for (const day of dayList(start, end)) {
-      const { shared, breadth } = await shareOn(day);
+      const { shared, breadth } = shareOn(day);
       const ceiling = ceilingFor(breadth);
 
       // Every period of a shared type that concluded today.
@@ -510,10 +579,10 @@ async function recomputeGroups(
       );
 
       const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
-      const moneyOn = await moneyOnFor(m.groupId, ownerToggleAt(at), at);
+      const moneyOn = moneyAt(ownerToggleAt(at), at);
 
       for (const sc of todays) {
-        const rule = await fineRuleFor(m.groupId, sc.typeKey, sc.periodStart);
+        const rule = fineRuleAt(sc.typeKey, sc.periodStart);
         // Grace protects the streak, never the fine (decision 5). A group
         // with money off never accrues one either, whatever the rule says.
         const fine = sc.passed || !moneyOn
@@ -586,15 +655,97 @@ function concludesOn(score: ScoreRow): string {
  * the thing: closing is idempotent, so doing it once is doing it enough. Outside
  * a request (the nightly job, `bun run verify`, the scripts) there is nothing to
  * dedupe against and every call runs, which is what those want anyway.
+ *
+ * IT NEVER WRITES MONEY, and that is not an optimisation.
+ *
+ * A fine is split among the members who passed the same period, so it can only
+ * be settled once every one of them has been scored. `scoreAll` does that in two
+ * passes for exactly this reason. A read closes ONE user, so settling from here
+ * splits among whoever happened to be scored already: the first reader's fine
+ * went to one peer in full, and a later pass split the same fine among two and
+ * inserted the second share beside the first, because the unique index is per
+ * payer-payee pair rather than per fine. 500 charged as 750, which is invariant
+ * 7 broken by a page load.
+ *
+ * It also resumes rather than replays. Reputation is a running score and the
+ * running score is stored, one row a day, so the days already closed do not
+ * need computing again to reach today. Where that is not safe, `resumePointFor`
+ * declines to offer a resume point and this falls back to the full replay.
  */
 export const closeOutstanding = cache(async (userId: string): Promise<void> => {
-  await scoreUser(userId);
+  await scoreUser(userId, { fines: false, resume: await resumePointFor(userId) });
 });
+
+/**
+ * The opening balance to carry forward, or nothing when it cannot be trusted.
+ *
+ * Reads the last stored day for every scope the user has, and the run of idle
+ * days behind it. Returns undefined, meaning "replay everything", in three
+ * cases:
+ *
+ *   - **Nothing stored.** A new user, or a restored backup. There is no balance
+ *     to open on.
+ *   - **The maths has moved on.** A row written by an older `applyDay` is an
+ *     input from rules that no longer apply, and every day built on it would
+ *     inherit that. See LOGIC_VERSION.
+ *   - **The scopes disagree on how far they got.** A group closed to Tuesday
+ *     and the global score closed to Friday cannot share one resume day, and
+ *     resuming the group from Friday would silently skip Wednesday and
+ *     Thursday. Rare, and a full replay is the right answer when it happens.
+ *
+ * Deliberately NOT used by `verify`, which always replays from the beginning.
+ * The cheap path is checked against the expensive one every night, and that
+ * check is only worth anything while the two are computed differently.
+ */
+async function resumePointFor(userId: string): Promise<ResumePoint | undefined> {
+  const rows = await db
+    .select({
+      groupId: reputationDaily.groupId,
+      day: reputationDaily.day,
+      score: reputationDaily.score,
+      completion: reputationDaily.completion,
+      logicVersion: reputationDaily.logicVersion,
+    })
+    .from(reputationDaily)
+    .where(eq(reputationDaily.userId, userId))
+    .orderBy(reputationDaily.day);
+  if (rows.length === 0) return undefined;
+
+  const byScope = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const key = scopeKey(r.groupId);
+    const list = byScope.get(key) ?? [];
+    list.push(r);
+    byScope.set(key, list);
+  }
+
+  const scores = new Map<string, { score: number; idleDays: number }>();
+  let closedThrough: string | null = null;
+
+  for (const [key, days] of byScope) {
+    const last = days[days.length - 1];
+    if (last.logicVersion !== LOGIC_VERSION) return undefined;
+    if (closedThrough === null) closedThrough = last.day;
+    else if (closedThrough !== last.day) return undefined;
+
+    // How long nothing has been scheduled, counted back off the stored rows.
+    // It is not a column because it is not a fact, only a run length, and
+    // applyDay is the only thing that wants it.
+    let idleDays = 0;
+    for (let i = days.length - 1; i >= 0 && days[i].completion === null; i -= 1) {
+      idleDays += 1;
+    }
+    scores.set(key, { score: Number(last.score), idleDays });
+  }
+
+  if (closedThrough === null) return undefined;
+  return { day: addDays(closedThrough, 1), scores };
+}
 
 /** Idempotent: recompute, then upsert. Safe to run twice, or half. */
 export async function scoreUser(
   userId: string,
-  opts: { from?: string; to?: string; fines?: boolean } = {},
+  opts: { from?: string; to?: string; fines?: boolean; resume?: ResumePoint } = {},
 ): Promise<{ scores: number; outcomes: number; fines: number; reputation: number }> {
   const { scores, outcomes, reputation } = await recomputeUser(userId, opts);
 
@@ -644,13 +795,13 @@ export async function scoreUser(
     const values = sql.join(
       rows.map(
         (r) =>
-          sql`(${r.userId}, ${r.groupId}, ${r.day}::date, ${r.score}::numeric, ${r.delta}::numeric, ${r.reason}, ${r.ceiling}::numeric, ${r.completion}::numeric)`,
+          sql`(${r.userId}, ${r.groupId}, ${r.day}::date, ${r.score}::numeric, ${r.delta}::numeric, ${r.reason}, ${r.ceiling}::numeric, ${r.completion}::numeric, ${LOGIC_VERSION})`,
       ),
       sql`, `,
     );
     await db.execute(sql`
       INSERT INTO reputation_daily
-        (user_id, group_id, day, score, delta, reason, ceiling, completion)
+        (user_id, group_id, day, score, delta, reason, ceiling, completion, logic_version)
       VALUES ${values}
       ON CONFLICT (user_id, COALESCE(group_id, '00000000-0000-0000-0000-000000000000'::uuid), day)
       DO UPDATE SET
@@ -659,6 +810,7 @@ export async function scoreUser(
         reason = excluded.reason,
         ceiling = excluded.ceiling,
         completion = excluded.completion,
+        logic_version = excluded.logic_version,
         computed_at = now()
     `);
   }
@@ -750,6 +902,10 @@ export async function scoreAll(
   // means a fine lands the night it is due rather than the night after.
   for (const u of users) {
     await scoreUser(u.userId, { from: opts.from, fines: false });
+    // The streak counter is moved by a press and repaired here. The press
+    // cannot be transactional with the event that caused it, so a night that
+    // rebuilds is what keeps the number honest.
+    await closeStreaks(u.userId);
   }
   let fines = 0;
   for (const u of users) {

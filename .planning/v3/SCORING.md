@@ -74,26 +74,33 @@ One row per user per type, and it is the week's closing record as well as the
 counter:
 
 ```
-activity_streaks
+activity_streaks                            (migration 0019)
   user_id, type_key            primary key
   current            int       the run that is still alive
   best               int       never taken back
   last_day           date      the last activity-day counted
-  week_opening       int       what current was when this week opened
+  week_start         date      the week week_sessions belongs to
   week_sessions      int       days done in the week in flight
   grace_spent        jsonb     { "2026-09": 1 }
   closed_through     date      every day up to here is accounted for
 ```
 
-A press increments `current` and, for a weekly type, `week_sessions`. Nothing
-is read except this row. Decision 77 stands: days add as they happen, so a
-six-session week adds six.
+**No day log beside it.** The plan called for a `(user, type, day)` table of
+days done, and it is not needed: `events` already is that log, with
+`events_one_checkin_idx` unique on user, type, period and idempotency key. A
+second table would be derived state with its source of truth sitting next to
+it, which invariant 1 says to say so about rather than add. The press is
+idempotent because the event insert is.
 
-Guarded by a unique constraint on the activity-day, so a double press or a
-retry cannot add twice. The activity-day is the row in `activity_scores` for
-daily types and, for weekly types, a new `(user, type, day)` record of days
-done. That record is the missing piece today: the streak needs days, and only
-periods are stored.
+**A module says which of its days count.** `daysDone` on the module interface,
+defaulting to "the period, if it passed", which is right for eleven of the
+twelve. Gym declares its own, because only gym knows that two presses on a
+Tuesday are one day at the gym (invariant 6). This is the piece that was
+missing: the engine was guessing by handing the streak one row per period.
+
+A press adds the days it completed, which is what counts now minus what counted
+a moment ago. Water's eighth glass adds one and the first seven add nothing.
+Decision 77 stands: days add as they happen, so a six-session week adds six.
 
 **A streak only ever does `+1`, or goes to `0`. Grace means it does neither: it
 holds where it is.** There is no third movement, and in particular nothing
@@ -104,20 +111,32 @@ At close (nightly, or lazily on the first read of a new day):
 
 - Daily type: a scheduled day with nothing done spends grace and holds, or
   resets `current` to 0.
-- Weekly type: if `week_sessions` reaches `perWeek` the week stands. If not,
-  grace holds `current` where it is, keeping the days that week added, or it
-  resets to 0. Then `week_opening` becomes `current` and `week_sessions`
-  becomes 0.
+- Weekly type: if the week reaches `perWeek` it stands. If not, grace holds
+  `current` where it is, keeping the days that week added, or it resets to 0.
 
-This changes the built `streakOver`, which rolls a graced weekly failure back
-to `week_opening`. `week_opening` survives as the record of where the week
-started, not as a value anything returns to.
+This changed the built `streakOver`, which rolled a graced weekly failure back
+to the value the week opened on. Nothing returns to an earlier value now, and
+there is no column for one.
 
 A graced short week therefore leaves the user ahead by the days they did do.
 Grace is capped per month, so it cannot be farmed.
 
 `closed_through` is what makes the close idempotent and lets a missed night
 catch up without double counting.
+
+**The close rebuilds rather than stepping forward**, and that is deliberate. A
+weekly streak is judged at week end against days spread through the week, so
+stepping forward from a mid-week boundary would carry the week's partial state
+and the grace it might spend, which is the walk `streakOver` already does
+correctly in one place. A rebuild reads two tables for one type and runs at most
+once per activity-day, because `closed_through` says when there is nothing to
+do.
+
+**The rebuild counts the period in flight too.** `verify` caught this: the press
+counts a day as soon as it is done, and a rebuild that only looked at closed
+periods reported one lower every evening. Only days that ARE done are added,
+never a day merely not done yet, because a day still in progress has not been
+missed and marking it so would end a run at breakfast.
 
 **Read path: one row, no arithmetic.**
 
@@ -146,6 +165,22 @@ Two things to get right, both of which the snapshot literature warns about:
   be carried and the user is replayed. That is the correct behaviour for a new
   member, a missed night and a restored backup alike.
 
+A third case appeared in the building: **the scopes must agree on how far they
+got.** A group closed to Tuesday and the global score closed to Friday cannot
+share one resume day, and resuming the group from Friday would silently skip
+two days. Rare, and a full replay is the right answer to it.
+
+And one thing the literature warns about that had to be met head on. **The
+stored score is the state, not a picture of it.** `score` is `numeric(7,3)`, so
+a stored day is rounded. While the whole curve was replayed every time, that
+rounding was a display detail: the replay carried full precision day to day and
+rounded once, at the end. Carrying the stored value forward makes the rounding
+an input, and continuing from 214.994 is not continuing from 214.9944. A week
+later the two answers differ by a thousandth, which is exactly what `verify`
+reported on the first run of the incremental path. Three decimals is the value
+now, quantised every day inside `applyDay`, so the stored row IS the state and
+an opening balance is exact.
+
 **Read path: the latest row, no arithmetic.**
 
 Whether reputation moves per group at day close or in one pass: one pass. The
@@ -164,16 +199,29 @@ everyone before it settles.
 **A fine becomes a posting with one identity.** A new table:
 
 ```
-fine_postings
+fine_postings                                       (migration 0017)
   group_id, type_key, period_start, from_user_id   primary key
   amount, currency, posted_at
 ```
 
-The rows in `ledger_entries` and the posting row are written in one
-transaction. If the posting row conflicts, the fine is already charged and the
-whole split is skipped, including any share that does not yet exist. That is
-the "unique constraint on the posting" rule, and it is what the current
-per-payee index fails to give.
+The posting is claimed FIRST, then the shares are written. If the posting row
+conflicts, the fine is already charged and the whole split is skipped,
+including any share that does not yet exist. That is the "unique constraint on
+the posting" rule, and it is what the per-payee index fails to give.
+
+**Not one transaction, because there are none to be had.** `src/db/index.ts`
+types the local node-postgres handle as the production Neon HTTP one, and Neon
+HTTP refuses `db.transaction`; `db.batch` is atomic there but does not exist on
+node-postgres, so using it would break `bun run local`. The order is chosen
+instead: a crash between the two writes leaves a posting with no shares, which
+is an under-charge that `verify` reports and a person repairs from the amount
+the posting kept. The other order leaves shares nobody can recognise as already
+charged, which is the bug being fixed.
+
+The migration backfills a posting for every fine already charged, at the amount
+CHARGED rather than the amount owed. Those agree for a fine written correctly
+and differ for one written by the bug, and recording what was actually taken is
+what lets verify say so.
 
 `ledger_entries` stays append-only and stays the truth. Corrections are
 reversing rows, as invariant 3 already says.
@@ -198,9 +246,10 @@ Escalating fines are not in v3. `fineStep` and `fineCap` stay unread.
   shares that type, and no fine may exist for a group with money off on the day
   it closed. Also: no ledger row without a posting, and no posting without
   rows.
-- **streak**: rebuild the counter from the activity-day log and diff `current`,
-  `best` and `grace_spent`. This is the check that would have caught the weekly
-  bug.
+- **streak**: rebuild the counter from `events` and diff `current`, `best` and
+  `grace_spent`. This is the check that would have caught the weekly bug, and
+  it is what says so when a press bump and the event it came from have come
+  apart, which they can, since the two cannot be one write.
 
 `verify` keeps replaying from the beginning. That is the point of it, and it is
 the reason the caches above are safe to trust.
@@ -221,67 +270,66 @@ reconciliation nobody runs is a reconciliation that finds nothing.
 - **`verify` runs nightly**, after scoring, and drift lands on the admin Ops
   drift block that already exists.
 
-## Build order
+## Built
 
-Six steps. One to three are correctness, four to six are the speed, and five is
-also a bug fix. Each ends somewhere shippable.
+All six steps are in, on `main`. Each was one commit, and each ends somewhere
+shippable.
 
-**1. The read path stops writing fines.**
-`scoring.ts`: `closeOutstanding` calls `scoreUser(userId, { fines: false })`.
-Money is then written by `scoreAll` and by nothing else. A test asserts that a
-`closeOutstanding` on a user with a failed period writes no `ledger_entries`.
-This alone removes the double-charge.
+1. **The read path stops writing fines.** `closeOutstanding` passes
+   `fines: false`, so `scoreAll` is the only writer of a fine. That alone
+   removes the double-charge, because the nightly job already scores everyone
+   before it settles.
+2. **`fine_postings`.** Claimed before the shares, per the note above.
+3. **`verify` covers outcomes, the ledger and the streak**, and the cron runs
+   it after scoring and records `ops.verify.ran`. Admin Overview reads that
+   recorded run instead of recomputing seven days for every user on every page
+   load; Ops still verifies live.
+4. **Reputation carries the balance**, with `logic_version`, a replay fallback,
+   and quantisation.
+5. **`activity_streaks`**, `daysDone` on the module interface, the press bump,
+   and the hold-on-grace rule.
+6. **The per-day queries are gone**, in `recomputeGroups` and in the read path
+   above it.
 
-**2. `fine_postings`, and the split becomes one posting.**
-Migration adds the table, primary key `(group_id, type_key, period_start,
-from_user_id)`. `writeFines` wraps the posting row and its `ledger_entries`
-rows in one transaction; a conflict on the posting skips the whole split rather
-than inserting the shares that do not yet exist. `ledger_one_fine_idx` stays as
-a second line of defence. A test replays a split with one peer, then with two,
-and asserts the total charged is the fine.
+**What it cost to draw Home**, on the seeded local database:
 
-**3. `verify` covers outcomes and the ledger.**
-`verify.ts` gains `kind: "outcome"` and `kind: "ledger"`. Outcomes diff
-`passed`, `fine_amount`, `currency`, `rules_version`. The ledger checks are
-properties rather than a diff: shares sum exactly to the posting, every payee
-passed that period and shares that type, no fine in a group with money off on
-the day it closed, no ledger row without a posting, no posting without rows.
-The cron calls `verifyAll` after `scoreAll` and stores the result where the
-admin Ops drift block already reads from.
+| | before | after |
+|---|---|---|
+| Home | 6.8 s | 135 ms cold, 88 ms warm |
+| A full replay of one user | 2.9 s | 346 ms |
 
-**4. Reputation carries the balance.**
-Migration adds `logic_version` to `reputation_daily`. A new `closeDay(userId,
-day)` reads the previous day's row per scope, applies `applyDay`, and inserts.
-It falls back to `recomputeUser` when the previous row is missing or its
-`logic_version` does not match. `recomputeUser` and `replay` are untouched and
-stay what `verify` uses. `verify` proves the two agree.
+### Proven, not assumed
 
-**5. `activity_streaks` and the day log.**
-Migration adds `activity_streaks` and, for weekly types, the `(user, type,
-day)` record of days done. The check-in path increments the counter in the same
-transaction as the event, guarded by the day's unique constraint. `standingFor`
-becomes a single row read. `streakOver` stays as the rebuild used by `verify`,
-amended to the hold-on-grace rule above. Weekly streaks are correct as a
-consequence, and `verify` gains the streak diff that would have caught it.
-
-**6. `recomputeGroups` stops querying per day.**
-`acceptedTypes`, `sharesFor`, `fineRuleFor` and the money toggle load once per
-user and resolve in memory. Same answers, one round trip each instead of four
-per day per group.
-
-Verification: `bun run test` and `bun run typecheck` after every step,
-`bun run verify` at zero drift after 2, 4 and 5, and the drift harness
-recaptured after 5, which is the only step that changes a screen.
+- **The double-charge.** `bun run check:money` settles a fine with one peer
+  scored and then with two, and asserts the ledger sums to the fine. On the
+  commit before `fine_postings` it reports 750 against a 500 fine.
+- **The ledger checks fire.** An extra share to a peer scored later, injected by
+  hand, was reported twice over: shares summing to 5099 against a 5000 posting,
+  and a payee who had not passed. Nothing reported that before.
+- **The resume agrees with the replay.** Sixty days of `reputation_daily`
+  deleted and rebuilt by the incremental close reproduce the full replay
+  exactly, and `verify` reports zero drift. It did not, the first time, which is
+  where the quantisation came from.
+- **The press ticks on the day it completes.** Water pressed from zero: glasses
+  one to seven move nothing, the eighth moves the streak from 4 to 5, and
+  `verify` agrees afterwards.
+- **Gym.** 22 where the old read path collapsed it, with three passed weeks
+  reproducing as 3 rather than 1 in a domain test.
+- Drift harness 67/67, 232 domain tests, `verify` clean on a fresh seed.
 
 ## Open questions
 
 - **Timezone.** `recomputeUser` resolves the zone once, for today, and replays
   all history in it. Moving country re-judges every past period. The research
-  answer is to store the local date on each activity-day at the time it
-  happens, which the day log above would make possible.
+  answer is to stamp the local date on each check-in as it happens, which would
+  mean a payload field rather than a table.
 - **Retroactive check-ins.** None exist today. If they ever do, the streak
   counter has to be rebuilt rather than incremented, which is another reason
-  the day log is the truth and the counter is not.
+  `events` is the truth and the counter is not.
+- **Grace is still not applied to outcomes.** `graceUsed` is written `false` on
+  every row and admin renders the column. Either grace belongs in
+  `activity_outcomes` or the column should go. It is not a money bug, since
+  grace has never protected a fine (decision 5), but it is a column that lies.
 
 ## Sources
 

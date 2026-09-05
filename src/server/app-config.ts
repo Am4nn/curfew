@@ -179,16 +179,49 @@ export async function moneyOnFor(
   ownerToggle: boolean,
   instant: Date,
 ): Promise<boolean> {
-  const [appWide, override] = await Promise.all([
-    resolveAppSettingAt("money", instant),
-    resolveGroupSettingAt(groupId, "money", instant),
+  const at = await moneyOnAsOf(groupId);
+  return at(ownerToggle, instant);
+}
+
+/**
+ * The same three-way resolution, with its history read once.
+ *
+ * `moneyOnFor` asks the database every time it is called, which is right for a
+ * screen and wrong for the scoring pass: that resolves money per day per group,
+ * and was issuing the same two queries for every day of a member's history to
+ * get the same answer. Both settings are append-only with an effective instant,
+ * so the whole history is small and resolving it is arithmetic.
+ *
+ * Same semantics, including invariant 5: an owner turning money on today must
+ * not make a period that closed last week read as though it had been on.
+ */
+export async function moneyOnAsOf(
+  groupId: string,
+): Promise<(ownerToggle: boolean, instant: Date) => boolean> {
+  const [appRows, groupRows] = await Promise.all([
+    db
+      .select({ id: appSettings.id, value: appSettings.value, effectiveAt: appSettings.effectiveAt })
+      .from(appSettings)
+      .where(eq(appSettings.key, "money")),
+    db
+      .select({
+        id: groupSettings.id,
+        value: groupSettings.value,
+        effectiveAt: groupSettings.effectiveAt,
+      })
+      .from(groupSettings)
+      .where(and(eq(groupSettings.groupId, groupId), eq(groupSettings.key, "money"))),
   ]);
 
-  return resolveMoney({
-    appWide: appWide === true,
-    groupOverride: typeof override === "boolean" ? override : null,
-    ownerToggle,
-  });
+  return (ownerToggle, instant) => {
+    const appWide = resolveAt(appRows, instant)?.value ?? DEFAULTS.money;
+    const override = resolveAt(groupRows, instant)?.value ?? null;
+    return resolveMoney({
+      appWide: appWide === true,
+      groupOverride: typeof override === "boolean" ? override : null,
+      ownerToggle,
+    });
+  };
 }
 
 /**

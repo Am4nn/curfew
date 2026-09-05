@@ -1,6 +1,6 @@
 import { and, eq, or, isNull, lte, gt, desc, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { ledgerEntries, groups, groupMembers, users } from "@/db/schema";
+import { ledgerEntries, finePostings, groups, groupMembers, users } from "@/db/schema";
 import { splitFine } from "@/domain";
 import { assertMember } from "./membership";
 
@@ -42,17 +42,33 @@ async function nameLookup(userIds: string[]): Promise<(id: string) => string> {
  * creditor and nothing is written (decision 107). That keeps invariant 7 exact:
  * every fine sums to its shares, because there are always shares.
  *
- * Idempotent through ledger_one_fine_idx, so re-running the scorer never
- * double-charges.
+ * THE POSTING IS WRITTEN FIRST, and that order is the whole guard.
+ *
+ * `ledger_one_fine_idx` makes each SHARE idempotent, which is not the same as
+ * making the fine idempotent. The number of shares depends on who has been
+ * scored when the split runs, so a split among one peer followed by a split
+ * among two inserts the second peer's share beside the first and charges 750
+ * for a 500 fine: no row in the table conflicted with anything. The accounting
+ * rule is that idempotency belongs on the posting, so a replay cannot write a
+ * second set of entries, and `fine_postings` (migration 0017) is that identity.
+ *
+ * Claim the posting, then write the shares. A conflict means this fine is
+ * already charged and the whole split is skipped, including a share that did
+ * not exist last time.
+ *
+ * This codebase has no transactions available (`src/db/index.ts`: the Neon HTTP
+ * driver refuses them), so the two writes cannot be one. The order is chosen so
+ * that a crash between them leaves a posting with no shares, which is an
+ * UNDER-charge that `verify` reports and a person repairs from the amount the
+ * posting kept. The other order would leave shares nobody can recognise as
+ * already charged, which is the bug this replaces.
  */
 export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
   const failed = outcomes.filter((o) => !o.passed && o.fineAmount > 0);
   if (failed.length === 0) return 0;
 
-  const rows: (typeof ledgerEntries.$inferInsert)[] = [];
-  const names = await nameLookup(
-    outcomes.map((o) => o.userId),
-  );
+  const names = await nameLookup(outcomes.map((o) => o.userId));
+  let written = 0;
 
   for (const o of failed) {
     // Only members who passed the same period, sharing the same type. Someone
@@ -70,29 +86,44 @@ export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
 
     if (recipients.length === 0) continue;
 
-    for (const share of splitFine(o.fineAmount, recipients)) {
-      rows.push({
+    // Claim it. Nothing back means someone already did, so this fine is
+    // charged and the shares below are not ours to write.
+    const [posting] = await db
+      .insert(finePostings)
+      .values({
         groupId: o.groupId,
         typeKey: o.typeKey,
-        fromUserId: o.userId,
-        toUserId: share.toUserId,
-        fromUserName: names(o.userId),
-        toUserName: names(share.toUserId),
-        amount: share.amount,
-        currency: o.currency,
-        kind: "fine",
         periodStart: o.periodStart,
-      });
-    }
+        fromUserId: o.userId,
+        amount: o.fineAmount,
+        currency: o.currency,
+      })
+      .onConflictDoNothing()
+      .returning({ amount: finePostings.amount });
+    if (!posting) continue;
+
+    const rows = splitFine(o.fineAmount, recipients).map((share) => ({
+      groupId: o.groupId,
+      typeKey: o.typeKey,
+      fromUserId: o.userId,
+      toUserId: share.toUserId,
+      fromUserName: names(o.userId),
+      toUserName: names(share.toUserId),
+      amount: share.amount,
+      currency: o.currency,
+      kind: "fine",
+      periodStart: o.periodStart,
+    }));
+
+    const inserted = await db
+      .insert(ledgerEntries)
+      .values(rows)
+      .onConflictDoNothing()
+      .returning({ id: ledgerEntries.id });
+    written += inserted.length;
   }
 
-  if (rows.length === 0) return 0;
-  const inserted = await db
-    .insert(ledgerEntries)
-    .values(rows)
-    .onConflictDoNothing()
-    .returning({ id: ledgerEntries.id });
-  return inserted.length;
+  return written;
 }
 
 // Record a settlement the payer made: one append-only row, never a mutation.

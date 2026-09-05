@@ -31,6 +31,22 @@ export async function acceptedTypes(
   groupId: string,
   asOf: Date = new Date(),
 ): Promise<AcceptedType[]> {
+  const at = await acceptedTypesAsOf(groupId);
+  return at(asOf);
+}
+
+/**
+ * The same answer, with the history read once.
+ *
+ * The scoring pass resolves this per day per group, and was issuing the same
+ * query for every day of a member's history to get the same rows back. The
+ * table is append-only with an effective instant, so reading it once and
+ * resolving in memory is the same answer without the round trips (invariant 5
+ * is unchanged: acceptance is still read as it stood on the day being judged).
+ */
+export async function acceptedTypesAsOf(
+  groupId: string,
+): Promise<(asOf: Date) => AcceptedType[]> {
   const rows = await db
     .select({
       id: groupActivityTypes.id,
@@ -42,17 +58,18 @@ export async function acceptedTypes(
     .where(eq(groupActivityTypes.groupId, groupId));
 
   const keys = [...new Set(rows.map((r) => r.typeKey))];
-  const out: AcceptedType[] = [];
-  for (const typeKey of keys) {
-    const row = resolveAt(
-      rows.filter((r) => r.typeKey === typeKey),
-      asOf,
-    );
-    if (!row?.accepted) continue;
-    const type = getActivityType(typeKey);
-    out.push({ typeKey, name: type.name, icon: type.icon });
-  }
-  return out;
+  const byKey = new Map(keys.map((k) => [k, rows.filter((r) => r.typeKey === k)]));
+
+  return (asOf) => {
+    const out: AcceptedType[] = [];
+    for (const typeKey of keys) {
+      const row = resolveAt(byKey.get(typeKey)!, asOf);
+      if (!row?.accepted) continue;
+      const type = getActivityType(typeKey);
+      out.push({ typeKey, name: type.name, icon: type.icon });
+    }
+    return out;
+  };
 }
 
 export interface Share {
@@ -67,6 +84,15 @@ export async function sharesFor(
   userId: string,
   asOf: Date = new Date(),
 ): Promise<Share[]> {
+  const at = await sharesAsOf(groupId, userId);
+  return at(asOf);
+}
+
+/** The same answer, with the history read once. See `acceptedTypesAsOf`. */
+export async function sharesAsOf(
+  groupId: string,
+  userId: string,
+): Promise<(asOf: Date) => Share[]> {
   const rows = await db
     .select({
       id: memberShares.id,
@@ -79,20 +105,21 @@ export async function sharesFor(
     .where(and(eq(memberShares.groupId, groupId), eq(memberShares.userId, userId)));
 
   const keys = [...new Set(rows.map((r) => r.typeKey))];
-  const out: Share[] = [];
-  for (const typeKey of keys) {
-    const row = resolveAt(
-      rows.filter((r) => r.typeKey === typeKey),
-      asOf,
-    );
-    if (!row) continue;
-    out.push({
-      typeKey,
-      shared: row.shared,
-      shareEvidence: row.shared && row.shareEvidence,
-    });
-  }
-  return out;
+  const byKey = new Map(keys.map((k) => [k, rows.filter((r) => r.typeKey === k)]));
+
+  return (asOf) => {
+    const out: Share[] = [];
+    for (const typeKey of keys) {
+      const row = resolveAt(byKey.get(typeKey)!, asOf);
+      if (!row) continue;
+      out.push({
+        typeKey,
+        shared: row.shared,
+        shareEvidence: row.shared && row.shareEvidence,
+      });
+    }
+    return out;
+  };
 }
 
 /**
@@ -218,9 +245,24 @@ export async function fineRuleFor(
   typeKey: string,
   period: string,
 ): Promise<FineRule> {
+  const at = await fineRulesAsOf(groupId);
+  return at(typeKey, period);
+}
+
+/**
+ * Every type's rules for one group, read once, resolved per period.
+ *
+ * The scoring pass asked for one type's rules per outcome, which is one query
+ * per missed period per member. A group's whole rule history is a handful of
+ * rows.
+ */
+export async function fineRulesAsOf(
+  groupId: string,
+): Promise<(typeKey: string, period: string) => FineRule> {
   const rows = await db
     .select({
       version: groupActivityRules.version,
+      typeKey: groupActivityRules.typeKey,
       scopeId: groupActivityRules.groupId,
       effectiveFrom: groupActivityRules.effectiveFrom,
       fineMode: groupActivityRules.fineMode,
@@ -230,19 +272,26 @@ export async function fineRuleFor(
       currency: groupActivityRules.currency,
     })
     .from(groupActivityRules)
-    .where(
-      and(eq(groupActivityRules.groupId, groupId), eq(groupActivityRules.typeKey, typeKey)),
-    );
+    .where(eq(groupActivityRules.groupId, groupId));
 
-  const row = resolveConfig(rows, period);
-  if (!row) return NO_FINE;
-  return {
-    version: row.version,
-    fineMode: row.fineMode as "flat" | "escalating",
-    fineAmount: row.fineAmount,
-    fineStep: row.fineStep,
-    fineCap: row.fineCap,
-    currency: row.currency,
+  const byKey = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const list = byKey.get(r.typeKey) ?? [];
+    list.push(r);
+    byKey.set(r.typeKey, list);
+  }
+
+  return (typeKey, period) => {
+    const row = resolveConfig(byKey.get(typeKey) ?? [], period);
+    if (!row) return NO_FINE;
+    return {
+      version: row.version,
+      fineMode: row.fineMode as "flat" | "escalating",
+      fineAmount: row.fineAmount,
+      fineStep: row.fineStep,
+      fineCap: row.fineCap,
+      currency: row.currency,
+    };
   };
 }
 

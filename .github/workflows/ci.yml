@@ -35,6 +35,12 @@ jobs:
       - name: Test
         run: bun run test
 
+      # The one thing about the schedule no test can see: vercel.json is in UTC
+      # and a period ends in the member's zone. `0 4 * * *` was 90 minutes
+      # before a sleep night became scorable, so its fine posted a day late.
+      - name: The nightly job runs late enough to score last night
+        run: bun run check:cron
+
       # The build validates env at module load and pre-renders routes. It never
       # connects to a database (queries run only per request), so dummy but
       # well-formed values are enough. Never put real secrets here.

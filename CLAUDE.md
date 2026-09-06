@@ -83,13 +83,24 @@ all of them waiting on later phases:
 
 **The cutover has not happened.** Production still serves v2.5 from the old Neon
 project, and `.env.production` is the only file pointing at it. At the cutover
-its two database values become the APAC ones and nothing else changes.
+its two database values become `curfew-apac`'s default branch, which is emptied
+first: nothing from v1 or v2 is carried across (decision 22). The steps are in
+`PLAN.md` under "The cutover", and the old project is deleted a week later.
 
 ## Deploying
 
 Production ships on a version tag, never on a push. `main` is a Vercel Preview
-deployment against the APAC database. Vercel's production branch is
-`production`, which nobody pushes.
+deployment against the `curfew-apac-dev` branch, served at
+`dev.curfew.amanarya.com` with deployment protection off, so anyone with the
+link can open it. Vercel's production branch is `production`, which nobody
+pushes.
+
+**Vercel Cron runs against the production deployment only.** There is no cron on
+Preview and no setting that adds one, so the dev deployment is never scored on
+its own. Reads still close periods lazily, so its screens are right; the ledger
+and reputation rows wait for `bun run score`. A scheduled GitHub Actions
+workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
+real nightly job, and it is not worth it while dev has three users.
 
 `package.json` carries `3.0.0-dev` while v3 is being built, so the admin header
 reads `v3.0.0-dev` on every deployment of `main` and `v2.5.2` on the live site.
@@ -220,6 +231,7 @@ deps       bun run check:deps      — fails on a deprecated dependency
 actions    bun run check:actions   — fails on an archived or out-of-date GitHub Action
 version    bun run check:logic-version — a curve change repairs itself
 zones      bun run check:timezones — a day belongs to the member, not to UTC
+cron       bun run check:cron      — the job runs after last night became scorable
 browser    bun run browser         — every screen and every form, against a running server
 audit      bun audit               — published advisories against the lockfile
 migrate    bun run migrate         — migrations, then sync, against .env.preview
@@ -233,9 +245,9 @@ cors       bun run check:cors      — can a browser upload from this origin
 ```
 
 CI runs typecheck, lint, test, build, the migration job, `break-in`, the
-simulation scenarios, `verify` against a seeded database, the three narrow
-script checks (money, logic version, timezones), the browser suite against a
-running app, and the three dependency and pipeline checks. A version tag will
+simulation scenarios, `verify` against a seeded database, the four narrow
+script checks (money, logic version, timezones, the cron schedule), the browser
+suite against a running app, and the three dependency and pipeline checks. A version tag will
 not deploy unless that whole run passed on the same SHA.
 
 `bun run browser` needs a server and a seeded database: `bun run local:seed`,
@@ -270,8 +282,12 @@ order. Only the values differ, and `.env.example` is the key list.
 | File | Database | Used by |
 |---|---|---|
 | `.env.local` | docker Postgres, `LOCAL_MODE=1` | `bun run local`, `local:*` |
-| `.env.preview` | the APAC project | `bun run dev`, `migrate`, Vercel Preview |
+| `.env.preview` | `curfew-apac-dev`, a Neon branch | `bun run dev`, `migrate`, Vercel Preview |
 | `.env.production` | the live project | `migrate:production`, Vercel Production |
+
+A migration written after the cutover is applied twice: `bun run migrate` for the
+dev branch and `bun run migrate:production` for the live one. Reset the branch
+from its parent in Neon when it drifts too far to be useful.
 
 A key missing from one file does not fall back to a default. It leaks in from
 `.env.local`, which Next loads on every non-production run. Add a key to one,

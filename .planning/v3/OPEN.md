@@ -75,6 +75,28 @@ was also reading the process clock rather than the app's.
 `bun run check:timezones` covers §1.6 and §1.7 together, at UTC+14 and UTC-11.
 Six of its eleven checks fail on the commit before the two fixes.
 
+### 1.8 The nightly job ran before last night was scorable — FIXED
+
+`vercel.json` scheduled `0 4 * * *`, which is 9:30 AM in Kolkata. A sleep night
+runs local noon to noon, so at 9:30 the night that had just passed was still
+open, and the run scored the night before it. Monday's fine posted on Wednesday
+morning: about thirty six hours after the morning it was owed, against a
+decision that says the following morning.
+
+Nothing showed it. Every screen was right, because a read closes periods lazily;
+only the ledger and the reputation rows lagged, and both are correct as soon as
+the next run reaches them. It was found by working out when the last default
+window closes and comparing that with the schedule, which is now
+`bun run check:cron` in CI: it asks each of the twelve modules, at its own
+defaults, when yesterday becomes scorable, and fails if the run fires first.
+Sleep fails on `0 4`. The schedule is `0 7 * * *`, 12:30 PM in Kolkata, the
+earliest half hour after a noon boundary can close.
+
+**One daily cron is wrong for somebody whatever it is set to**, and this one is
+set for the zone the members are in. A member far enough west is scored a day
+late, which the job repairs on its next run because it scores every unscored
+date rather than only yesterday's.
+
 ---
 
 ## 2. Security
@@ -93,8 +115,14 @@ now runs the first number rather than the second.
 - **No authenticated-as-somebody-else request in a real-auth environment.** That
   needs a forged Better Auth session. The LOCAL_MODE sweep covers the same
   ground with a fixed identity, which is why the positive control matters.
-- **Nothing checks the R2 bucket policy or the security headers.**
-  `check:cors` answers one narrow question about uploads.
+- **Nothing checks the R2 bucket policy.** `check:cors` answers one narrow
+  question about uploads and says nothing about who else can read the bucket.
+  The security headers are covered now: `next.config.ts` sets six on every
+  route and the HTTP sweep asserts five of them against a real response.
+  There is still **no Content-Security-Policy beyond `frame-ancestors`**,
+  because App Router emits inline bootstrap scripts and a real policy needs a
+  per-request nonce through middleware. A wrong one is a blank page rather than
+  an error, so it is worth doing deliberately and not in a cutover week.
 - **RLS is still deferred** (`../BACKLOG.md`), so the query layer is the only
   wall. One missing `assertMember` is a breach rather than a defence-in-depth
   miss.
@@ -153,19 +181,34 @@ already there and only the comment beside it still called itself a placeholder.
 
 ## 5. The cutover, and after it
 
+Settled 2026-09-07: **nothing is carried across.** Decision 22 stands, the two
+databases have different schemas anyway, and the people affected are three. The
+old `curfew` project is deleted rather than migrated, and `curfew-apac` is
+emptied before it becomes production. The steps are in `PLAN.md`.
+
 - **Production still serves v2.5** from the old Neon project. `.env.production`
   is the only file pointing at it, and at the cutover its two database values
   become the APAC ones.
 - **`vercel.json` pins `sin1` while production's database is still in
   `us-east-2`.** Safe only because no tag is cut before the cutover.
 - **The 19 v2.5 artboards** in `.design/` come out once the cutover is done.
-- **Preview has never been scored.** `bun run verify` against preview reports
-  134 drift rows and every one of them is `stored=null`: nothing has ever been
-  computed for those accounts. Vercel crons run on production deployments only,
-  and preview is a Preview deployment, so the nightly job has never fired there.
-  `bun run score` against preview would write them. It also writes fines, which
-  are ledger rows and append-only, so it is a deliberate act rather than
-  housekeeping.
+- **Preview has never been scored.** Vercel crons run on production deployments
+  only, and preview is a Preview deployment, so the nightly job has never fired
+  there. `bun run score` writes them by hand, and it writes fines, which are
+  append-only ledger rows, so it is a deliberate act rather than housekeeping.
+  After the cutover, dev runs against the `curfew-apac-dev` branch and is
+  scored the same way, by hand, when a scored number is what is being looked at.
+- **One Upstash database serves both**, accepted 2026-09-07: the free tier
+  allows one, and only developers reach the dev deployment. The keys carry no
+  environment (`src/server/ratelimit.ts`) and the dev branch is a clone, so the
+  same person's counter is shared across the two. Both ways that can go are
+  safe. A developer flooding as themselves spends their own ceiling and nobody
+  else's, because the key is per user. And when the free tier throttles the
+  account, `rateLimit` fails OPEN by design, so the ceiling stops being enforced
+  rather than locking anyone out. Seen here: two `break-in` runs back to back,
+  and the second reported "never refused" where the first said "after 21". A
+  rate-limit check that goes red straight after another run is that, not a
+  regression.
 
 ---
 

@@ -125,10 +125,47 @@ export async function run(
     return;
   }
 
+  await responseHeaders(base);
+
   if (shape === "local") await sweepAsFixedIdentity(w, base);
   else await sweepAsNobody(w, base);
 
   await apiRoutes(w, base, shape);
+}
+
+/**
+ * The headers every response carries, which nothing checked until now.
+ *
+ * They are declared in `next.config.ts`, and a header declared there and not
+ * served is the failure worth catching: a `headers()` that never matched the
+ * route looks exactly like one that did. Asked of a real response for that
+ * reason, rather than by reading the config back.
+ *
+ * HSTS is not asserted. It is honoured over HTTPS only, and this sweep usually
+ * runs against localhost, so requiring it here would fail for a reason that is
+ * not the app.
+ */
+async function responseHeaders(base: string): Promise<void> {
+  section("HTTP: the headers on every response");
+
+  const response = await fetch(base, { redirect: "manual" });
+  const expected: [string, string][] = [
+    ["content-security-policy", "frame-ancestors 'none'"],
+    ["x-frame-options", "DENY"],
+    ["x-content-type-options", "nosniff"],
+    ["referrer-policy", "strict-origin-when-cross-origin"],
+  ];
+  for (const [name, value] of expected) {
+    const got = response.headers.get(name);
+    check(`${name} is ${value}`, got === value, got ?? "absent");
+  }
+
+  // The camera is the one capability the app uses, so the policy has to allow
+  // it to itself while denying it to anything else. A policy that named
+  // everything and forgot the camera would be a broken check-in screen.
+  const policy = response.headers.get("permissions-policy") ?? "";
+  check("permissions-policy keeps the camera", policy.includes("camera=(self)"), policy || "absent");
+  check("permissions-policy denies geolocation", policy.includes("geolocation=()"), policy || "absent");
 }
 
 /**

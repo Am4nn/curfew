@@ -150,14 +150,49 @@ fixed.
 
 Not a phase, but the list that must not be improvised on the day.
 
-1. Point Vercel Production's `DATABASE_URL_POOLED` and `DATABASE_URL_DIRECT` at
-   the APAC project.
-2. `bun run migrate:production` against it.
-3. `vercel.json` already pins `sin1`. Check it is still there: it is only
-   correct once step 1 has moved the database to APAC, and until then the pin
+Nothing is carried across (decision 22, reconfirmed 2026-09-07). The old
+project is deleted, not migrated, and `curfew-apac` is emptied first: it holds
+the accounts and groups that were made while building, and they would otherwise
+be what the live site serves on its first day.
+
+1. **Empty `curfew-apac`'s default branch.** In the Neon SQL editor, against
+   that branch and no other:
+
+   ```sql
+   drop schema public cascade;
+   create schema public;
+   ```
+
+   That takes `_migrations` with it, which is the point: step 3 then applies
+   every numbered file from empty, the same path CI proves on every push.
+   It does not touch `curfew-apac-dev`, which is a branch of its own and keeps
+   whatever it had.
+2. Point Vercel Production's `DATABASE_URL_POOLED` and `DATABASE_URL_DIRECT` at
+   `curfew-apac`'s default branch, and `.env.production` at the same two values.
+   Preview already points at `curfew-apac-dev`.
+3. `bun run migrate:production` against it, then check `activity_types` carries
+   twelve rows, all disabled.
+4. **Make an admin again.** The wipe took every account with it, and a fresh
+   database has nobody who can approve anybody, so the first sign-in lands on
+   the pending screen with no way off it. Sign in once, then run the statement
+   under "Approve yourself" in the README against the same branch. Do this
+   before the tag: the alternative is discovering it on the live site.
+5. Enable the activity types the members will use, from admin Controls. Every
+   one is disabled after a sync, and a type with no row is not offered.
+6. `vercel.json` already pins `sin1`. Check it is still there: it is only
+   correct once step 2 has moved the database to APAC, and until then the pin
    is the reason no tag may be cut.
-4. Bump `package.json`, tag, push. The workflow deploys and promotes.
-5. Delete the old Neon project after a week of nobody complaining.
+7. Bump `package.json` to `3.0.0`, push it to `main`, and let CI finish. The
+   deploy workflow reads CI's result by SHA and refuses a tag CI never saw.
+8. Tag and push. The workflow deploys and promotes.
+9. `bun run check:cors:production`, and open the live site to check the admin
+   header reads `v3.0.0`.
+10. Delete the old `curfew` Neon project after a week of nobody complaining.
+
+**Dev after the cutover.** `bun run dev`, `bun run migrate` and `bun run verify`
+all read `.env.preview`, which is now the `curfew-apac-dev` branch, so a
+migration written after the cutover is applied twice: once there and once with
+`migrate:production`. Reset the branch from its parent in Neon when it drifts.
 
 ## Order notes
 

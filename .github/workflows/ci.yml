@@ -14,7 +14,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -60,7 +60,7 @@ jobs:
   deps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -77,6 +77,14 @@ jobs:
       # ALLOWED in the script, with a reason.
       - name: Nothing we chose is deprecated
         run: bun run check:deps
+
+      # The same question about the pipeline itself. `actions/checkout` sitting
+      # on an end-of-life Node was found by an annotation on a green run, which
+      # is to say by luck.
+      - name: Nothing the pipeline runs on is behind
+        run: bun run check:actions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   # Migrations and the registry sync, against a throwaway Postgres. This proves
   # `bun run migrate` applies every numbered file cleanly from empty and that
@@ -106,7 +114,7 @@ jobs:
       LOCAL_MODE: "1"
       DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -170,7 +178,7 @@ jobs:
       RESEND_API_KEY: ci-resend-key
       EMAIL_FROM: "Curfew <notices@example.com>"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -231,7 +239,7 @@ jobs:
       RESEND_API_KEY: ci-resend-key
       EMAIL_FROM: "Curfew <notices@example.com>"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -257,3 +265,98 @@ jobs:
 
       - name: The stored rows agree with a replay
         run: bun run scripts/verify.ts
+
+      # Three narrow proofs that each exist because the thing they check went
+      # wrong once. They ran by hand until now, which is the same as not
+      # running: a fine charged twice, a curve change that does not heal and a
+      # config write on the wrong day are all silent.
+      - name: A fine is charged once
+        run: bun run scripts/check-money.ts
+
+      - name: A curve change repairs itself
+        run: bun run scripts/check-logic-version.ts
+
+      - name: Days belong to the member
+        run: bun run scripts/check-timezones.ts
+
+  # The half only a browser can answer, and the half of break-in that needs a
+  # server. Both used to run when somebody remembered.
+  #
+  # A DEV server, not a built one, and that is not laziness. LOCAL_MODE is
+  # double-gated on NODE_ENV not being "production" so it can never wake up on
+  # Vercel, and `next start` sets exactly that, so a built server here would
+  # have no fixed identity and every route would redirect to sign-in. The
+  # trade is a slower first hit per route, which the timeouts allow for.
+  browser:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      LOCAL_MODE: "1"
+      DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL_POOLED: postgresql://ci:ci@localhost:5432/ci
+      BETTER_AUTH_SECRET: ci-browser-secret
+      BETTER_AUTH_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: ci-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-google-client-secret
+      CRON_SECRET: ci-cron-secret
+      RESEND_API_KEY: ci-resend-key
+      EMAIL_FROM: "Curfew <notices@example.com>"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Migrate from empty
+        run: bun run scripts/migrate.ts
+
+      - name: Sync the activity registry
+        run: bun run scripts/sync-activities.ts
+
+      - name: Seed a history
+        run: bun run scripts/seed-local.ts
+
+      # Backgrounded, then waited for. `bun run local` reads .env.local, which
+      # is gitignored and does not exist here, so the server is started
+      # directly against the job's own environment.
+      - name: Start the app
+        run: |
+          bunx next dev > /tmp/next.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:3000 && exit 0
+            sleep 2
+          done
+          echo "the server never answered"; cat /tmp/next.log; exit 1
+
+      - name: Every screen, and the forms on them
+        run: bun run browser
+
+      # With a server up, the ten checks that skip themselves in the other job
+      # actually run: signed-out routes, somebody else's group over HTTP, and
+      # the positive control that proves the detector works.
+      - name: Break in, including the HTTP half
+        run: bun run scripts/break-in/run.ts
+
+      - name: The server said nothing alarming
+        if: always()
+        run: tail -50 /tmp/next.log

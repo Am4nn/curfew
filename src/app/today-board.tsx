@@ -46,6 +46,26 @@ export function TodayBoard({
 }) {
   const [recorded, setRecorded] = useState<string | null>(initialRecorded);
 
+  // What the pressed row said at the moment it was pressed.
+  //
+  // This is how the optimistic line knows when to stop. `nextStatus` means "one
+  // more press than this row shows", so it is only ever true of the render that
+  // was on screen when the button went down. Once the server's render arrives
+  // the count has already moved, and substituting `nextStatus` on top of it
+  // reads one too high: a fourth glass showed 4, then 5, then dropped back to 4
+  // when the mark timed out four seconds later.
+  //
+  // The status the module writes is the comparison, rather than a timestamp or
+  // a flag, because it is exactly the thing that changes when the press lands.
+  // Null for a check-in made on `/checkin/<key>`: that arrives at `?done=`
+  // AFTER the server has counted it, so there is nothing to be optimistic
+  // about and the same substitution was wrong there too.
+  const [pressed, setPressed] = useState<{ key: string; status: string } | null>(null);
+  const optimistic =
+    pressed && rows.some((r) => r.typeKey === pressed.key && r.status === pressed.status)
+      ? pressed.key
+      : null;
+
   // `?done=` describes a moment, and a moment does not survive a reload. Taking
   // it out of the URL means refreshing this page does not replay the roll or
   // re-stamp a day that was finished ten minutes ago. history.replaceState
@@ -64,7 +84,10 @@ export function TodayBoard({
   // open does not sit there claiming something just happened.
   useEffect(() => {
     if (!recorded) return;
-    const timer = setTimeout(() => setRecorded(null), HOLD_MS);
+    const timer = setTimeout(() => {
+      setRecorded(null);
+      setPressed(null);
+    }, HOLD_MS);
     return () => clearTimeout(timer);
   }, [recorded]);
 
@@ -133,7 +156,11 @@ export function TodayBoard({
             key={row.typeKey}
             row={row}
             recorded={recorded === row.typeKey}
-            onRecord={() => setRecorded(row.typeKey)}
+            optimistic={optimistic === row.typeKey}
+            onRecord={() => {
+              setRecorded(row.typeKey);
+              setPressed({ key: row.typeKey, status: row.status });
+            }}
           />
         ))}
       </section>

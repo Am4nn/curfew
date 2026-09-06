@@ -5,6 +5,7 @@ import { runRebuildAction } from "../actions";
 import { ActionForm, SubmitButton } from "../../ui";
 import { evidenceOps, humanBytes } from "@/server/ops";
 import { now } from "@/lib/clock";
+import { userDay } from "@/server/config";
 
 function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -29,9 +30,11 @@ export default async function AdminOps({
 
   const sp = await searchParams;
   // The app's clock, not the machine's, so the preview clock moves this range
-  // the same way it moves every other screen (invariant 8).
+  // the same way it moves every other screen (invariant 8). And the admin's own
+  // day rather than a UTC date: east of Greenwich those differ for the first
+  // hours of every morning, and a window ending yesterday cannot see today.
   const instant = await now();
-  const to = sp.to || isoDate(instant);
+  const to = sp.to || (await userDay(user.id));
   const from = sp.from || isoDate(new Date(instant.getTime() - 30 * 864e5));
 
   const [ev, driftReport] = await Promise.all([

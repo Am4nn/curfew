@@ -11,6 +11,7 @@ import {
 } from "@/db/schema";
 import { recomputeUser, type OutcomeWrite, type ScoreRow } from "./scoring";
 import { recomputeStreak } from "./streak";
+import { userDay } from "./config";
 
 export interface Drift {
   kind: "score" | "reputation" | "outcome" | "ledger" | "streak";
@@ -161,29 +162,39 @@ export async function verifyUser(
       }
     }
 
-    // A stored day LATER than anything the replay reaches.
+    // A stored day that HAS NOT HAPPENED.
     //
-    // The diff above only looks inside the computed range, so a row for a day
-    // that has not happened was invisible to it, and such a row is not
-    // harmless: `resumePointFor` reads the last stored day as the balance to
-    // carry forward, so it would resume from the far side of the gap and every
-    // real day in between would never be computed at all.
+    // The diff above only looks inside the computed range, so a row for a
+    // future day was invisible to it, and such a row is not harmless:
+    // `resumePointFor` reads the last stored day as the balance to carry
+    // forward, so it would resume from the far side of the gap and every real
+    // day in between would never be computed at all.
     //
     // Local only in practice, and found here rather than reasoned about: the
     // browser suite scrubs the preview clock into a future pause, every read on
     // those pages closes periods, and the rows outlive the cookie. A server
     // clock that jumped forward and back would do the same in production.
-    const last = days[days.length - 1];
+    //
+    // Measured against the MEMBER'S OWN TODAY, not against the end of the
+    // replay. Those are not the same thing and the difference was a false
+    // alarm: admin Ops verifies a window ending on a UTC date, so at half past
+    // one in the morning in Kolkata every member's row for the day they were
+    // living was dated after the window and reported as a row from the future.
+    // A day belongs to the member, not to UTC, here as everywhere else.
+    const today = await userDay(userId);
     const ahead = await db
       .select({ groupId: reputationDaily.groupId, day: reputationDaily.day, score: reputationDaily.score })
       .from(reputationDaily)
-      .where(and(eq(reputationDaily.userId, userId), gt(reputationDaily.day, last)));
+      .where(and(eq(reputationDaily.userId, userId), gt(reputationDaily.day, today)));
     for (const row of ahead) {
       drift.push({
         kind: "reputation",
         userId,
         key: scope(row.groupId, row.day),
-        field: "*",
+        // Its own field, not the "*" the missing-row case uses. Sharing that
+        // one meant the report described a row from the future as a row that
+        // was never stored, which is the opposite of what it is.
+        field: "ahead",
         stored: row.score,
         computed: null,
       });

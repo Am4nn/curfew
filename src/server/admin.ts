@@ -839,6 +839,8 @@ function describeScoreDrift(d: Drift): string {
 
 function describeReputationDrift(d: Drift): string {
   if (d.field === "*") return `no stored reputation, recomputed ${String(d.computed)}`;
+  // Not a diff: nothing was computed for it because the day has not happened.
+  if (d.field === "ahead") return `stored ${String(d.stored)} for a day still to come`;
   if (d.field === "score") return `stored ${String(d.stored)}, recomputed ${String(d.computed)}`;
   if (d.field === "reason") {
     return `stored reason ${String(d.stored)}, recomputed reason ${String(d.computed)}`;

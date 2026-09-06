@@ -32,6 +32,7 @@ import { chromium } from "playwright";
 import { screens } from "./screens.mjs";
 import { balances } from "./balances.mjs";
 import { admin } from "./admin.mjs";
+import { counter } from "./counter.mjs";
 import { pause } from "./pause.mjs";
 
 const BASE = process.env.BROWSER_BASE ?? "http://localhost:3000";
@@ -41,6 +42,9 @@ const SUITES = [
   ["screens", screens],
   ["balances", balances],
   ["admin", admin],
+  // Before pause, which leaves the clock scrubbed several days out and every
+  // counter finished. This one needs a day with nothing on it.
+  ["counter", counter],
   ["pause", pause],
 ];
 

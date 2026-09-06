@@ -16,8 +16,15 @@ import { CheckinButton } from "./checkin-button";
  * carries a rule down its left for a few seconds, so the eye finds the thing
  * that changed without anything covering the screen (mock: V3Recorded).
  *
- * `recorded` is owned by TodayBoard, because the count above the list has to
+ * Both flags are owned by TodayBoard, because the count above the list has to
  * move at the same moment and for the same reason.
+ *
+ * They are two flags rather than one because they end at different times, and
+ * conflating them was a bug. `recorded` is a moment and lasts a few seconds.
+ * `optimistic` lasts only until the server's own render arrives: `nextStatus`
+ * means "one more press than this row shows", so a row still substituting it
+ * after the refresh reads one too high. Pressing a fourth glass showed 4, then
+ * 5, then fell back to 4 when the mark timed out.
  *
  * `nextStatus` is written by the activity's module, like `status` is, so
  * nothing here knows what a glass or a meal is (invariant 6). The optimism is
@@ -27,17 +34,18 @@ import { CheckinButton } from "./checkin-button";
 export function ActivityRow({
   row,
   recorded = false,
+  optimistic = false,
   onRecord,
 }: {
   row: TodayRow;
-  /** This row is the one that just landed. */
+  /** This row is the one that just landed: it carries the mark. */
   recorded?: boolean;
+  /** The press is not in the server's render yet, so show where it is going. */
+  optimistic?: boolean;
   /** A press on this row was recorded, before the refresh lands. */
   onRecord?: () => void;
 }) {
-  // The server's text wins the moment it arrives. A row that has been
-  // re-rendered with a new status is no longer the row that was pressed.
-  const status = recorded && row.nextStatus ? row.nextStatus : row.status;
+  const status = optimistic && row.nextStatus ? row.nextStatus : row.status;
 
   return (
     <div

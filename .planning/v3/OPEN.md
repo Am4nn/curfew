@@ -97,6 +97,60 @@ set for the zone the members are in. A member far enough west is scored a day
 late, which the job repairs on its next run because it scores every unscored
 date rather than only yesterday's.
 
+### 1.9 The optimistic count outlived the render it described — FIXED
+
+A counter's row on Home goes optimistic on the press: it shows `nextStatus`,
+the module's own line as it would read once one more press lands, so the number
+moves without waiting for the round trip. `nextStatus` is only ever true of the
+render that was on screen when the button went down, and the row went on
+substituting it for the whole four seconds the mark is held, which is long
+after the server's own render has arrived with the press already counted. A
+fourth glass of water read:
+
+```
+4 of 8  ->  5 of 8  ->  6 of 8  ->  5 of 8
+```
+
+Nothing stored was ever wrong, which is why nothing caught it. The unit tests
+see the module's two sentences and both are correct. `verify` sees the events
+and they are correct. Only a browser holding the row through the refresh sees
+the wrong one, so the fix comes with `scripts/browser/counter.mjs`, which
+presses the button and samples the line for six seconds. Four of its six checks
+fail on the commit before the fix.
+
+The same substitution was wrong on the other path into that state. A check-in
+made on `/checkin/<key>` returns to `/?done=<key>`, and that render already
+counts the press, so there was never anything to be optimistic about there.
+
+**Gym is the one type it could not affect**, which is worth recording because
+gym is where it was reported. Only one session a day counts, so gym's step
+closes after a press, `nextStatus` is null, and the row falls through to the
+server's line. Water, food and every other counter had it.
+
+The two states are now two flags. `recorded` is a moment and lasts four
+seconds; `optimistic` lasts until the server's status differs from the one that
+was on screen when the press was made.
+
+### 1.10 `verify` called a member's own today a day from the future — FIXED
+
+Found by the fix above: the admin suite's drift check started failing for a
+different member every run. §8's rule again, from the other side. The check
+that reports a stored reputation row for a day that has not happened compared
+each row against the end of the REPLAY, and admin Ops verifies a window ending
+on a UTC date. At half past one in the morning in Kolkata that window ends
+yesterday, so every member's row for the day they were living was dated after
+it and reported as a row from the future.
+
+Three things were wrong and all three are fixed. The check now measures against
+the member's own `userDay`, which is window-independent and is what "has not
+happened" means. Ops takes its window from the admin's own day rather than from
+UTC. And the drift row carries its own field rather than borrowing the one the
+missing-row case uses, which had the report describing a row from the future as
+a row that was never stored: the exact opposite of what it is.
+
+The check still catches what it was written for. A reputation row dated three
+days out is still reported, now as `ahead`.
+
 ---
 
 ## 2. Security
@@ -291,7 +345,7 @@ Decisions 129 to 132, and the gaps in them closed the same day.
   beside them: three narrow proofs that each exist because the thing they check
   went wrong once, and each of which ran by hand until now.
 - **A `browser` job** builds a database of its own, starts the app and runs the
-  sixty-five browser checks plus the full security round, HTTP half included. It
+  seventy-one browser checks plus the full security round, HTTP half included. It
   runs a dev server on purpose: LOCAL_MODE is gated on `NODE_ENV` not being
   "production" and `next start` sets exactly that.
 - **`check:actions`** asks of every `uses:` line whether the repository is

@@ -134,8 +134,17 @@ runs in CI:
 
 - **The terms have not been read by a lawyer.**
 - **The `SCREENS.md` review gate**: somebody opening each screen beside its
-  artboard and ticking the row. Configure and Check-in are unticked on purpose,
-  and the two v3.1 stats boards are new.
+  artboard and ticking the row. What is left of it is the ticking. Round 5 of
+  the drift audit (`scripts/drift/REPORT.md`, 2026-09-06) captured all eighty
+  pairs, including the fifteen v3.1 boards that had never been in the gallery
+  at all, and lists every difference it found: four were bugs and are fixed,
+  the rest are named as fixture or as deliberate. Open `.shots/index.html`
+  after `node scripts/drift/run-all.mjs`.
+- **Two artboards still have no pair.** `V31StandingImmaculate` and
+  `V31StandingClimbing` need a spotless fixture: sixty days with nothing
+  missed, which means a longer history than the current 45 and a perfect
+  variant of all six event seeders. The numbers behind both bands are covered
+  by the simulation; the gold halo, the only glow in the app, is not.
 
 `JURISDICTION.city` is settled: Bengaluru, confirmed 2026-09-06. The value was
 already there and only the comment beside it still called itself a placeholder.
@@ -282,6 +291,18 @@ A fourth, from the browser suite: the first version of a browser check went
 green five times against the pending-approval screen, because a simulation had
 wiped the database out from under it and every route redirected. `open` in
 `scripts/browser/run.mjs` refuses that screen by name for exactly that reason.
+
+A fifth, the other way round. `check:logic-version` failed and the check looked
+wrong: one ordinary scoring pass had not restored the score it stamped. It had.
+The row it sampled was dated three days into the future, left there by the
+browser suite scrubbing the preview clock into a trip, and the pass at the real
+clock was never going to reach it. `verify` could not see those rows either,
+because it only ever compared inside the range it computed, and they are not
+harmless: `resumePointFor` reads the last stored day as the balance to carry
+forward, so it would resume from the far side of the gap and skip every real
+day in between. Both are fixed. The lesson is the same as the other four, with
+the sign flipped: a check that goes red for a reason that sounds like the app
+is worth suspecting too, and this one was right.
 
 The pattern is the same each time: a test that passes because it is looking at
 the wrong thing, and only says so when something else changes. Worth suspecting

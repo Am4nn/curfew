@@ -12,6 +12,7 @@ import {
 } from "@/domain";
 import { getAppConfig } from "./app-config";
 import { resolveUserTimezone } from "./config";
+import { now } from "@/lib/clock";
 
 /** A calendar date in a given zone, "yyyy-MM-dd". */
 function isoDate(instant: Date, timezone: string): string {
@@ -61,11 +62,14 @@ export function splitConfig(raw: unknown): { schedule: ScheduleConfig; config: u
 export const listUserActivities = cache(async function listUserActivities(
   userId: string,
 ): Promise<UserActivity[]> {
-  const now = new Date();
+  // The app clock, not the process one: a preview scrubbed to another day has
+  // to resolve the config that stood on THAT day, or every screen reads today's
+  // settings against a scored history that used the day's own.
+  const instant = await now();
   // The user's own date, not UTC. At 23:00 in Kolkata the UTC date is still
   // yesterday, and resolving against it would return yesterday's settings.
-  const timezone = await resolveUserTimezone(userId, isoDate(now, "utc"));
-  const today = isoDate(now, timezone);
+  const timezone = await resolveUserTimezone(userId, isoDate(instant, "utc"));
+  const today = isoDate(instant, timezone);
 
   const [switches, configs] = await Promise.all([
     db
@@ -92,7 +96,7 @@ export const listUserActivities = cache(async function listUserActivities(
   const out: UserActivity[] = [];
 
   for (const typeKey of keys) {
-    const row = resolveAt(switches.filter((s) => s.typeKey === typeKey), now);
+    const row = resolveAt(switches.filter((s) => s.typeKey === typeKey), instant);
     if (!row) continue;
 
     const configRow = resolveConfig(
@@ -170,8 +174,9 @@ export async function saveUserActivity(input: SaveActivityInput): Promise<void> 
   // Dates in the USER'S timezone, not UTC. "Tomorrow" at 23:00 in Kolkata is a
   // different date from "tomorrow" in UTC, and picking the wrong one would land
   // a change a day early or a day late.
-  const timezone = await resolveUserTimezone(input.userId, isoDate(new Date(), "utc"));
-  const today = isoDate(new Date(), timezone);
+  const at = await now();
+  const timezone = await resolveUserTimezone(input.userId, isoDate(at, "utc"));
+  const today = isoDate(at, timezone);
 
   // A first setup lands TODAY. Invariant 4 future-dates changes so a period
   // already being judged is not rewritten mid-flight, and for a brand new
@@ -216,7 +221,7 @@ export async function saveUserActivity(input: SaveActivityInput): Promise<void> 
     typeKey: input.typeKey,
     enabled: input.enabled,
     // App clock, not the database's: see the note in saveControls.
-    effectiveAt: new Date(),
+    effectiveAt: at,
   });
 }
 
@@ -229,7 +234,7 @@ export async function stopTracking(userId: string, typeKey: string): Promise<voi
     userId,
     typeKey,
     enabled: false,
-    effectiveAt: new Date(),
+    effectiveAt: await now(),
   });
 }
 

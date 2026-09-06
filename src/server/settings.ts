@@ -7,14 +7,22 @@ import {
   validateSleepWindows,
   type SleepConfig,
 } from "@/domain";
-import { resolveUserTimezone, resolveUserSleepConfigRow } from "./config";
-import { now, nowUTC } from "@/lib/clock";
+import { resolveUserTimezone, resolveUserSleepConfigRow, userDay } from "./config";
+import { dayAfter } from "@/lib/day-format";
+import { now } from "@/lib/clock";
 
 // Config is insert-only and effective-dated. A change never touches history: it
 // takes effect tomorrow, never today (invariant 4). Editing again the same day
 // replaces the still-future, not-yet-applied row.
-async function tomorrow(): Promise<string> {
-  return (await nowUTC()).plus({ days: 1 }).toFormat("yyyy-MM-dd");
+//
+// THE MEMBER'S TOMORROW, not the UTC one. This read `nowUTC()` plus a day, and
+// every date it is compared against is a day in the member's own zone. For
+// anyone far enough east, a change saved late in their evening was dated to a
+// day they were already living, so it took effect at once and rewrote a period
+// in progress, which is the one thing invariant 4 exists to stop. For anyone
+// far enough west it landed two of their days out and did nothing tomorrow.
+async function tomorrow(userId: string): Promise<string> {
+  return dayAfter(await userDay(userId));
 }
 
 // The settings editor shows the config as it will stand going forward, i.e. as
@@ -25,7 +33,7 @@ async function tomorrow(): Promise<string> {
 export async function getPersonalSettings(
   userId: string,
 ): Promise<{ timezone: string; windows: SleepConfig }> {
-  const t = await tomorrow();
+  const t = await tomorrow(userId);
   const timezone = await resolveUserTimezone(userId, t);
   const { config } = await resolveUserSleepConfigRow(userId, t);
   return { timezone, windows: config };
@@ -37,7 +45,10 @@ export async function updateTimezone(userId: string, timezone: string): Promise<
   }
   await db
     .insert(userSettings)
-    .values({ userId, timezone, effectiveFrom: await tomorrow() })
+    // Their tomorrow as measured in the zone they are in NOW, not the one they
+    // are moving to: the change is dated from the end of the day they are
+    // currently living, and that day is the old zone's.
+    .values({ userId, timezone, effectiveFrom: await tomorrow(userId) })
     .onConflictDoUpdate({
       target: [userSettings.userId, userSettings.effectiveFrom],
       set: { timezone },
@@ -98,7 +109,7 @@ export async function updateSleepWindows(
   windows: unknown,
 ): Promise<void> {
   const config = sleepConfigSchema.parse(windows);
-  const effectiveFrom = await tomorrow();
+  const effectiveFrom = await tomorrow(userId);
   const timezone = await resolveUserTimezone(userId, effectiveFrom);
   const errors = validateSleepWindows(config, timezone, effectiveFrom);
   if (errors.length > 0) throw new Error(errors[0]);

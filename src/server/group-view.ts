@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { and, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
@@ -18,6 +19,8 @@ import { gracesIn, type GracePeriod } from "./grace";
 import { pausesIn, currentPause, type Pause } from "./pause";
 import { cleanRunIn, cleanRunsIn } from "./clean-run";
 import { globalScore } from "./scoring";
+import { userDay } from "./config";
+import { now } from "@/lib/clock";
 
 // Everything the group hub reads. Every query here is behind assertMember
 // (invariant 10), and every one of them is scoped to what the member in
@@ -46,7 +49,7 @@ export async function groupHeader(
   const moneyOn = await moneyOnFor(
     groupId,
     await ownerMoneyToggle(groupId),
-    new Date(),
+    await now(),
   );
   return { groupId, name: g.name, role, moneyOn };
 }
@@ -249,7 +252,11 @@ export interface WeekStats {
 export async function weekStats(groupId: string, viewerId: string): Promise<WeekStats> {
   await assertMember(groupId, viewerId);
 
-  const from = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
+  // Seven days back from the VIEWER'S day, on the app clock. A UTC window put
+  // a member in Kolkata a day out of step with the periods they are reading.
+  const from = DateTime.fromISO(await userDay(viewerId), { zone: "utc" })
+    .minus({ days: 6 })
+    .toFormat("yyyy-MM-dd");
   const rows = await db
     .select({
       userId: activityOutcomes.userId,

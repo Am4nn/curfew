@@ -9,6 +9,7 @@ import {
 import { resolveAt, resolveConfig, getActivityType } from "@/domain";
 import { assertMember, memberRole } from "./membership";
 import { listUserActivities } from "./activities";
+import { userDay } from "./config";
 
 // The two toggles, and only two (decision 16).
 //
@@ -306,7 +307,10 @@ export async function setFineRule(input: {
   const role = await memberRole(input.groupId, input.changedBy);
   if (role !== "owner") throw new Error("Only an owner can set a fine.");
 
-  const today = new Date().toISOString().slice(0, 10);
+  // The owner's own day, on the app clock. Read in UTC this refused a valid
+  // change for anybody east of Greenwich in the first hours of their evening,
+  // and accepted a same-day one for anybody west of it.
+  const today = await userDay(input.changedBy);
   if (input.effectiveFrom <= today) {
     throw new Error("A fine change takes effect from tomorrow at the earliest.");
   }

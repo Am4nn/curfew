@@ -10,6 +10,8 @@ import {
   setOwnerMoneyToggle,
 } from "@/server/sharing";
 import { leaveGroup } from "@/server/groups";
+import { userDay } from "@/server/config";
+import { dayAfter } from "@/lib/day-format";
 import { minorUnitExponent } from "@/domain";
 
 async function me() {
@@ -67,14 +69,16 @@ export async function setFineAction(input: {
     throw new Error("That is not an amount.");
   }
 
-  // Tomorrow at the earliest: a fine is scoring config (invariant 4).
-  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  // Tomorrow at the earliest: a fine is scoring config (invariant 4). The
+  // owner's own tomorrow, on the app clock: this was `Date.now()` plus a day
+  // read in UTC, which for an owner east of Greenwich is a date they are
+  // already living, and `setFineRule` would refuse it as being in the past.
   await setFineRule({
     groupId: input.groupId,
     typeKey: input.typeKey,
     fineAmount: minor,
     currency: input.currency,
-    effectiveFrom: tomorrow,
+    effectiveFrom: dayAfter(await userDay(user.id)),
     changedBy: user.id,
   });
   refresh(input.groupId);

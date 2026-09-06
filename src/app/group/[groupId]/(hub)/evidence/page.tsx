@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { getSessionUser } from "@/lib/session";
 import { groupEvidence, type EvidenceItem } from "@/server/group-view";
 import { readUrl } from "@/server/evidence";
-import { resolveUserTimezone } from "@/server/config";
+import { resolveUserTimezone, userDay } from "@/server/config";
 import { ActivityIcon } from "../../../../activity-icon";
 import { ReportButton } from "./report-button";
 
@@ -32,12 +32,13 @@ export default async function EvidenceTab({
   const user = await getSessionUser();
   if (!user) redirect("/signin");
 
-  const timezone = await resolveUserTimezone(
-    user.id,
-    new Date().toISOString().slice(0, 10),
-  );
-  const today = DateTime.now().setZone(timezone).toFormat("yyyy-MM-dd");
-  const yesterday = DateTime.now().setZone(timezone).minus({ days: 1 }).toFormat("yyyy-MM-dd");
+  // The app clock and the viewer's own day, so a preview scrubbed to another
+  // date labels the log's rows against the day it is pretending to be.
+  const today = await userDay(user.id);
+  const timezone = await resolveUserTimezone(user.id, today);
+  const yesterday = DateTime.fromISO(today, { zone: "utc" })
+    .minus({ days: 1 })
+    .toFormat("yyyy-MM-dd");
 
   // Newest first, a page at a time. There is no `since` window any more: it
   // meant the first page could only ever be today and yesterday, so a quiet

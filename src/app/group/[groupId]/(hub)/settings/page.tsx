@@ -7,6 +7,8 @@ import { getAppConfig, resolveAppSettingAt } from "@/server/app-config";
 import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { listGroupMembers } from "@/server/ledger";
+import { userDay } from "@/server/config";
+import { now } from "@/lib/clock";
 import { SettingsForm, type ShareRow, type AcceptedRow } from "./settings-form";
 
 export default async function GroupSettingsTab({
@@ -25,7 +27,7 @@ export default async function GroupSettingsTab({
     listUserActivities(user.id),
     listGroupMembers(groupId, user.id),
     getAppConfig(),
-    resolveAppSettingAt("money", new Date()),
+    resolveAppSettingAt("money", await now()),
   ]);
   if (!header) redirect("/groups");
 
@@ -69,11 +71,7 @@ export default async function GroupSettingsTab({
         const theirs = await sharesFor(groupId, m.userId);
         if (theirs.some((s) => s.typeKey === a.typeKey && s.shared)) sharers += 1;
       }
-      const rule = await fineRuleFor(
-        groupId,
-        a.typeKey,
-        new Date().toISOString().slice(0, 10),
-      );
+      const rule = await fineRuleFor(groupId, a.typeKey, await userDay(user.id));
       acceptedRows.push({
         typeKey: a.typeKey,
         name: a.name,

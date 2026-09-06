@@ -1,8 +1,7 @@
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { CONSENT, hasConsented } from "@/server/consent";
 import { TERMS } from "@/server/policy";
-import { resolveUserTimezone } from "@/server/config";
-import { nowUTC } from "@/lib/clock";
+import { resolveUserTimezone, userDay } from "@/server/config";
 import { supportedZones } from "@/lib/zones";
 import { acceptConsentAction } from "./consent/actions";
 import { TimezoneField } from "./consent/timezone-field";
@@ -22,10 +21,7 @@ export async function ConsentGate() {
   if (await hasConsented(user.id)) return null;
 
   // What the field falls back to before hydration reads the device.
-  const fallback = await resolveUserTimezone(
-    user.id,
-    (await nowUTC()).toFormat("yyyy-MM-dd"),
-  );
+  const fallback = await resolveUserTimezone(user.id, await userDay(user.id));
 
   return (
     <div

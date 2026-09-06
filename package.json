@@ -27,6 +27,7 @@
     "check:money": "dotenv -e .env.local -- bun run scripts/check-money.ts",
     "check:deps": "bun run scripts/check-deps.ts",
     "check:logic-version": "dotenv -e .env.local -- bun run scripts/check-logic-version.ts",
+    "check:timezones": "dotenv -e .env.local -- bun run scripts/check-timezones.ts",
     "check:cors": "dotenv -e .env.preview -- bun run scripts/check-r2-cors.ts",
     "check:cors:production": "dotenv -e .env.production -- bun run scripts/check-r2-cors.ts"
   },

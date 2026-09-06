@@ -63,9 +63,10 @@ start on data. Every screen is mocked in `.design/` and listed in
   `bun run break-in`, and CONTRIBUTING with the add-an-activity-type
   walkthrough.
 
-**Before launch, two things need a person, not code.** `JURISDICTION.city` in
-`src/server/policy.ts` is a placeholder, and the terms have not been read by a
-lawyer. Neither is something the tests can catch.
+**Before launch, two things need a person, not code.** The terms have not been
+read by a lawyer, and photo evidence has never been driven end to end through a
+real camera. Neither is something the tests can catch. `JURISDICTION.city` in
+`src/server/policy.ts` is settled: Bengaluru, confirmed 2026-09-06.
 
 **All nine phases are done. What remains is the cutover**, below, and the
 `SCREENS.md` review gate, which is a person opening each screen beside its
@@ -216,7 +217,10 @@ local      bun run local           — Next.js against .env.local (docker, mock 
 test       bun run test            — Vitest, domain core, no database
 lint       bun run lint            — ESLint, type-aware, --max-warnings=0
 deps       bun run check:deps      — fails on a deprecated dependency
+actions    bun run check:actions   — fails on an archived or out-of-date GitHub Action
 version    bun run check:logic-version — a curve change repairs itself
+zones      bun run check:timezones — a day belongs to the member, not to UTC
+browser    bun run browser         — every screen and every form, against a running server
 audit      bun audit               — published advisories against the lockfile
 migrate    bun run migrate         — migrations, then sync, against .env.preview
 break-in   bun run break-in        — the security round; non-zero if anything gives
@@ -228,10 +232,16 @@ mocks      node .design/build-v3.mjs — regenerate every artboard
 cors       bun run check:cors      — can a browser upload from this origin
 ```
 
-CI runs typecheck, lint, test, build, the migration job, `break-in`, the 30
-simulation scenarios, `verify` against a seeded database, and the two dependency
-checks. A version tag will not deploy unless that whole run passed on the same
-SHA.
+CI runs typecheck, lint, test, build, the migration job, `break-in`, the
+simulation scenarios, `verify` against a seeded database, the three narrow
+script checks (money, logic version, timezones), the browser suite against a
+running app, and the three dependency and pipeline checks. A version tag will
+not deploy unless that whole run passed on the same SHA.
+
+`bun run browser` needs a server and a seeded database: `bun run local:seed`,
+then `bun run local` in another terminal. In CI the `browser` job starts a DEV
+server, not a built one, because LOCAL_MODE is gated on `NODE_ENV` not being
+"production" and `next start` sets exactly that.
 
 `break-in` builds its own people and groups and deletes them again, so it is
 safe against any database and runs in CI on every push. Its HTTP half needs a

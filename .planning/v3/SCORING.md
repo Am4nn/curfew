@@ -357,17 +357,30 @@ being counted.
 
 ## Open questions
 
-- **Timezone.** `recomputeUser` resolves the zone once, for today, and replays
-  all history in it. Moving country re-judges every past period. The research
-  answer is to stamp the local date on each check-in as it happens, which would
-  mean a payload field rather than a table.
+- **Timezone: settled 2026-09-06, and the research answer was the wrong one.**
+  `recomputeUser` did resolve the zone once, for today, and replay all history
+  in it, so moving country re-judged every past period. The answer here was to
+  stamp the local date on each check-in, a payload field and a migration for
+  old rows. It is not needed, and it would not have been enough. Not needed,
+  because `user_settings` is already an effective-dated, insert-only history
+  and every change to it is dated forward, so the zone a past day was judged in
+  is already written down: resolving it as of the period is invariant 5 applied
+  to one more piece of config. Not enough, because a period with no check-in at
+  all has no payload to read, and a night that was missed in Kolkata was being
+  re-judged in Lisbon exactly like one that was slept through.
+
+  The zone history is read once per user and asked per period, in the three
+  replays that were reading one zone: the period pass, the per-group pass, and
+  the streak rebuild, where a press is attributed to a calendar day. There is a
+  fourth resolution that a date cannot answer, "the zone in force right now",
+  because the date it needs depends on the zone it is resolving. Each row is
+  tested in its own zone instead. `bun run check:timezones` holds both ends.
 - **Retroactive check-ins.** None exist today. If they ever do, the streak
   counter has to be rebuilt rather than incremented, which is another reason
   `events` is the truth and the counter is not.
-- **Grace is still not applied to outcomes.** `graceUsed` is written `false` on
-  every row and admin renders the column. Either grace belongs in
-  `activity_outcomes` or the column should go. It is not a money bug, since
-  grace has never protected a fine (decision 5), but it is a column that lies.
+- **Grace is still not applied to outcomes: settled.** The column went, in
+  migration 0020. Grace has never protected a fine (decision 5), so it never
+  had a true value to carry.
 
 ## Sources
 

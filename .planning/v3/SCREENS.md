@@ -165,6 +165,8 @@ are what remain.
 | Home, paused | `/` | The day board replaced, money and groups kept, both ways out | [ ] |
 | Members, someone away | `/group/[groupId]` | "Away until", in accent, beside the score and never instead of it | [ ] |
 | Standing, paused | `/group/[groupId]/standing` | HELD, NOT FROZEN, and what moves and when | [ ] |
+| Stats, a trip in it | `/stats` | Away days drawn dashed in the heatmap, in the legend, dates named | [ ] |
+| Group stats, someone away | `/group/[groupId]/stats` | Who is away above the numbers, dashed days, dates instead of a bar | [ ] |
 | Admin: reports | `/admin/reports` | The one place an admin sees a photo, because a member asked | [ ] |
 | Admin: one user | `/admin/users/[id]` | How often somebody checked in, never what | [ ] |
 | Admin: one group | `/admin/groups/[id]` | Members, money, accepted types, and archive | [ ] |

@@ -10,118 +10,91 @@ is settled it becomes a decision there and leaves this file.
 
 ## 1. Defects
 
-**Five of the original six are fixed** (2026-09-06, commits `60ab7ec` and
-`e79d5bf`). §1.6, the timezone stamp, is still open, and §1.7 was found while
-building the consent-gate zone.
+**All seven are fixed.** The original six on 2026-09-05 and 2026-09-06
+(`60ab7ec`, `e79d5bf`, `9abb998`), and §1.7, found while building the
+consent-gate zone, in `12df57e`.
 
-### 1.1 Rejoining a group silently does nothing — FIXED
+### 1.1 Rejoining a group silently did nothing — FIXED
 
-**Proved, 2026-09-05.** `acceptInvite` (`src/server/groups.ts`) inserts the
-membership with `.onConflictDoNothing()`. Somebody who has left already has a
-row, with `left_at` set, so the insert does nothing while the invite is still
-marked accepted. The invite is burned and the person is not in the group, with
-no error anywhere.
+`acceptInvite` inserted the membership with `.onConflictDoNothing()`, so
+somebody who had left already had a row and the invite was burned with nothing
+happening. It could not be fixed without a decision, because decision 110 (a
+rejoin starts fresh) and the copy on the group standing screen (rejoining does
+not give you another grace day) disagreed. The copy moved. See §6 A.
 
-```
-invite status : accepted
-joined_at     : 2026-08-01
-left_at       : 2026-09-05
-STILL OUT: the invite was consumed and nothing happened
-```
+### 1.2 The settling window was measured in UTC — FIXED
 
-**It cannot be fixed without a decision**, because two things that are already
-written down disagree:
+An activity's first `effective_at` was read in UTC while every other day in the
+replay was the member's own, so a window opened a day early east of Greenwich.
 
-- Decision 110 says a rejoin **starts fresh** from the current join date.
-- Decision 123's grace period keys off that join date, and the copy on the
-  group standing screen says "Once, on the day you join. Rejoining does not
-  give you another."
+### 1.3 `graceUsed` was a column that lied — FIXED
 
-Setting a new `joined_at` satisfies 110 and hands out a second grace day, which
-contradicts the copy. Not setting one contradicts 110. One of them has to move.
+Written `false` on every row and rendered in admin. Grace has never protected a
+fine (decision 5). Dropped in migration 0020.
 
-**Settled: the copy moves.** See §6 A.
+### 1.4 Leaving a group made every page read a full replay — FIXED
 
-### 1.2 The settling window is measured in UTC — FIXED
-
-`src/server/scoring.ts:120` reads an activity's first `effective_at` in UTC
-(`{ zone: "utc" }`) while every other day in the replay is the member's own.
-Someone in Kolkata who adds an activity at 2 AM gets a settling window that
-starts on the previous day, so it ends a day early and the seventh day counts
-when it should not.
-
-Small, and it only bites for the first week of a new activity. The fix is to
-read that instant in the member's zone, the way `userDay` now does.
-
-### 1.3 `graceUsed` is a column that lies — FIXED
-
-`activity_outcomes.grace_used` is written `false` on every row by
-`recomputeGroups`, and `src/app/admin/users/[id]/page.tsx:137` renders "· grace"
-off it. Grace has never protected a fine (decision 5), so the column has never
-had a true value and never will as things stand.
-
-**Settled: the column and its label go.** See §6 B.
-
-### 1.4 Leaving a group makes every page read a full replay — FIXED
-
-`resumePointFor` (`src/server/scoring.ts`) refuses to resume unless every scope
-is closed through the same day. A group a member has left stops at `left_at`,
-the global score runs to today, so they never agree again and every read replays
-that user's whole history from their join date.
-
-Correctness is unaffected. It undoes the performance work of the caching pass
-for anybody who has ever left a group. The fix is to expect a left group to end
-at `left_at` rather than at today.
+`resumePointFor` expected every scope to be closed through the same day, and a
+group somebody left stops at `left_at`. Each scope is now checked against the
+day it is supposed to have reached.
 
 ### 1.5 Dead code — FIXED
 
-`activeMembersOn` in `src/server/sharing.ts` has no callers.
+`activeMembersOn` in `src/server/sharing.ts` had no callers.
 
-### 1.6 Timezone is resolved once and applied to all history — OPEN
+### 1.6 Timezone was resolved once and applied to all history — FIXED
 
-Already recorded as an open question in `SCORING.md`. `recomputeUser` resolves
-the member's zone for today and replays every past period in it, so moving
-country re-judges history. The research answer is to stamp the local date on
-each check-in as it is recorded: a payload field, a migration for old rows, and
-the replay reading it.
+`recomputeUser` resolved the member's zone for today and replayed every past
+period in it, so moving country re-judged history. A fortnight of Kolkata
+nights, all fourteen passed, came back as fourteen failures and a streak of
+fourteen gone, for nothing the member did.
 
-**More urgent than it was.** The mismatch bar on Home (decision 128) now offers
-a zone change to anyone whose device disagrees, so a change that used to need
-somebody to find the Settings screen is one press on the first screen they open.
-This is the last of the six.
+The research answer written down in `SCORING.md` was to stamp the local date on
+every check-in, with a migration for old rows. That turned out to be both
+unnecessary and insufficient, and the reasoning is recorded there. The fix is
+that the zone is effective-dated config like a fine or a share, so it resolves
+as it stood on the period being scored (invariant 5). Nothing new is stored.
 
-### 1.7 `tomorrow()` in `settings.ts` is a UTC day — OPEN
+Three replays were reading one zone: the period pass, the per-group pass, and
+the streak rebuild. A fourth resolution, "the zone in force right now", cannot
+be answered by a date at all, because the date depends on the zone; each row is
+tested in its own zone instead. That one was a live bug of its own: a member who
+picked their zone at the consent gate east of Greenwich was still being judged
+in the seeded default until midnight in London, which is exactly what asking at
+the gate exists to prevent.
 
-Found while building the consent-gate zone. Every effective-dated config write
-lands on `nowUTC().plus({ days: 1 })`, which is the UTC tomorrow rather than the
-member's. For anybody far enough east, a change saved late in their evening is
-dated to what is already their today, and for anybody far enough west it lands
-two of their days out. It is the same class as §1.2 and the fix is the same:
-`userDay(userId)` plus one, which already exists.
+### 1.7 `tomorrow()` in `settings.ts` was a UTC day — FIXED
 
-Small, and it only ever moves a config change by one day in one direction. Not
-fixed in the same commit as the gate, because it touches every config write and
-deserves its own check.
+Every effective-dated config write landed on `nowUTC()` plus a day. In
+Kiritimati a change saved in the evening was dated to a day already being lived,
+so it took effect at once and overwrote the row still in force, which is the one
+thing invariant 4 exists to stop. In Midway it landed two days out. Three writes
+had it: the personal settings, the sleep windows, and a group's fine rule, which
+was also reading the process clock rather than the app's.
+
+`bun run check:timezones` covers §1.6 and §1.7 together, at UTC+14 and UTC-11.
+Six of its eleven checks fail on the commit before the two fixes.
 
 ---
 
 ## 2. Security
 
-`bun run break-in` holds everywhere it can reach, on every push in CI. 110
-checks against preview with a server to sweep, 90 against docker, 72 in the CI
-shape. Nothing broke. What the round covers is written up in `TRUST-SAFETY.md`.
+`bun run break-in` holds everywhere it can reach, on every push in CI. 103
+checks with a server to sweep, 85 without, and the new `browser` job means CI
+now runs the first number rather than the second.
 
 **What it still cannot say:**
 
-- **Server actions are not reachable over HTTP.** Next mints their ids at build
-  time, so forging one tests Next rather than Curfew. Each action's guard is
-  called directly instead, which catches a missing guard but not an action
-  wired to the wrong one.
+- **Server actions are not reachable over HTTP as a forged request.** Next mints
+  their ids at build time, so forging one tests Next rather than Curfew. Each
+  action's guard is called directly instead. The new browser suite narrows this
+  from the other side: it presses the real buttons in a real browser, so an
+  action wired to the wrong guard now fails somewhere.
 - **No authenticated-as-somebody-else request in a real-auth environment.** That
   needs a forged Better Auth session. The LOCAL_MODE sweep covers the same
   ground with a fixed identity, which is why the positive control matters.
-- **Nothing checks the R2 bucket policy, the security headers, or the
-  dependencies.** `check:cors` answers one narrow question about uploads.
+- **Nothing checks the R2 bucket policy or the security headers.**
+  `check:cors` answers one narrow question about uploads.
 - **RLS is still deferred** (`../BACKLOG.md`), so the query layer is the only
   wall. One missing `assertMember` is a breach rather than a defence-in-depth
   miss.
@@ -141,22 +114,31 @@ proof.
 
 ## 3. Not tested yet
 
-- **Photo evidence end to end** through a real camera in a real browser: capture,
-  compression, the presigned PUT, the check-in as the callback.
-- **Balances and settlement as screens**, rather than as the functions behind
-  them. `recordSettlement` and its guards are covered; `/balances` and the
-  settle form are not.
-- **Admin console actions over HTTP.** Their capability gate is covered
-  directly; the routes are only covered signed out.
+- **Photo evidence end to end** through a real camera in a real browser:
+  capture, compression, the presigned PUT, the check-in as the callback. The
+  browser suite opens the camera screen; it cannot hold a phone up to it. This
+  is the last item on this list that only a person can close.
+
+Two things that were on this list are now covered by `bun run browser`, which
+runs in CI:
+
+- **Balances and settlement as screens.** The suite types an amount into the
+  settle form and asserts the debt is one rupee smaller afterwards.
+- **Admin console actions over HTTP.** It changes an app-wide setting through
+  the console's own confirm sheet, asserts the change, puts it back, and runs
+  both Ops primitives with the drift report as the assertion.
 
 ---
 
 ## 4. Needs a person, not code
 
-- **`JURISDICTION.city`** in `src/server/policy.ts` is still a placeholder.
 - **The terms have not been read by a lawyer.**
 - **The `SCREENS.md` review gate**: somebody opening each screen beside its
-  artboard and ticking the row. Configure and Check-in are unticked on purpose.
+  artboard and ticking the row. Configure and Check-in are unticked on purpose,
+  and the two v3.1 stats boards are new.
+
+`JURISDICTION.city` is settled: Bengaluru, confirmed 2026-09-06. The value was
+already there and only the comment beside it still called itself a placeholder.
 
 ---
 
@@ -168,48 +150,39 @@ proof.
 - **`vercel.json` pins `sin1` while production's database is still in
   `us-east-2`.** Safe only because no tag is cut before the cutover.
 - **The 19 v2.5 artboards** in `.design/` come out once the cutover is done.
+- **Preview has never been scored.** `bun run verify` against preview reports
+  134 drift rows and every one of them is `stored=null`: nothing has ever been
+  computed for those accounts. Vercel crons run on production deployments only,
+  and preview is a Preview deployment, so the nightly job has never fired there.
+  `bun run score` against preview would write them. It also writes fines, which
+  are ledger rows and append-only, so it is a deliberate act rather than
+  housekeeping.
 
 ---
 
-## 6. Decided 2026-09-05, to build next session
-
-All four are built. What follows is what was decided and what it turned into.
+## 6. Decided 2026-09-05, built
 
 **A. A rejoin is a fresh start with a fresh grace day, and the money follows
 them back.** New `joined_at`, `left_at` cleared, the score starts from the
 global score again (decision 110), and the group does not count the day they
-rejoined (decision 123).
+rejoined (decision 123). What they owed and were owed comes back with them,
+which falls out of the model: `ledger_entries` is append-only and leaving never
+deleted anything.
 
-What they owed and were owed comes back with them. That falls out of the model
-rather than needing work: `ledger_entries` is append-only and leaving never
-deleted anything, and `/balances` hides a group only because `getUserGroups`
-filters on `left_at is null`. Clearing it makes the debts visible again. **The
-fix must not touch the ledger**, and there should be a check that says so.
+**B. `grace_used` goes.** Migration 0020, and the "· grace" label with it.
 
-The copy on the group standing screen changes: it currently reads "Once, on the
-day you join. Rejoining does not give you another", which is now wrong.
+**C. All of the smaller defects**, §1.2 and §1.4 through §1.7.
 
-**B. `grace_used` goes.** A migration drops the column and the "· grace" label
-in `src/app/admin/users/[id]/page.tsx` goes with it. Grace has never protected
-a fine (decision 5), so the column has never had a true value.
-
-**C. All four of the smaller defects**, §1.2, §1.4, §1.5 and §1.6. The
-timezone stamp (§1.6) is the large one of the four and carries a migration.
-
-**D. A pause is three days or more.** Enough for a weekend trip. Everything
-else about it is still open, in §7.1.
+**D. A pause is three days or more.** Enough for a weekend trip.
 
 ---
 
-## 7. To talk through, next session
-
-These are not designed. They are the two things to open with.
+## 7. Built since
 
 ### 7.1 Pause, for a trip — BUILT 2026-09-06
 
-Decisions 133 to 137, mocked on the **v3.1 Pause** page of the canvas, and
-shipped. `bun run migrate` has NOT been run against preview yet, so migration
-0021 is still local only.
+Decisions 133 to 137, mocked on the **v3.1 Pause** page of the canvas, shipped,
+and migrated to preview.
 
 **The whole design is one sentence: a paused day is a day with nothing
 scheduled.** Not a miss. The code is arranged so that sentence is the only rule.
@@ -233,20 +206,22 @@ branch that already handles a Sunday nobody scheduled.
 broken on purpose to watch them fail: the days stop being marked, four fines
 appear, and grace gets spent, which is the one that shows the streak really does
 bypass it. `break-in` section 20 covers the back-dating attack with a positive
-control. Nineteen browser checks drive the real screens through the mock clock,
-including day one saying "Running until tonight" and day three saying "Ended".
+control. Twenty-one browser checks drive the real screens through the mock
+clock, including day one saying "Running until tonight" and day three saying
+"Ended".
+
+**Stats now say so too.** A paused day produces no period, so a declared trip
+and a fortnight of not turning up drew the identical hole. An away day is drawn
+rather than left blank, in the legend and named with its dates, and group stats
+says who is away above the numbers those days are missing from. Mocked as
+`V31StatsPaused` and `V31GroupStatsPaused`.
 
 **Still open:**
 
-- **The 19 browser checks are a scratch script**, `scripts/drift/_pausetest.mjs`,
-  run by hand beside `bun run local` after a seed. It is not in CI, because CI
-  has no dev server.
 - **A pause does not stop the settling window** (decision 54) for an activity
   added just before one. Settling is about the activity being new, not about the
   member being present, so a trip does not extend it. Recorded rather than
   argued.
-- **Nothing shows a pause on `/stats` or in group stats.** Paused days simply
-  produce no periods there, so a trip reads as a gap with no explanation.
 - **The mock and the build differ in one place.** The declare form has no `min`
   on its end date: it could only be computed from the start date as it stood on
   the server, so it lies the moment somebody picks a later one, and a wrong
@@ -255,31 +230,35 @@ including day one saying "Running until tonight" and day three saying "Ended".
 
 ### 7.2 CI, and what it should gate — SETTLED 2026-09-06
 
-All three questions are answered and built. Decisions 129 to 132.
+Decisions 129 to 132, and the gaps in them closed the same day.
 
-- **The deploy workflow requires CI's own result for the tagged SHA.** It no
-  longer runs its own shorter copy of typecheck and test, so a tag now carries
-  the migration, security, simulation and dependency jobs it never did.
+- **The deploy workflow requires CI's own result for the tagged SHA**, so a tag
+  carries every job CI runs, including the new ones.
 - **`simulate` and `verify` run on every push**, in their own job with their own
-  Postgres. The whole CI run is about 90 seconds.
-- **Unit tests were not the gap.** The domain is pure and well covered by 240 of
+  Postgres, and now `check:money`, `check:logic-version` and `check:timezones`
+  beside them: three narrow proofs that each exist because the thing they check
+  went wrong once, and each of which ran by hand until now.
+- **A `browser` job** builds a database of its own, starts the app and runs the
+  sixty-five browser checks plus the full security round, HTTP half included. It
+  runs a dev server on purpose: LOCAL_MODE is gated on `NODE_ENV` not being
+  "production" and `next start` sets exactly that.
+- **`check:actions`** asks of every `uses:` line whether the repository is
+  archived and whether the pinned major is behind the latest. It found
+  `actions/checkout@v5` against a released v7 on its first run.
+- **Unit tests were not the gap.** The domain is pure and well covered by 242 of
   them. The server layer is covered by the simulation and `break-in`, both of
-  which need a database, and both now run on every push. That is the right
-  shape: a unit test of `recomputeGroups` with a mocked database would test the
-  mock.
+  which need a database, and both of which run on every push.
 
 **Still open in this area:**
 
-- **`bun run lint` is new and there are two rules it does not enforce.** The two
-  `useActionState` sheets keep a `setState` inside an effect, with the reason
-  written above them: React gives no way to reset an action's result, so "the
-  action finished" is only observable as a change to `state`. Revisit when React
-  ships a reset.
-- **`check:deps` reads the live npm registry**, so its job can go red on a
-  morning nothing in the repo changed. That is why it is its own job and not
-  part of `check`. If it turns out to be noisy, move it to a schedule.
-- **Nothing checks GitHub Actions for deprecation.** `actions/checkout@v4` being
-  on an EOL Node was found by a run annotation, not by a check.
+- **`bun run lint` has two rules it does not enforce.** The two `useActionState`
+  sheets keep a `setState` inside an effect, with the reason written above them:
+  React gives no way to reset an action's result, so "the action finished" is
+  only observable as a change to `state`. Revisit when React ships a reset.
+- **`check:deps` and `check:actions` read live registries**, so their job can go
+  red on a morning nothing in the repo changed. That is why they are their own
+  job and not part of `check`. If it turns out to be noisy, move it to a
+  schedule.
 
 ---
 
@@ -299,10 +278,11 @@ went green for the wrong reason until something moved:
   landed the day before yesterday and a spotless record spent grace on the gap.
   The scenario phase now pins the clock.
 
+A fourth, from the browser suite: the first version of a browser check went
+green five times against the pending-approval screen, because a simulation had
+wiped the database out from under it and every route redirected. `open` in
+`scripts/browser/run.mjs` refuses that screen by name for exactly that reason.
+
 The pattern is the same each time: a test that passes because it is looking at
 the wrong thing, and only says so when something else changes. Worth suspecting
 first the next time a check goes red for a reason that sounds like the app.
-
-**The design canvas is one publish behind.** `.design/build-v3.mjs` carries the
-new grace copy and `.design/` is gitignored, so the published artboard still
-shows "Rejoining does not give you another" until somebody republishes it.

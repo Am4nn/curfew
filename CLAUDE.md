@@ -110,7 +110,7 @@ To release: bump `version` in `package.json`, commit, then
 `git tag vX.Y.Z && git push origin vX.Y.Z`. That runs
 `.github/workflows/deploy.yml`, which typechecks, tests, checks the tag against
 `package.json` (the admin header shows that number, so they must agree), deploys,
-and promotes. Three things about it are not obvious:
+and promotes. Four things about it are not obvious:
 
 - **The build happens on Vercel.** Vercel marks environment variables as
   sensitive and never returns their values to `vercel pull`, so a local
@@ -127,6 +127,17 @@ and promotes. Three things about it are not obvious:
   while every check passed, because the two origins anyone tested from,
   `localhost:3000` and `curfew.amanarya.com`, were the two on the list. Adding a
   domain means adding it there too. `bun run check:cors` says.
+
+- **A Preview deployment that never happens looks exactly like nothing
+  happening.** Vercel deploys `main` through its GitHub App, and when that
+  installation is suspended or waiting on a permissions approval the push events
+  stop arriving. Every setting still reads correctly, the repo is still linked,
+  the project is not paused, and there is no error anywhere, because Vercel
+  never learned there was anything to build. It happened on 2026-09-07 and cost
+  an hour: two commits landed on `main` with no deployment on either side.
+  `bunx vercel ls` is the fastest way to tell, and github.com/settings/installations
+  is where the approval is. The deploy workflow's `workflow_dispatch` run
+  deploys a Preview from the CLI, which is the way round it.
 
 - **`vercel.json` pins `sin1`, and production's database is still in
   `us-east-2`.** That pairing is wrong, and it is safe only because no tag is

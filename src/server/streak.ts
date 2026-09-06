@@ -13,7 +13,7 @@ import {
   type Checkin,
 } from "@/domain";
 import { getUserActivity, listUserActivities } from "./activities";
-import { resolveUserTimezone } from "./config";
+import { timezoneHistory, type ZoneHistory } from "./config";
 import { now } from "@/lib/clock";
 
 // The stored streak.
@@ -103,7 +103,7 @@ async function activityDays(
   userId: string,
   typeKey: string,
   unit: "day" | "week",
-  timezone: string,
+  zones: ZoneHistory,
   inFlight: { period: string; config: unknown } | null,
 ): Promise<{ days: StreakDay[]; closedThrough: string | null }> {
   const scored = await db
@@ -133,7 +133,9 @@ async function activityDays(
   // Only days that are DONE are added, never a day that is merely not done yet.
   // A day still in progress has not been missed, and marking it false would end
   // a run at breakfast.
-  const live = inFlight ? await daysDoneInFlight(userId, typeKey, timezone, inFlight) : [];
+  const live = inFlight
+    ? await daysDoneInFlight(userId, typeKey, zones.on(inFlight.period), inFlight)
+    : [];
 
   if (unit === "day") {
     const days = scored.map((s) => ({
@@ -171,9 +173,12 @@ async function activityDays(
   const activity = await getUserActivity(userId, typeKey);
   const done = new Set<string>();
   for (const s of scored) {
+    // The zone that week was lived in, not the one the member is in now: a
+    // press is attributed to a calendar day, and which day that is depends on
+    // the clock it was made under.
     const counted = daysDoneIn(typeKey, {
       periodStart: s.periodStart,
-      timezone,
+      timezone: zones.on(s.periodStart),
       config: activity?.config,
       checkins: byPeriod.get(s.periodStart) ?? [],
     });
@@ -253,7 +258,8 @@ export async function rebuildStreak(
   if (!activity) return null;
 
   const instant = await now();
-  const timezone = await resolveUserTimezone(userId, iso(DateTime.fromJSDate(instant, { zone: "utc" })));
+  const zones = await timezoneHistory(userId);
+  const timezone = zones.at(instant);
   const unit = periodUnit(activity.schedule.schedule);
   const inFlight = {
     period: periodStart(instant, timezone, {
@@ -266,7 +272,7 @@ export async function rebuildStreak(
     userId,
     typeKey,
     unit,
-    timezone,
+    zones,
     inFlight,
   );
 

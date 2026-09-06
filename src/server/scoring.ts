@@ -33,7 +33,7 @@ import {
   type ScheduleConfig,
   type DayReason,
 } from "@/domain";
-import { resolveUserTimezone } from "./config";
+import { timezoneHistory, type ZoneHistory } from "./config";
 import {
   acceptedTypesAsOf,
   sharesAsOf,
@@ -92,17 +92,21 @@ interface TrackedType {
 /**
  * Everything needed to replay a user's activities over any range.
  *
- * `timezone` is the member's, and it is not decoration. `startedOn` is the day
- * an activity was first switched on, and it sets both where the replay begins
- * and when the settling window ends. Read in UTC it was a different day for
+ * The zone is the member's, and it is not decoration. `startedOn` is the day an
+ * activity was first switched on, and it sets both where the replay begins and
+ * when the settling window ends. Read in UTC it was a different day for
  * anybody east of Greenwich who added an activity after midnight: the window
  * started on a day they had already finished, so it closed a day early and the
  * seventh day counted when it should not have. Every other day in this file is
  * the member's own; this one was not.
+ *
+ * The zone in force AT THAT INSTANT, not the one in force now: somebody who has
+ * since moved country did not start their activity in the zone they are in
+ * today.
  */
 async function trackedTypes(
   userId: string,
-  timezone: string,
+  zones: ZoneHistory,
 ): Promise<TrackedType[]> {
   const [switches, configs] = await Promise.all([
     db
@@ -131,7 +135,9 @@ async function trackedTypes(
     const first = mine.reduce((a, b) => (a.effectiveAt < b.effectiveAt ? a : b));
     return {
       typeKey,
-      startedOn: iso(DateTime.fromJSDate(first.effectiveAt, { zone: timezone })),
+      startedOn: iso(
+        DateTime.fromJSDate(first.effectiveAt, { zone: zones.at(first.effectiveAt) }),
+      ),
       switches: mine,
       configs: configs
         .filter((c) => c.typeKey === typeKey)
@@ -258,13 +264,19 @@ export async function recomputeUser(
 }> {
   // The zone comes first: `trackedTypes` reads the day an activity started in
   // it, and that day is the start of both the replay and the settling window.
+  //
+  // A HISTORY, not one zone. This resolved the member's zone once, for today,
+  // and judged every past period in it, so moving country re-read nights
+  // already scored against a clock that was not running when they happened: a
+  // fortnight of Kolkata nights re-judged in Lisbon fails all fourteen. The
+  // zone is effective-dated config like any other, so it is resolved as it
+  // stood on the period being scored (invariant 5).
   const instant = await now();
-  const timezone = await resolveUserTimezone(
-    userId,
-    instant.toISOString().slice(0, 10),
-  );
+  const zones = await timezoneHistory(userId);
+  const timezone = zones.at(instant);
+  const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));
 
-  const tracked = await trackedTypes(userId, timezone);
+  const tracked = await trackedTypes(userId, zones);
   if (tracked.length === 0) return { scores: [], outcomes: [], reputation: [] };
 
   const startedOn = tracked.map((t) => t.startedOn).sort()[0];
@@ -311,7 +323,7 @@ export async function recomputeUser(
   // Every day this user declared themselves away, across the range being
   // replayed. One query for the range: the walk below asks about every day of
   // every period, and a predicate per day would be a round trip per day.
-  const pausedDays = await pausedDaysIn(userId, from, iso(DateTime.fromJSDate(instant, { zone: timezone })));
+  const pausedDays = await pausedDaysIn(userId, from, today);
 
   const scores: ScoreRow[] = [];
   // day -> the periods that concluded on it, for the reputation pass.
@@ -324,7 +336,7 @@ export async function recomputeUser(
     const settlingEnds = addDays(t.startedOn, CONSTANTS.settlingDays);
 
     // Resolve today's config to learn the period shape, then walk back.
-    const latest = resolveConfig(t.configs, iso(DateTime.fromJSDate(instant, { zone: timezone })));
+    const latest = resolveConfig(t.configs, today);
     if (!latest) continue;
     const shape = split(latest.config);
 
@@ -344,10 +356,14 @@ export async function recomputeUser(
     );
 
     for (const period of candidates) {
+      // The zone this period was lived in, which is not necessarily the one the
+      // member is in now.
+      const zone = zones.on(period);
+
       // The switch and the settings as they stood on that period.
       const enabled = resolveAt(
         t.switches,
-        DateTime.fromISO(period, { zone: timezone }).endOf("day").toJSDate(),
+        DateTime.fromISO(period, { zone }).endOf("day").toJSDate(),
       );
       if (!enabled?.enabled) continue;
 
@@ -363,7 +379,7 @@ export async function recomputeUser(
 
       const { passed, detail } = type.evaluate({
         periodStart: period,
-        timezone,
+        timezone: zone,
         config,
         checkins: byTypePeriod.get(`${t.typeKey}|${period}`) ?? [],
       });
@@ -401,20 +417,13 @@ export async function recomputeUser(
     }
   }
 
-  const reputation = replayGlobal(
-    userId,
-    dayFrom,
-    concluded,
-    instant,
-    timezone,
-    opts.resume,
-  );
+  const reputation = replayGlobal(userId, dayFrom, concluded, today, opts.resume);
   const { outcomes, groupReputation } = await recomputeGroups(
     userId,
     dayFrom,
     scores,
-    instant,
-    timezone,
+    zones,
+    today,
     reputation,
     opts.resume,
   );
@@ -446,11 +455,9 @@ function replayGlobal(
   userId: string,
   from: string,
   concluded: Map<string, { passed: boolean; settling: boolean; paused: boolean }[]>,
-  instant: Date,
-  timezone: string,
+  today: string,
   resume?: ResumePoint,
 ): ReputationRow[] {
-  const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));
   const ceiling = ceilingFor(1);
   const rows: ReputationRow[] = [];
 
@@ -515,8 +522,8 @@ async function recomputeGroups(
   userId: string,
   from: string,
   scores: ScoreRow[],
-  instant: Date,
-  timezone: string,
+  zones: ZoneHistory,
+  today: string,
   globalSeries: ReputationRow[],
   resume?: ResumePoint,
 ): Promise<{ outcomes: OutcomeWrite[]; groupReputation: ReputationRow[] }> {
@@ -551,7 +558,6 @@ async function recomputeGroups(
 
   const outcomes: OutcomeWrite[] = [];
   const groupReputation: ReputationRow[] = [];
-  const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));
 
   for (const m of memberships) {
     // A rejoin starts fresh (decision 17): the replay begins at the current
@@ -594,8 +600,13 @@ async function recomputeGroups(
       moneyOnAsOf(m.groupId),
     ]);
 
+    // Every one of these turns a stored day into the instant it ended, which is
+    // a question about the zone the member was in THAT day (invariant 5).
+    const endOf = (day: string) =>
+      DateTime.fromISO(day, { zone: zones.on(day) }).endOf("day").toJSDate();
+
     const shareOn = (day: string) => {
-      const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
+      const at = endOf(day);
       const accepted = acceptedAt(at);
       const sharedKeys = new Set(
         sharesAt(at).filter((sh) => sh.shared).map((sh) => sh.typeKey),
@@ -638,7 +649,7 @@ async function recomputeGroups(
           concludesOn(sc) === day,
       );
 
-      const at = DateTime.fromISO(day, { zone: timezone }).endOf("day").toJSDate();
+      const at = endOf(day);
       const moneyOn = moneyAt(ownerToggleAt(at), at);
 
       for (const sc of todays) {

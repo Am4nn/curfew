@@ -2,17 +2,24 @@
 //
 //   bun run check:timezones
 //
-// When a config change takes effect. Every effective-dated write is dated
-// "tomorrow" (invariant 4), and tomorrow is a day in the member's own zone.
-// Read in UTC, a change saved late in the evening in Kiritimati landed on a
-// date that member was already living, so it took effect at once and rewrote a
-// period in progress. Saved in the morning in Midway it landed two of their
-// days out and did nothing tomorrow.
+// Two questions, both of which the app used to answer with UTC:
+//
+//   1. When a config change takes effect. Every effective-dated write is dated
+//      "tomorrow" (invariant 4), and tomorrow is a day in the member's own zone.
+//      Read in UTC, a change saved late in the evening in Kiritimati landed on a
+//      date that member was already living, so it took effect at once and
+//      rewrote a period in progress. Saved in the morning in Midway it landed
+//      two of their days out and did nothing tomorrow.
+//
+//   2. Which zone a PAST period is judged in. `recomputeUser` resolved the zone
+//      once, for today, and replayed all of history in it, so changing country
+//      re-judged every night already scored.
 //
 // Local only. It builds two throwaway accounts, pins the clock, and deletes
 // everything it made.
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray } from "drizzle-orm";
+import { DateTime } from "luxon";
 import { db } from "@/db";
 import {
   users,
@@ -29,6 +36,8 @@ import {
 } from "@/db/schema";
 import { setInitialTimezone, updateTimezone, updateSleepWindows } from "@/server/settings";
 import { userDay } from "@/server/config";
+import { scoreUser } from "@/server/scoring";
+import { recomputeStreak } from "@/server/streak";
 import { getActivityType } from "@/domain";
 import { CONSENT_VERSION } from "@/server/consent";
 import { setClock } from "@/lib/clock";
@@ -93,6 +102,9 @@ async function cleanup() {
 }
 
 try {
+  // -------------------------------------------------------------------------
+  // 1. A config change lands on the MEMBER'S tomorrow
+  // -------------------------------------------------------------------------
   console.log("\nWHEN A CHANGE TAKES EFFECT");
 
   // Noon UTC is already tomorrow in Kiritimati (UTC+14). Read in UTC, a change
@@ -147,12 +159,142 @@ try {
     westChange?.effectiveFrom ?? "no row",
   );
 
+  // -------------------------------------------------------------------------
+  // 2. Moving country does not re-judge the past
+  // -------------------------------------------------------------------------
+  console.log("\nWHICH ZONE A PAST NIGHT IS JUDGED IN");
+
+  const mover = await person("mover");
+  const START = "2026-02-01";
+
+  // Living in Kolkata since the first of February, with sleep tracked.
+  await db.insert(userSettings).values({
+    userId: mover,
+    timezone: "Asia/Kolkata",
+    effectiveFrom: START,
+  });
+  const sleep = getActivityType("sleep");
+  await db.insert(userActivityConfig).values({
+    userId: mover,
+    typeKey: "sleep",
+    effectiveFrom: START,
+    config: {
+      schedule: {
+        schedule: sleep.defaults.schedule,
+        dayBoundary: sleep.defaults.dayBoundary,
+        grace: 0,
+      },
+      config: sleep.defaults.config,
+    },
+  });
+  await db.insert(userActivities).values({
+    userId: mover,
+    typeKey: "sleep",
+    enabled: true,
+    effectiveAt: new Date(`${START}T00:00:00+05:30`),
+  });
+
+  // A fortnight of nights, each pressed inside the Kolkata windows: 10:30 PM,
+  // then 7:00 and 8:00 the next morning, IST. The same three instants read in
+  // Lisbon are the afternoon and the small hours, so every one of them falls
+  // outside every window there. That is what makes the two zones disagree
+  // loudly enough for this to be worth checking.
+  const NIGHTS = 14;
+  const at = (day: DateTime, plusDays: number, hhmm: string) =>
+    DateTime.fromISO(`${day.plus({ days: plusDays }).toFormat("yyyy-MM-dd")}T${hhmm}:00`, {
+      zone: "Asia/Kolkata",
+    }).toJSDate();
+
+  for (let i = 0; i < NIGHTS; i += 1) {
+    const day = DateTime.fromISO(START, { zone: "utc" }).plus({ days: i });
+    const period = day.toFormat("yyyy-MM-dd");
+    for (const [step, when] of [
+      ["night", at(day, 0, "22:30")],
+      ["wake", at(day, 1, "07:00")],
+      ["confirm", at(day, 1, "08:00")],
+    ] as const) {
+      await db.insert(events).values({
+        userId: mover,
+        type: `checkin.sleep.${step}`,
+        occurredAt: when,
+        payload: { type_key: "sleep", period_start: period, step, idem: `${tag}-${period}-${step}` },
+      });
+    }
+  }
+
+  // Score it as they lived it, then read the verdicts back.
+  setClock(new Date("2026-02-20T06:00:00+05:30"));
+  await scoreUser(mover, { fines: false });
+  const before = await db
+    .select({
+      periodStart: activityScores.periodStart,
+      passed: activityScores.passed,
+      detail: activityScores.detail,
+    })
+    .from(activityScores)
+    .where(eq(activityScores.userId, mover))
+    .orderBy(asc(activityScores.periodStart));
+
+  const nights = before.filter((r) => r.periodStart < "2026-02-15");
+  const streakBefore = await recomputeStreak(mover, "sleep");
+  check("the fortnight was scored", nights.length === NIGHTS, `${nights.length} of ${before.length} periods`);
+  check(
+    "and every night of it passed",
+    nights.every((r) => r.passed),
+    `${nights.filter((r) => r.passed).length} passed`,
+  );
+
+  // They move. The change is dated forward, the way every config change is.
+  await updateTimezone(mover, "Europe/Lisbon");
+  const moved = (await settingsRows(mover)).find((r) => r.timezone === "Europe/Lisbon");
+  check("the move is dated forward", moved?.effectiveFrom === "2026-02-21", moved?.effectiveFrom ?? "no row");
+
+  // A day later, in Lisbon, the whole history is replayed again.
+  setClock(new Date("2026-02-22T06:00:00+00:00"));
+  await scoreUser(mover, { fines: false });
+  const after = await db
+    .select({
+      periodStart: activityScores.periodStart,
+      passed: activityScores.passed,
+      detail: activityScores.detail,
+    })
+    .from(activityScores)
+    .where(eq(activityScores.userId, mover))
+    .orderBy(asc(activityScores.periodStart));
+
+  const past = new Map(after.map((r) => [r.periodStart, r]));
+  const changed = before.filter((r) => {
+    const now = past.get(r.periodStart);
+    return (
+      !now ||
+      now.passed !== r.passed ||
+      JSON.stringify(now.detail) !== JSON.stringify(r.detail)
+    );
+  });
+  check(
+    "moving country re-judged nothing already scored",
+    changed.length === 0,
+    changed.length === 0
+      ? ""
+      : `${changed.length} nights changed, first ${changed[0].periodStart}`,
+  );
+
+  // The streak is rebuilt from those same periods, so it is the number a person
+  // would actually see go.
+  const streakAfter = await recomputeStreak(mover, "sleep");
+  check(
+    "and the streak they had is the streak they still have",
+    streakBefore?.best === streakAfter?.best,
+    `${streakAfter?.best ?? "none"} was ${streakBefore?.best ?? "none"}`,
+  );
 } finally {
   setClock(null);
   await cleanup();
 }
 
 console.log(
-  failed === 0 ? "\nTomorrow is the member's, not Greenwich's." : `\n${failed} FAILED`,
+  failed === 0
+    ? "\nA day is the member's, and a night is judged in the zone it was slept in."
+    : `\n${failed} FAILED`,
 );
 process.exit(failed === 0 ? 0 : 1);

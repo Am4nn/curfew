@@ -1,4 +1,83 @@
-# v3 drift audit — 54 screens, mock vs real app
+# v3 drift audit - 80 screens, mock vs real app
+
+## Round 5 - the v3.1 boards, captured for the first time, 2026-09-06
+
+Fifteen artboards had never been in this gallery at all. Grace and pause were
+mocked, built and shipped without a single screen being put beside its
+artboard, which is the exact gap the review gate exists to close. Thirteen of
+them are now paired; the two that are not are named at the bottom, with what
+they need.
+
+Two fixtures were missing, which is why those boards had never been captured:
+every state worth reviewing is one you can only see from inside it.
+
+- **`paused`**: two people mid-trip, written straight into `user_pauses`
+  because `declarePause` refuses anything starting today or earlier. The app is
+  right to refuse that and a fixture needs exactly it.
+- **`grace`**: a group joined TODAY, so its grace period is live. The default
+  world's groups were all joined months ago.
+
+### Found and fixed this round
+
+**A member away mid-week vanished from group stats.** The banner named two
+people as away and the list below it then showed both of them with ordinary
+bars and no explanation, because the away label only appeared for a member with
+NO counted days. A trip that starts on a Thursday leaves a member with both.
+The name now carries the dates whenever there is an absence in the window.
+
+**Group stats dropped any day nothing closed on.** `byDay` was built from the
+scored rows alone, so a day with no period simply disappeared and the weekday
+labels under the bars shifted left. Today is such a day for most of its length,
+since nothing has closed yet, and a whole group away is another. Six bars
+labelled M to S read as a week. The window is now seven days whatever happened
+in them.
+
+**Every app capture ever taken here had a control sitting on the Home tab.**
+The preview clock, bottom-left, LOCAL_MODE only, plus Next's dev overlay
+underneath it. A reviewer comparing the bottom nav saw a circular badge where
+the house icon should be and had to work out that neither belonged to the app.
+Both are hidden for the shot now, and the preview bar carries a
+`data-preview-bar` attribute so the harness can name it.
+
+### Differences that are the fixture, not the app
+
+Recorded so the next reviewer does not chase them.
+
+- **Home, paused** shows the pause on day three, so the streak line reads
+  "Ended". The mock shows day one, "Running until tonight". Both are correct
+  and the distinction is the whole point of that line; the browser suite
+  asserts both, through the mock clock.
+- **The invite card** sits above TODAY in every default-world capture. The
+  mock boards do not carry one.
+- **Group and member names** differ throughout (Night Owls against Weekend
+  Club, Preview Admin against Sam). The fixture is not the mock's cast.
+- **Scores are low** across the seeded world, so rank icons are the first band
+  rather than the mock's shields and targets.
+- **Money reads `250.00` in the app and `250` in the mocks.** Pre-existing, on
+  every money board, and the app is right: `formatMoney` shows minor units
+  because a fine of 250.50 exists.
+
+### Additions the mocks do not have, all deliberate
+
+- **Grace standing** carries a "How it works ›" link to `/ranks`. The mock has
+  none, and a screen that states a rule with no way to read it is worse.
+- **Group standing, paused** and **Home, paused** both name the group or the
+  date where the mock says "This group". Naming it is better.
+
+### Still not captured, and what each needs
+
+- **Standing at IMMACULATE** and **standing climbing towards UNBROKEN**
+  (`V31StandingImmaculate`, `V31StandingClimbing`). They need a spotless
+  fixture: 60+ days with nothing missed, which means a history longer than the
+  current 45 and a perfect variant of every one of the six event seeders. The
+  numbers behind the two bands are covered by the simulation, which reports a
+  flawless 180 days at 924 UNBROKEN; what is uncovered is the gold halo, the
+  only glow in the app.
+- **`V3DayCompleteMotion`** and **`V3RecordedMotion`** are animation stills,
+  not states. A still capture cannot say anything about them.
+- **`V3HomeEmpty`** is superseded by `V3HomeStart`, which is in the gallery.
+- **"Pause: declared"** is a row in SCREENS.md with no artboard behind it. The
+  state exists and the browser suite asserts it; the board was never drawn.
 
 ## Round 4 — second numbered pass, 2026-09-04
 

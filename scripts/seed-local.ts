@@ -26,6 +26,8 @@
 //   INVITE_UNTRACKED       = "00000000-0000-0000-0000-0000000000b2"  -> /join/00000000-0000-0000-0000-0000000000b2  (fixture "invite-untracked-type" only)
 //   INVITE_NEW_USER        = "00000000-0000-0000-0000-0000000000b3"  -> /join/00000000-0000-0000-0000-0000000000b3  (fixture "new-user-invite" only)
 //
+//   GROUP_GRACE            = "00000000-0000-0000-0000-0000000000a8"  -> /group/00000000-0000-0000-0000-0000000000a8  (fixture "grace" only)
+//
 //   NOTICE_MAINTENANCE     = "00000000-0000-0000-0000-0000000000c1"  (fixture "notice-active" only)
 // ---------------------------------------------------------------------------
 
@@ -47,6 +49,7 @@ import {
   userSettings,
   userActivityConfig,
   userActivities,
+  userPauses,
   events,
   evidence,
   notices,
@@ -107,6 +110,7 @@ const INVITE_WEEKEND_CLUB = "00000000-0000-0000-0000-0000000000b0";
 const INVITE_TRACKED = "00000000-0000-0000-0000-0000000000b1";
 const INVITE_UNTRACKED = "00000000-0000-0000-0000-0000000000b2";
 const GROUP_NEW_USER_INVITE = "00000000-0000-0000-0000-0000000000a7";
+const GROUP_GRACE = "00000000-0000-0000-0000-0000000000a8";
 const INVITE_NEW_USER = "00000000-0000-0000-0000-0000000000b3";
 
 const NOTICE_MAINTENANCE = "00000000-0000-0000-0000-0000000000c1";
@@ -168,6 +172,13 @@ async function wipe(): Promise<void> {
   console.log("wiping local data");
   // activity_types and app_settings are NOT wiped: they are app-wide config
   // owned by `bun run sync:activities` / the admin console, not fixture data.
+  //
+  // The list is deliberately not every table. `user_pauses`,
+  // `activity_streaks` and `fine_postings` all carry a foreign key to `users`,
+  // so CASCADE reaches them. Checked rather than assumed: a surviving
+  // `fine_postings` row would make the next seed write no fines at all, since
+  // a posting that already exists is exactly what tells `writeFines` the fine
+  // has been charged.
   await db.execute(sql`TRUNCATE TABLE
     ledger_entries, activity_outcomes, activity_scores, reputation_daily,
     evidence, reports, events,
@@ -1260,10 +1271,81 @@ async function buildInviteUntracked(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Fixture: paused -- a trip already running
+// ---------------------------------------------------------------------------
+
+/**
+ * Two people away, mid-pause, on a world that otherwise has full history.
+ *
+ * Written straight into `user_pauses` rather than declared through
+ * `declarePause`, which refuses anything starting today or earlier: the app is
+ * right to refuse that and a fixture needs exactly it, because every screen
+ * worth reviewing is one you can only see from INSIDE a pause. Two people so
+ * the group boards have somebody who is not you.
+ */
+async function buildPaused(): Promise<void> {
+  await wipe();
+  await assembleDefaultWorld({ moneyOn: true });
+  await seedTodayPartial();
+  await consentApproved(PEOPLE.filter((p) => p.status !== "pending").map((p) => p.id));
+
+  for (const userId of ["preview-admin", "preview-sam"]) {
+    await db.insert(userPauses).values({
+      pauseId: crypto.randomUUID(),
+      userId,
+      startsOn: anchor.minus({ days: 2 }).toFormat("yyyy-MM-dd"),
+      endsOn: anchor.plus({ days: 3 }).toFormat("yyyy-MM-dd"),
+      declaredAt: anchor.minus({ days: 4 }).toJSDate(),
+    });
+  }
+
+  // After the pauses exist, so the scoring pass marks those periods paused.
+  await runScoring();
+}
+
+// ---------------------------------------------------------------------------
+// Fixture: grace -- a group that has not started counting you yet
+// ---------------------------------------------------------------------------
+
+/**
+ * A group joined TODAY, so its grace period is live (decision 123).
+ *
+ * The default world's groups were all joined months ago, so the three grace
+ * boards had nothing to be captured against. This adds one more group on top
+ * of that world rather than replacing it, because the point of the Home board
+ * is a member who is in grace SOMEWHERE while the rest of their day carries on.
+ */
+async function buildGrace(): Promise<void> {
+  await wipe();
+  await assembleDefaultWorld({ moneyOn: true });
+  await seedTodayPartial();
+
+  const today = anchor.toFormat("yyyy-MM-dd");
+  await createGroup(
+    GROUP_GRACE,
+    "New Term",
+    "preview-admin",
+    [
+      { id: "preview-admin", role: "owner" },
+      { id: "preview-riya", role: "member" },
+    ],
+    today,
+  );
+  // The rule is dated from the same day the group is: a fine rule effective
+  // later than the period being judged resolves to nothing at all.
+  await acceptSleepWithFine(GROUP_GRACE, ["preview-admin", "preview-riya"], 5000, "INR", today, true);
+
+  await consentApproved(PEOPLE.filter((p) => p.status !== "pending").map((p) => p.id));
+  await runScoring();
+}
+
+// ---------------------------------------------------------------------------
 // Dispatch
 // ---------------------------------------------------------------------------
 
 const BUILDERS: Record<string, () => Promise<void>> = {
+  paused: buildPaused,
+  grace: buildGrace,
   default: buildDefault,
   "all-done": buildAllDone,
   "no-money": buildNoMoney,

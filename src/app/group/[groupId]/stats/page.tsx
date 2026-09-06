@@ -130,10 +130,21 @@ export default async function GroupStats({
                   <div key={m.name} className="flex items-center gap-[11px] border-b border-rule py-[11px]">
                     <div className="flex flex-1 flex-col gap-[6px]">
                       <div className="flex items-center justify-between gap-[9px]">
-                        <span className="text-[13px]">{m.name}</span>
+                        <div className="flex min-w-0 flex-col gap-[2px]">
+                          <span className="text-[13px]">{m.name}</span>
+                          {/* A trip that starts mid-week leaves a member with
+                              both a count and an absence. Saying only the count
+                              names them in the banner above and then explains
+                              nothing. */}
+                          {m.away && m.of > 0 ? (
+                            <span className="text-[10.5px] text-accent">
+                              Away until {shortDay(m.away)}
+                            </span>
+                          ) : null}
+                        </div>
                         <span
                           className={
-                            "text-[11.5px] tabular-nums " +
+                            "flex-none text-[11.5px] tabular-nums " +
                             (m.away && m.of === 0 ? "text-accent" : "text-muted")
                           }
                         >

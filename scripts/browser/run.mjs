@@ -19,6 +19,15 @@
 // five times against the pending-approval screen, because the simulation had
 // wiped the database out from under it and every route redirected. `open`
 // refuses that screen by name, and every suite asserts something positive.
+//
+// IT LEAVES THE DATABASE AHEAD OF ITSELF. The pause suite scrubs the preview
+// clock into a future trip, and every read on a scrubbed page closes periods,
+// so the derived tables come out carrying days that have not happened. That is
+// the preview clock working as designed and it outlives the cookie, so reseed
+// before running `verify` or the script checks after this. `verify` reports
+// those rows as drift rather than ignoring them: a stored day beyond the replay
+// would otherwise be the balance `resumePointFor` carries forward, and every
+// real day between now and then would never be computed at all.
 import { chromium } from "playwright";
 import { screens } from "./screens.mjs";
 import { balances } from "./balances.mjs";
@@ -61,12 +70,33 @@ const context = await browser.newContext();
 const page = await context.newPage();
 page.on("pageerror", (e) => errors.push(String(e)));
 page.on("console", (m) => {
-  if (m.type() === "error") errors.push(m.text());
+  // An uncaught exception is a defect. A failed asset fetch is not: the dev
+  // server recompiles a route on first hit and can drop the connection while
+  // it does, which showed up here as five ERR_CONNECTION_RESET lines and four
+  // 404s on chunks that existed a second later. Counting those made the suite
+  // fail about one run in three for a reason that was never the app.
+  if (m.type() !== "error") return;
+  if (m.text().startsWith("Failed to load resource")) return;
+  errors.push(m.text());
 });
 
-/** Open a route and hand back its text, refusing the screens that mean nothing. */
+/**
+ * Open a route and hand back its text, refusing the screens that mean nothing.
+ *
+ * One retry, for the same reason. A route being compiled for the first time can
+ * take longer than the timeout or reset the connection outright; a real failure
+ * fails twice, so the retry cannot hide one.
+ */
 async function open(route) {
-  await page.goto(BASE + route, { waitUntil: "domcontentloaded", timeout: 120000 });
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      await page.goto(BASE + route, { waitUntil: "domcontentloaded", timeout: 120000 });
+      break;
+    } catch (e) {
+      if (attempt >= 1) throw e;
+      await page.waitForTimeout(2000);
+    }
+  }
   await page.waitForTimeout(1200);
   const text = await page.locator("body").innerText();
   if (text.includes("waiting for an admin to approve")) {

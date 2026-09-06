@@ -426,6 +426,21 @@ async function screenshotApp(
   try {
     await page.goto(APP_ORIGIN + route, { waitUntil: "networkidle", timeout: 20000 });
 
+    // Two things sit in the bottom-left corner, exactly on top of the Home tab,
+    // and both are in every app capture ever taken here: the preview clock,
+    // which only exists in LOCAL_MODE, and Next's own dev overlay. A reviewer
+    // comparing the nav sees a circular control where the house icon should be
+    // and has to work out that neither belongs to the app.
+    await page.addStyleTag({
+      content: `[data-preview-bar],
+        nextjs-portal,
+        [data-nextjs-toast],
+        [data-next-badge-root],
+        [data-nextjs-dev-tools-button],
+        #nextjs-dev-tools-indicator,
+        #__next-build-watcher { display: none !important; }`,
+    });
+
     if (entry.interaction) {
       await runInteraction(page, entry.interaction);
     } else {

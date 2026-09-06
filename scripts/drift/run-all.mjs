@@ -1,6 +1,11 @@
-// Orchestrates the full 54-screen capture: for each fixture the manifest
-// references, reseed the local DB to that exact state, then run the capture
-// harness for just the slugs that need it. Local-only; never touches git.
+// Orchestrates the full capture: for each fixture the manifest references,
+// reseed the local DB to that exact state, then run the capture harness for
+// just the slugs that need it. Local-only; never touches git.
+//
+// Eighty pairs as of 2026-09-06. The v3.1 boards, grace and pause, were
+// captured for the first time in that pass: they had been mocked, built and
+// shipped without ever being put beside their artboards, which is exactly the
+// gap the review gate exists to close.
 import { readFile } from "node:fs/promises";
 import { execSync } from "node:child_process";
 
@@ -8,6 +13,7 @@ const manifest = JSON.parse(await readFile("scripts/drift/manifest.json", "utf8"
 
 const bySlugOrder = [
   "default", "all-done", "no-money", "new-user", "notice-active", "admin",
+  "paused", "grace",
   "checkin-open-steps", "checkin-open-sleep-confirm", "checkin-open-sugarfree",
   "invite-tracked-type", "invite-untracked-type",
 ];

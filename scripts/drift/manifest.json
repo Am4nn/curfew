@@ -567,5 +567,111 @@
     "routeKey": "weekend-club",
     "state": "Members, money, accepted types, and archive",
     "fixture": "admin"
+  },
+  {
+    "slug": "settings-pause-row",
+    "section": "Settings",
+    "mock": "V31PauseSettings.dc.html",
+    "route": "/settings",
+    "state": "Where a pause lives: in Settings, beside the timezone and the windows",
+    "fixture": "default"
+  },
+  {
+    "slug": "pause-declare",
+    "section": "Settings",
+    "mock": "V31PauseDeclare.dc.html",
+    "route": "/settings/pause",
+    "state": "The form, with what it costs stated above the button",
+    "fixture": "default"
+  },
+  {
+    "slug": "pause-active",
+    "section": "Settings",
+    "mock": "V31PauseActive.dc.html",
+    "route": "/settings/pause",
+    "state": "Running: days left, the dates, extend, come back early",
+    "fixture": "paused"
+  },
+  {
+    "slug": "home-paused",
+    "section": "Home",
+    "mock": "V31HomePaused.dc.html",
+    "route": "/",
+    "state": "The day board replaced, money and groups kept, both ways out",
+    "fixture": "paused"
+  },
+  {
+    "slug": "group-paused-members",
+    "section": "Groups",
+    "mock": "V31GroupPaused.dc.html",
+    "route": "/group/00000000-0000-0000-0000-0000000000a1",
+    "state": "Away until, in accent, beside the score and never instead of it",
+    "fixture": "paused",
+    "note": "The fixture has two people away, the mock one. The row shape is what is being reviewed."
+  },
+  {
+    "slug": "standing-paused",
+    "section": "Groups",
+    "mock": "V31StandingPaused.dc.html",
+    "route": "/group/00000000-0000-0000-0000-0000000000a1/standing",
+    "state": "HELD, NOT FROZEN, and what moves and when",
+    "fixture": "paused"
+  },
+  {
+    "slug": "stats-paused",
+    "section": "Stats",
+    "mock": "V31StatsPaused.dc.html",
+    "route": "/stats",
+    "state": "Away days dashed in the heatmap, in the legend, dates named underneath",
+    "fixture": "paused"
+  },
+  {
+    "slug": "group-stats-paused",
+    "section": "Groups",
+    "mock": "V31GroupStatsPaused.dc.html",
+    "route": "/group/00000000-0000-0000-0000-0000000000a1/stats",
+    "state": "Who is away above the numbers, dashed days, dates instead of a bar",
+    "fixture": "paused"
+  },
+  {
+    "slug": "home-grace",
+    "section": "Home",
+    "mock": "V31HomeGrace.dc.html",
+    "route": "/",
+    "state": "In grace somewhere: the group that has not started counting you yet",
+    "fixture": "grace"
+  },
+  {
+    "slug": "group-grace-members",
+    "section": "Groups",
+    "mock": "V31GroupGrace.dc.html",
+    "route": "/group/00000000-0000-0000-0000-0000000000a8",
+    "state": "Someone in grace on the members list, with hours left",
+    "fixture": "grace"
+  },
+  {
+    "slug": "grace-own",
+    "section": "Groups",
+    "mock": "V31GraceOwn.dc.html",
+    "route": "/group/00000000-0000-0000-0000-0000000000a8/standing",
+    "state": "Your own grace period: what still counts and what does not",
+    "fixture": "grace"
+  },
+  {
+    "slug": "ranks-v31",
+    "section": "Ranks",
+    "mock": "V31Ranks.dc.html",
+    "route": "/ranks",
+    "state": "The six bands after the v3.1 move: UNBROKEN at 900, IMMACULATE earned",
+    "fixture": "default"
+  },
+  {
+    "slug": "ranks-quiet",
+    "section": "Ranks",
+    "mock": "V31RanksQuiet.dc.html",
+    "route": "/ranks",
+    "state": "The quiet-days and pause rules, further down the same page",
+    "fixture": "default",
+    "note": "The artboard is one section of this page, not the whole of it."
   }
 ]

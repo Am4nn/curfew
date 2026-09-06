@@ -7,7 +7,7 @@ import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
 import { closeOutstanding } from "./scoring";
 import { resolveUserTimezone } from "./config";
-import { pausedDaysIn } from "./pause";
+import { pausedDaysIn, pausesFor } from "./pause";
 import { now } from "@/lib/clock";
 
 // Personal stats. Everything here is counted from `activity_scores`, which is
@@ -128,11 +128,18 @@ export async function overviewFor(userId: string): Promise<Overview> {
     heatmap.push(week);
   }
 
-  // The runs of away days inside the grid, so the line can name their dates
-  // rather than making somebody count squares.
-  const away = runsOf(
-    [...pausedDays].filter((d) => d >= gridStart.toFormat("yyyy-MM-dd")).sort(),
-  );
+  // The trips themselves, so the line can name their dates rather than making
+  // somebody count squares.
+  //
+  // Read from the declarations rather than from the drawn cells. The grid stops
+  // at today, so a trip still running would otherwise be announced as ending
+  // today, which is both wrong and the opposite of reassuring for the person
+  // reading it from an airport.
+  const gridFrom = gridStart.toFormat("yyyy-MM-dd");
+  const away = (await pausesFor(userId))
+    .filter((p) => p.endsOn >= gridFrom)
+    .map((p) => ({ from: p.startsOn < gridFrom ? gridFrom : p.startsOn, to: p.endsOn }))
+    .sort((a, b) => a.from.localeCompare(b.from));
 
   const mine = (await listUserActivities(userId)).filter((a) => a.enabled);
   const byActivity: Overview["byActivity"] = [];
@@ -171,20 +178,6 @@ export async function overviewFor(userId: string): Promise<Overview> {
     awayThisMonth,
     byActivity,
   };
-}
-
-/** Sorted days into contiguous runs. Two trips in eight weeks is two lines. */
-function runsOf(days: string[]): { from: string; to: string }[] {
-  const out: { from: string; to: string }[] = [];
-  for (const day of days) {
-    const last = out.at(-1);
-    if (last && DateTime.fromISO(last.to, { zone: "utc" }).plus({ days: 1 }).toFormat("yyyy-MM-dd") === day) {
-      last.to = day;
-    } else {
-      out.push({ from: day, to: day });
-    }
-  }
-  return out;
 }
 
 export interface ActivityChart {

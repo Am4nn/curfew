@@ -243,6 +243,13 @@ then `bun run local` in another terminal. In CI the `browser` job starts a DEV
 server, not a built one, because LOCAL_MODE is gated on `NODE_ENV` not being
 "production" and `next start` sets exactly that.
 
+**Reseed after `bun run browser`.** Its pause suite scrubs the preview clock
+into a future trip, and every read on a scrubbed page closes periods, so the
+derived tables come out carrying days that have not happened. `verify` reports
+those as drift, correctly: a stored day beyond the replay is the balance
+`resumePointFor` would carry forward, skipping every real day in between. CI
+keeps the two in separate jobs for this reason.
+
 `break-in` builds its own people and groups and deletes them again, so it is
 safe against any database and runs in CI on every push. Its HTTP half needs a
 server: `break-in:local` sweeps `localhost:3000` beside `bun run local`, and

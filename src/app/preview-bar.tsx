@@ -67,7 +67,13 @@ export function PreviewBar() {
   };
 
   return (
-    <div style={{ position: "fixed", left: 16, bottom: 16, zIndex: 9999, font: "12px ui-monospace, monospace" }}>
+    // Named so the drift harness can hide it. It sits on top of the Home tab
+    // and it is not part of any design, so every app capture ever taken here
+    // has had a preview control where the house icon should be.
+    <div
+      data-preview-bar
+      style={{ position: "fixed", left: 16, bottom: 16, zIndex: 9999, font: "12px ui-monospace, monospace" }}
+    >
       {open ? (
         <div
           style={{

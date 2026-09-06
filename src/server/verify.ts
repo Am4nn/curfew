@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, inArray } from "drizzle-orm";
+import { and, eq, gt, gte, lte, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import {
   activityScores,
@@ -159,6 +159,34 @@ export async function verifyUser(
           computed: c.reason,
         });
       }
+    }
+
+    // A stored day LATER than anything the replay reaches.
+    //
+    // The diff above only looks inside the computed range, so a row for a day
+    // that has not happened was invisible to it, and such a row is not
+    // harmless: `resumePointFor` reads the last stored day as the balance to
+    // carry forward, so it would resume from the far side of the gap and every
+    // real day in between would never be computed at all.
+    //
+    // Local only in practice, and found here rather than reasoned about: the
+    // browser suite scrubs the preview clock into a future pause, every read on
+    // those pages closes periods, and the rows outlive the cookie. A server
+    // clock that jumped forward and back would do the same in production.
+    const last = days[days.length - 1];
+    const ahead = await db
+      .select({ groupId: reputationDaily.groupId, day: reputationDaily.day, score: reputationDaily.score })
+      .from(reputationDaily)
+      .where(and(eq(reputationDaily.userId, userId), gt(reputationDaily.day, last)));
+    for (const row of ahead) {
+      drift.push({
+        kind: "reputation",
+        userId,
+        key: scope(row.groupId, row.day),
+        field: "*",
+        stored: row.score,
+        computed: null,
+      });
     }
   }
 

@@ -9,7 +9,7 @@
 //
 // Local only. It rewrites reputation_daily for one user and puts it back by
 // recomputing, which is the thing being tested.
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { reputationDaily } from "@/db/schema";
 import { scoreAll } from "@/server/scoring";
@@ -26,15 +26,24 @@ function check(what: string, ok: boolean, got: unknown = "") {
   if (!ok) failed++;
 }
 
+// A day the scoring pass will actually reach, which is not the same as the
+// latest day stored.
+//
+// The preview clock can be scrubbed into the future, and every read on a
+// scrubbed page closes periods, so a local database that has had the browser
+// suite run against it carries rows for days that have not happened. Sampling
+// the latest of those meant stamping a row `scoreAll` was never going to
+// rewrite, and the check reported the mechanism broken when the mechanism was
+// fine. `bun run verify` now reports such rows as drift in their own right.
 const [sample] = await db
   .select({ userId: reputationDaily.userId, day: reputationDaily.day })
   .from(reputationDaily)
-  .where(isNull(reputationDaily.groupId))
+  .where(and(isNull(reputationDaily.groupId), lte(reputationDaily.day, sql`current_date`)))
   .orderBy(sql`day desc`)
   .limit(1);
 
 if (!sample) {
-  console.error("No reputation rows. Run bun run local:seed first.");
+  console.error("No reputation rows on or before today. Run bun run local:seed first.");
   process.exit(1);
 }
 
@@ -53,10 +62,20 @@ check("the seeded rows carry the current logic version", before[0].version === L
 
 // An old version AND a wrong number, which is what a curve change leaves
 // behind: rows that are internally consistent and no longer correct.
+//
+// Only the days the pass will rewrite, for the same reason the sample is taken
+// from them: a future-dated row stamped here would stay stamped, and this
+// script would have broken the database it was checking.
 await db
   .update(reputationDaily)
   .set({ logicVersion: 1, score: "1.000" })
-  .where(and(eq(reputationDaily.userId, sample.userId), isNull(reputationDaily.groupId)));
+  .where(
+    and(
+      eq(reputationDaily.userId, sample.userId),
+      isNull(reputationDaily.groupId),
+      lte(reputationDaily.day, sql`current_date`),
+    ),
+  );
 
 const stamped = await db
   .select({ score: reputationDaily.score, version: reputationDaily.logicVersion })

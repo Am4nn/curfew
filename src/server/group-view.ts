@@ -245,7 +245,13 @@ export interface WeekStats {
   of: number;
   /** `away` is how many members had that day declared away. */
   byDay: { day: string; done: number; of: number; away: number }[];
-  /** `away` is the last day of their absence, when they had one this week. */
+  /**
+   * `away` is the last day of their absence, when they had one this week.
+   *
+   * It is set whether or not they also have counted days. A trip that starts
+   * mid-week leaves a member with both, and showing only the count would name
+   * two people in the banner above and then explain neither of them.
+   */
   byMember: { name: string; done: number; of: number; away: string | null }[];
   byType: { typeKey: string; name: string; icon: string; percent: number }[];
   /** Anyone away right now, with the day they are back after. */
@@ -297,6 +303,17 @@ export async function weekStats(groupId: string, viewerId: string): Promise<Week
   const days = tally((r) => r.periodStart);
   const members = tally((r) => r.name);
   const types = tally((r) => r.typeKey);
+
+  // Every day of the window, including the ones nothing closed on.
+  //
+  // This was built from the rows alone, so a day with no scored period simply
+  // vanished and the weekday labels under the bars shifted left. Today is one
+  // of those days for most of its length, since nothing has closed yet, and a
+  // whole group away is another. Six bars labelled M to S read as a week.
+  for (let i = 0; i < 7; i += 1) {
+    const day = DateTime.fromISO(from, { zone: "utc" }).plus({ days: i }).toFormat("yyyy-MM-dd");
+    if (!days.has(day)) days.set(day, { done: 0, of: 0 });
+  }
 
   // Who was away, and on which of these seven days. Every member is asked,
   // not only the ones with rows: a member away the whole week has none.

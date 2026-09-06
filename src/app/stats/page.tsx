@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { overviewFor, chartFor } from "@/server/stats";
+import { overviewFor, chartFor, AWAY } from "@/server/stats";
+import { shortDay } from "@/lib/day-format";
 import { ownPhotos } from "@/server/own-photos";
 import { PhotoGrid } from "../photo-tile";
 import { QuorumMark } from "../mark";
@@ -138,7 +139,9 @@ export default async function StatsPage({
                 <span className="text-[15px] text-muted">of {stats.daysInMonth}</span>
               </div>
               <span className="text-[11.5px] leading-[1.55] text-muted">
-                A perfect day is every activity that was scheduled, done.
+                {stats.awayThisMonth > 0
+                  ? `${stats.awayThisMonth} ${stats.awayThisMonth === 1 ? "day" : "days"} away ${stats.awayThisMonth === 1 ? "is" : "are"} not counted, either way.`
+                  : "A perfect day is every activity that was scheduled, done."}
               </span>
             </section>
 
@@ -166,7 +169,15 @@ export default async function StatsPage({
                         <div
                           key={d}
                           className={
-                            "aspect-square w-full " + (v < 0 ? "border border-rule" : "")
+                            "aspect-square w-full " +
+                            // An away day is drawn, not left blank: the dashed
+                            // outline is what distinguishes a declared trip
+                            // from a fortnight of not turning up.
+                            (v === AWAY
+                              ? "border border-dashed border-accent"
+                              : v < 0
+                                ? "border border-rule"
+                                : "")
                           }
                           style={v < 0 ? undefined : { background: HEAT[heatStep(v)] }}
                         />
@@ -180,10 +191,25 @@ export default async function StatsPage({
                     <div key={i} className="h-[8px] w-[14px]" style={{ background: c }} />
                   ))}
                   <span className="text-[10px] text-muted">all</span>
+                  {stats.away.length > 0 ? (
+                    <span className="ml-[10px] flex items-center gap-[5px]">
+                      <span className="block h-[8px] w-[8px] border border-dashed border-accent" />
+                      <span className="text-[10px] text-accent">away</span>
+                    </span>
+                  ) : null}
                   <span className="ml-auto text-[10px] text-muted">
                     {stats.heatmap.length} weeks
                   </span>
                 </div>
+                {stats.away.map((a) => (
+                  <span
+                    key={a.from}
+                    className="text-[11.5px] leading-[1.55] text-accent"
+                  >
+                    Away {shortDay(a.from)} to {shortDay(a.to)}. Those days were not
+                    scheduled.
+                  </span>
+                ))}
               </div>
             </section>
 

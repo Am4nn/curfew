@@ -7,11 +7,15 @@ import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
 import { closeOutstanding } from "./scoring";
 import { resolveUserTimezone } from "./config";
+import { pausedDaysIn } from "./pause";
 import { now } from "@/lib/clock";
 
 // Personal stats. Everything here is counted from `activity_scores`, which is
 // derived from check-in events alone (invariant 2): no sessions, no last_seen,
 // nothing ambient.
+
+/** A day inside a declared pause, drawn rather than left blank. See AWAY. */
+export const AWAY = -2;
 
 export interface Overview {
   perfectDays: number;
@@ -19,8 +23,20 @@ export interface Overview {
   passRate: number;
   longestStreak: number;
   graceLeft: number;
-  /** Eight weeks of days, each 0..1 of what was scheduled, -1 for the future. */
+  /**
+   * Eight weeks of days, each 0..1 of what was scheduled, -1 for the future,
+   * AWAY for a day inside a pause.
+   *
+   * A paused day produces no period, so it used to arrive here as a zero: the
+   * same black square a day of not turning up leaves. The two mean opposite
+   * things, and the member who declared the trip is the one being told they
+   * failed for a fortnight.
+   */
   heatmap: number[][];
+  /** The pauses that overlap the grid, for the line under it. */
+  away: { from: string; to: string }[];
+  /** How many of this month's days were declared away, out of the count above. */
+  awayThisMonth: number;
   byActivity: {
     typeKey: string;
     name: string;
@@ -61,10 +77,28 @@ export async function overviewFor(userId: string): Promise<Overview> {
     byDay.set(r.periodStart, cur);
   }
 
+  // Eight weeks ending on this week, Monday first, and the month, whichever
+  // reaches back further. Both halves below need to know which days were away.
+  const gridStart = today.startOf("week").minus({ weeks: 7 });
+  const windowStart = gridStart < monthStart ? gridStart : monthStart;
+  const pausedDays = await pausedDaysIn(
+    userId,
+    windowStart.toFormat("yyyy-MM-dd"),
+    today.toFormat("yyyy-MM-dd"),
+  );
+
   const thisMonth = [...byDay.entries()].filter(
     ([day]) => day >= monthStart.toFormat("yyyy-MM-dd"),
   );
   const perfectDays = thisMonth.filter(([, v]) => v.of > 0 && v.done === v.of).length;
+
+  // Out of the days that were the member's to keep. Counting a declared trip
+  // against the month makes a fortnight away read as a fortnight of failure,
+  // which is the one thing a pause exists to stop it reading as.
+  const monthDays = today.daysInMonth ?? 30;
+  const awayThisMonth = [...pausedDays].filter(
+    (d) => d >= monthStart.toFormat("yyyy-MM-dd"),
+  ).length;
 
   const last30 = rows.filter(
     (r) => r.periodStart >= today.minus({ days: 29 }).toFormat("yyyy-MM-dd"),
@@ -74,22 +108,31 @@ export async function overviewFor(userId: string): Promise<Overview> {
       ? 0
       : Math.round((last30.filter((r) => r.passed).length / last30.length) * 100);
 
-  // Eight weeks ending on this week, Monday first.
-  const gridStart = today.startOf("week").minus({ weeks: 7 });
   const heatmap: number[][] = [];
   for (let w = 0; w < 8; w += 1) {
     const week: number[] = [];
     for (let d = 0; d < 7; d += 1) {
       const day = gridStart.plus({ weeks: w, days: d });
+      const key = day.toFormat("yyyy-MM-dd");
       if (day > today) {
         week.push(-1);
         continue;
       }
-      const v = byDay.get(day.toFormat("yyyy-MM-dd"));
+      if (pausedDays.has(key)) {
+        week.push(AWAY);
+        continue;
+      }
+      const v = byDay.get(key);
       week.push(v && v.of > 0 ? v.done / v.of : 0);
     }
     heatmap.push(week);
   }
+
+  // The runs of away days inside the grid, so the line can name their dates
+  // rather than making somebody count squares.
+  const away = runsOf(
+    [...pausedDays].filter((d) => d >= gridStart.toFormat("yyyy-MM-dd")).sort(),
+  );
 
   const mine = (await listUserActivities(userId)).filter((a) => a.enabled);
   const byActivity: Overview["byActivity"] = [];
@@ -119,13 +162,29 @@ export async function overviewFor(userId: string): Promise<Overview> {
 
   return {
     perfectDays,
-    daysInMonth: today.daysInMonth ?? 30,
+    daysInMonth: monthDays - awayThisMonth,
     passRate,
     longestStreak,
     graceLeft,
     heatmap,
+    away,
+    awayThisMonth,
     byActivity,
   };
+}
+
+/** Sorted days into contiguous runs. Two trips in eight weeks is two lines. */
+function runsOf(days: string[]): { from: string; to: string }[] {
+  const out: { from: string; to: string }[] = [];
+  for (const day of days) {
+    const last = out.at(-1);
+    if (last && DateTime.fromISO(last.to, { zone: "utc" }).plus({ days: 1 }).toFormat("yyyy-MM-dd") === day) {
+      last.to = day;
+    } else {
+      out.push({ from: day, to: day });
+    }
+  }
+  return out;
 }
 
 export interface ActivityChart {

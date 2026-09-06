@@ -7,7 +7,7 @@
 // It is a plainly written document, not a reviewed one. Have a lawyer read it
 // before real users, particularly the liability and jurisdiction sections.
 
-/** Where disputes go. Set this to your own city before launch. */
+/** Where disputes go. Confirmed 2026-09-06; it is named in THE LAW THAT APPLIES. */
 export const JURISDICTION = {
   country: "India",
   city: "Bengaluru",

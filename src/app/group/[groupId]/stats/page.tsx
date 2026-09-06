@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { groupHeader, weekStats } from "@/server/group-view";
 import { ActivityIcon } from "../../../activity-icon";
 import { BackLink } from "@/app/back-link";
+import { shortDay } from "@/lib/day-format";
 
 // Four questions a group actually asks: how did we do this week, which days
 // were bad, who is carrying it, and what is everyone failing at. Counted from
@@ -42,8 +43,11 @@ export default async function GroupStats({
       <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
         {week.of === 0 ? (
           <p className="text-[12.5px] leading-[1.6] text-muted">
-            Nothing has been scored here this week. Numbers appear once members
-            share an activity and their first period closes.
+            {week.away.length > 0
+              ? `Nothing was scheduled here this week. ${week.away
+                  .map((a) => `${a.name} is away until ${shortDay(a.until)}`)
+                  .join(", ")}.`
+              : "Nothing has been scored here this week. Numbers appear once members share an activity and their first period closes."}
           </p>
         ) : (
           <>
@@ -60,18 +64,43 @@ export default async function GroupStats({
               </span>
             </section>
 
+            {/* Above the numbers those days are missing from, not below them.
+                A member who is away produces no rows at all, so without this
+                the group reads as having quietly stopped turning up. */}
+            {week.away.length > 0 ? (
+              <div className="flex flex-col gap-[4px] border border-accent p-[12px]">
+                <span className="text-[12.5px] text-accent">
+                  {week.away.map((a) => `${a.name} is away until ${shortDay(a.until)}`).join(". ")}.
+                </span>
+                <span className="text-[11px] leading-[1.55] text-muted">
+                  Their days are not scheduled, so they are in neither number below.
+                </span>
+              </div>
+            ) : null}
+
             <section className="flex flex-col gap-[10px]">
               <span className="text-[10px] tracking-[0.16em] text-muted">DAY BY DAY</span>
               <div className="flex gap-[5px]">
                 {week.byDay.map((d) => (
                   <div key={d.day} className="flex flex-1 flex-col items-center gap-[6px]">
-                    <div className="flex h-[44px] w-full flex-col justify-end bg-rule">
+                    <div
+                      className={
+                        "flex h-[44px] w-full flex-col justify-end bg-rule " +
+                        (d.away > 0 ? "border-t border-dashed border-accent" : "")
+                      }
+                    >
                       <div
                         className="w-full bg-fg"
                         style={{ height: `${(d.done / peak) * 100}%` }}
                       />
                     </div>
-                    <span className="text-[10px] tabular-nums text-muted">{d.done}</span>
+                    <span
+                      className={
+                        "text-[10px] tabular-nums " + (d.away > 0 ? "text-accent" : "text-muted")
+                      }
+                    >
+                      {d.done}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -84,8 +113,10 @@ export default async function GroupStats({
               </div>
               {worst ? (
                 <span className="text-[11.5px] leading-[1.55] text-muted">
-                  Out of {peak} a day. {DateTime.fromISO(worst.day).toFormat("cccc")} was
-                  the worst day for everyone.
+                  Out of {peak} a day.{" "}
+                  {week.byDay.some((d) => d.away > 0)
+                    ? "The dashed days had fewer members to count."
+                    : `${DateTime.fromISO(worst.day).toFormat("cccc")} was the worst day for everyone.`}
                 </span>
               ) : null}
             </section>
@@ -100,15 +131,26 @@ export default async function GroupStats({
                     <div className="flex flex-1 flex-col gap-[6px]">
                       <div className="flex items-center justify-between gap-[9px]">
                         <span className="text-[13px]">{m.name}</span>
-                        <span className="text-[11.5px] tabular-nums text-muted">
-                          {m.done} of {m.of}
+                        <span
+                          className={
+                            "text-[11.5px] tabular-nums " +
+                            (m.away && m.of === 0 ? "text-accent" : "text-muted")
+                          }
+                        >
+                          {m.away && m.of === 0
+                            ? `Away until ${shortDay(m.away)}`
+                            : `${m.done} of ${m.of}`}
                         </span>
                       </div>
                       <div className="h-[3px] bg-rule">
-                        <div
-                          className="h-[3px] bg-fg"
-                          style={{ width: `${(m.done / (m.of || 1)) * 100}%` }}
-                        />
+                        {/* Nothing was scheduled, so no bar. A bar at nothing
+                            would read as a week of failures. */}
+                        {m.away && m.of === 0 ? null : (
+                          <div
+                            className="h-[3px] bg-fg"
+                            style={{ width: `${(m.done / (m.of || 1)) * 100}%` }}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

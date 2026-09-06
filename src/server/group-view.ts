@@ -16,7 +16,7 @@ import { assertMember, memberRole } from "./membership";
 import { acceptedTypes, sharesFor, ownerMoneyToggle } from "./sharing";
 import { moneyOnFor } from "./app-config";
 import { gracesIn, type GracePeriod } from "./grace";
-import { pausesIn, currentPause, type Pause } from "./pause";
+import { pausesIn, currentPause, pausedDaysIn, type Pause } from "./pause";
 import { cleanRunIn, cleanRunsIn } from "./clean-run";
 import { globalScore } from "./scoring";
 import { userDay } from "./config";
@@ -243,12 +243,23 @@ export async function standingIn(
 export interface WeekStats {
   done: number;
   of: number;
-  byDay: { day: string; done: number; of: number }[];
-  byMember: { name: string; done: number; of: number }[];
+  /** `away` is how many members had that day declared away. */
+  byDay: { day: string; done: number; of: number; away: number }[];
+  /** `away` is the last day of their absence, when they had one this week. */
+  byMember: { name: string; done: number; of: number; away: string | null }[];
   byType: { typeKey: string; name: string; icon: string; percent: number }[];
+  /** Anyone away right now, with the day they are back after. */
+  away: { name: string; until: string }[];
 }
 
-/** How the group did over the last seven days. Counted, never read. */
+/**
+ * How the group did over the last seven days. Counted, never read.
+ *
+ * A member who is away produces no outcome rows at all, so before pauses were
+ * shown here they simply vanished from the list and the day bars quietly got
+ * shorter. Both numbers were correct and the screen was not: it read as the
+ * group falling off, with the one fact that explains it missing.
+ */
 export async function weekStats(groupId: string, viewerId: string): Promise<WeekStats> {
   await assertMember(groupId, viewerId);
 
@@ -287,15 +298,46 @@ export async function weekStats(groupId: string, viewerId: string): Promise<Week
   const members = tally((r) => r.name);
   const types = tally((r) => r.typeKey);
 
+  // Who was away, and on which of these seven days. Every member is asked,
+  // not only the ones with rows: a member away the whole week has none.
+  const roster = await db
+    .select({ userId: groupMembers.userId, name: users.name })
+    .from(groupMembers)
+    .innerJoin(users, eq(users.id, groupMembers.userId))
+    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)));
+
+  const to = DateTime.fromISO(from, { zone: "utc" }).plus({ days: 6 }).toFormat("yyyy-MM-dd");
+  const awayPerDay = new Map<string, number>();
+  const awayUntil = new Map<string, string>();
+  const live = await pausesIn(groupId);
+
+  for (const m of roster) {
+    const paused = await pausedDaysIn(m.userId, from, to);
+    if (paused.size === 0) continue;
+    for (const day of paused) awayPerDay.set(day, (awayPerDay.get(day) ?? 0) + 1);
+    // The end of the trip if it is still running, otherwise the last day of it
+    // that fell inside this week.
+    awayUntil.set(m.name, live.get(m.userId)?.endsOn ?? [...paused].sort().at(-1)!);
+  }
+
   return {
     done: rows.filter((r) => r.passed).length,
     of: rows.length,
     byDay: [...days.entries()]
-      .map(([day, v]) => ({ day, ...v }))
+      .map(([day, v]) => ({ day, ...v, away: awayPerDay.get(day) ?? 0 }))
       .sort((a, b) => a.day.localeCompare(b.day)),
-    byMember: [...members.entries()]
-      .map(([name, v]) => ({ name, ...v }))
-      .sort((a, b) => b.done / (b.of || 1) - a.done / (a.of || 1)),
+    byMember: [
+      ...[...members.entries()].map(([name, v]) => ({
+        name,
+        ...v,
+        away: awayUntil.get(name) ?? null,
+      })),
+      // Away the whole week, so there is nothing to tally. A bar at nothing
+      // would read as seven days of failure, which is the opposite of true.
+      ...roster
+        .filter((m) => !members.has(m.name) && awayUntil.has(m.name))
+        .map((m) => ({ name: m.name, done: 0, of: 0, away: awayUntil.get(m.name)! })),
+    ].sort((a, b) => b.done / (b.of || 1) - a.done / (a.of || 1)),
     byType: [...types.entries()].map(([typeKey, v]) => {
       const type = getActivityType(typeKey);
       return {
@@ -305,6 +347,9 @@ export async function weekStats(groupId: string, viewerId: string): Promise<Week
         percent: v.of === 0 ? 0 : Math.round((v.done / v.of) * 100),
       };
     }),
+    away: roster
+      .filter((m) => live.has(m.userId))
+      .map((m) => ({ name: m.name, until: live.get(m.userId)!.endsOn })),
   };
 }
 

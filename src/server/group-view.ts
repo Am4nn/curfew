@@ -15,6 +15,7 @@ import { assertMember, memberRole } from "./membership";
 import { acceptedTypes, sharesFor, ownerMoneyToggle } from "./sharing";
 import { moneyOnFor } from "./app-config";
 import { gracesIn, type GracePeriod } from "./grace";
+import { pausesIn, currentPause, type Pause } from "./pause";
 import { cleanRunIn, cleanRunsIn } from "./clean-run";
 import { globalScore } from "./scoring";
 
@@ -61,6 +62,14 @@ export interface MemberStanding {
   streaks: string;
   /** Set while this group is not counting them yet. They have no score here. */
   grace: GracePeriod | null;
+  /**
+   * Set while they have declared themselves away, or are about to be.
+   *
+   * Unlike grace, this never replaces the score. A member who is away still has
+   * a standing, and putting a marker where the number was would read as though
+   * they had been removed from the group.
+   */
+  pause: Pause | null;
 }
 
 /**
@@ -83,7 +92,11 @@ export async function memberStandings(
   if (members.length === 0) return [];
 
   const ids = members.map((m) => m.userId);
-  const [graces, cleanRuns] = await Promise.all([gracesIn(groupId), cleanRunsIn(groupId)]);
+  const [graces, cleanRuns, pauses] = await Promise.all([
+    gracesIn(groupId),
+    cleanRunsIn(groupId),
+    pausesIn(groupId),
+  ]);
   const [scores, outcomes] = await Promise.all([
     db
       .select({
@@ -136,6 +149,7 @@ export async function memberStandings(
       cleanDays: cleanRuns.get(m.userId) ?? 0,
       streaks: streaks || "nothing shared yet",
       grace: graces.get(m.userId) ?? null,
+      pause: pauses.get(m.userId) ?? null,
     });
   }
 
@@ -167,6 +181,8 @@ export interface Standing {
    * today can move it.
    */
   grace: GracePeriod | null;
+  /** Their own pause, running or already declared for later. */
+  pause: { pause: Pause; running: boolean } | null;
 }
 
 export async function standingIn(
@@ -188,11 +204,12 @@ export async function standingIn(
     .orderBy(desc(reputationDaily.day))
     .limit(7);
 
-  const [accepted, shares, graces, cleanDays] = await Promise.all([
+  const [accepted, shares, graces, cleanDays, pause] = await Promise.all([
     acceptedTypes(groupId),
     sharesFor(groupId, userId),
     gracesIn(groupId),
     cleanRunIn(userId, groupId),
+    currentPause(userId),
   ]);
 
   // In grace there is no stored day yet, so the number to show is the one the
@@ -216,6 +233,7 @@ export async function standingIn(
     })),
     cleanDays,
     grace,
+    pause,
   };
 }
 

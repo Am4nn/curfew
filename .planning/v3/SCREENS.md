@@ -159,6 +159,12 @@ are what remain.
 | What Curfew stores | `/settings/stored` | The consent text, readable at any time | [ ] |
 | The rules | `/settings/rules` | The terms, readable at any time | [ ] |
 | Personal (unresolved) | `/settings/personal` | Timezone, and the sleep windows the activity screen also sets | [ ] |
+| Pause: declaring | `/settings/pause` | The form, with what it costs stated above the button | [ ] |
+| Pause: declared | `/settings/pause` | Dates set, not started, so it can still be called off entirely | [ ] |
+| Pause: running | `/settings/pause` | Days left, extend, come back early | [ ] |
+| Home, paused | `/` | The day board replaced, money and groups kept, both ways out | [ ] |
+| Members, someone away | `/group/[groupId]` | "Away until", in accent, beside the score and never instead of it | [ ] |
+| Standing, paused | `/group/[groupId]/standing` | HELD, NOT FROZEN, and what moves and when | [ ] |
 | Admin: reports | `/admin/reports` | The one place an admin sees a photo, because a member asked | [ ] |
 | Admin: one user | `/admin/users/[id]` | How often somebody checked in, never what | [ ] |
 | Admin: one group | `/admin/groups/[id]` | Members, money, accepted types, and archive | [ ] |

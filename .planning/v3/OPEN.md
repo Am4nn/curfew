@@ -205,45 +205,53 @@ else about it is still open, in §7.1.
 
 These are not designed. They are the two things to open with.
 
-### 7.1 Pause, for a trip — DESIGNED 2026-09-06, NOT BUILT
+### 7.1 Pause, for a trip — BUILT 2026-09-06
 
-Decided and mocked. Decisions 133 to 137, seven artboards on the **v3.1 Pause**
-page of the design canvas. No code yet, on purpose.
+Decisions 133 to 137, mocked on the **v3.1 Pause** page of the canvas, and
+shipped. `bun run migrate` has NOT been run against preview yet, so migration
+0021 is still local only.
 
 **The whole design is one sentence: a paused day is a day with nothing
-scheduled.** Not a miss. Everything else falls out of that rather than needing a
-rule: no fine can arise because nothing was scheduled to miss, and reputation is
-not marked down because there was nothing to mark.
+scheduled.** Not a miss. The code is arranged so that sentence is the only rule.
+There is no rule that a pause waives a fine, and none that it spares reputation:
+the period is scored and stored with a `paused` flag the way `settling` already
+works, the group pass never sees it so no outcome row exists to charge from, and
+the global pass reads the day as one on which nothing concluded, which is the
+branch that already handles a Sunday nobody scheduled.
 
 - **Every streak ends**, when the first paused day closes rather than when the
-  pause is declared. A streak is consecutive days, a pause is a gap, and grace
-  does not cover one.
-- **Reputation still settles** after seven quiet days, and that decay changes
-  from a flat 3 a day to **1% of the score a day**.
-- **No money**, which needs no rule.
+  pause is declared, and grace is never consulted.
+- **Reputation still settles**: six quiet days, then the idle decay from the
+  seventh.
 - **Three days minimum, in advance, no quota.** One declaration covers every
-  group and the personal record. The group sees it on the members list, with its
-  dates, beside the score rather than instead of it.
-- **Home keeps the rest of itself.** Money and standing do not stop existing
-  while somebody is away, and Extend and Come back early are on it.
-- **Extend** while it runs. **Come back early** takes effect tomorrow; the days
-  already passed stay paused and the streak that ended does not come back.
+  group and the personal record.
+- **A period is paused only when every day of it is inside one**, which is what
+  stops a three-day pause erasing a whole gym week.
+- `user_pauses` is insert-only, in the family of invariant 4.
 
-**What the numbers say**, from the real curve. A fourteen-day trip from 900 not
-paused lands on 629 and takes **80 clean days** to undo. Paused it lands on 876
-and takes **12**.
+**Proved rather than asserted.** Four simulation scenarios, and the flag was
+broken on purpose to watch them fail: the days stop being marked, four fines
+appear, and grace gets spent, which is the one that shows the streak really does
+bypass it. `break-in` section 20 covers the back-dating attack with a positive
+control. Nineteen browser checks drive the real screens through the mock clock,
+including day one saying "Running until tonight" and day three saying "Ended".
 
-**Still to settle before it is built:**
+**Still open:**
 
-- **Can you check in while paused?** The mocks say no: Home shows "Paused" and
-  offers nothing, and coming back early is how you make a day count again. A
-  paused day that somebody completed anyway still would not count, which is
-  confusing enough that offering the button would be worse.
-- **What a pause does to the settling window** (decision 54) for an activity
-  added just before one.
-- **The 1% decay is a change to `CONSTANTS`,** so it needs `LOGIC_VERSION`
-  bumped, the 30 scenarios re-run and `REPUTATION.md`'s target properties
-  re-checked. That is a separate commit from pause itself and can land first.
+- **The 19 browser checks are a scratch script**, `scripts/drift/_pausetest.mjs`,
+  run by hand beside `bun run local` after a seed. It is not in CI, because CI
+  has no dev server.
+- **A pause does not stop the settling window** (decision 54) for an activity
+  added just before one. Settling is about the activity being new, not about the
+  member being present, so a trip does not extend it. Recorded rather than
+  argued.
+- **Nothing shows a pause on `/stats` or in group stats.** Paused days simply
+  produce no periods there, so a trip reads as a gap with no explanation.
+- **The mock and the build differ in one place.** The declare form has no `min`
+  on its end date: it could only be computed from the start date as it stood on
+  the server, so it lies the moment somebody picks a later one, and a wrong
+  `min` blocks a valid submission with no message at all. The length rule is the
+  server's, where it can say what it wants.
 
 ### 7.2 CI, and what it should gate — SETTLED 2026-09-06
 

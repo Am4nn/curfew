@@ -12,7 +12,10 @@ import { RankScore } from "@/app/rank-icon";
 import { TodayBoard } from "@/app/today-board";
 import { InviteRows } from "@/app/invite-rows";
 import { TimezoneMismatch } from "@/app/timezone-mismatch";
-import { resolveUserTimezone } from "@/server/config";
+import { resolveUserTimezone, userDay } from "@/server/config";
+import { currentPause } from "@/server/pause";
+import { shortDay, dayAfter, daysBetween } from "@/lib/day-format";
+import { PausedDay } from "@/app/paused-day";
 import { buttonClass } from "@/app/button-style";
 
 // Home is the day: how much of it is done, every activity with where it stands
@@ -47,6 +50,13 @@ export default async function Home({
   // so it can say when the device disagrees; cached per request, so it costs
   // nothing on top of what the day already resolved.
   const zone = await resolveUserTimezone(user.id, date);
+
+  // Declared away. The day board has nothing to offer, so it says so rather
+  // than drawing five rows nobody can act on. Everything BELOW it stays: money
+  // and standing do not stop existing while somebody is travelling, and a Home
+  // that dropped them would read as the account being suspended.
+  const held = await currentPause(user.id);
+  const away = held?.running === true ? held.pause : null;
 
   const [balances, standings] = await Promise.all([
     userBalances(user.id),
@@ -112,7 +122,14 @@ export default async function Home({
 
         {invites.length > 0 ? <InviteRows invites={invites} /> : null}
 
-        {today.rows.length === 0 ? (
+        {away ? (
+          <PausedDay
+            backOn={shortDay(dayAfter(away.endsOn))}
+            daysLeft={daysBetween(await userDay(user.id), away.endsOn)}
+            endedOn={shortDay(away.startsOn)}
+            startsToday={away.startsOn === date}
+          />
+        ) : today.rows.length === 0 ? (
           <NewUser inAGroup={groups.length > 0} />
         ) : (
           <TodayBoard

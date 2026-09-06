@@ -11,6 +11,7 @@ import {
   groupMembers,
   activityOutcomes,
   userApprovals,
+  userPauses,
 } from "../../src/db/schema";
 import { performCheckin } from "../../src/server/checkin";
 import { requestUpload } from "../../src/server/evidence";
@@ -23,11 +24,18 @@ import { recordSettlement, getGroupLedgerRows } from "../../src/server/ledger";
 import { acceptInvite, declineInvite, leaveGroup } from "../../src/server/groups";
 import { reportEvidence, openReports, reviewReport, banUser } from "../../src/server/reports";
 import { assertMember } from "../../src/server/membership";
+import { declarePause } from "../../src/server/pause";
+import { userDay } from "../../src/server/config";
 import { requireCapability, hasAdminAccess } from "../../src/server/admin";
 import { roleCapabilities } from "../../src/lib/capabilities";
 import { CAPABILITIES_FOR_TEST } from "./capabilities";
 import { allows, check, refuses, section, skipped } from "./harness";
+import { DateTime } from "luxon";
 import type { World } from "./world";
+
+/** A day relative to a stored one, read the way every stored date is. */
+const addDays = (day: string, n: number) =>
+  DateTime.fromISO(day, { zone: "utc" }).plus({ days: n }).toFormat("yyyy-MM-dd");
 
 // Everything that can be attacked by calling the server's own functions. No
 // HTTP: these are the guards themselves, tried directly, so a round that holds
@@ -511,7 +519,50 @@ export async function run(w: World): Promise<void> {
   section("19. membership is checked, not assumed");
   await refuses("assertMember refuses a non-member", () => assertMember(theirs, admin));
 
-  section("20. rate limits");
+  section("20. a pause cannot be used to erase a day already lived");
+  //
+  // This is the one part of the pause design that has a real attacker: a
+  // paused period produces no outcome, so a pause reaching backwards would
+  // delete a fine that was already owed and a miss that had already happened.
+  // The rule that stops it lives in the app, not the database, so it is worth
+  // proving rather than trusting.
+  {
+    const pauseDay = await userDay(admin);
+    await refuses("a pause starting today is refused", () =>
+      declarePause(admin, pauseDay, addDays(pauseDay, 4)),
+    );
+    await refuses("a pause starting yesterday is refused", () =>
+      declarePause(admin, addDays(pauseDay, -1), addDays(pauseDay, 3)),
+    );
+    await refuses("a pause reaching back a month is refused", () =>
+      declarePause(admin, addDays(pauseDay, -30), addDays(pauseDay, -20)),
+    );
+    await refuses("two days is refused", () =>
+      declarePause(admin, addDays(pauseDay, 1), addDays(pauseDay, 2)),
+    );
+    await refuses("a pause ending before it starts is refused", () =>
+      declarePause(admin, addDays(pauseDay, 5), addDays(pauseDay, 1)),
+    );
+
+    // The positive control. Without it every line above passes for a run in
+    // which declarePause simply throws at everything.
+    await allows("a proper pause is accepted", () =>
+      declarePause(admin, addDays(pauseDay, 1), addDays(pauseDay, 4)),
+    );
+    await refuses("and a second one over the same days is refused", () =>
+      declarePause(admin, addDays(pauseDay, 2), addDays(pauseDay, 5)),
+    );
+
+    const rows = await db.select().from(userPauses).where(eq(userPauses.userId, admin));
+    check(
+      "exactly one pause row was written",
+      rows.length === 1,
+      `${rows.length} rows`,
+    );
+    await db.delete(userPauses).where(eq(userPauses.userId, admin));
+  }
+
+  section("21. rate limits");
   if (!process.env.UPSTASH_REDIS_REST_URL) {
     // rateLimit fails OPEN when Upstash is unreachable or unconfigured, which
     // is deliberate: losing a check-in to our own outage punishes the user. So

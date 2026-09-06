@@ -6,6 +6,7 @@ import { acceptedTypes } from "@/server/sharing";
 import { groupHeader, memberStandings, standingIn, weekStats } from "@/server/group-view";
 import { ActivityIcon } from "../../../activity-icon";
 import { RankScore, rankText } from "../../../rank-icon";
+import { shortDay } from "@/lib/day-format";
 import { InviteForm } from "./invite-form";
 
 export default async function GroupOverview({
@@ -74,10 +75,20 @@ export default async function GroupOverview({
                     <span className="text-[10px] text-muted">you</span>
                   ) : null}
                 </div>
-                <span className="truncate text-[11px] text-muted">
+                {/* Being away replaces the streaks line and never the score.
+                    A member who is away still has a standing, and a marker
+                    where the number was reads as though they had been removed
+                    from the group. */}
+                <span
+                  className={
+                    "truncate text-[11px] " + (!m.grace && m.pause ? "text-accent" : "text-muted")
+                  }
+                >
                   {m.grace
                     ? `Counted from midnight, ${m.grace.hoursLeft}h`
-                    : m.streaks}
+                    : m.pause
+                      ? `Away until ${shortDay(m.pause.endsOn)}`
+                      : m.streaks}
                 </span>
               </div>
               {/* No score to show yet, so the slot that carries one says why. */}
@@ -94,6 +105,13 @@ export default async function GroupOverview({
         {members.some((m) => m.grace) ? (
           <span className="text-[11.5px] leading-[1.55] text-muted">
             A member is not scored or fined here on the day they join.
+          </span>
+        ) : null}
+        {members.some((m) => !m.grace && m.pause) ? (
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            A member who declared they are away is not scored or fined for those
+            days. Their standing stays where it was, and their streaks ended when
+            the first of those days closed.
           </span>
         ) : null}
       </section>

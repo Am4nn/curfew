@@ -5,6 +5,8 @@ import { rankFor, nextRank, formatMoney, isImmaculate, daysToImmaculate } from "
 import { groupHeader, standingIn, groupBalances } from "@/server/group-view";
 import { RankIcon, RANK_BG, rankText } from "../../../../rank-icon";
 import { CleanBar } from "@/app/clean-bar";
+import { shortDay, dayAfter, daysBetween } from "@/lib/day-format";
+import { userDay } from "@/server/config";
 
 const REASON: Record<string, string> = {
   clean: "All shared activities done",
@@ -29,7 +31,9 @@ export default async function StandingTab({
   ]);
   if (!header) redirect("/groups");
 
-  const { grace, cleanDays } = standing;
+  const { grace, cleanDays, pause } = standing;
+  const away = pause?.running === true ? pause.pause : null;
+  const today = away ? await userDay(user.id) : null;
   const rank = rankFor(standing.score);
   const next = nextRank(standing.score);
   const held = isImmaculate(standing.score, cleanDays);
@@ -42,6 +46,26 @@ export default async function StandingTab({
 
   return (
     <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
+      {/* Away, which like grace is the answer to every question the rest of the
+          screen raises. Unlike grace it does not hide the score: the number is
+          theirs and it is still standing, it is just not moving. */}
+      {away && today ? (
+        <div className="flex flex-col gap-2 border border-accent p-[14px]">
+          <div className="flex items-baseline justify-between gap-[10px]">
+            <span className="text-[10px] tracking-[0.16em] text-accent">PAUSED</span>
+            <span className="text-[12px] text-accent">
+              {daysBetween(today, away.endsOn)} days left
+            </span>
+          </div>
+          <span className="text-[13px] leading-[1.55]">
+            This group is not counting these days.
+          </span>
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            Nothing here can be a miss or a fine until {shortDay(dayAfter(away.endsOn))}.
+          </span>
+        </div>
+      ) : null}
+
       {/* In grace this comes first, because it is the answer to every question
           the rest of the screen raises. */}
       {grace ? (
@@ -73,7 +97,9 @@ export default async function StandingTab({
           <span className="text-[10.5px] tracking-[0.14em] text-muted">
             {grace
               ? "STARTS TOMORROW"
-              : held
+              : away
+                ? "HELD, NOT FROZEN"
+                : held
                 ? "IMMACULATE"
                 : next
                   ? `${next.away} TO ${next.rank.name}`
@@ -221,6 +247,36 @@ export default async function StandingTab({
         </span>
       </section>
       )}
+
+      {away ? (
+        <section className="flex flex-col gap-[10px]">
+          <span className="text-[10px] tracking-[0.16em] text-muted">
+            WHAT MOVES, AND WHEN
+          </span>
+          <div className="flex flex-col">
+            {[
+              ["A miss", "Cannot happen", "Nothing is scheduled"],
+              ["A fine", "Cannot happen", "Nothing to fine"],
+              ["Your streaks", "Ended", "A pause is a gap, not a grace"],
+            ].map(([what, value, why]) => (
+              <div
+                key={what}
+                className="flex items-baseline justify-between gap-3 border-b border-rule py-[11px]"
+              >
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[12.5px]">{what}</span>
+                  <span className="text-[10.5px] text-muted">{why}</span>
+                </div>
+                <span className="text-[13px] text-muted">{value}</span>
+              </div>
+            ))}
+          </div>
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            Away four days costs nothing. Away four weeks costs what any four
+            quiet weeks cost.
+          </span>
+        </section>
+      ) : null}
 
       {grace ? null : (
       <section className="flex flex-col gap-[10px]">

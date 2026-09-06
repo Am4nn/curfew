@@ -8,6 +8,7 @@ import { listUserActivities } from "@/server/activities";
 import { listUserGroups } from "@/server/groups";
 import { RETENTION_DAYS, listOwnPhotos } from "@/server/evidence";
 import { consentOf } from "@/server/consent";
+import { currentPause, lengthOf } from "@/server/pause";
 import { QuorumMark } from "../mark";
 import { ThemeToggle } from "../theme-toggle";
 import { SignOut } from "../sign-out";
@@ -35,6 +36,8 @@ export default async function Settings() {
     consentOf(user.id),
     listOwnPhotos(user.id),
   ]);
+  // A pause is global and rare, so it sits with the other things you set once.
+  const held = await currentPause(user.id);
   const theme = (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
   const tracked = activities.filter((a) => a.enabled).length;
   const photos = ownPhotoRows.length;
@@ -67,6 +70,17 @@ export default async function Settings() {
               label="Activities"
               value={`${tracked} tracked`}
               href="/activities"
+            />
+            <Row
+              label="Pause"
+              value={
+                held === null
+                  ? "Not paused"
+                  : held.running
+                    ? `Away, ${lengthOf(held.pause)} days`
+                    : "Declared"
+              }
+              href="/settings/pause"
             />
             <Row
               label="What you share"

@@ -19,6 +19,7 @@ import {
 } from "@/domain";
 import { getUserActivity } from "./activities";
 import { resolveUserTimezone } from "./config";
+import { isPausedToday } from "./pause";
 import { recordEvent } from "./events";
 import { rateLimit } from "./ratelimit";
 import { pendingFor, confirmEvidence } from "./evidence";
@@ -273,7 +274,8 @@ export type CheckinFailure =
   | "duplicate"
   | "rate_limited"
   | "no_photo"
-  | "already_counted";
+  | "already_counted"
+  | "paused";
 
 export type CheckinResult =
   | { ok: true; step: string; atLabel: string }
@@ -333,6 +335,19 @@ export async function resolveCheckinTarget(
       ok: false,
       reason: "unscheduled",
       message: "This activity is not scheduled today.",
+    };
+  }
+
+  // Declared away. Nothing is scheduled today, so there is nothing to record
+  // against: the period will be marked paused and read as a day on which
+  // nothing concluded, and a check-in sitting inside it would count for
+  // nothing while looking exactly like one that counted. Home offers no button
+  // while a pause runs, so this is the stale tab and the direct POST.
+  if (await isPausedToday(userId)) {
+    return {
+      ok: false,
+      reason: "paused",
+      message: "You are paused. Come back early in Settings to count today.",
     };
   }
 

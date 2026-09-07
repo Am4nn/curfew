@@ -158,10 +158,3 @@ export async function resolveUserSleepConfigRow(
   // real per-user save (always wrapped as { schedule, config }) takes over.
   return { config: sleepConfigSchema.parse(moduleConfigOf(row.config)), version: row.version };
 }
-
-export async function resolveUserSleepConfig(
-  userId: string,
-  periodStart: string,
-): Promise<SleepConfig> {
-  return (await resolveUserSleepConfigRow(userId, periodStart)).config;
-}

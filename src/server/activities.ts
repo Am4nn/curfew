@@ -241,13 +241,3 @@ export async function stopTracking(userId: string, typeKey: string): Promise<voi
     effectiveAt: await now(),
   });
 }
-
-/** Whether the user has ever set this type up, for choosing Add against Save. */
-export async function hasEverTracked(userId: string, typeKey: string): Promise<boolean> {
-  const rows = await db
-    .select({ id: userActivities.id })
-    .from(userActivities)
-    .where(and(eq(userActivities.userId, userId), eq(userActivities.typeKey, typeKey)))
-    .limit(1);
-  return rows.length > 0;
-}

@@ -14,7 +14,6 @@ import {
   userSettings,
   memberShares,
   groupMembers,
-  ledgerEntries,
 } from "@/db/schema";
 import { deleteObject } from "./r2";
 import { recordEvent } from "./events";
@@ -215,17 +214,6 @@ export async function deleteAccount(userId: string): Promise<void> {
 
   // The record that a deletion happened, with nobody attached to it.
   await recordEvent({ type: "account.deleted", payload: { at: new Date().toISOString() } });
-}
-
-/** Whether any ledger row still names this person, for the warning. */
-export async function hasLedgerRows(userId: string): Promise<boolean> {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(ledgerEntries)
-    .where(
-      sql`${ledgerEntries.fromUserId} = ${userId} OR ${ledgerEntries.toUserId} = ${userId}`,
-    );
-  return (row?.n ?? 0) > 0;
 }
 
 /** Types this user has any history for, for the per-activity delete. */

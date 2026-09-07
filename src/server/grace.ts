@@ -84,33 +84,6 @@ function windowStart(instant: Date): string {
     .toFormat("yyyy-MM-dd");
 }
 
-/** The groups this user is inside the grace period of, keyed by group. */
-export const gracesFor = cache(
-  async (userId: string): Promise<Map<string, GracePeriod>> => {
-    const instant = await now();
-    const rows = await db
-      .select({ groupId: groupMembers.groupId, joinedAt: groupMembers.joinedAt })
-      .from(groupMembers)
-      .where(
-        and(
-          eq(groupMembers.userId, userId),
-          isNull(groupMembers.leftAt),
-          gte(groupMembers.joinedAt, windowStart(instant)),
-        ),
-      );
-
-    const out = new Map<string, GracePeriod>();
-    if (rows.length === 0) return out;
-
-    const timezone = (await timezoneHistory(userId)).at(instant);
-    for (const r of rows) {
-      const grace = graceFor(r.groupId, userId, r.joinedAt, timezone, instant);
-      if (grace) out.set(r.groupId, grace);
-    }
-    return out;
-  },
-);
-
 /**
  * Everyone in one group whose grace is still running, keyed by user.
  *

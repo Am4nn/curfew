@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { DateTime } from "luxon";
-import { and, eq, isNull, like, sql, inArray } from "drizzle-orm";
+import { and, eq, isNull, like, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   events,
@@ -1039,13 +1039,6 @@ export async function rebuildAll(
 // Reading
 // ---------------------------------------------------------------------------
 
-export interface TypeStanding {
-  typeKey: string;
-  streak: number;
-  best: number;
-  graceLeft: number;
-}
-
 /**
  * A user's global score, as last computed. Visible only to its owner
  * (decision 10), and never shown to anyone else.
@@ -1058,23 +1051,4 @@ export async function globalScore(userId: string): Promise<number> {
     .orderBy(sql`day desc`)
     .limit(1);
   return row ? Number(row.score) : START_SCORE;
-}
-
-/** Every scored period for one type, oldest first. */
-export async function scoredDays(
-  userId: string,
-  typeKeys: string[],
-): Promise<{ typeKey: string; periodStart: string; passed: boolean }[]> {
-  if (typeKeys.length === 0) return [];
-  return db
-    .select({
-      typeKey: activityScores.typeKey,
-      periodStart: activityScores.periodStart,
-      passed: activityScores.passed,
-    })
-    .from(activityScores)
-    .where(
-      and(eq(activityScores.userId, userId), inArray(activityScores.typeKey, typeKeys)),
-    )
-    .orderBy(activityScores.periodStart);
 }

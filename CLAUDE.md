@@ -266,6 +266,12 @@ then `bun run local` in another terminal. In CI the `browser` job starts a DEV
 server, not a built one, because LOCAL_MODE is gated on `NODE_ENV` not being
 "production" and `next start` sets exactly that.
 
+**Never `bun run build` while `bun run local` is running.** Both write `.next`,
+and the build pulls it out from under the dev server: every route then 500s and
+the browser suite fails thirteen checks with hundreds of page errors, which
+reads exactly like the change under test having broken the app. Stop the server,
+`rm -rf .next`, start it again.
+
 **Reseed after `bun run browser`.** Its pause suite scrubs the preview clock
 into a future trip, and every read on a scrubbed page closes periods, so the
 derived tables come out carrying days that have not happened. `verify` reports

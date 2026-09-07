@@ -86,14 +86,3 @@ export async function publishNotice(body: string, adminId: string): Promise<stri
     .returning({ id: notices.id });
   return row.id;
 }
-
-/**
- * Retire a notice that has served its purpose. Acknowledgements are kept: they
- * are a record of who saw it, not a to-do list.
- */
-export async function retireNotice(noticeId: string): Promise<void> {
-  await db
-    .update(notices)
-    .set({ retiredAt: new Date() })
-    .where(and(eq(notices.id, noticeId), isNull(notices.retiredAt)));
-}

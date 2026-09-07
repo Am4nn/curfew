@@ -176,12 +176,3 @@ export async function banUser(input: {
     payload: { target: input.userId, reason: input.reason.trim() },
   });
 }
-
-/** Reports raised about one person, for the admin user detail. */
-export async function reportsAbout(userId: string): Promise<number> {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(reports)
-    .where(eq(reports.subjectId, userId));
-  return row?.n ?? 0;
-}

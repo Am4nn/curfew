@@ -742,19 +742,6 @@ export async function runScoring(
   return result;
 }
 
-export async function runVerify(
-  adminId: string,
-  opts: { from?: string; to?: string } = {},
-): Promise<Drift[]> {
-  const drift = await verifyAll(opts);
-  await recordEvent({
-    userId: adminId,
-    type: "admin.verify.ran",
-    payload: { from: opts.from ?? null, to: opts.to ?? null, drift: drift.length },
-  });
-  return drift;
-}
-
 /**
  * Rewrites activity_scores, activity_outcomes and reputation_daily for the
  * given range, from events. Never writes ledger_entries (fines:false skips

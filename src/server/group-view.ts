@@ -5,7 +5,6 @@ import {
   groups,
   groupMembers,
   users,
-  activityScores,
   activityOutcomes,
   reputationDaily,
   evidence,
@@ -452,24 +451,6 @@ export async function groupEvidence(
     });
   }
   return out;
-}
-
-/** How many periods this member has been scored on here, for the empty states. */
-export async function hasHistory(groupId: string): Promise<boolean> {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(activityOutcomes)
-    .where(eq(activityOutcomes.groupId, groupId));
-  return (row?.n ?? 0) > 0;
-}
-
-/** A member's own scored periods, for the group stats empty state. */
-export async function scoredPeriods(userId: string): Promise<number> {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(activityScores)
-    .where(eq(activityScores.userId, userId));
-  return row?.n ?? 0;
 }
 
 export interface GroupDebt {

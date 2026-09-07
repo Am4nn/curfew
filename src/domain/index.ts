@@ -173,7 +173,6 @@ export {
   readingConfigSchema,
   READING_STEP,
   type ReadingConfig,
-  type ReadingUnit,
 } from "./reading";
 export { screenActivity, screenConfigSchema, SCREEN_STEP, type ScreenConfig } from "./screen";
 export { nightfastActivity } from "./nightfast";

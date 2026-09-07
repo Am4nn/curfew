@@ -6,12 +6,9 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import {
   createGroup,
   inviteToGroup,
-  acceptInvite,
   declineInvite,
   dismissInvite,
   leaveGroup,
-  revokeInvite,
-  makeOwner,
 } from "@/server/groups";
 import type { FormState } from "./ui";
 import { field, trimmed } from "@/lib/form";
@@ -65,34 +62,6 @@ export async function inviteAction(
   }
 }
 
-export async function acceptInviteAction(
-  _state: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  try {
-    const user = await approvedUser();
-    await acceptInvite(field(formData, "inviteId"), user.id, user.email);
-    revalidatePath("/");
-    return { ok: true };
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Could not accept the invite." };
-  }
-}
-
-export async function declineInviteAction(
-  _state: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  try {
-    const user = await approvedUser();
-    await declineInvite(field(formData, "inviteId"), user.email);
-    revalidatePath("/");
-    return { ok: true };
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Could not decline the invite." };
-  }
-}
-
 // The invite card's three controls. Accept is a link to the join screen, so it
 // needs no action. These two are promises that throw rather than FormStates,
 // which is what the shared client component wants; the FormState versions above
@@ -131,36 +100,4 @@ export async function leaveGroupAction(
   // must sit outside the try/catch above.
   revalidatePath("/");
   redirect("/");
-}
-
-export async function makeOwnerAction(
-  _state: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  try {
-    const user = await approvedUser();
-    const groupId = field(formData, "groupId");
-    const targetUserId = field(formData, "targetUserId");
-    await makeOwner(groupId, user.id, targetUserId);
-    revalidatePath(`/group/${groupId}`);
-    return { ok: true };
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Could not update ownership." };
-  }
-}
-
-export async function revokeInviteAction(
-  _state: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  try {
-    const user = await approvedUser();
-    const inviteId = field(formData, "inviteId");
-    const groupId = field(formData, "groupId");
-    await revokeInvite(inviteId, user.id);
-    revalidatePath(`/group/${groupId}`);
-    return { ok: true };
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Could not revoke the invite." };
-  }
 }

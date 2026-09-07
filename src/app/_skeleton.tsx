@@ -104,13 +104,3 @@ export function InnerSkeleton({
     </div>
   );
 }
-
-/** The default body: a label, a few rows. Used where nothing more is known. */
-export function ListSkeleton({ rows = 5 }: { rows?: number }) {
-  return (
-    <>
-      <LabelBar />
-      <RowsSkeleton n={rows} />
-    </>
-  );
-}

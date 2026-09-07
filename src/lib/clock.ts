@@ -52,5 +52,3 @@ export async function now(): Promise<Date> {
 export async function nowUTC(): Promise<DateTime> {
   return DateTime.fromJSDate(await now(), { zone: "utc" });
 }
-
-export const MOCK_NOW_COOKIE = COOKIE;

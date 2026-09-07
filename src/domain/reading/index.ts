@@ -11,8 +11,6 @@ import { thresholdPass, sumField } from "../pass";
 export const READING_STEP = "session";
 
 export const readingUnitSchema = z.enum(["minutes", "pages"]);
-export type ReadingUnit = z.infer<typeof readingUnitSchema>;
-
 export const readingConfigSchema = z
   .object({
     unit: readingUnitSchema,

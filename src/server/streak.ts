@@ -394,31 +394,6 @@ export async function bumpStreak(
 }
 
 /**
- * Close whatever activity-days have ended since this type was last accounted
- * for. Called once a request by `closeOutstanding`, after the scoring pass has
- * written the periods this reads.
- *
- * It rebuilds rather than stepping forward day by day, and that is a
- * considered choice. A weekly streak is judged at week end against days spread
- * through the week, so stepping forward from a mid-week boundary would have to
- * carry the week's partial state and the grace it might spend, which is the
- * same walk `streakOver` already does correctly in one place. Rebuilding reads
- * two tables for one type and runs at most once per activity-day per type,
- * because `closedThrough` says when there is nothing to do. Duplicating the
- * walk to save that would be trading a correct number for a cheaper one.
- */
-export async function closeStreak(userId: string, typeKey: string): Promise<void> {
-  const activity = await getUserActivity(userId, typeKey);
-  if (!activity) return;
-  const [stored, scoredThrough] = await Promise.all([
-    readStreak(userId, typeKey),
-    scoredThroughFor(userId).then((m) => m.get(typeKey) ?? null),
-  ]);
-  if (!needsClosing(stored, scoredThrough)) return;
-  await rebuildStreak(userId, typeKey);
-}
-
-/**
  * Has anything closed since this type was last accounted for?
  *
  * `closedThrough` is what makes the close idempotent: nothing new means nothing

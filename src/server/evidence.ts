@@ -41,8 +41,6 @@ export const uploadRequestSchema = z
   })
   .strict();
 
-export type UploadRequest = z.infer<typeof uploadRequestSchema>;
-
 export type UploadTicket =
   | { ok: true; url: string; objectKey: string; expiresIn: number }
   | { ok: false; reason: string; message: string };

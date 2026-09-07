@@ -2,7 +2,7 @@ import { unstable_cache, revalidateTag } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { appSettings, activityTypes, groupSettings } from "@/db/schema";
-import { resolveAt, resolveMoney, getActivityType, registeredKeys } from "@/domain";
+import { resolveAt, resolveMoney, registeredKeys } from "@/domain";
 
 // The one cached read (decision 68).
 //
@@ -152,24 +152,6 @@ export async function resolveAppSettingAt(
   return resolveAt(rows, instant)?.value ?? DEFAULTS[key];
 }
 
-/** A per-group override as it stood at `instant`, or null if never set. */
-export async function resolveGroupSettingAt(
-  groupId: string,
-  key: string,
-  instant: Date,
-): Promise<unknown> {
-  const rows = await db
-    .select({
-      id: groupSettings.id,
-      value: groupSettings.value,
-      effectiveAt: groupSettings.effectiveAt,
-    })
-    .from(groupSettings)
-    .where(and(eq(groupSettings.groupId, groupId), eq(groupSettings.key, key)));
-
-  return resolveAt(rows, instant)?.value ?? null;
-}
-
 /**
  * Whether a group tracks money for a period that closed at `instant`, in the
  * order app-wide, admin override, owner toggle (decision 66).
@@ -222,13 +204,4 @@ export async function moneyOnAsOf(
       ownerToggle,
     });
   };
-}
-
-/**
- * A type the catalog may offer. Reads the cached config, so this is the
- * interface path and never the scoring one.
- */
-export async function offeredTypes() {
-  const { enabledTypes } = await getAppConfig();
-  return enabledTypes.map((key) => getActivityType(key));
 }

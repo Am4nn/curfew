@@ -24,36 +24,6 @@ export {
   type ButtonSize,
 } from "./button-style";
 
-export function Button({
-  children,
-  variant = "secondary",
-  size = "lg",
-  full,
-  pending,
-  pendingLabel,
-  className,
-  disabled,
-  ...rest
-}: {
-  children: React.ReactNode;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  full?: boolean;
-  pending?: boolean;
-  pendingLabel?: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      {...rest}
-      disabled={disabled || pending}
-      aria-busy={pending || undefined}
-      className={buttonClass(variant, size, [full ? "w-full" : "", className ?? ""].join(" "))}
-    >
-      {pending ? (pendingLabel ?? children) : children}
-    </button>
-  );
-}
-
 // Submit button that reflects the form's pending state: disabled and relabelled
 // while the server action runs, so every action gives feedback. Callers that
 // pass `className` keep their own styling; the rest get the house one.
@@ -125,49 +95,6 @@ export function useServerAction(): {
   );
 
   return { run, pending, error, clearError: () => setError(null) };
-}
-
-/**
- * A button that calls the server and reports on itself. Press it and it
- * disables, relabels, refreshes when the action lands, and renders the failure
- * underneath. The caller supplies the async function and nothing else.
- *
- * Use this for one-off actions. A group of controls that share one pending
- * state (a settings screen, a row of chips) should take `useServerAction()`
- * once and pass `pending` down instead.
- */
-export function ActionButton({
-  action,
-  children,
-  pendingLabel,
-  onDone,
-  ...rest
-}: {
-  action: () => Promise<void>;
-  children: React.ReactNode;
-  pendingLabel?: string;
-  /** Called after the action resolves, for closing a menu or clearing a draft. */
-  onDone?: () => void;
-} & Omit<React.ComponentProps<typeof Button>, "pending" | "onClick">) {
-  const { run, pending, error } = useServerAction();
-  return (
-    <span className="flex flex-col gap-2">
-      <Button
-        {...rest}
-        pending={pending}
-        pendingLabel={pendingLabel}
-        onClick={() =>
-          run(async () => {
-            await action();
-            onDone?.();
-          })
-        }
-      >
-        {children}
-      </Button>
-      {error ? <span className="text-[11.5px] text-penalty">{error}</span> : null}
-    </span>
-  );
 }
 
 /**

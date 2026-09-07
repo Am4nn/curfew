@@ -42,6 +42,24 @@ day it is supposed to have reached.
 
 `activeMembersOn` in `src/server/sharing.ts` had no callers.
 
+Swept again 2026-09-07, properly: every exported name in `src/` counted against
+every reference in `src/` and `scripts/`, with Next's file-based entry points
+excluded and barrel re-exports not counted as uses. Thirty-two exports were
+reachable from nothing, in two waves, because deleting the first wave orphaned
+the second. 380 lines gone. Nothing imports a source file that is not a test,
+and the count is now zero.
+
+The one that mattered was `closeStreak`, the per-type streak close, sitting
+beside the live `closeStreaks` and reading exactly like the thing that runs.
+
+**Two of them were not dead code so much as an unbuilt feature**, and that is
+worth keeping separate. `makeOwner` and `revokeInvite` in `src/server/groups.ts`
+were written, tested by nothing, wired to server actions that no screen
+imported, and `listGroupPendingInvites` beside them. So a group's owner cannot
+hand the group on, and nobody can cancel an invite they sent. `SCREENS.md` has
+no mock for either, so this is a gap in the design rather than a regression: the
+server halves are deleted, and if the feature is wanted it starts with a screen.
+
 ### 1.6 Timezone was resolved once and applied to all history — FIXED
 
 `recomputeUser` resolved the member's zone for today and replayed every past

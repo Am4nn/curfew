@@ -260,8 +260,6 @@ export const checkinInputSchema = z
   })
   .strict();
 
-export type CheckinInput = z.infer<typeof checkinInputSchema>;
-
 export type CheckinFailure =
   | "untracked"
   | "unscheduled"

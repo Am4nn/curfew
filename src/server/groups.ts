@@ -200,37 +200,6 @@ export async function leaveGroup(groupId: string, userId: string): Promise<void>
     );
 }
 
-// Promote another active member to owner. Owner-only. The group can then have
-// several owners; each controls the rules and can leave while another remains.
-export async function makeOwner(
-  groupId: string,
-  byUserId: string,
-  targetUserId: string,
-): Promise<void> {
-  const active = await db
-    .select({ userId: groupMembers.userId, role: groupMembers.role })
-    .from(groupMembers)
-    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)));
-
-  if (active.find((m) => m.userId === byUserId)?.role !== "owner") {
-    throw new Error("Only an owner can add another owner.");
-  }
-  const target = active.find((m) => m.userId === targetUserId);
-  if (!target) throw new Error("That person is not a member of this group.");
-  if (target.role === "owner") return; // already an owner
-
-  await db
-    .update(groupMembers)
-    .set({ role: "owner" })
-    .where(
-      and(
-        eq(groupMembers.groupId, groupId),
-        eq(groupMembers.userId, targetUserId),
-        isNull(groupMembers.leftAt),
-      ),
-    );
-}
-
 export interface UserGroup {
   groupId: string;
   name: string;
@@ -298,69 +267,6 @@ export async function dismissInvite(inviteId: string, userEmail: string): Promis
   await db
     .update(groupInvites)
     .set({ dismissedAt: new Date() })
-    .where(eq(groupInvites.id, inviteId));
-}
-
-export async function getGroupName(groupId: string): Promise<string | null> {
-  const [g] = await db.select({ name: groups.name }).from(groups).where(eq(groups.id, groupId));
-  return g?.name ?? null;
-}
-
-export interface MemberDetail {
-  userId: string;
-  name: string;
-  role: string;
-  joinedAt: string;
-  leftAt: string | null;
-}
-
-// Every membership row for the group, including people who have left (their
-// history and balance survive). Ordered active-first, then by name.
-export async function listGroupMembersDetailed(groupId: string): Promise<MemberDetail[]> {
-  const rows = await db
-    .select({
-      userId: users.id,
-      name: users.name,
-      role: groupMembers.role,
-      joinedAt: groupMembers.joinedAt,
-      leftAt: groupMembers.leftAt,
-    })
-    .from(groupMembers)
-    .innerJoin(users, eq(users.id, groupMembers.userId))
-    .where(eq(groupMembers.groupId, groupId));
-  return rows.sort((a, b) => {
-    if ((a.leftAt === null) !== (b.leftAt === null)) return a.leftAt === null ? -1 : 1;
-    return a.name.localeCompare(b.name);
-  });
-}
-
-export async function listGroupPendingInvites(
-  groupId: string,
-): Promise<{ id: string; email: string }[]> {
-  return db
-    .select({ id: groupInvites.id, email: groupInvites.email })
-    .from(groupInvites)
-    .where(and(eq(groupInvites.groupId, groupId), eq(groupInvites.status, "pending")));
-}
-
-// Owner-only: withdraw a pending invite.
-export async function revokeInvite(inviteId: string, byUserId: string): Promise<void> {
-  const [inv] = await db.select().from(groupInvites).where(eq(groupInvites.id, inviteId));
-  if (!inv || inv.status !== "pending") return;
-  const [m] = await db
-    .select({ role: groupMembers.role })
-    .from(groupMembers)
-    .where(
-      and(
-        eq(groupMembers.groupId, inv.groupId),
-        eq(groupMembers.userId, byUserId),
-        isNull(groupMembers.leftAt),
-      ),
-    );
-  if (m?.role !== "owner") throw new Error("only the group owner can revoke invites");
-  await db
-    .update(groupInvites)
-    .set({ status: "revoked", respondedAt: new Date() })
     .where(eq(groupInvites.id, inviteId));
 }
 

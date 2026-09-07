@@ -122,28 +122,6 @@ export async function sharesAsOf(
   };
 }
 
-/**
- * Breadth: types shared over types accepted, on a given day.
- *
- * This is the reputation ceiling's whole input (REPUTATION.md). A group that
- * accepts nothing gives breadth 1 rather than dividing by zero: there is
- * nothing to be narrow about.
- */
-export async function breadthFor(
-  groupId: string,
-  userId: string,
-  asOf: Date = new Date(),
-): Promise<number> {
-  const [accepted, shares] = await Promise.all([
-    acceptedTypes(groupId, asOf),
-    sharesFor(groupId, userId, asOf),
-  ]);
-  if (accepted.length === 0) return 1;
-  const sharedKeys = new Set(shares.filter((s) => s.shared).map((s) => s.typeKey));
-  const counted = accepted.filter((a) => sharedKeys.has(a.typeKey)).length;
-  return counted / accepted.length;
-}
-
 /** Set one member's two toggles. Append-only, immediate. */
 export async function setShare(input: {
   groupId: string;

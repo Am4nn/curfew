@@ -15,7 +15,7 @@ function minor(text, label) {
   return found ? Math.round(Number(found[1].replaceAll(",", "")) * 100) : null;
 }
 
-export async function balances({ open, check, page, body }) {
+export async function balances({ open, check, page, until }) {
   let text = await open("/balances");
 
   if (text.includes("You are settled in every group.")) {
@@ -42,11 +42,13 @@ export async function balances({ open, check, page, body }) {
 
   await amount.fill(ONE);
   await settleButton.click();
-  await page.waitForTimeout(2500);
 
-  text = await body();
-  const cards = text.split("YOU OWE")[1] ?? text;
-  const owedAfter = minor(cards, "₹");
+  // Wait for the number to move rather than for a fixed 2.5 seconds. The debt
+  // is re-read from the server after the action lands, and reading it too early
+  // reported a settlement that had gone through as one that had not.
+  const owed = (page) => minor(page.split("YOU OWE")[1] ?? page, "₹");
+  text = await until((t) => owed(t) !== owedBefore);
+  const owedAfter = owed(text);
   check(
     "settling one rupee takes one rupee off the debt",
     owedBefore !== null && owedAfter !== null && owedBefore - owedAfter === 100,

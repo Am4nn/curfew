@@ -72,15 +72,32 @@ if (!reachable) {
 const browser = await chromium.launch();
 const context = await browser.newContext();
 const page = await context.newPage();
-page.on("pageerror", (e) => errors.push(String(e)));
+/**
+ * Console noise the dev server makes that is not the app failing.
+ *
+ * A failed asset fetch: the dev server recompiles a route on first hit and can
+ * drop the connection while it does, which showed up here as five
+ * ERR_CONNECTION_RESET lines and four 404s on chunks that existed a second
+ * later. Counting those made the suite fail about one run in three.
+ *
+ * And `frame.join is not a function`, which is Next's own error REPORTER
+ * failing. It is thrown inside `buildFakeCallStack` while the client
+ * reconstructs a server error's stack for the dev overlay, so what reaches the
+ * console is the handler's error rather than the error it was handling, and
+ * there is nothing in it to act on. Ignoring it is only safe because `open`
+ * refuses the error boundary by name: a route that actually threw now stops the
+ * suite and says which one, which is the signal this line used to stand in for
+ * badly.
+ */
+const NOISE = [/^Failed to load resource/, /frame\.join is not a function/];
+const isNoise = (text) => NOISE.some((p) => p.test(text));
+
+page.on("pageerror", (e) => {
+  if (!isNoise(String(e))) errors.push(String(e));
+});
 page.on("console", (m) => {
-  // An uncaught exception is a defect. A failed asset fetch is not: the dev
-  // server recompiles a route on first hit and can drop the connection while
-  // it does, which showed up here as five ERR_CONNECTION_RESET lines and four
-  // 404s on chunks that existed a second later. Counting those made the suite
-  // fail about one run in three for a reason that was never the app.
   if (m.type() !== "error") return;
-  if (m.text().startsWith("Failed to load resource")) return;
+  if (isNoise(m.text())) return;
   errors.push(m.text());
 });
 
@@ -92,17 +109,42 @@ page.on("console", (m) => {
  * fails twice, so the retry cannot hide one.
  */
 async function open(route) {
+  let text;
   for (let attempt = 0; ; attempt += 1) {
     try {
       await page.goto(BASE + route, { waitUntil: "domcontentloaded", timeout: 120000 });
-      break;
+      await page.waitForTimeout(1200);
+      text = await page.locator("body").innerText();
     } catch (e) {
       if (attempt >= 1) throw e;
       await page.waitForTimeout(2000);
+      continue;
     }
+
+    // The screen that is not the screen. `_route-error.tsx` renders inside the
+    // layout and with a 200, so a route that threw still carries its heading
+    // and its nav, and an assertion looking for either passes against a page
+    // that did not load. CI reported "ok /activities renders" over the error
+    // boundary for exactly this reason, and the only thing that gave it away
+    // was a console error Next had failed to serialise properly.
+    //
+    // Retried once, on the same reasoning as the navigation above: the dev
+    // server compiling a route for the first time can throw once and serve it
+    // correctly a moment later. A route that is actually broken renders the
+    // boundary twice, and then this stops the suite by name rather than
+    // letting a green tick stand over it.
+    if (text.includes("This did not load")) {
+      if (attempt >= 1) {
+        throw new Error(
+          `${route} rendered the error boundary twice. Something threw on the server; the dev server's own log says what.`,
+        );
+      }
+      await page.waitForTimeout(2000);
+      continue;
+    }
+    break;
   }
-  await page.waitForTimeout(1200);
-  const text = await page.locator("body").innerText();
+
   if (text.includes("waiting for an admin to approve")) {
     throw new Error(
       `${route} showed the pending-approval screen. The database is empty: run bun run local:seed.`,
@@ -113,6 +155,30 @@ async function open(route) {
 
 const body = () => page.locator("body").innerText();
 
+/**
+ * Wait until the page says something, and hand back what it says.
+ *
+ * The suite used to act, sleep a fixed 2.5 seconds, then read once. That is
+ * long enough on a warm machine and not always long enough on a CI runner
+ * compiling the route it just navigated to, so checks failed for a reason that
+ * was never the app: a pause declaration that had landed, read a moment before
+ * the screen caught up. Polling costs nothing when the page is already right,
+ * and the timeout is what makes a genuine failure still fail.
+ *
+ * Returns the body either way, so the caller's assertion prints what was
+ * actually on screen when it gave up.
+ */
+async function until(predicate, timeout = 25000) {
+  const deadline = Date.now() + timeout;
+  let text = await body();
+  while (Date.now() < deadline) {
+    if (predicate(text)) return text;
+    await page.waitForTimeout(250);
+    text = await body();
+  }
+  return text;
+}
+
 /** The preview clock, which is the only way to stand inside a future pause. */
 async function setClock(iso) {
   await context.addCookies([{ name: "mock_now", value: encodeURIComponent(iso), url: BASE }]);
@@ -121,7 +187,7 @@ async function clearClock() {
   await context.clearCookies();
 }
 
-const ctx = { page, context, BASE, check, open, body, setClock, clearClock, errors };
+const ctx = { page, context, BASE, check, open, body, until, setClock, clearClock, errors };
 
 try {
   for (const [name, run] of SUITES) {

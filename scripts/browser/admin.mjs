@@ -9,7 +9,7 @@
 // Everything here is put back. The retention control moves by one day and
 // returns, and Rebuild is idempotent by construction: it recomputes from events
 // and writes the same rows.
-export async function admin({ open, check, page, body }) {
+export async function admin({ open, check, page, body, until }) {
   for (const [route, phrase] of [
     ["/admin", "ADMIN"],
     ["/admin/users", null],
@@ -34,15 +34,17 @@ export async function admin({ open, check, page, body }) {
   if (before === undefined) return;
 
   await page.getByRole("button", { name: "More days" }).click();
-  await page.waitForTimeout(400);
-  check("changing a control offers to save rather than saving", (await body()).includes("unsaved"));
+  check(
+    "changing a control offers to save rather than saving",
+    (await until((t) => t.includes("unsaved"))).includes("unsaved"),
+  );
 
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await page.waitForTimeout(500);
-  check("saving asks first, with the consequence", (await body()).includes("Save 1 change?"), (await body()).slice(0, 120));
+  const sheet = await until((t) => t.includes("Save 1 change?"));
+  check("saving asks first, with the consequence", sheet.includes("Save 1 change?"), sheet.slice(0, 120));
 
   await page.getByRole("button", { name: "Save changes" }).click();
-  await page.waitForTimeout(2500);
+  await until((t) => !t.includes("Save 1 change?"));
 
   text = await open("/admin/controls");
   const after = /(\d+) days/.exec(text)?.[1];
@@ -54,11 +56,11 @@ export async function admin({ open, check, page, body }) {
 
   // And back, so the fixture is where it was found.
   await page.getByRole("button", { name: "Fewer days" }).click();
-  await page.waitForTimeout(400);
+  await until((t) => t.includes("unsaved"));
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await page.waitForTimeout(500);
+  await until((t) => t.includes("Save 1 change?"));
   await page.getByRole("button", { name: "Save changes" }).click();
-  await page.waitForTimeout(2500);
+  await until((t) => !t.includes("Save 1 change?"));
   text = await open("/admin/controls");
   check(
     "and put it back",
@@ -69,7 +71,18 @@ export async function admin({ open, check, page, body }) {
   // -- the two Ops primitives -------------------------------------------------
   await open("/admin/ops");
   await page.getByRole("button", { name: "Rebuild" }).click();
-  await page.waitForTimeout(4000);
+  // A rebuild replays every user, so how long it takes depends on the fixture
+  // and on the machine. `SubmitButton` disables itself for the duration, so the
+  // button coming back is the job finishing, and waiting for that is neither a
+  // guess nor a ceiling somebody has to raise later.
+  await page.waitForFunction(
+    () =>
+      [...document.querySelectorAll("button")].some(
+        (b) => /rebuild/i.test(b.textContent ?? "") && !b.disabled,
+      ),
+    null,
+    { timeout: 120000 },
+  );
   text = await body();
   check("Rebuild runs and comes back", !text.includes("Something failed"), text.slice(0, 90));
 

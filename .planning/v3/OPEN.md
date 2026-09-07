@@ -461,6 +461,41 @@ day in between. Both are fixed. The lesson is the same as the other four, with
 the sign flipped: a check that goes red for a reason that sounds like the app
 is worth suspecting too, and this one was right.
 
+A sixth, and the worst of them, 2026-09-07. CI reported
+
+```
+ok    /activities renders  ACTIVITIES This did not load. Nothing was changed.
+```
+
+`_route-error.tsx` renders inside the layout and with a 200, so a route that
+threw still carries its heading and its nav. The check looked for the heading,
+found it, and went green over a screen that had not loaded. The only thing that
+gave it away was a console error, and that error was Next failing to serialise
+the real one, so what the run actually reported was the error handler's error.
+
+Three things came out of it. `open` refuses the error boundary by name, the way
+it already refuses the pending-approval screen, and retries once first because a
+dev server compiling a route can throw once and serve it correctly a moment
+later. CI prints the dev server's log when the browser job fails, which it never
+did, so a route that throws in CI and renders locally could not be diagnosed at
+all. And the suite stopped sleeping: it acted, waited a fixed 2.5 seconds and
+read once, which is long enough on a warm machine and not always long enough on
+a CI runner. That is what the pause suite's "declaring lands on the declared
+state" was failing on, and it fails nowhere now that every post-action read
+polls for what it expects by name.
+
+The `/activities` throw itself was not reproducible: the same commit re-run
+rendered it correctly, and it renders on a from-empty database locally. It is
+still unexplained, and the guard is what makes the next occurrence say so
+loudly instead of passing.
+
+`frame.join is not a function` is now filtered as noise alongside the failed
+asset fetches, which is a deliberate trade and not a shrug. It is thrown inside
+Next's `buildFakeCallStack`, so the console gets the error handler's error
+rather than the error it was handling, and there is nothing in it to act on. It
+is only safe to ignore because the boundary guard above catches the thing it
+used to stand in for, and catches it by name.
+
 The pattern is the same each time: a test that passes because it is looking at
 the wrong thing, and only says so when something else changes. Worth suspecting
 first the next time a check goes red for a reason that sounds like the app.

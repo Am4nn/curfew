@@ -357,6 +357,15 @@ jobs:
       - name: Every screen, and the forms on them
         run: bun run browser
 
+      # The suite says a screen failed; only the server knows why. Without this
+      # the dev server's log is written to /tmp and thrown away with the runner,
+      # so a route that threw in CI and renders locally cannot be diagnosed at
+      # all. Printed on failure only, and `if: failure()` rather than `always()`
+      # so a green run stays short.
+      - name: What the server said
+        if: failure()
+        run: tail -200 /tmp/next.log
+
       # With a server up, the ten checks that skip themselves in the other job
       # actually run: signed-out routes, somebody else's group over HTTP, and
       # the positive control that proves the detector works.

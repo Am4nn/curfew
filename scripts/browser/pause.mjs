@@ -13,7 +13,7 @@ import { DateTime } from "luxon";
 
 const TZ = "Asia/Kolkata";
 
-export async function pause({ open, check, page, body, setClock, clearClock }) {
+export async function pause({ open, check, page, body, until, setClock, clearClock }) {
   const today = DateTime.now().setZone(TZ).startOf("day");
   const from = today.plus({ days: 1 });
   const to = today.plus({ days: 4 });
@@ -25,8 +25,7 @@ export async function pause({ open, check, page, body, setClock, clearClock }) {
   for (const label of ["Call it off", "Come back early"]) {
     if (text.includes(label)) {
       await page.getByRole("button", { name: label }).click();
-      await page.waitForTimeout(2500);
-      text = await body();
+      text = await until((t) => t.includes("WHAT IT COSTS"));
     }
   }
 
@@ -35,7 +34,7 @@ export async function pause({ open, check, page, body, setClock, clearClock }) {
   check("and says what it takes", text.includes("Every streak ends at 0."));
 
   await declare(page, from, to);
-  text = await body();
+  text = await until((t) => t.includes("DECLARED"));
   check("declaring lands on the declared state", text.includes("DECLARED"), text.slice(0, 120));
 
   text = await open("/");
@@ -44,17 +43,21 @@ export async function pause({ open, check, page, body, setClock, clearClock }) {
   // --- the two refusals, through the same form a person uses ----------------
   await open("/settings/pause");
   await page.getByRole("button", { name: "Call it off" }).click();
-  await page.waitForTimeout(2500);
-  check("calling off a pause that never started removes it", (await body()).includes("WHAT IT COSTS"));
+  check(
+    "calling off a pause that never started removes it",
+    (await until((t) => t.includes("WHAT IT COSTS"))).includes("WHAT IT COSTS"),
+  );
 
   await declare(page, from, from.plus({ days: 1 }));
-  check("two days is refused", (await body()).includes("3 days or more"), (await body()).slice(0, 200));
+  text = await until((t) => t.includes("3 days or more"));
+  check("two days is refused", text.includes("3 days or more"), text.slice(0, 200));
 
   await declare(page, today.minus({ days: 2 }), today.plus({ days: 2 }));
+  text = await until((t) => t.includes("tomorrow at the earliest"));
   check(
     "a pause over days already lived is refused",
-    (await body()).includes("tomorrow at the earliest"),
-    (await body()).slice(0, 200),
+    text.includes("tomorrow at the earliest"),
+    text.slice(0, 200),
   );
 
   // --- standing inside one --------------------------------------------------
@@ -102,8 +105,7 @@ export async function pause({ open, check, page, body, setClock, clearClock }) {
   // --- coming home early ----------------------------------------------------
   await open("/settings/pause");
   await page.getByRole("button", { name: "Come back early" }).click();
-  await page.waitForTimeout(2500);
-  text = await body();
+  text = await until((t) => t.includes("1 day left"));
   check(
     "coming back early ends it from tomorrow",
     text.includes("PAUSED") && text.includes("1 day left"),
@@ -114,14 +116,22 @@ export async function pause({ open, check, page, body, setClock, clearClock }) {
   await open("/settings/pause");
   if ((await body()).includes("Come back early")) {
     await page.getByRole("button", { name: "Come back early" }).click();
-    await page.waitForTimeout(2500);
+    await until((t) => !t.includes("Come back early"));
   }
   await clearClock();
 }
 
+/**
+ * Fill the form and press Declare. Nothing more.
+ *
+ * What the press should produce is the caller's business, and the caller waits
+ * for it by name with `until`. Waiting here for "the screen changed" was the
+ * obvious shortcut and the wrong one: it fires on the first repaint after the
+ * click, which can beat the answer onto the screen, and the check then reads a
+ * page that has not finished saying anything.
+ */
 async function declare(page, from, to) {
   await page.locator('input[name="from"]').fill(from.toFormat("yyyy-MM-dd"));
   await page.locator('input[name="to"]').fill(to.toFormat("yyyy-MM-dd"));
   await page.getByRole("button", { name: "Declare" }).click();
-  await page.waitForTimeout(2500);
 }

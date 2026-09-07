@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { and, eq, gte, inArray, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { groupMembers, userPauses } from "@/db/schema";
-import { resolveUserTimezone, userDay } from "./config";
+import { timezoneHistory, userDay } from "./config";
 import { now } from "@/lib/clock";
 
 // A declared absence.
@@ -190,10 +190,7 @@ export const pausesIn = cache(
     for (const [userId, list] of byUser) {
       // Each member's own zone: "today" is not the same instant for two people
       // in the same group.
-      const timezone = await resolveUserTimezone(
-        userId,
-        instant.toISOString().slice(0, 10),
-      );
+      const timezone = (await timezoneHistory(userId)).at(instant);
       const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));
       const live = reduceRows(list).filter((p) => p.endsOn >= today);
       if (live[0]) out.set(userId, live[0]);

@@ -6,7 +6,7 @@ import { getActivityType, graceMonth, type ChartSpec } from "@/domain";
 import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
 import { closeOutstanding } from "./scoring";
-import { resolveUserTimezone } from "./config";
+import { timezoneHistory } from "./config";
 import { pausedDaysIn, pausesFor } from "./pause";
 import { now } from "@/lib/clock";
 
@@ -50,10 +50,7 @@ export async function overviewFor(userId: string): Promise<Overview> {
   await closeOutstanding(userId);
 
   const instant = await now();
-  const timezone = await resolveUserTimezone(
-    userId,
-    instant.toISOString().slice(0, 10),
-  );
+  const timezone = (await timezoneHistory(userId)).at(instant);
   const today = DateTime.fromJSDate(instant, { zone: timezone });
   const monthStart = today.startOf("month");
   const from = today.minus({ days: 55 }).toFormat("yyyy-MM-dd");
@@ -212,10 +209,7 @@ export async function chartFor(
   if (!mine) return null;
 
   const instant = await now();
-  const timezone = await resolveUserTimezone(
-    userId,
-    instant.toISOString().slice(0, 10),
-  );
+  const timezone = (await timezoneHistory(userId)).at(instant);
   const today = DateTime.fromJSDate(instant, { zone: timezone });
   const type = getActivityType(typeKey);
   // A weekly period needs a longer window to draw the same number of bars: ten

@@ -35,7 +35,9 @@ import {
   events,
 } from "@/db/schema";
 import { setInitialTimezone, updateTimezone, updateSleepWindows } from "@/server/settings";
+import { getCheckinState, performCheckin } from "@/server/checkin";
 import { userDay } from "@/server/config";
+import { WATER_STEP } from "@/domain";
 import { scoreUser } from "@/server/scoring";
 import { recomputeStreak } from "@/server/streak";
 import { getActivityType } from "@/domain";
@@ -286,6 +288,71 @@ try {
     "and the streak they had is the streak they still have",
     streakBefore?.best === streakAfter?.best,
     `${streakAfter?.best ?? "none"} was ${streakBefore?.best ?? "none"}`,
+  );
+
+  // -------------------------------------------------------------------------
+  // 3. Which day a press made TODAY belongs to
+  // -------------------------------------------------------------------------
+  console.log("\nWHICH DAY A PRESS BELONGS TO");
+
+  // The case the first section fixed for writes, asked of reads. A member's
+  // first zone is dated from their own today, and east of Greenwich that is a
+  // date UTC has not reached, so a lookup keyed on the UTC day cannot see the
+  // row that is in force. Everything downstream is then computed in the seeded
+  // default: the wrong windows on the board, and a press filed under the wrong
+  // day.
+  const presser = await person("press");
+  setClock(new Date("2026-03-10T12:00:00Z"));
+  await setInitialTimezone(presser, "Pacific/Kiritimati");
+  check(
+    "the member is a day ahead of UTC",
+    (await userDay(presser)) === "2026-03-11",
+    `${await userDay(presser)} while UTC is 2026-03-10`,
+  );
+
+  const water = getActivityType("water");
+  await db.insert(userActivityConfig).values({
+    userId: presser,
+    typeKey: "water",
+    effectiveFrom: "2026-03-01",
+    config: {
+      schedule: {
+        schedule: water.defaults.schedule,
+        dayBoundary: water.defaults.dayBoundary,
+        grace: 0,
+      },
+      config: water.defaults.config,
+    },
+  });
+  await db.insert(userActivities).values({
+    userId: presser,
+    typeKey: "water",
+    enabled: true,
+    effectiveAt: new Date("2026-03-01T00:00:00+14:00"),
+  });
+
+  const board = await getCheckinState(presser, "water");
+  check(
+    "the check-in board is on the member's day",
+    board?.period === "2026-03-11",
+    `${board?.period ?? "no board"}, and the zone read as ${board?.timezone ?? "none"}`,
+  );
+
+  const press = await performCheckin(presser, null, {
+    typeKey: "water",
+    step: WATER_STEP,
+    idem: `${tag}-press`,
+    evidence: {},
+  });
+  const [filed] = await db
+    .select({ payload: events.payload })
+    .from(events)
+    .where(and(eq(events.userId, presser), eq(events.type, `checkin.water.${WATER_STEP}`)));
+  const filedUnder = (filed?.payload as { period_start?: string } | null)?.period_start;
+  check(
+    "and the press is filed under it",
+    press.ok && filedUnder === "2026-03-11",
+    press.ok ? `filed under ${filedUnder ?? "nothing"}` : `refused: ${press.reason}`,
   );
 } finally {
   setClock(null);

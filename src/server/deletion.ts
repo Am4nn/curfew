@@ -18,6 +18,7 @@ import {
 } from "@/db/schema";
 import { deleteObject } from "./r2";
 import { recordEvent } from "./events";
+import { userDay } from "./config";
 
 // Deleting your data.
 //
@@ -187,9 +188,12 @@ export async function deleteAccount(userId: string): Promise<void> {
 
   // Memberships are marked left rather than removed, so a group's history keeps
   // the fact that somebody was there and what they owe (decision 17).
+  // Their own day, not Greenwich's: a group counts its members by date, and a
+  // deletion at 2 AM in Kolkata dated in UTC marks them gone on a day they had
+  // already finished living.
   await db
     .update(groupMembers)
-    .set({ leftAt: new Date().toISOString().slice(0, 10) })
+    .set({ leftAt: await userDay(userId) })
     .where(and(eq(groupMembers.userId, userId), isNull(groupMembers.leftAt)));
 
   // Detach every remaining event, including logins and admin actions.

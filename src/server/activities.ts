@@ -11,7 +11,7 @@ import {
   type ScheduleConfig,
 } from "@/domain";
 import { getAppConfig } from "./app-config";
-import { resolveUserTimezone } from "./config";
+import { timezoneHistory } from "./config";
 import { now } from "@/lib/clock";
 
 /** A calendar date in a given zone, "yyyy-MM-dd". */
@@ -68,7 +68,11 @@ export const listUserActivities = cache(async function listUserActivities(
   const instant = await now();
   // The user's own date, not UTC. At 23:00 in Kolkata the UTC date is still
   // yesterday, and resolving against it would return yesterday's settings.
-  const timezone = await resolveUserTimezone(userId, isoDate(instant, "utc"));
+  //
+  // Asked of the INSTANT rather than of a date, because the date to look up is
+  // the thing being worked out: reading the UTC one first is what this comment
+  // was written to avoid and what the code underneath it used to do.
+  const timezone = (await timezoneHistory(userId)).at(instant);
   const today = isoDate(instant, timezone);
 
   const [switches, configs] = await Promise.all([
@@ -175,7 +179,7 @@ export async function saveUserActivity(input: SaveActivityInput): Promise<void> 
   // different date from "tomorrow" in UTC, and picking the wrong one would land
   // a change a day early or a day late.
   const at = await now();
-  const timezone = await resolveUserTimezone(input.userId, isoDate(at, "utc"));
+  const timezone = (await timezoneHistory(input.userId)).at(at);
   const today = isoDate(at, timezone);
 
   // A first setup lands TODAY. Invariant 4 future-dates changes so a period

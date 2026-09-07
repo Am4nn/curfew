@@ -18,7 +18,7 @@ import {
   daysDoneIn,
 } from "@/domain";
 import { getUserActivity } from "./activities";
-import { resolveUserTimezone } from "./config";
+import { timezoneHistory } from "./config";
 import { isPausedToday } from "./pause";
 import { recordEvent } from "./events";
 import { rateLimit } from "./ratelimit";
@@ -148,10 +148,7 @@ export async function getCheckinState(
 
   const type = getActivityType(typeKey);
   const instant = await now();
-  const timezone = await resolveUserTimezone(
-    userId,
-    instant.toISOString().slice(0, 10),
-  );
+  const timezone = (await timezoneHistory(userId)).at(instant);
   const period = periodStart(instant, timezone, {
     unit: periodUnit(activity.schedule.schedule),
     boundary: activity.schedule.dayBoundary,
@@ -321,10 +318,7 @@ export async function resolveCheckinTarget(
 
   const type = getActivityType(typeKey);
   const instant = await now();
-  const timezone = await resolveUserTimezone(
-    userId,
-    instant.toISOString().slice(0, 10),
-  );
+  const timezone = (await timezoneHistory(userId)).at(instant);
   const period = periodStart(instant, timezone, {
     unit: periodUnit(activity.schedule.schedule),
     boundary: activity.schedule.dayBoundary,

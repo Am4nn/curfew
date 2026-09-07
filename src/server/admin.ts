@@ -19,6 +19,7 @@ import {
 } from "@/db/schema";
 import { resolveAt, getActivityType } from "@/domain";
 import { recordEvent } from "./events";
+import { userDay } from "./config";
 import { accountDisabledEmail, approvalEmail, sendEmailBestEffort } from "./email";
 import { userBalances } from "./groups";
 import { scoreAll, rebuildAll } from "./scoring";
@@ -651,10 +652,6 @@ async function approvedAdminCount(): Promise<number> {
   );
 }
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 // Soft-delete a user: block access and stop scoring by marking their active
 // memberships left as of today (immutability-clean, balances survive). Nothing
 // is removed. Cannot disable the last admin.
@@ -672,9 +669,12 @@ export async function disableUser(adminId: string, targetUserId: string): Promis
     .returning({ userId: userApprovals.userId });
   if (!disabled) return;
 
+  // The day they left is a day in THEIR zone, not in Greenwich's. Disabled at
+  // 2 AM in Kolkata, a UTC date puts them out of the group on a day they had
+  // already finished living, and a group counts its members by date.
   await db
     .update(groupMembers)
-    .set({ leftAt: todayStr() })
+    .set({ leftAt: await userDay(targetUserId) })
     .where(and(eq(groupMembers.userId, targetUserId), isNull(groupMembers.leftAt)));
   // Kill their live sessions so access ends immediately, not just on the next
   // gated navigation. events.session_id is ON DELETE SET NULL, so history is

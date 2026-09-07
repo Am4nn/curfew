@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { and, eq, gte, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { groupMembers } from "@/db/schema";
-import { resolveUserTimezone } from "./config";
+import { timezoneHistory } from "./config";
 import { now } from "@/lib/clock";
 
 // The join grace period: a group does not count the day you joined.
@@ -102,10 +102,7 @@ export const gracesFor = cache(
     const out = new Map<string, GracePeriod>();
     if (rows.length === 0) return out;
 
-    const timezone = await resolveUserTimezone(
-      userId,
-      instant.toISOString().slice(0, 10),
-    );
+    const timezone = (await timezoneHistory(userId)).at(instant);
     for (const r of rows) {
       const grace = graceFor(r.groupId, userId, r.joinedAt, timezone, instant);
       if (grace) out.set(r.groupId, grace);
@@ -139,10 +136,7 @@ export const gracesIn = cache(
     for (const r of rows) {
       // Each member's own zone: two people joining the same group an hour apart
       // in Kolkata and London are counted from two different instants.
-      const timezone = await resolveUserTimezone(
-        r.userId,
-        instant.toISOString().slice(0, 10),
-      );
+      const timezone = (await timezoneHistory(r.userId)).at(instant);
       const grace = graceFor(groupId, r.userId, r.joinedAt, timezone, instant);
       if (grace) out.set(r.userId, grace);
     }

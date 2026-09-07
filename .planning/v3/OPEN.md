@@ -73,7 +73,7 @@ had it: the personal settings, the sleep windows, and a group's fine rule, which
 was also reading the process clock rather than the app's.
 
 `bun run check:timezones` covers §1.6 and §1.7 together, at UTC+14 and UTC-11.
-Six of its eleven checks fail on the commit before the two fixes.
+Six of its thirteen checks fail on the commit before the two fixes.
 
 ### 1.8 The nightly job ran before last night was scorable — FIXED
 
@@ -150,6 +150,48 @@ a row that was never stored: the exact opposite of what it is.
 
 The check still catches what it was written for. A reputation row dated three
 days out is still reported, now as `ahead`.
+
+### 1.11 A check-in could be filed under the wrong day — FIXED
+
+§1.6 fixed the resolver and converted the callers it was written for. Nine
+others were left asking the old question, and they are the ones on the path a
+person actually walks:
+
+```ts
+await resolveUserTimezone(userId, instant.toISOString().slice(0, 10))
+```
+
+That reads the zone in force ON THE UTC DAY. A member's first zone is dated
+from their own today, and east of Greenwich that is a date UTC has not reached,
+so the row is invisible and everything downstream is computed in the seeded
+default. `getCheckinState` drew the wrong windows and `performCheckin` filed
+the press under the wrong period. Measured at UTC+14: the board and the press
+both landed on 2026-03-10 while the member was living 2026-03-11, a whole day
+out, which is a day that passes or fails on the wrong evidence.
+
+Two of the nine carried a comment saying "the user's own date, not UTC"
+directly above the line that read the UTC one.
+
+The nine: `getCheckinState` and `performCheckin` (`checkin.ts`),
+`listUserActivities` and `trackType` (`activities.ts`), both grace resolvers,
+the pause sweep, and both stats readers. All now ask
+`(await timezoneHistory(userId)).at(instant)`, which tests each row in its own
+zone. `bun run check:timezones` gained a third section for it and fails twice
+on the commit before.
+
+Two dates written from UTC went with them. `leftAt` was stamped
+`new Date().toISOString().slice(0, 10)` both when an admin disables an account
+and when a person deletes their own, so somebody leaving at 2 AM in Kolkata was
+marked gone on a day they had already finished living. A group counts its
+members by date. Both now use `userDay`.
+
+**Where the same pattern is deliberate and was left alone.** `r2.ts` signs with
+`new Date()` because AWS SigV4 needs the real wall clock and a scrubbed preview
+clock would have the signature rejected. `sweepEvidence` compares retention
+dates against the UTC day, which for a sweep across every member has no single
+zone to use, and errs towards deleting a photograph late rather than early. The
+app-settings resolvers read `new Date()` rather than the app clock, which only
+differs under a preview clock scrubbed BACKWARD, and nothing does that.
 
 ---
 

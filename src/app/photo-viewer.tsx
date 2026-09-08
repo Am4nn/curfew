@@ -67,7 +67,10 @@ export function PhotoViewer({
       role="dialog"
       aria-modal="true"
       aria-label={photo.alt}
-      className="fixed inset-0 z-50 flex flex-col bg-bg/95"
+      // Opaque, not a wash. At 95% the evidence tab read through the
+      // photograph and the whole thing looked like a mistake rather than a
+      // screen. Nothing in this app is translucent.
+      className="fixed inset-0 z-50 flex flex-col bg-bg"
     >
       <div className="flex items-center justify-between gap-3 border-b border-rule px-5 py-[11px]">
         <span className="truncate text-[11.5px] text-muted">{photo.caption}</span>

@@ -1,11 +1,14 @@
 # SCOPE.md — v3.1
 
-Seven raw ideas, given 2026-09-08. Nothing here is decided. Each one is written
-down as it was asked, then what is actually true today, measured rather than
+Seven raw ideas, given 2026-09-08, and five more the same day after an hour on
+the dev build. Nothing here is decided when it is written down. Each one is
+written as it was asked, then what is actually true today, measured rather than
 assumed, then what the work really is and what still needs answering.
 
-Three of the seven turned out to be defects rather than ideas. Two are larger
-than they look. Two are small.
+Four of the first seven turned out to be defects rather than ideas, and all
+four are done. Of the second five, one is a design job, one is a request, and
+the rest are defects. The largest thing on this page is §8.3: of 39
+photographs sent, one became a check-in.
 
 `.planning/v3/SCOPE.md` remains the decision log for v3. When an item here is
 settled it becomes a numbered decision there and leaves this file.
@@ -268,6 +271,212 @@ wherever it is offered.
 `V3JoinShare`, end at Join group; the Decline beneath it was added in the
 build. The invite card that Home and Groups draw did have one, and it is red in
 the mock now as well.
+
+---
+
+## 8. Five things wrong on the activity screens
+
+Given as one bullet, measured as five separate faults. One of them is much
+larger than the sentence that reported it.
+
+### 8.1 Water and Food take a press as often as you like
+
+**Asked for.** A customisable gap between logs.
+
+**True today.** Water's only field is `glasses` and Food's are `meals` and
+`calorieLimit`. Nothing spaces the presses. The only limits are the abuse
+ceilings in `checkin.ts:281`, 20 a minute and 50 a period, which exist to stop
+a stuck button rather than to describe a day. Eight glasses can be logged in
+eight seconds and the day passes.
+
+**What the work is.** A minimum gap between presses of a repeating step.
+
+**Open questions.** Whose rule is it? A gap is not what a glass means, and it
+is the same shape for Water, Food, Supplements and Steps, so it belongs beside
+`grace` in the schedule config rather than being written four times in four
+modules. And what happens to a press inside the gap: refused with the reason,
+or recorded and not counted? Refusing is honest and matches `countsNow`;
+recording keeps the log true to what happened.
+
+### 8.2 "I slipped" looks like it does nothing
+
+**Asked for.** Sugar-free's "I slipped" does nothing.
+
+**True today.** The server takes it. `bun run check:offer` proves the
+correction lands and flips the day from passed to failed. What is missing is
+any words: abstinence declares no `hint`, so the row's status line reads
+`Logged 10:15 PM` whichever answer you gave, and the tick is the only thing
+that moves. Press "I slipped" on a day with nothing declared yet and literally
+nothing on the row changes.
+
+**What the work is.** Small. Give the abstinence factory a `hint`, so the row
+says which answer stands: "Held." or "Slipped.", in the module's own words,
+like every other type's line.
+
+### 8.3 Food asks for another Log after four — THE BIG ONE
+
+**Asked for.** "Food I logged 4 times but it just keeps on asking for Log."
+
+**Measured on the dev database, and it is worse than the report.** Of **39
+photo tickets issued, exactly one became a check-in.**
+
+```
+evidence  gym   21 rows,  1 confirmed
+evidence  food  18 rows,  0 confirmed
+events    checkin.gym.session   1   (2026-09-04)
+events    checkin.food.meal     0   ever
+```
+
+So the button is telling the truth: nothing was recorded. Four food tickets
+were issued within three seconds of each other, which is a person pressing Send
+again because nothing happened.
+
+**This is the path `OPEN.md` §4 says has never been driven end to end**, and it
+is the app's flagship feature. Evidence is the reason a group can believe
+anything.
+
+**R2 CORS is ruled out.** `bun run check:cors` passes for both
+`http://localhost:3000` and `https://dev.curfew.amanarya.com` against
+`curfew-evidence-dev`. Per-commit `*.vercel.app` URLs are on no allowlist and
+never were, so a test from one of those would fail in exactly this way and is
+the first thing to eliminate.
+
+**What is left, and how to tell them apart.** The ticket is issued, so the
+failure is after it: either the browser's PUT to R2, or `checkInAction`
+refusing. Food's evidence schema requires an integer `calories`, so a blank or
+unparsable field returns `invalid` and no event, which would look identical
+from the database. The upload half can be exercised without a browser by
+requesting a ticket, PUTting to the presigned URL from a script, and calling
+the action, which separates the two in one run.
+
+**And a defect of its own.** A photograph that never became a check-in leaves
+an evidence row, no event, and no record anywhere of why. The app cannot say
+afterwards what happened to 38 photographs. Whatever the cause turns out to be,
+that silence is worth closing.
+
+### 8.4 A gym session does not move today's count
+
+**Asked for.** "Gym done even then progress 2/5 doesn't go 3/5."
+
+**True today.** `today.ts` sets `done: state.passed`, and Gym's period is a
+WEEK. So a session today moves Home's TODAY strip not at all until the whole
+week passes, and once it does, Gym reads done for every remaining day of that
+week whether or not you go again. The strip counts periods passed, not work
+done today, and for eleven of the twelve types those are the same thing.
+
+**Found beside it.** This account's Gym carries two different weekly numbers:
+the schedule says `minimum, perWeek 4` and the module config says
+`sessionsPerWeek 3`. One screen sets both and nothing reconciles them.
+
+**What the work is.** The day counter needs "did something count today", which
+is a different question from "has the period passed" and one the module can
+already answer: `daysDone` returns the calendar days in the period that count,
+so today being among them is the test. Not a large change, but it moves the
+number at the top of Home, so it wants its own decision and its own check.
+
+### 8.5 Calories accepts nought and five digits
+
+**Asked for.** No more than four characters, and not zero.
+
+**True today.** `foodEvidenceSchema` is `z.number().int().min(0).max(20000)`
+and the field is declared `min: 0, max: 20000`, so `0` is accepted and so is
+`20000`. A meal of no calories is not a meal.
+
+**What the work is.** One line in the schema and one in the field. Both, or the
+client and the server disagree about what is valid.
+
+---
+
+## 9. Photographs cannot be opened
+
+**Asked for.** Any photo should be clickable. Needs a UI.
+
+**True today.** `photo-tile.tsx` renders a bare `<img>` inside an
+`aspect-square` with `object-cover`, so a photograph taken on a phone is
+cropped to a square and there is no way to see the rest of it. Nothing in the
+app opens one: not `/settings/photos`, not the strip under a chart on Stats,
+not the group's evidence tab. The only tile ever wrapped in a button is the one
+on the delete-data screen, and that button deletes.
+
+**What the work is.** A viewer, and it needs designing rather than guessing.
+
+**Open questions.** What does it show besides the photograph: the activity, the
+time, whose it is? What can be done from it, given the same viewer would serve
+your own photos and another member's evidence, where the actions are opposite
+(delete yours, report theirs)? Is it a route, which gets a back button and an
+address, or an overlay, which does not?
+
+---
+
+## 10. Evidence never reaches the group
+
+**Asked for.** "Why are evidences not getting shared with groups? I did share
+them and agreed to sharing in settings."
+
+**Measured: the sharing is right and there is nothing to share.** Every one of
+the six types that group accepts resolves to `shared: true` and
+`share_evidence: true` for this member, as of now. The feed's filters are
+correct. What is missing is the photographs: `groupEvidence` requires
+`confirmed_at`, and there is exactly **one** confirmed photograph in the whole
+database. The other 38 never became check-ins, which is §8.3.
+
+**So this is not a separate bug**, with one thing to confirm: that single
+confirmed gym photo from 4 September is shared, is in that group, and the tab
+carries no date window any more, so it SHOULD appear. If the tab shows nothing
+at all, a second fault is sitting behind the first, and it is worth finding
+before §8.3 hides it by fixing the supply.
+
+---
+
+## 11. The ceiling reads 1000 whatever you actually do
+
+**Asked for.** "In a group where I haven't added many of the activities it
+accepts, the ceiling is still 1000. Why?"
+
+**Two separate causes, both measured.**
+
+**Breadth counts toggles, not activities.** `scoring.ts` computes
+`breadth = accepted-and-shared / accepted`, and "shared" is a row in
+`member_shares`. It never asks whether the member tracks the type. This
+account shares all six types the group accepts and tracks three of them: Food,
+Gym and Sleep. Office, Study and Supplements are shared and untracked, so they
+can never produce a period, can never be missed, and cost nothing. Breadth is
+1 and the ceiling is 1000. Sharing something you do not do is free score.
+
+**And the default is the maximum.** `group-view.ts:226` reads
+`ceiling: rows[0] ? Number(rows[0].ceiling) : 1000`. With no scored day yet, a
+new member and everyone still in grace is shown 1000, which is the one number
+that is certainly not theirs.
+
+**What the work is.** Breadth counts accepted types the member both tracks and
+shares; the display default becomes `ceilingFor` of that same fraction rather
+than a literal. The second is a display fix. **The first changes how a day is
+scored**, so it is a `LOGIC_VERSION` bump and a `verify` run, not a one-line
+edit.
+
+**Open question.** What is a tracked type, for this purpose: enabled today, or
+enabled on the day being scored? Invariant 5 says the second, and
+`user_activities` is already effective-dated, so the answer exists. It is the
+difference between un-tracking something raising your ceiling retroactively and
+it raising it from today.
+
+---
+
+## 12. Group settings are as scattered as the configure screen
+
+**Asked for.** The simplification asked for on the configure page is needed in
+group settings too. Everything is scattered.
+
+**True today.** 581 lines over two files, and five labelled sections in one
+scroll: what you share, the group's accepted types, money and fines, the rules,
+and invites out. It mixes what only you can change, your two sharing toggles,
+with what only an owner can, the money and the invitations, and does not
+separate them.
+
+**What the work is.** The same brief as #5, and it should be designed with it
+rather than after it: fewer controls in front of anyone at once, no engine
+vocabulary, and the owner's half kept apart from the member's half so nobody
+scrolls through decisions that are not theirs to make.
 
 ---
 

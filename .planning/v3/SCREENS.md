@@ -88,7 +88,7 @@ different module spec, which is the point of the declarative model.
 | Group: evidence | `/group/[id]/evidence` | Today and yesterday, load older | [ ] |
 | Group: standing (money on) | `/group/[id]/standing` | Rank, money, full ledger link, ceiling, movements | [ ] |
 | Group: standing (money off) | `/group/[id]/standing` | Same minus money, no mention of it | [ ] |
-| Group: settings | `/group/[id]/settings` | Share toggles with the evidence checkbox, owner blocks, leave | [ ] |
+| Group: settings | `/group/[id]/settings` | Share toggles with the evidence checkbox, owner blocks, who runs the group, invites out, leave | [ ] |
 | Group: full ledger | `/group/[id]/ledger` | Every entry including a correction row | [ ] |
 | Join and choose sharing | `/invite/[token]` | Share toggles, an untracked type offering setup | [ ] |
 | Join: set up first | `/invite/[token]/setup` | Configure inline, add and share, or add for yourself | [ ] |
@@ -170,3 +170,15 @@ are what remain.
 | Admin: reports | `/admin/reports` | The one place an admin sees a photo, because a member asked | [ ] |
 | Admin: one user | `/admin/users/[id]` | How often somebody checked in, never what | [ ] |
 | Admin: one group | `/admin/groups/[id]` | Members, money, accepted types, and archive | [ ] |
+
+**Built with no artboard at all, 2026-09-08.** Two blocks were added to the
+group settings tab on request, and neither was designed first, which is the
+wrong way round for this repo. They are built in the house style and drawn from
+the same row shape as ACCEPTED ACTIVITIES beside them, so nothing new was
+invented, but a person still has to decide whether that is what they should
+look like.
+
+| Artboard | Route | State | Done |
+|---|---|---|---|
+| Who runs this group | `/group/[id]/settings` | Every member, their role, and the control to change it. Owner only | [ ] |
+| Invites out | `/group/[id]/settings` | Pending invites with who sent each, and a cancel on the ones you may take back | [ ] |

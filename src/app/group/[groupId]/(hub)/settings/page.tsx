@@ -7,6 +7,7 @@ import { getAppConfig, resolveAppSettingAt } from "@/server/app-config";
 import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
 import { listGroupMembers } from "@/server/ledger";
+import { groupRoster, listGroupInvites } from "@/server/groups";
 import { userDay } from "@/server/config";
 import { now } from "@/lib/clock";
 import { SettingsForm, type ShareRow, type AcceptedRow } from "./settings-form";
@@ -83,6 +84,13 @@ export default async function GroupSettingsTab({
     }
   }
 
+  // Who runs the group, and what it has out. Both are member-scoped in the
+  // query layer (invariant 10); the screen only decides what to draw.
+  const [memberRows, inviteRows] = await Promise.all([
+    groupRoster(groupId, user.id),
+    listGroupInvites(groupId, user.id),
+  ]);
+
   // A type can be accepted only if the app offers it and the group has not
   // already taken it.
   const already = new Set(accepted.map((a) => a.typeKey));
@@ -96,6 +104,9 @@ export default async function GroupSettingsTab({
   return (
     <SettingsForm
       groupId={groupId}
+      viewerId={user.id}
+      members={memberRows}
+      invites={inviteRows}
       isOwner={header.role === "owner"}
       moneyOn={header.moneyOn}
       appMoneyOn={appMoney === true}

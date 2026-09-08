@@ -21,7 +21,15 @@ import { memberStandings, groupEvidence, standingIn, groupBalances } from "../..
 import { scoreUser, settleFines } from "../../src/server/scoring";
 import { deletionSummary } from "../../src/server/deletion";
 import { recordSettlement, getGroupLedgerRows } from "../../src/server/ledger";
-import { acceptInvite, declineInvite, leaveGroup } from "../../src/server/groups";
+import {
+  acceptInvite,
+  declineInvite,
+  leaveGroup,
+  groupRoster,
+  listGroupInvites,
+  setMemberRole,
+  cancelInvite,
+} from "../../src/server/groups";
 import { reportEvidence, openReports, reviewReport, banUser } from "../../src/server/reports";
 import { assertMember } from "../../src/server/membership";
 import { declarePause } from "../../src/server/pause";
@@ -562,7 +570,71 @@ export async function run(w: World): Promise<void> {
     await db.delete(userPauses).where(eq(userPauses.userId, admin));
   }
 
-  section("21. rate limits");
+  section("21. who runs a group, and the invites it has out");
+  {
+    // The fixture: `admin` owns `mine`, `peer` is a member of it, `stranger` is
+    // in a different group entirely.
+    await refuses("a non-member cannot read who runs a group", () =>
+      groupRoster(mine, stranger));
+    await refuses("a non-member cannot read a group's invites", () =>
+      listGroupInvites(mine, stranger));
+    await refuses("a member cannot make themselves an owner", () =>
+      setMemberRole(mine, peer, peer, "owner"));
+    await refuses("a member cannot demote the owner", () =>
+      setMemberRole(mine, peer, admin, "member"));
+    await refuses("a non-member cannot promote anyone", () =>
+      setMemberRole(mine, stranger, peer, "owner"));
+    await refuses("somebody outside the group cannot be made an owner of it", () =>
+      setMemberRole(mine, admin, stranger, "owner"));
+
+    // The rule that keeps a group administrable: the last owner stays.
+    await refuses("the only owner cannot step down", () =>
+      setMemberRole(mine, admin, admin, "member"));
+
+    await allows("an owner can make a member an owner", () =>
+      setMemberRole(mine, admin, peer, "owner"));
+    const both = await groupRoster(mine, admin);
+    check(
+      "and the group now has two owners",
+      both.filter((m) => m.role === "owner").length === 2,
+      both.map((m) => `${m.name}=${m.role}`).join(" "),
+    );
+
+    // With a second owner in place the first may now step down, which is the
+    // hole this feature closes: a sole owner could never leave.
+    await allows("with two owners, one can step down", () =>
+      setMemberRole(mine, admin, admin, "member"));
+    await allows("and the remaining owner can put them back", () =>
+      setMemberRole(mine, peer, admin, "owner"));
+    await allows("an owner can take an owner back down", () =>
+      setMemberRole(mine, admin, peer, "member"));
+
+    // Invites. Any member may send one, so any member may take their own back,
+    // and an owner may clear up anyone's.
+    const [sentByPeer] = await db
+      .insert(groupInvites)
+      .values({ groupId: mine, email: `${w.tag}-a@example.invalid`, invitedBy: peer })
+      .returning({ id: groupInvites.id });
+    await refuses("a non-member cannot cancel an invite", () =>
+      cancelInvite(sentByPeer.id, stranger));
+    await allows("an owner can cancel a member's invite", () =>
+      cancelInvite(sentByPeer.id, admin));
+
+    const [sentByAdmin] = await db
+      .insert(groupInvites)
+      .values({ groupId: mine, email: `${w.tag}-b@example.invalid`, invitedBy: admin })
+      .returning({ id: groupInvites.id });
+    await refuses("a member cannot cancel an invite they did not send", () =>
+      cancelInvite(sentByAdmin.id, peer));
+    await allows("the sender can cancel their own invite", () =>
+      cancelInvite(sentByAdmin.id, admin));
+
+    const left = await listGroupInvites(mine, admin);
+    check("a cancelled invite is no longer pending", left.length === 0, `${left.length} pending`);
+    await db.delete(groupInvites).where(eq(groupInvites.groupId, mine));
+  }
+
+  section("22. rate limits");
   if (!process.env.UPSTASH_REDIS_REST_URL) {
     // rateLimit fails OPEN when Upstash is unreachable or unconfigured, which
     // is deliberate: losing a check-in to our own outage punishes the user. So

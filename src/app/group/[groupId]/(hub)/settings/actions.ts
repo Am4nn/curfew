@@ -9,7 +9,7 @@ import {
   setFineRule,
   setOwnerMoneyToggle,
 } from "@/server/sharing";
-import { leaveGroup } from "@/server/groups";
+import { leaveGroup, setMemberRole, cancelInvite } from "@/server/groups";
 import { userDay } from "@/server/config";
 import { dayAfter } from "@/lib/day-format";
 import { minorUnitExponent } from "@/domain";
@@ -81,6 +81,32 @@ export async function setFineAction(input: {
     effectiveFrom: dayAfter(await userDay(user.id)),
     changedBy: user.id,
   });
+  refresh(input.groupId);
+}
+
+/**
+ * Promote a member to owner, or take an owner back down.
+ *
+ * The guard is `setMemberRole`'s, not this one's: an action is a doorway and
+ * the rule belongs beside the table it protects, where `bun run break-in` calls
+ * it directly.
+ */
+export async function setMemberRoleAction(input: {
+  groupId: string;
+  userId: string;
+  role: "owner" | "member";
+}): Promise<void> {
+  const user = await me();
+  await setMemberRole(input.groupId, user.id, input.userId, input.role);
+  refresh(input.groupId);
+}
+
+export async function cancelInviteAction(input: {
+  groupId: string;
+  inviteId: string;
+}): Promise<void> {
+  const user = await me();
+  await cancelInvite(input.inviteId, user.id);
   refresh(input.groupId);
 }
 

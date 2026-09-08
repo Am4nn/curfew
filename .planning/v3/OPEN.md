@@ -1,7 +1,7 @@
 # OPEN.md — what is not done
 
 Everything known-open: defects, security gaps, work that needs a person, and
-what is designed but not decided. Updated 2026-09-06.
+what is designed but not decided. Updated 2026-09-08.
 
 `SCOPE.md` is the decision log; this file is the to-do list. When an item here
 is settled it becomes a decision there and leaves this file.
@@ -10,9 +10,9 @@ is settled it becomes a decision there and leaves this file.
 
 ## 1. Defects
 
-**All seven are fixed.** The original six on 2026-09-05 and 2026-09-06
-(`60ab7ec`, `e79d5bf`, `9abb998`), and §1.7, found while building the
-consent-gate zone, in `12df57e`.
+**All eleven are fixed.** The original six on 2026-09-05 and 2026-09-06
+(`60ab7ec`, `e79d5bf`, `9abb998`), §1.7 found while building the consent-gate
+zone (`12df57e`), and §1.8 to §1.11 on 2026-09-07 and 2026-09-08.
 
 ### 1.1 Rejoining a group silently did nothing — FIXED
 
@@ -55,10 +55,25 @@ beside the live `closeStreaks` and reading exactly like the thing that runs.
 **Two of them were not dead code so much as an unbuilt feature**, and that is
 worth keeping separate. `makeOwner` and `revokeInvite` in `src/server/groups.ts`
 were written, tested by nothing, wired to server actions that no screen
-imported, and `listGroupPendingInvites` beside them. So a group's owner cannot
-hand the group on, and nobody can cancel an invite they sent. `SCREENS.md` has
-no mock for either, so this is a gap in the design rather than a regression: the
-server halves are deleted, and if the feature is wanted it starts with a screen.
+imported, and `listGroupPendingInvites` beside them. So a group's owner could
+not hand the group on, and nobody could cancel an invite they sent.
+
+**Both were asked for and are built, 2026-09-08.** Two decisions were taken
+first, because the deleted code answered neither:
+
+- **An owner can be taken back down**, and a group refuses to reach zero owners.
+  That is the rule `leaveGroup` already kept from the other side, and it makes a
+  misclick recoverable rather than a job for SQL.
+- **The sender or any owner can cancel an invite.** Any member can send one
+  (`inviteToGroup` asserts membership and no more), so an owner-only rule would
+  have left a member unable to undo their own typo.
+
+It also closes a hole nobody had noticed: a sole owner with other members could
+never leave, because `leaveGroup` refuses to leave a group ownerless and there
+was no way to appoint anyone. Now there is.
+
+Seventeen checks in `break-in` for the guards and eight in the browser suite for
+the buttons. `SCREENS.md` records that neither block has an artboard.
 
 ### 1.6 Timezone was resolved once and applied to all history — FIXED
 
@@ -215,8 +230,8 @@ differs under a preview clock scrubbed BACKWARD, and nothing does that.
 
 ## 2. Security
 
-`bun run break-in` holds everywhere it can reach, on every push in CI. 103
-checks with a server to sweep, 85 without, and the new `browser` job means CI
+`bun run break-in` holds everywhere it can reach, on every push in CI. 118
+checks with a server to sweep, 103 without, and the new `browser` job means CI
 now runs the first number rather than the second.
 
 **What it still cannot say:**
@@ -405,7 +420,7 @@ Decisions 129 to 132, and the gaps in them closed the same day.
   beside them: three narrow proofs that each exist because the thing they check
   went wrong once, and each of which ran by hand until now.
 - **A `browser` job** builds a database of its own, starts the app and runs the
-  seventy-one browser checks plus the full security round, HTTP half included. It
+  seventy-nine browser checks plus the full security round, HTTP half included. It
   runs a dev server on purpose: LOCAL_MODE is gated on `NODE_ENV` not being
   "production" and `next start` sets exactly that.
 - **`check:actions`** asks of every `uses:` line whether the repository is

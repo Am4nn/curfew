@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { groups, groupMembers, groupInvites, balances, users } from "@/db/schema";
-import { assertMember } from "./membership";
+import { assertMember, memberRole } from "./membership";
 import { groupInviteEmail, sendEmailBestEffort } from "./email";
 import { userDay } from "./config";
 
@@ -302,4 +302,157 @@ export async function userBalances(
     currency: r.currency ?? "INR",
     netOwed: Number(r.netOwed ?? 0),
   }));
+}
+
+// ---------------------------------------------------------------------------
+// Who runs the group
+// ---------------------------------------------------------------------------
+//
+// A group has one owner at first and can have several. Everything below keeps
+// one rule: a group with members always has an owner. `leaveGroup` already
+// refuses to let the last owner walk out while anyone remains, and these refuse
+// to leave the group ownerless by another route.
+//
+// Adding a second owner is also what unblocks the sole owner who wants to
+// leave. Until now there was no way to do it, so the first person to make a
+// group was in it for good.
+
+export interface GroupMemberRow {
+  userId: string;
+  name: string;
+  role: "owner" | "member";
+}
+
+/**
+ * Every active member and what they are. Members only (invariant 10).
+ *
+ * Not `listGroupMembers`, which lives in `ledger.ts` and answers a different
+ * question: that one returns everyone who was ever in the group, including the
+ * people who left, because a ledger row can name them. This one is who is here
+ * now and who runs the place.
+ */
+export async function groupRoster(
+  groupId: string,
+  viewerId: string,
+): Promise<GroupMemberRow[]> {
+  await assertMember(groupId, viewerId);
+  const rows = await db
+    .select({ userId: groupMembers.userId, name: users.name, role: groupMembers.role })
+    .from(groupMembers)
+    .innerJoin(users, eq(users.id, groupMembers.userId))
+    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)))
+    .orderBy(users.name);
+  return rows.map((r) => ({
+    userId: r.userId,
+    name: r.name,
+    role: r.role === "owner" ? "owner" : "member",
+  }));
+}
+
+/**
+ * Promote a member to owner, or take an owner back down.
+ *
+ * Only an owner may do either, and the group refuses to reach zero owners. That
+ * is the same rule the app-wide console keeps for admins, for the same reason:
+ * a group nobody can administer needs a hand on the database to repair, and a
+ * misclick should not be what puts it there.
+ */
+export async function setMemberRole(
+  groupId: string,
+  byUserId: string,
+  targetUserId: string,
+  role: "owner" | "member",
+): Promise<void> {
+  const active = await db
+    .select({ userId: groupMembers.userId, role: groupMembers.role })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)));
+
+  if (active.find((m) => m.userId === byUserId)?.role !== "owner") {
+    throw new Error("Only an owner can change who owns this group.");
+  }
+  const target = active.find((m) => m.userId === targetUserId);
+  if (!target) throw new Error("That person is not a member of this group.");
+  if (target.role === role) return;
+
+  if (role === "member") {
+    const owners = active.filter((m) => m.role === "owner");
+    if (owners.length <= 1) {
+      throw new Error("A group needs an owner. Make someone else an owner first.");
+    }
+  }
+
+  await db
+    .update(groupMembers)
+    .set({ role })
+    .where(
+      and(
+        eq(groupMembers.groupId, groupId),
+        eq(groupMembers.userId, targetUserId),
+        isNull(groupMembers.leftAt),
+      ),
+    );
+}
+
+export interface GroupInviteRow {
+  id: string;
+  email: string;
+  invitedBy: string;
+  invitedByName: string;
+  /** Whether the person looking at it is allowed to take it back. */
+  canCancel: boolean;
+}
+
+/**
+ * The invites this group has out, and who may cancel each.
+ *
+ * Any member can send one (`inviteToGroup` asserts membership and no more), so
+ * anyone can take back what they sent, and an owner can clear up anyone's. An
+ * owner-only rule would leave a member unable to undo their own typo.
+ */
+export async function listGroupInvites(
+  groupId: string,
+  viewerId: string,
+): Promise<GroupInviteRow[]> {
+  const role = await memberRole(groupId, viewerId);
+  const rows = await db
+    .select({
+      id: groupInvites.id,
+      email: groupInvites.email,
+      invitedBy: groupInvites.invitedBy,
+      invitedByName: users.name,
+    })
+    .from(groupInvites)
+    .innerJoin(users, eq(users.id, groupInvites.invitedBy))
+    .where(and(eq(groupInvites.groupId, groupId), eq(groupInvites.status, "pending")))
+    .orderBy(groupInvites.email);
+  return rows.map((r) => ({
+    ...r,
+    canCancel: role === "owner" || r.invitedBy === viewerId,
+  }));
+}
+
+/** Take back a pending invite. The sender or any owner (decision above). */
+export async function cancelInvite(inviteId: string, byUserId: string): Promise<void> {
+  const [invite] = await db
+    .select({
+      groupId: groupInvites.groupId,
+      status: groupInvites.status,
+      invitedBy: groupInvites.invitedBy,
+    })
+    .from(groupInvites)
+    .where(eq(groupInvites.id, inviteId));
+  // Already accepted, already revoked, or never existed. Nothing to take back,
+  // and saying which would answer a question the asker has no right to ask.
+  if (!invite || invite.status !== "pending") return;
+
+  const role = await memberRole(invite.groupId, byUserId);
+  if (role !== "owner" && invite.invitedBy !== byUserId) {
+    throw new Error("Only the person who sent this invite, or an owner, can cancel it.");
+  }
+
+  await db
+    .update(groupInvites)
+    .set({ status: "revoked", respondedAt: new Date() })
+    .where(eq(groupInvites.id, inviteId));
 }

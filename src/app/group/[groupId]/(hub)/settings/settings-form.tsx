@@ -10,12 +10,27 @@ import {
   setAcceptedAction,
   setMoneyAction,
   setFineAction,
+  setMemberRoleAction,
+  cancelInviteAction,
   leaveGroupAction,
 } from "./actions";
 
 // One toggle for the activity, and a checkbox for its photos underneath. Only
 // two, deliberately (decision 16): anything finer becomes a settings screen
 // nobody understands.
+
+export interface MemberRow {
+  userId: string;
+  name: string;
+  role: "owner" | "member";
+}
+
+export interface InviteRow {
+  id: string;
+  email: string;
+  invitedByName: string;
+  canCancel: boolean;
+}
 
 export interface ShareRow {
   typeKey: string;
@@ -53,6 +68,9 @@ export function SettingsForm({
   shares,
   accepted,
   addable,
+  members,
+  invites,
+  viewerId,
 }: {
   groupId: string;
   isOwner: boolean;
@@ -61,6 +79,9 @@ export function SettingsForm({
   shares: ShareRow[];
   accepted: AcceptedRow[];
   addable: { typeKey: string; name: string; icon: string }[];
+  members: MemberRow[];
+  invites: InviteRow[];
+  viewerId: string;
 }) {
   const { run: runAction, pending: busy, error } = useServerAction();
   const [adding, setAdding] = useState(false);
@@ -270,6 +291,87 @@ export function SettingsForm({
                 />
               ))
             : null}
+        </section>
+      ) : null}
+
+      {isOwner ? (
+        <section className="flex flex-col gap-[10px]">
+          <span className="text-[10px] tracking-[0.16em] text-muted">
+            WHO RUNS THIS GROUP &middot; OWNER
+          </span>
+          <div className="flex flex-col">
+            {members.map((m) => (
+              <div key={m.userId} className="flex items-center gap-[11px] border-b border-rule py-3">
+                <div className="flex flex-1 flex-col gap-[3px]">
+                  {/* One string, not a name and a suffix beside it. Two text
+                      nodes render the same but cannot be matched as one, which
+                      is a needless way to make the row hard to address. */}
+                  <span className="text-[13.5px]">
+                    {m.userId === viewerId ? `${m.name} (you)` : m.name}
+                  </span>
+                  <span className="text-[11px] text-muted">
+                    {m.role === "owner" ? "Owner" : "Member"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() =>
+                    run(async () => {
+                      await setMemberRoleAction({
+                        groupId,
+                        userId: m.userId,
+                        role: m.role === "owner" ? "member" : "owner",
+                      });
+                    })
+                  }
+                  className="h-[34px] flex-none border border-rule px-[13px] text-[12px] active:opacity-70 disabled:opacity-60"
+                >
+                  {m.role === "owner" ? "Step down" : "Make owner"}
+                </button>
+              </div>
+            ))}
+          </div>
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            An owner sets what the group accepts, the fines, and who else owns it. A
+            group always keeps one: the last owner cannot step down.
+          </span>
+        </section>
+      ) : null}
+
+      {invites.length > 0 ? (
+        <section className="flex flex-col gap-[10px]">
+          <span className="text-[10px] tracking-[0.16em] text-muted">INVITES OUT</span>
+          <div className="flex flex-col">
+            {invites.map((invite) => (
+              <div key={invite.id} className="flex items-center gap-[11px] border-b border-rule py-3">
+                <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <span className="truncate text-[13.5px]">{invite.email}</span>
+                  <span className="text-[11px] text-muted">
+                    Invited by {invite.invitedByName}
+                  </span>
+                </div>
+                {invite.canCancel ? (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() =>
+                      run(async () => {
+                        await cancelInviteAction({ groupId, inviteId: invite.id });
+                      })
+                    }
+                    className="h-[34px] flex-none border border-rule px-[13px] text-[12px] active:opacity-70 disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+          <span className="text-[11.5px] leading-[1.55] text-muted">
+            Cancelling stops the link working. Nobody is told, and the same address can
+            be invited again.
+          </span>
         </section>
       ) : null}
 

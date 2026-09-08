@@ -116,13 +116,6 @@ async function activityDays(
     .from(activityScores)
     .where(and(eq(activityScores.userId, userId), eq(activityScores.typeKey, typeKey)))
     .orderBy(activityScores.periodStart);
-  if (scored.length === 0) return { days: [], closedThrough: null };
-
-  // The last day any closed period covers. A week scored on its Monday has
-  // been judged through the Sunday after it.
-  const closedThrough = scored
-    .map((s) => addDays(s.periodEnd, -1))
-    .reduce((a, b) => (a > b ? a : b));
 
   // Whatever the period in flight has ALREADY earned.
   //
@@ -133,9 +126,31 @@ async function activityDays(
   // Only days that are DONE are added, never a day that is merely not done yet.
   // A day still in progress has not been missed, and marking it false would end
   // a run at breakfast.
+  //
+  // Computed BEFORE the empty case below, which is what it was not. A member
+  // whose first period has not closed has no scored rows at all, so the early
+  // return threw these away and answered 0. Their first ever session showed no
+  // streak, and for gym, whose period is a week, it showed none for a week.
   const live = inFlight
     ? await daysDoneInFlight(userId, typeKey, zones.on(inFlight.period), inFlight)
     : [];
+
+  // Nothing has closed, so there is no history to walk and the period in
+  // flight is the whole story. `closedThrough` stays null: nothing has been
+  // judged, which is what stops `streakOver` ending a week that is still
+  // running.
+  if (scored.length === 0) {
+    return {
+      days: live.map((date) => ({ date, done: true, paused: false })),
+      closedThrough: null,
+    };
+  }
+
+  // The last day any closed period covers. A week scored on its Monday has
+  // been judged through the Sunday after it.
+  const closedThrough = scored
+    .map((s) => addDays(s.periodEnd, -1))
+    .reduce((a, b) => (a > b ? a : b));
 
   if (unit === "day") {
     const days = scored.map((s) => ({

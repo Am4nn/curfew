@@ -10,9 +10,9 @@ is settled it becomes a decision there and leaves this file.
 
 ## 1. Defects
 
-**All eleven are fixed.** The original six on 2026-09-05 and 2026-09-06
+**All twelve are fixed.** The original six on 2026-09-05 and 2026-09-06
 (`60ab7ec`, `e79d5bf`, `9abb998`), §1.7 found while building the consent-gate
-zone (`12df57e`), and §1.8 to §1.11 on 2026-09-07 and 2026-09-08.
+zone (`12df57e`), §1.8 to §1.11 on 2026-09-07, and §1.12 on 2026-09-08.
 
 ### 1.1 Rejoining a group silently did nothing — FIXED
 
@@ -74,6 +74,32 @@ was no way to appoint anyone. Now there is.
 
 Seventeen checks in `break-in` for the guards and eight in the browser suite for
 the buttons. `SCREENS.md` records that neither block has an artboard.
+
+### 1.12 The first thing you ever did counted for nothing — FIXED
+
+Found while curating v3.1's raw ideas, from a request that read "make sure gym
+gets an instant streak +1". It was worse than that: a new member's first gym
+session left the streak at **0**, and it stayed 0 until the week ended.
+
+`bumpStreak` has no stored row to add to the first time a type is counted, so
+it rebuilds instead. The rebuild asks `activityDays`, which opened with
+
+```ts
+if (scored.length === 0) return { days: [], closedThrough: null };
+```
+
+and a member whose first period has not closed has no `activity_scores` row at
+all. The early return threw away the in-flight days it was about to compute, so
+the rebuild answered 0 and the press was lost.
+
+The in-flight days are now computed before that case, and the case returns them
+rather than nothing. `bun run check:streak` is new and runs in CI: six of its
+eight checks fail on the commit before the fix, for gym and for office both, so
+it was never only the weekly types. For a daily type the overnight close
+repaired it, which is why it survived this long; for gym the week had to end.
+
+**It was the first thing a new member ever saw.** Go to the gym, log it, and be
+told nothing happened.
 
 ### 1.6 Timezone was resolved once and applied to all history — FIXED
 

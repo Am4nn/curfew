@@ -28,6 +28,7 @@
     "check:deps": "bun run scripts/check-deps.ts",
     "check:actions": "bun run scripts/check-actions.ts",
     "check:cron": "bun run scripts/check-cron.ts",
+    "check:streak": "dotenv -e .env.local -- bun run scripts/check-streak.ts",
     "check:logic-version": "dotenv -e .env.local -- bun run scripts/check-logic-version.ts",
     "check:timezones": "dotenv -e .env.local -- bun run scripts/check-timezones.ts",
     "browser": "node scripts/browser/run.mjs",

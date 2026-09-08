@@ -91,19 +91,24 @@ and a member whose first period has not closed has no `activity_scores` row at
 all. The early return discards the in-flight days it was about to compute, so
 the rebuild answers 0 and the press is thrown away.
 
-**Blast radius.** Proved for gym. The mechanism is shared by every type, so it
-should apply to the first completed period of any of them: the first day of
-water, the first night of sleep. For a daily type the first close repairs it
-overnight. For gym the week has to end, so a new member sees 0 for up to seven
-days after doing the thing.
+**Blast radius, now measured rather than inferred.** Proved for gym, a weekly
+type, and for office, a daily one: six of the eight checks in
+`bun run check:streak` fail on the commit before the fix. For a daily type the
+overnight close repaired it. For gym the week has to end first, so a new member
+saw 0 for up to seven days after going to the gym.
 
 **What the work is.** Small and surgical: compute the in-flight days before the
 early return, or drop the early return and let the rest of the function handle
 an empty history. It needs a check that fails first, in the shape of
 `scripts/check-timezones.ts`.
 
-**This should not wait for v3.1.** It is a defect in shipped behaviour and the
-first thing a new member sees.
+**Fixed 2026-09-08, before the tag.** `activityDays` computes the in-flight
+days before the empty case rather than after it, and the empty case returns
+them instead of nothing. `bun run check:streak` is the proof and runs in CI:
+the first session counts at once, a page read does not take it back, a rebuild
+from events agrees, and a second session the same day still adds nothing.
+
+This one closes as §1.12 in `.planning/v3/OPEN.md`.
 
 ---
 
@@ -123,12 +128,23 @@ second session on the same calendar day, and `daysDone` returns every session
 day, so a fourth day WOULD add to the streak if the button existed. The
 blocking is entirely in the surface.
 
-**What the work is.** Small in code, and a real question in design: a row that
-is both "done" and "still pressable" is a state the mock has no drawing for.
-The tick, the button and the count all mean something today and would have to
-mean something new.
+**The mock already drew this.** `V3HomeDone.dc.html` carries
 
-**Open questions.** Q4.
+```
+Gym   13   4 of 3 this week   [done]
+```
+
+so a fourth session reading "4 of 3 this week", ticked, was designed and
+approved. The build cannot produce that state at all. This is not a new
+feature, it is drift from an artboard, which is exactly what the `SCREENS.md`
+review gate exists to catch and what ticking those rows would have found.
+
+**Decided 2026-09-08: "4 of 3 this week"**, which is what the artboard says.
+
+**What the work is.** `today.ts:81` stops gating the control on `state.passed`
+and gates it on whether another press would count, which the module already
+answers with `countsNow`. The row keeps its tick, because the week did pass.
+The progress bar has no room past full and needs a decision of its own.
 
 ---
 
@@ -141,13 +157,20 @@ module's `fields()` declaration, which is what makes adding a type not touch
 the engine (invariant 6). It carries the schedule picker, the day boundary,
 grace, and the module's own fields.
 
-**What the work is.** Unknown, and that is the finding. "Easier" is not yet a
-brief: it is not clear whether the complaint is the number of controls, their
-order, the vocabulary, or that schedule and thresholds sit together. This one
-needs a person to say what went wrong when they used it before anything is
-drawn, or the redesign is a guess.
+**The brief, given 2026-09-08.** All three of these, not one:
 
-**Open questions.** Q5.
+- **Too many controls at once.** Schedule, day boundary, grace and the module's
+  own fields on one screen, with no grouping and nothing held back.
+- **The words are the engine's, not a person's.** Day boundary, grace, period,
+  threshold, and none of them explained where they are asked for.
+- **Setting a schedule is fiddly.** The day picker and the any-N-per-week
+  choice are the hard part.
+
+**What the work is.** A redesign of the screen, and it has to stay drawn from
+`fields()` so that adding a type still touches no engine code (invariant 6).
+The vocabulary problem is the one that reaches furthest: those words are in the
+module declarations and in the admin console too, so renaming them for a person
+is a decision about the whole app's language, not one screen's labels.
 
 ---
 
@@ -156,16 +179,23 @@ drawn, or the redesign is a guess.
 **Asked for.** In group stats the activity rows do not look clickable, so
 nobody will click through to per-activity stats.
 
-**True today.** The rows are plain `<div>`s (`group/[groupId]/stats/page.tsx`,
-BY ACTIVITY). They are not clickable, and **the destination does not exist**:
-there is no per-activity group stats route anywhere in `src/app`.
+**Corrected 2026-09-08.** An earlier draft of this file said the destination
+did not exist. That was wrong, and it was wrong because the search was for a
+per-activity ROUTE. A per-activity view exists on PERSONAL stats at
+`/stats?a=<typeKey>`, with a `<details>` disclosure to switch activity, and it
+has four artboards behind it: `V3StatsGym`, `V3StatsSleep`, `V3StatsSteps`,
+`V3StatsAbstain`.
 
-**What the work is.** Not a hover state. It is a new screen: what one activity
-looks like across a group, which members share it, how each is doing, over what
-window. Making the row look pressable without building that leads somewhere
-worse than a row that never invited the press.
+**True today.** What has no per-activity view is the GROUP stats screen. Its BY
+ACTIVITY rows are plain `<div>`s (`group/[groupId]/stats/page.tsx`) and lead
+nowhere, and no group-scoped per-activity artboard exists.
 
-**Open questions.** Q6.
+**So the choice is narrower than it looked.** Either the rows link to something
+group-scoped that has to be designed and built, or they stay rows. Linking them
+to `/stats?a=` would be wrong: that is the viewer's own numbers, and a person
+tapping an activity inside a group is asking about the group.
+
+**Open questions.** Q6, restated below.
 
 ---
 

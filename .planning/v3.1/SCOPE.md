@@ -318,17 +318,36 @@ like every other type's line.
 
 **Asked for.** "Food I logged 4 times but it just keeps on asking for Log."
 Corrected by the person who reported it: nothing failed, the photographs were
-captured and sent. The complaint is only that the button did not go away.
+captured and sent, and the count moved. The complaint is only that the button
+did not go away.
+
+**The check-ins recorded.** Confirmed by the person reporting it: the line
+under Food counted up as each meal was logged. So the photographs went through,
+the events exist, and nothing about the upload path is implicated. What is left
+is why the control stayed, and there are exactly two candidates:
+
+- **The day failed on calories.** Food passes only when the meal count is met
+  AND the total is at or under the limit. Four meals over 2000 leaves the day
+  failed, so no tick, and the control is correct to stay. **Nothing on the
+  screen says the day can no longer pass.** The line states the two numbers and
+  leaves the reader to do the comparison, which is not the register this app
+  writes in: it states consequences.
+- **The day passed and kept its control**, which is the change made earlier the
+  same day, deliberately, so that the meal breaking the limit can still be
+  logged. If this is what was seen, the question is whether Food should be in
+  that rule at all.
+
+The row's exact wording separates them in one glance, and reading it needs the
+database the dev site actually uses. See §8.6.
 
 **The first measurement of this was against the wrong database**, and finding
-out why is the important part. See §8.6. Everything below was read from
-`curfew-apac-dev`, which is what `.env.preview` names, and which is NOT what
-`dev.curfew.amanarya.com` writes to. It is a snapshot taken when the branch was
-cut, so it holds nothing from the session being reported and cannot answer this
-item. It is kept because what it shows is still true of the days it covers.
-
-**In that snapshot,** of **39 photo tickets issued, exactly one became a
-check-in.**
+out why is the important part, so it is kept below rather than deleted.
+Everything that follows was read from `curfew-apac-dev`, which is what
+`.env.preview` names and NOT what `dev.curfew.amanarya.com` writes to. It is a
+snapshot taken when the branch was cut, so it holds nothing from the session
+being reported. What it shows is still true of the days it covers, and it is
+still worth explaining: of **39 photo tickets issued in those days, exactly one
+became a check-in.**
 
 ```
 evidence  gym   21 rows,  1 confirmed
@@ -337,9 +356,9 @@ events    checkin.gym.session   1   (2026-09-04)
 events    checkin.food.meal     0   ever
 ```
 
-So the button is telling the truth: nothing was recorded. Four food tickets
-were issued within three seconds of each other, which is a person pressing Send
-again because nothing happened.
+Four food tickets were issued within three seconds of each other, which is a
+person pressing Send again because nothing happened. Whatever it was, it was
+happening on 4 September and it is not what was reported this week.
 
 **This is the path `OPEN.md` §4 says has never been driven end to end**, and it
 is the app's flagship feature. Evidence is the reason a group can believe

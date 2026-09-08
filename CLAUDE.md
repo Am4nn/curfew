@@ -90,10 +90,22 @@ first: nothing from v1 or v2 is carried across (decision 22). The steps are in
 ## Deploying
 
 Production ships on a version tag, never on a push. `main` is a Vercel Preview
-deployment against the `curfew-apac-dev` branch, served at
-`dev.curfew.amanarya.com` with deployment protection off, so anyone with the
-link can open it. Vercel's production branch is `production`, which nobody
-pushes.
+deployment served at `dev.curfew.amanarya.com` with deployment protection off,
+so anyone with the link can open it. Vercel's production branch is
+`production`, which nobody pushes.
+
+**An environment file says nothing about what a deployment reads.** `.env.*` is
+read by the commands in this repo and by nothing else; what a deployment
+connects to lives in Vercel, per environment, and is set in the dashboard. The
+two can disagree silently and did: `.env.preview` was pointed at the
+`curfew-apac-dev` branch and Vercel Preview was not, so for days
+`dev.curfew.amanarya.com` read and wrote `curfew-apac`'s default branch, the
+database production is about to become, while every local measurement described
+a branch nobody was using. It cost an afternoon and a defect report written
+about the wrong 39 rows. `bunx vercel env ls preview` shows the dates, which is
+enough to catch it: a variable older than the branch it is supposed to name has
+never been updated. The values are encrypted and never returned, so the dates
+are all you get and all you need.
 
 **Vercel Cron runs against the production deployment only.** There is no cron on
 Preview and no setting that adds one, so the dev deployment is never scored on
@@ -303,8 +315,12 @@ order. Only the values differ, and `.env.example` is the key list.
 | File | Database | Used by |
 |---|---|---|
 | `.env.local` | docker Postgres, `LOCAL_MODE=1` | `bun run local`, `local:*` |
-| `.env.preview` | `curfew-apac-dev`, a Neon branch | `bun run dev`, `migrate`, Vercel Preview |
-| `.env.production` | the live project | `migrate:production`, Vercel Production |
+| `.env.preview` | `curfew-apac-dev`, a Neon branch | `bun run dev`, `migrate` |
+| `.env.production` | the live project | `migrate:production` |
+
+The right-hand column is local commands only. No deployment reads any of these
+files; Vercel holds its own copy per environment, and keeping the two in step
+is a manual job nothing checks.
 
 A migration written after the cutover is applied twice: `bun run migrate` for the
 dev branch and `bun run migrate:production` for the live one. Reset the branch

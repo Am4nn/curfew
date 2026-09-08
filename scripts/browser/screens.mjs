@@ -34,6 +34,27 @@ export async function screens({ open, check, page }) {
     );
   }
 
+  // The by-activity rows on Stats go to that activity's own chart, and for a
+  // long time nothing on them said so: no chevron, no press state, on a row
+  // shaped exactly like Home's, which is not a link. A screen nobody knows they
+  // can press is a screen nobody opens, and no snapshot can catch that.
+  const statsText = await open("/stats");
+  const toChart = page.locator('a[href^="/stats?a="]').first();
+  const anyRow = (await toChart.count()) > 0;
+  check("a stats row leads to its own chart", anyRow);
+  if (anyRow) {
+    check(
+      "and the section says the rows can be pressed",
+      statsText.includes("TAP FOR THE CHART"),
+    );
+    const chart = await open(await toChart.getAttribute("href"));
+    check(
+      "and the chart it leads to renders",
+      !chart.includes("Something failed") && chart.includes("STATS"),
+      chart.slice(0, 90),
+    );
+  }
+
   // A group hub, from the list rather than from a hardcoded id, so this follows
   // the seed rather than duplicating it.
   await open("/groups");

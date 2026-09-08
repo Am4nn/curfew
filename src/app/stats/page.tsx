@@ -213,16 +213,31 @@ export default async function StatsPage({
               </div>
             </section>
 
+            {/* Every one of these rows has always been a link to that
+                activity's own chart, and nothing said so: no chevron, no press
+                state, and the near-identical row on Home is not a link, so the
+                shape reads as a line of a table. The artboard drew it that way
+                too, which is how it got built that way.
+
+                The chevron is the app's existing mark for this, on Home's
+                starter rows and above the photos. The header says it in words
+                as well, because a 12px glyph on the far edge is not something
+                to rest a whole screen on. */}
             <section className="flex flex-col gap-[10px]">
-              <span className="text-[10px] tracking-[0.16em] text-muted">
-                BY ACTIVITY, LAST 30 DAYS
-              </span>
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[10px] tracking-[0.16em] text-muted">
+                  BY ACTIVITY, LAST 30 DAYS
+                </span>
+                <span className="text-[10px] tracking-[0.16em] text-muted">
+                  TAP FOR THE CHART
+                </span>
+              </div>
               <div className="flex flex-col">
                 {stats.byActivity.map((row) => (
                   <Link
                     key={row.typeKey}
                     href={`/stats?a=${row.typeKey}`}
-                    className="flex items-center gap-[11px] border-b border-rule py-[11px]"
+                    className="flex items-center gap-[11px] border-b border-rule py-[11px] active:opacity-70"
                   >
                     <span className="flex flex-none text-muted">
                       <ActivityIcon name={row.icon} size={17} />
@@ -248,6 +263,7 @@ export default async function StatsPage({
                         <div className="h-[3px] bg-fg" style={{ width: `${row.percent}%` }} />
                       </div>
                     </div>
+                    <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
                   </Link>
                 ))}
               </div>

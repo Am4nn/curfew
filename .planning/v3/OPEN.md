@@ -13,8 +13,12 @@ is settled it becomes a decision there and leaves this file.
 **All fourteen are fixed.** The original six on 2026-09-05 and 2026-09-06
 (`60ab7ec`, `e79d5bf`, `9abb998`), §1.7 found while building the consent-gate
 zone (`12df57e`), §1.8 to §1.11 on 2026-09-07, §1.12 and §1.13 on
-2026-09-08, and §1.14 the same night. The last two were both found by curating v3.1's raw ideas, which
-turned out to be a better defect finder than any of the rounds run on purpose.
+2026-09-08, and §1.14 the same night.
+
+**The last three came out of v3.1's raw ideas**, which found more than any
+round run on purpose. §1.14 came out of being told twice: the first report was
+measured, reasoned about and closed as needing nothing, and the second was a
+flat contradiction that turned out to be right.
 
 ### 1.1 Rejoining a group silently did nothing — FIXED
 

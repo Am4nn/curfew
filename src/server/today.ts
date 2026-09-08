@@ -23,6 +23,13 @@ export interface TodayRow {
   done: boolean;
   /** A window is open and something can be pressed. */
   open: boolean;
+  /**
+   * Something is already recorded for this period, whatever it was.
+   *
+   * The control's word depends on it. A declared day that can still be
+   * corrected is not a day waiting to be checked in.
+   */
+  recorded: boolean;
   /** The step to check in, when one is open. */
   step: string | null;
   status: string;
@@ -98,6 +105,7 @@ export async function todayFor(userId: string): Promise<Today> {
       // means (invariant 6), and nothing is offered that the write path would
       // refuse: an unscheduled day is refused, so it is not offered either.
       open: state.scheduled && open !== null,
+      recorded: state.recorded.length > 0,
       step: open?.key ?? null,
       status,
       nextStatus: state.scheduled ? (open?.nextHint ?? null) : null,

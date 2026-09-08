@@ -131,7 +131,7 @@ async function row(typeKey: string): Promise<TodayRow> {
 }
 
 const shape = (r: TodayRow) =>
-  `scheduled=${r.scheduled} done=${r.done} open=${r.open} "${r.status}"`;
+  `scheduled=${r.scheduled} done=${r.done} open=${r.open} recorded=${r.recorded} "${r.status}"`;
 
 async function cleanup() {
   await db.delete(reputationDaily).where(inArray(reputationDaily.userId, [id]));
@@ -195,6 +195,9 @@ try {
   let sugar = await row("sugarfree");
   check("saying it held passes the day", sugar.done, shape(sugar));
   check("and the correction is still reachable", sugar.open, shape(sugar));
+  // What the control is called hangs on this. A day that has been declared is
+  // not a day waiting to be checked in, so the button says Correct.
+  check("and the row knows the declaration stands", sugar.recorded, shape(sugar));
 
   await press("sugarfree", "declare", "slipped", { held: false });
   sugar = await row("sugarfree");
@@ -248,6 +251,7 @@ try {
 
   const water = await row("water");
   check("an unscheduled day is not scheduled", !water.scheduled, shape(water));
+  check("and nothing is recorded against it", !water.recorded, shape(water));
   check("and offers nothing", !water.open, shape(water));
   const early = await press("water", "glass", "glass1");
   check(

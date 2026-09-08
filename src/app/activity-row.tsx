@@ -129,7 +129,7 @@ export function ActivityRow({
                 href={`/checkin/${row.typeKey}`}
                 className={"flex h-[34px] items-center gap-[6px] px-[13px] text-[12px] " + control(row.done)}
               >
-                {row.kind === "camera" ? "Log" : "Check in"}
+                {label(row)}
               </Link>
             )
           ) : null}
@@ -137,6 +137,21 @@ export function ActivityRow({
       ) : null}
     </div>
   );
+}
+
+/**
+ * The word on the control.
+ *
+ * A declared day keeps its control, because the answer can be corrected:
+ * "It held" and then, at ten o'clock, "I slipped". Calling that Check in was
+ * wrong twice over. The check-in has happened, and what the button leads to is
+ * a screen asking the same question again, so the row said a finished day was
+ * unfinished.
+ */
+function label(row: TodayRow): string {
+  if (row.kind === "camera") return "Log";
+  if (row.kind === "declare" && row.recorded) return "Correct";
+  return "Check in";
 }
 
 /** Filled while the day is still open, outlined once it is already passed. */

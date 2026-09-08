@@ -84,14 +84,18 @@ export function PhotoViewer({
         </button>
       </div>
 
-      {/* `object-contain`, which is the whole point: the photograph as it was
-          taken, not the square the grid needed. */}
-      <div className="flex flex-1 items-center justify-center overflow-hidden p-4">
+      {/* Everything between the two bars, and no padding: a margin around a
+          photograph is space taken from the photograph. `object-contain`
+          scales it to the largest it fits at its own shape, so nothing is
+          cropped and nothing is stretched. What is left over on one axis is
+          the difference between the picture's shape and the screen's, which is
+          the only spacing there is. */}
+      <div className="min-h-0 flex-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photo.url}
           alt={photo.alt}
-          className="max-h-full max-w-full object-contain"
+          className="h-full w-full object-contain"
         />
       </div>
 

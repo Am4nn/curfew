@@ -30,6 +30,7 @@
     "check:cron": "bun run scripts/check-cron.ts",
     "check:streak": "dotenv -e .env.local -- bun run scripts/check-streak.ts",
     "check:offer": "dotenv -e .env.local -- bun run scripts/check-offer.ts",
+    "check:evidence": "dotenv -e .env.local -- bun run scripts/check-evidence.ts",
     "check:logic-version": "dotenv -e .env.local -- bun run scripts/check-logic-version.ts",
     "check:timezones": "dotenv -e .env.local -- bun run scripts/check-timezones.ts",
     "browser": "node scripts/browser/run.mjs",

@@ -256,6 +256,7 @@ version    bun run check:logic-version — a curve change repairs itself
 zones      bun run check:timezones — a day belongs to the member, not to UTC
 streak     bun run check:streak    — the first thing you ever do counts
 offer      bun run check:offer     — a button is there when a press would count
+evidence   bun run check:evidence  — what you shared reaches the group
 cron       bun run check:cron      — the job runs after last night became scorable
 browser    bun run browser         — every screen and every form, against a running server
 audit      bun audit               — published advisories against the lockfile
@@ -270,10 +271,11 @@ cors       bun run check:cors      — can a browser upload from this origin
 ```
 
 CI runs typecheck, lint, test, build, the migration job, `break-in`, the
-simulation scenarios, `verify` against a seeded database, the six narrow script
-checks (money, logic version, timezones, the cron schedule, that a first session
-counts and that a control is offered exactly when a press would count), the
-browser suite against a running app, and the three
+simulation scenarios, `verify` against a seeded database, the seven narrow
+script checks (money, logic version, timezones, the cron schedule, that a first
+session counts, that a control is offered exactly when a press would count, and
+that a shared photograph reaches the group), the browser suite against a
+running app, and the three
 dependency and pipeline checks. A version tag will not deploy unless that whole
 run passed on the same SHA.
 

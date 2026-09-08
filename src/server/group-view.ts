@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { and, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   groups,
@@ -432,6 +432,22 @@ export async function groupEvidence(
   }
   if (allowed.size === 0) return [];
 
+  // Every filter belongs in the WHERE, and this is why.
+  //
+  // The query used to select on the member alone, order by `confirmed_at DESC`
+  // and take 20, then drop the rows that were unconfirmed or of a type that
+  // member does not share evidence for. Postgres sorts nulls FIRST on DESC, so
+  // every abandoned upload, which is what opening the camera and not sending
+  // leaves behind, sorted above every real photograph and filled the page. All
+  // twenty were then dropped in the loop and the tab said "Nothing shared here
+  // yet" to a group whose members had been sharing photographs for days.
+  //
+  // Enough abandoned uploads and the feed is empty for good. A limit applied
+  // before the filters is a limit on the wrong thing.
+  const scope = [...allowed.entries()].map(([memberId, who]) =>
+    and(eq(evidence.userId, memberId), inArray(evidence.typeKey, [...who.types])),
+  );
+
   const rows = await db
     .select({
       id: evidence.id,
@@ -444,7 +460,8 @@ export async function groupEvidence(
     .from(evidence)
     .where(
       and(
-        inArray(evidence.userId, [...allowed.keys()]),
+        or(...scope),
+        isNotNull(evidence.confirmedAt),
         isNull(evidence.deletedAt),
         opts.since ? gte(evidence.confirmedAt, opts.since) : sql`true`,
       ),

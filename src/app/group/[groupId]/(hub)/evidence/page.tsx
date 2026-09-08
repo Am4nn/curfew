@@ -70,7 +70,15 @@ export default async function EvidenceTab({
   return (
     <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
       {days.length === 0 ? (
-        <p className="text-[12.5px] leading-[1.6] text-muted">Nothing shared here yet.</p>
+        // Two different facts, and saying the wrong one is how this tab lied
+        // for days. Nothing shared is nothing shared. Photographs that exist
+        // and could not be signed for is a fault, and the tab has to say so
+        // rather than describe the group as quiet.
+        <p className="text-[12.5px] leading-[1.6] text-muted">
+          {page.length > 0
+            ? "These photos could not be loaded. Nothing has been deleted; try again shortly."
+            : "Nothing shared here yet."}
+        </p>
       ) : (
         days.map((day) => (
           <section key={day} className="flex flex-col gap-3">

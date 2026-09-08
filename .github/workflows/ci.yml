@@ -272,7 +272,7 @@ jobs:
       - name: The stored rows agree with a replay
         run: bun run scripts/verify.ts
 
-      # Five narrow proofs that each exist because the thing they check went
+      # Six narrow proofs that each exist because the thing they check went
       # wrong once. They ran by hand until now, which is the same as not
       # running: a fine charged twice, a curve change that does not heal, a
       # config write on the wrong day, a first session that counts for nothing
@@ -291,6 +291,9 @@ jobs:
 
       - name: A button is there when a press would count
         run: bun run scripts/check-offer.ts
+
+      - name: What you shared reaches the group
+        run: bun run scripts/check-evidence.ts
 
   # The half only a browser can answer, and the half of break-in that needs a
   # server. Both used to run when somebody remembered.

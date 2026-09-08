@@ -6,10 +6,11 @@ written as it was asked, then what is actually true today, measured rather than
 assumed, then what the work really is and what still needs answering.
 
 Four of the first seven turned out to be defects rather than ideas, and all
-four are done. Of the second five, one is a design job, one is a request, and
-the rest are defects. The largest thing on this page is §8.6, which nobody
-asked for and which was found only by trying to measure §8.3: the dev site does
-not read the database this repo's own files say it does.
+four are done. Of the second five: five of the six faults under §8 are done, §9
+is done, §10 turned out to need nothing, and §11 is half done and half waiting
+on a decision. What is left is design work, §1, §2, §5 and §12, and §8.6, which
+nobody asked for and which was found only by trying to measure §8.3: the dev
+site does not read the database this repo's own files say it does.
 
 `.planning/v3/SCOPE.md` remains the decision log for v3. When an item here is
 settled it becomes a numbered decision there and leaves this file.
@@ -280,7 +281,7 @@ the mock now as well.
 Given as one bullet, measured as five separate faults, plus a sixth nobody
 reported that was found while trying to measure the third.
 
-### 8.1 Water and Food take a press as often as you like
+### 8.1 Water and Food take a press as often as you like — DONE
 
 **Asked for.** A customisable gap between logs.
 
@@ -292,14 +293,17 @@ eight seconds and the day passes.
 
 **What the work is.** A minimum gap between presses of a repeating step.
 
-**Open questions.** Whose rule is it? A gap is not what a glass means, and it
-is the same shape for Water, Food, Supplements and Steps, so it belongs beside
-`grace` in the schedule config rather than being written four times in four
-modules. And what happens to a press inside the gap: refused with the reason,
-or recorded and not counted? Refusing is honest and matches `countsNow`;
-recording keeps the log true to what happened.
+**Decided and done 2026-09-08.** Honesty, so the press is refused rather than
+recorded and ignored. Engine-owned, beside `grace`: 0 to 240 minutes, per
+activity, off by default and defaulted in the schema so every config row
+written before it still parses. The engine writes the one sentence about it,
+since it is the engine's rule: "1 of 8 today. Next counts 12:22 AM." Enforced
+in both places, because either alone is a bug: the write path refuses with
+`too_soon`, and the step is not open while the gap runs, so no control is
+offered that the write path would refuse. The control appears only on a type
+with a step that repeats, since there is nothing to space out on an arrival.
 
-### 8.2 "I slipped" looks like it does nothing
+### 8.2 "I slipped" looks like it does nothing — DONE
 
 **Asked for.** Sugar-free's "I slipped" does nothing.
 
@@ -310,9 +314,9 @@ any words: abstinence declares no `hint`, so the row's status line reads
 that moves. Press "I slipped" on a day with nothing declared yet and literally
 nothing on the row changes.
 
-**What the work is.** Small. Give the abstinence factory a `hint`, so the row
-says which answer stands: "Held." or "Slipped.", in the module's own words,
-like every other type's line.
+**Done 2026-09-08.** The abstinence factory writes a `hint`, so the row says
+which answer stands: "You said it held." or "You said you slipped. Today does
+not count." In the module's own words, like every other type's line.
 
 ### 8.3 Food asks for another Log after four
 
@@ -415,7 +419,7 @@ Then say in `CLAUDE.md` that the environment files describe local commands
 only, and that what a deployment reads lives in Vercel and is checked with
 `vercel env ls`.
 
-### 8.4 A gym session does not move today's count
+### 8.4 A gym session does not move today's count — DONE
 
 **Asked for.** "Gym done even then progress 2/5 doesn't go 3/5."
 
@@ -429,13 +433,19 @@ done today, and for eleven of the twelve types those are the same thing.
 the schedule says `minimum, perWeek 4` and the module config says
 `sessionsPerWeek 3`. One screen sets both and nothing reconciles them.
 
-**What the work is.** The day counter needs "did something count today", which
-is a different question from "has the period passed" and one the module can
-already answer: `daysDone` returns the calendar days in the period that count,
-so today being among them is the test. Not a large change, but it moves the
-number at the top of Home, so it wants its own decision and its own check.
+**Done 2026-09-08.** The count reads `countedToday`, which is true when
+nothing more is wanted from today or when today is one of the days the module
+counts. Identical to `passed` for the eleven daily types; different for a
+longer period in both directions, since a rest day in a week already met is not
+a shortfall either. The tick beside the row is still `passed`, which is the
+period. `daysDone` is the module's own answer, so nothing in the engine learns
+what a session is.
 
-### 8.5 Calories accepts nought and five digits
+**The two weekly numbers are still there.** A minimum-per-week schedule and a
+module's own `sessionsPerWeek` are set on one screen and nothing reconciles
+them. Left alone deliberately: it belongs with #5, the configure screen.
+
+### 8.5 Calories accepts nought and five digits — DONE
 
 **Asked for.** No more than four characters, and not zero.
 
@@ -443,12 +453,16 @@ number at the top of Home, so it wants its own decision and its own check.
 and the field is declared `min: 0, max: 20000`, so `0` is accepted and so is
 `20000`. A meal of no calories is not a meal.
 
-**What the work is.** One line in the schema and one in the field. Both, or the
-client and the server disagree about what is valid.
+**Done 2026-09-08.** 1 to 9999 in both the schema and the field: one meal, not
+a day. And the input itself, which was the real hole: `min` and `max` on a
+number input are checked when a form is submitted and never while anyone types,
+and this is not a form, so five digits went in and the server refused them
+AFTER the photograph had been uploaded. Digits only now, never past the
+ceiling, and Send stays down below the floor.
 
 ---
 
-## 9. Photographs cannot be opened
+## 9. Photographs cannot be opened — DONE
 
 **Asked for.** Any photo should be clickable. Needs a UI.
 
@@ -459,17 +473,21 @@ app opens one: not `/settings/photos`, not the strip under a chart on Stats,
 not the group's evidence tab. The only tile ever wrapped in a button is the one
 on the delete-data screen, and that button deletes.
 
-**What the work is.** A viewer, and it needs designing rather than guessing.
+**Done 2026-09-08.** An overlay: the picture whole, `object-contain`, with who
+and what and when under it, Escape to close and arrows through the set. Both
+grids use it, your own photos and a group's evidence tab, where the arrows stay
+inside the day the heading names.
 
-**Open questions.** What does it show besides the photograph: the activity, the
-time, whose it is? What can be done from it, given the same viewer would serve
-your own photos and another member's evidence, where the actions are opposite
-(delete yours, report theirs)? Is it a route, which gets a back button and an
-address, or an overlay, which does not?
+**The three questions, answered by building it.** An overlay rather than a
+route, because it is a closer look at something already on screen rather than a
+place to arrive at, and an address for a photograph would outlive the sharing
+that allowed it. No actions on it: deleting your own lives on the photos and
+delete-data screens, reporting somebody else's on the evidence row, and a
+viewer that could do either would be a third place to do both.
 
 ---
 
-## 10. Evidence never reaches the group
+## 10. Evidence never reaches the group — NOTHING TO FIX
 
 **Asked for.** "Why are evidences not getting shared with groups? I did share
 them and agreed to sharing in settings."
@@ -489,7 +507,7 @@ before §8.3 hides it by fixing the supply.
 
 ---
 
-## 11. The ceiling reads 1000 whatever you actually do
+## 11. The ceiling reads 1000 whatever you actually do — HALF DONE
 
 **Asked for.** "In a group where I haven't added many of the activities it
 accepts, the ceiling is still 1000. Why?"
@@ -509,11 +527,18 @@ can never produce a period, can never be missed, and cost nothing. Breadth is
 new member and everyone still in grace is shown 1000, which is the one number
 that is certainly not theirs.
 
-**What the work is.** Breadth counts accepted types the member both tracks and
-shares; the display default becomes `ceilingFor` of that same fraction rather
-than a literal. The second is a display fix. **The first changes how a day is
-scored**, so it is a `LOGIC_VERSION` bump and a `verify` run, not a one-line
-edit.
+**The display half is done 2026-09-08.** With no scored day the ceiling is now
+`ceilingFor` of what the member shares of what the group accepts, the same
+arithmetic the nightly pass uses, rather than a literal 1000. The breadth line
+beside it counted every share row, which could report more shared than
+accepted; it counts what the group accepts too.
+
+**The scoring half waits for a decision**, and the person who asked is right
+that the rule as designed is shared over accepted: share all six and the
+ceiling is 1000. The question is only whether a type you share and do not track
+should count toward it, since it can never produce a period and so can never be
+missed. Changing it changes how a day is scored, so it is a `LOGIC_VERSION`
+bump and a `verify` run, not a one-line edit.
 
 **Open question.** What is a tracked type, for this purpose: enabled today, or
 enabled on the day being scored? Invariant 5 says the second, and

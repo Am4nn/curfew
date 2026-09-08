@@ -6,12 +6,12 @@ node_modules/
 out/
 build/
 
-# The three environment files. All gitignored, all hold live secrets.
-.env
-.env.local
-.env.preview
-.env.production
-.env.*.local
+# Every environment file, named or not. This listed the three by name, which
+# was a list of the files that existed rather than a rule, so a fourth one made
+# for an afternoon's diagnosis carried a live database URL into `git add -A`
+# and nothing would have stopped it. Anything called .env* holds a secret until
+# proven otherwise; .env.example is the one that does not.
+.env*
 !.env.example
 
 # vercel

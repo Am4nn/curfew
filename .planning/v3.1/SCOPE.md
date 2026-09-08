@@ -7,8 +7,9 @@ assumed, then what the work really is and what still needs answering.
 
 Four of the first seven turned out to be defects rather than ideas, and all
 four are done. Of the second five, one is a design job, one is a request, and
-the rest are defects. The largest thing on this page is §8.3: of 39
-photographs sent, one became a check-in.
+the rest are defects. The largest thing on this page is §8.6, which nobody
+asked for and which was found only by trying to measure §8.3: the dev site does
+not read the database this repo's own files say it does.
 
 `.planning/v3/SCOPE.md` remains the decision log for v3. When an item here is
 settled it becomes a numbered decision there and leaves this file.
@@ -276,8 +277,8 @@ the mock now as well.
 
 ## 8. Five things wrong on the activity screens
 
-Given as one bullet, measured as five separate faults. One of them is much
-larger than the sentence that reported it.
+Given as one bullet, measured as five separate faults, plus a sixth nobody
+reported that was found while trying to measure the third.
 
 ### 8.1 Water and Food take a press as often as you like
 
@@ -313,12 +314,21 @@ nothing on the row changes.
 says which answer stands: "Held." or "Slipped.", in the module's own words,
 like every other type's line.
 
-### 8.3 Food asks for another Log after four — THE BIG ONE
+### 8.3 Food asks for another Log after four
 
 **Asked for.** "Food I logged 4 times but it just keeps on asking for Log."
+Corrected by the person who reported it: nothing failed, the photographs were
+captured and sent. The complaint is only that the button did not go away.
 
-**Measured on the dev database, and it is worse than the report.** Of **39
-photo tickets issued, exactly one became a check-in.**
+**The first measurement of this was against the wrong database**, and finding
+out why is the important part. See §8.6. Everything below was read from
+`curfew-apac-dev`, which is what `.env.preview` names, and which is NOT what
+`dev.curfew.amanarya.com` writes to. It is a snapshot taken when the branch was
+cut, so it holds nothing from the session being reported and cannot answer this
+item. It is kept because what it shows is still true of the days it covers.
+
+**In that snapshot,** of **39 photo tickets issued, exactly one became a
+check-in.**
 
 ```
 evidence  gym   21 rows,  1 confirmed
@@ -353,6 +363,38 @@ the action, which separates the two in one run.
 an evidence row, no event, and no record anywhere of why. The app cannot say
 afterwards what happened to 38 photographs. Whatever the cause turns out to be,
 that silence is worth closing.
+
+### 8.6 The dev site writes to the future production database
+
+**Not reported. Found while trying to measure §8.3**, which is the only reason
+it was found at all.
+
+`CLAUDE.md` says `main` is a Preview deployment against `curfew-apac-dev`. It
+is not. `bunx vercel env ls preview` dates `DATABASE_URL_POOLED` and
+`DATABASE_URL_DIRECT` at six days old, and the `curfew-apac-dev` branch was
+made after that. The branch was named in the local `.env.preview` file and
+never in Vercel, so `dev.curfew.amanarya.com` has been reading and writing
+`curfew-apac`'s default branch: the database production is about to become.
+
+**Three consequences, in the order they bite.**
+
+Every measurement taken from `.env.preview` describes a database nobody is
+using. That is how §8.3 came to be written about 39 photographs that are not
+the 39 in question.
+
+Every test press made on the dev site is sitting in the future production data,
+which decision 22 says starts empty. The cutover already wipes it, so this
+costs nothing as long as the wipe happens; it is the assumption underneath the
+wipe that is worth stating out loud.
+
+And `bun run migrate` applies to a branch the deployed app never reads, so a
+migration can pass locally and be missing where anyone is actually looking.
+
+**What the work is.** Point the Vercel Preview environment at
+`curfew-apac-dev`, redeploy, and confirm from the app rather than from a file.
+Then say in `CLAUDE.md` that the environment files describe local commands
+only, and that what a deployment reads lives in Vercel and is checked with
+`vercel env ls`.
 
 ### 8.4 A gym session does not move today's count
 

@@ -206,7 +206,7 @@ is a decision about the whole app's language, not one screen's labels.
 
 ---
 
-## 6. Activities in group stats do not look clickable — LARGER THAN IT LOOKS
+## 6. Activities in stats do not look clickable — DONE
 
 **Asked for.** In group stats the activity rows do not look clickable, so
 nobody will click through to per-activity stats.
@@ -222,12 +222,29 @@ has four artboards behind it: `V3StatsGym`, `V3StatsSleep`, `V3StatsSteps`,
 ACTIVITY rows are plain `<div>`s (`group/[groupId]/stats/page.tsx`) and lead
 nowhere, and no group-scoped per-activity artboard exists.
 
-**So the choice is narrower than it looked.** Either the rows link to something
-group-scoped that has to be designed and built, or they stay rows. Linking them
-to `/stats?a=` would be wrong: that is the viewer's own numbers, and a person
-tapping an activity inside a group is asking about the group.
+**Corrected again 2026-09-08, by the person who asked for it.** The screen
+meant was PERSONAL stats, not group stats. There the rows under BY ACTIVITY
+have always been links to `/stats?a=<typeKey>`, and nothing on them said so: no
+chevron, no press state, on a row shaped exactly like Home's, which is not a
+link. The shape reads as a line of a table, so the four charts behind it went
+unopened. The artboard drew it that way too, which is how it got built that
+way.
 
-**Open questions.** Q6, restated below.
+**Decided and done 2026-09-08.** The chevron the starter rows and the photo
+strip already use, the press state every other control has, and the section
+header saying it in words: `BY ACTIVITY, LAST 30 DAYS` on the left,
+`TAP FOR THE CHART` on the right, the same shape as `YOUR PHOTOS` and its
+`All ›`. A 12px glyph on the far edge of a dense row is not enough to rest a
+screen on. Two artboards regenerated with it, `V3Stats` and `V31StatsPaused`,
+and the screens suite now follows a row through to the chart it opens.
+
+**The group screen is untouched, and stays that way for now.** Its BY ACTIVITY
+rows are plain `<div>`s that lead nowhere, so there is no affordance missing:
+there is no destination. Giving them one means designing something
+group-scoped, because linking them to `/stats?a=` would answer a question
+nobody asked: that is the viewer's own numbers, and a person tapping an
+activity inside a group is asking about the group. Not in v3.1 unless it comes
+back as its own request.
 
 ---
 

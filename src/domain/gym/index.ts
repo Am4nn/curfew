@@ -125,7 +125,13 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     const days = sessionDays(input.checkins, input.timezone);
     const need = input.config.sessionsPerWeek;
     const today = DateTime.now().setZone(input.timezone).toFormat("yyyy-MM-dd");
-    if (days.size >= need) return `${days.size} of ${need} this week. Done.`;
+    // A met week says so with the count: "4 of 3 this week", which is what the
+    // mock draws and what the tick beside it already means. It used to add
+    // "Done.", which read as an instruction to stop next to a button offering
+    // another day.
+    if (days.size >= need) return `${days.size} of ${need} this week.`;
+    // Still short, and today is spent: no tick, no button, so the line is the
+    // only thing that can say why.
     if (days.has(today)) {
       return `${days.size} of ${need} this week. Today is logged.`;
     }

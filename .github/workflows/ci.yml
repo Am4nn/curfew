@@ -272,11 +272,11 @@ jobs:
       - name: The stored rows agree with a replay
         run: bun run scripts/verify.ts
 
-      # Four narrow proofs that each exist because the thing they check went
+      # Five narrow proofs that each exist because the thing they check went
       # wrong once. They ran by hand until now, which is the same as not
       # running: a fine charged twice, a curve change that does not heal, a
-      # config write on the wrong day and a first session that counts for
-      # nothing are all silent.
+      # config write on the wrong day, a first session that counts for nothing
+      # and a button that is not there when a press would count are all silent.
       - name: A fine is charged once
         run: bun run scripts/check-money.ts
 
@@ -288,6 +288,9 @@ jobs:
 
       - name: The first thing you ever do counts
         run: bun run scripts/check-streak.ts
+
+      - name: A button is there when a press would count
+        run: bun run scripts/check-offer.ts
 
   # The half only a browser can answer, and the half of break-in that needs a
   # server. Both used to run when somebody remembered.

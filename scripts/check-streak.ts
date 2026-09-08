@@ -52,7 +52,7 @@ function check(what: string, ok: boolean, got: unknown = "") {
 
 const id = `streakc-${randomUUID().slice(0, 6)}`;
 
-async function track(typeKey: string) {
+async function track(typeKey: string, config?: unknown) {
   const type = getActivityType(typeKey);
   await db.insert(userActivityConfig).values({
     userId: id,
@@ -64,7 +64,7 @@ async function track(typeKey: string) {
         dayBoundary: type.defaults.dayBoundary,
         grace: type.defaults.grace,
       },
-      config: type.defaults.config,
+      config: config ?? type.defaults.config,
     },
   });
   await db.insert(userActivities).values({
@@ -163,8 +163,10 @@ try {
     `${(await readStreak(id, "gym"))?.current}`,
   );
 
-  // A DAILY type, whose first day is the same case one period shorter.
-  await track("office");
+  // A DAILY type, whose first day is the same case one period shorter. Its
+  // window is widened to the whole day because office arrives between 10 AM and
+  // 2 PM by default, and this check is not about the hour it runs at.
+  await track("office", { window: { open: "00:00", close: "23:59" } });
   const office = await press("office", "arrive", "office");
   check("the first office arrival is recorded", office.ok, JSON.stringify(office));
   check(

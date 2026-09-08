@@ -141,10 +141,42 @@ review gate exists to catch and what ticking those rows would have found.
 
 **Decided 2026-09-08: "4 of 3 this week"**, which is what the artboard says.
 
-**What the work is.** `today.ts:81` stops gating the control on `state.passed`
-and gates it on whether another press would count, which the module already
-answers with `countsNow`. The row keeps its tick, because the week did pass.
-The progress bar has no room past full and needs a decision of its own.
+**No progress bar is involved.** An earlier draft of this section said one had
+no room past full. There is no bar on an activity row: it is icon, name,
+streak, the module's status line and the tick. The only bar on Home is the
+TODAY strip, one segment per activity due today, which a fourth gym session
+does not move.
+
+**Done 2026-09-08.** The gate is now whether another press would count, and
+that question is asked in one place for every screen. Three things answer it,
+none of which is "has the period passed": the window is open, the module's own
+`countsNow` says yes, and a step that happens once a period has not happened.
+That last one was missing from the engine entirely, so the check-in screen
+offered an Arrival form all evening and the press came back "already
+recorded".
+
+**It applies to more than Gym, and the two others are worse.** Food passes at
+its meal count with the calories under the limit, so the meal that would BREAK
+the limit was the one Home refused to take, and the day scored as passed on
+what was recorded before it. An abstinence type passes the moment you say it
+held, which withdrew the correction `abstinence.ts` deliberately allows in as
+many words. Screen time is the same shape as Food.
+
+**Where it does not apply, it is the module or the step that says so**, not
+this line. Sleep and Office are unchanged: their steps happen once a period.
+Gym's second session on one day is refused as it always was. An unscheduled day
+now offers nothing, which is a fourth thing that was wrong: the write path
+refused those presses and Home offered them anyway.
+
+**Drift from the artboards, recorded.** `V3HomeDone.dc.html` draws every done
+row with a tick and no control. A done row can now carry both, and the control
+drops to the secondary treatment (outlined, not filled) so a finished day does
+not shout. The artboard is still reachable and still correct: it is the state
+after the fourth session, on the day it was pressed.
+
+`bun run check:offer` is the proof and runs in CI. Seventeen checks, four of
+which fail on the commit before this one, each one reading Home's own row and
+then asking `performCheckin` whether it agrees.
 
 ---
 

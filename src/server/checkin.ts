@@ -181,6 +181,12 @@ export async function getCheckinState(
         step: step.key,
         pending: null,
       }) ?? true;
+    // A step that does not repeat is spent the moment it is recorded. That is
+    // the write path's own guard (`performCheckin`, the `!step.repeats`
+    // branch), and it was missing here, so the office check-in screen offered
+    // an Arrival form all evening and the press came back "already recorded".
+    const spent = !(step.repeats ?? false) && mine.length > 0;
+
     return {
       key: step.key,
       label: step.label,
@@ -189,7 +195,12 @@ export async function getCheckinState(
       // Open means the window is open AND another press would count. Gym's
       // window is the whole week, but only one session a day counts, so a
       // Tuesday evening press after a Tuesday morning one is not "open".
-      open: inWindow && counts,
+      //
+      // These three are the whole of "would a press do anything": the window,
+      // the module's own answer, and one arrival per period for a step that
+      // does not repeat. Every screen gates its controls on this and only this,
+      // so nothing is ever offered that the write path would refuse.
+      open: inWindow && counts && !spent,
       inWindow,
       counts,
       count: mine.length,

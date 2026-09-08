@@ -78,11 +78,29 @@ export async function todayFor(userId: string): Promise<Today> {
       streak: standings.get(activity.typeKey)?.streak ?? 0,
       scheduled: state.scheduled,
       done: state.passed,
-      open: open !== null && !state.passed,
+      // Offered when another press would count, NOT when the period is still
+      // failing. Those came apart in three places at once.
+      //
+      // A week of three gym sessions passes on Wednesday, and Thursday's
+      // session is a fourth day at the gym that adds to the streak: the row
+      // said done and drew no control, so it could not be recorded from Home.
+      // Food and Screen are the same line from the other side, and worse. Food
+      // passes at three meals under the calorie limit, so the meal that would
+      // break the limit was the one Home refused to take, and the day scored as
+      // passed on what was recorded before it. An abstinence type passes the
+      // moment you say it held, which withdrew the correction its own module
+      // allows ("I slipped" after "It held").
+      //
+      // Where another press does nothing, the step is already not open: the
+      // window has closed, or the module's `countsNow` says no, or it is a step
+      // that happens once a period and has happened. Sleep and Office are
+      // unchanged for exactly that reason. Nothing here learns what a type
+      // means (invariant 6), and nothing is offered that the write path would
+      // refuse: an unscheduled day is refused, so it is not offered either.
+      open: state.scheduled && open !== null,
       step: open?.key ?? null,
       status,
-      nextStatus:
-        state.scheduled && !state.passed ? (open?.nextHint ?? null) : null,
+      nextStatus: state.scheduled ? (open?.nextHint ?? null) : null,
     });
   });
 

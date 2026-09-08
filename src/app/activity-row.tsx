@@ -89,40 +89,57 @@ export function ActivityRow({
         <span className="truncate text-[11.5px] text-muted">{status}</span>
       </div>
 
-      {row.done ? (
-        <span className="flex flex-none items-center gap-[6px] text-[12px] text-pass">
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="square"
-            aria-hidden="true"
-          >
-            <path d="M4 12.5 9 17.5 20 6.5" />
-          </svg>
-          done
-        </span>
-      ) : row.open && row.step ? (
-        row.kind === "counter" ? (
-          <CheckinButton
-            label="+1"
-            typeKey={row.typeKey}
-            step={row.step}
-            onPressed={onRecord}
-            className="flex h-[34px] flex-none items-center border border-fg bg-fg px-[13px] text-[12px] font-semibold text-bg disabled:opacity-60"
-          />
-        ) : (
-          <Link
-            href={`/checkin/${row.typeKey}`}
-            className="flex h-[34px] flex-none items-center gap-[6px] border border-fg bg-fg px-[13px] text-[12px] font-semibold text-bg"
-          >
-            {row.kind === "camera" ? "Log" : "Check in"}
-          </Link>
-        )
+      {/* The tick and the control are not alternatives. A period can be passed
+          and still take another press: a fourth gym session in a week of
+          three, the meal that breaks the calorie limit, the evening's screen
+          time after a morning reading came in under it. The row says both, and
+          the control drops to the secondary treatment so a day already done
+          does not shout at anyone. Where a press would do nothing the step is
+          not open, so Sleep and Office read exactly as the mock draws them. */}
+      {row.done || (row.open && row.step) ? (
+        <div className="flex flex-none items-center gap-[10px]">
+          {row.done ? (
+            <span className="flex items-center gap-[6px] text-[12px] text-pass">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="square"
+                aria-hidden="true"
+              >
+                <path d="M4 12.5 9 17.5 20 6.5" />
+              </svg>
+              done
+            </span>
+          ) : null}
+          {row.open && row.step ? (
+            row.kind === "counter" ? (
+              <CheckinButton
+                label="+1"
+                typeKey={row.typeKey}
+                step={row.step}
+                onPressed={onRecord}
+                className={"flex h-[34px] items-center px-[13px] text-[12px] disabled:opacity-60 " + control(row.done)}
+              />
+            ) : (
+              <Link
+                href={`/checkin/${row.typeKey}`}
+                className={"flex h-[34px] items-center gap-[6px] px-[13px] text-[12px] " + control(row.done)}
+              >
+                {row.kind === "camera" ? "Log" : "Check in"}
+              </Link>
+            )
+          ) : null}
+        </div>
       ) : null}
     </div>
   );
+}
+
+/** Filled while the day is still open, outlined once it is already passed. */
+function control(done: boolean): string {
+  return done ? "border border-rule text-fg" : "border border-fg bg-fg font-semibold text-bg";
 }

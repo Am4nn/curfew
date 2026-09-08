@@ -64,6 +64,22 @@ describe("gym declaration", () => {
     expect(gymActivity.countsNow?.({ ...input, checkins: [] })).toBe(true);
   });
 
+  // A met week can still take another day, and Home now offers the button for
+  // it, so the line beside that button must not say the week is finished. The
+  // mock draws "4 of 3 this week" and nothing else; "Done." read as an
+  // instruction to stop.
+  it("says nothing but the count once the week is met", () => {
+    const day = (d: string) => ({ step: GYM_STEP, at: new Date(`${d}T10:00:00+05:30`), evidence: {} });
+    const hint = gymActivity.hint?.({
+      periodStart: WEEK,
+      timezone: IST,
+      config: gymActivity.defaults.config,
+      step: GYM_STEP,
+      checkins: [day("2026-03-02"), day("2026-03-03"), day("2026-03-05"), day("2026-03-06")],
+    });
+    expect(hint).toBe("4 of 3 this week.");
+  });
+
   it("its window covers the whole week", () => {
     const [w] = gymActivity.windows(gymActivity.defaults.config, WEEK, IST);
     const spanDays = (w.closesAt.getTime() - w.opensAt.getTime()) / 86_400_000;

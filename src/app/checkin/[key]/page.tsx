@@ -68,7 +68,11 @@ function Closed({
   // one session a day. Saying "No window is open" about that is simply untrue,
   // so the module's own line answers it instead, and the engine never writes a
   // sentence about why (invariant 6).
-  const spent = state.steps.find((s) => s.inWindow && !s.counts) ?? null;
+  // `!s.open` rather than `!s.counts`: a step that happens once a period is
+  // spent by having happened, and the engine knows that without the module
+  // saying so. Office arrived at 9 AM read "No window is open" for the rest of
+  // the day, which is untrue: the window is open and the arrival is recorded.
+  const spent = state.steps.find((s) => s.inWindow && !s.open) ?? null;
   return (
     <div className="flex flex-1 flex-col gap-[18px] px-5 pb-6 pt-[18px]">
       <span className="text-[16px] leading-[1.5]">

@@ -10,9 +10,11 @@ is settled it becomes a decision there and leaves this file.
 
 ## 1. Defects
 
-**All twelve are fixed.** The original six on 2026-09-05 and 2026-09-06
+**All thirteen are fixed.** The original six on 2026-09-05 and 2026-09-06
 (`60ab7ec`, `e79d5bf`, `9abb998`), §1.7 found while building the consent-gate
-zone (`12df57e`), §1.8 to §1.11 on 2026-09-07, and §1.12 on 2026-09-08.
+zone (`12df57e`), §1.8 to §1.11 on 2026-09-07, and §1.12 and §1.13 on
+2026-09-08. The last two were both found by curating v3.1's raw ideas, which
+turned out to be a better defect finder than any of the rounds run on purpose.
 
 ### 1.1 Rejoining a group silently did nothing — FIXED
 
@@ -100,6 +102,57 @@ repaired it, which is why it survived this long; for gym the week had to end.
 
 **It was the first thing a new member ever saw.** Go to the gym, log it, and be
 told nothing happened.
+
+### 1.13 A control was offered on the wrong question — FIXED
+
+Found the same way as §1.12, from a request that read "let me check in on
+another day once the week's target is met". Home gated its button on
+`!state.passed`, meaning "this period has not passed yet", when the question a
+control has to answer is "would a press do anything". The two came apart four
+ways, and only the first was asked for.
+
+**Gym.** Three sessions pass the week, so Thursday's session, a fourth day at
+the gym that adds to the streak, could not be recorded from Home at all. The
+engine already agreed it should count: `countsNow` refuses only a second
+session on one calendar day, and `daysDone` returns every session day. The
+artboard already drew the result, `4 of 3 this week`, ticked.
+
+**Food, and it is worse.** Food passes at its meal count with the calories
+under the limit. So the meal that would BREAK the limit was precisely the one
+Home refused to take, and the day closed as passed on what had been recorded
+before it. Screen time is the same shape: a morning reading under the limit
+withdrew the control before the evening's reading could be entered. Both are
+the pattern invariant 2 exists to prevent, reached from the other side. The app
+rewarded not logging.
+
+**Abstinence.** Saying it held passes the day, which withdrew the correction
+`abstinence.ts` allows in as many words: someone who taps "It held" and then
+corrects themselves is telling the truth the second time.
+
+**An unscheduled day.** `passed` is false on a day nothing is scheduled, so the
+row offered a button the write path refuses as `unscheduled`.
+
+And the mirror of it, in the engine rather than the surface: `getCheckinState`
+computed `open` as the window being open and the module's `countsNow` saying
+yes, with no equivalent of the write path's one-arrival-per-period guard. The
+check-in screen offered an Arrival form all afternoon and the press came back
+"already recorded"; the closed screen then said "No window is open" about a
+window that was open.
+
+All of it is now one question asked in one place. `open` is the window, plus
+`countsNow`, plus a step that repeats or has not happened. Home offers a
+control exactly when that is true, and the row carries the tick and the control
+together when a passed period can still take a press. Where a further press
+does nothing, it is the step or the module that says so, never the period:
+Sleep and Office are unchanged.
+
+`bun run check:offer` is new and runs in CI. Seventeen checks, four of which
+fail on the commit before the fix, each reading Home's own row and then asking
+`performCheckin` whether it agrees. The two disagreeing was the bug.
+
+**Drift from the artboards, deliberate and recorded.** `V3HomeDone` draws every
+done row with a tick and no control. A done row can now carry both, with the
+control outlined rather than filled so a finished day does not shout.
 
 ### 1.6 Timezone was resolved once and applied to all history — FIXED
 

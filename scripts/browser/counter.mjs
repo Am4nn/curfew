@@ -20,10 +20,10 @@ const TZ = "Asia/Kolkata";
 const TYPE = "Water";
 
 /** The Home row for one activity, as its lines. */
-async function row(body, name) {
-  const lines = (await body()).split("\n");
-  const i = lines.findIndex((l) => l.trim() === name);
-  return i < 0 ? [] : lines.slice(i, i + 4).map((l) => l.trim());
+async function row(body, name, lines = 4) {
+  const all = (await body()).split("\n");
+  const i = all.findIndex((l) => l.trim() === name);
+  return i < 0 ? [] : all.slice(i, i + lines).map((l) => l.trim());
 }
 
 const has = (lines, text) => lines.some((l) => l.includes(text));
@@ -50,8 +50,19 @@ async function movedFrom(page, body, from) {
 }
 
 export async function counter({ open, check, page, body, setClock, clearClock }) {
-  // A day nobody has drunk anything on yet. The seed finishes today's eight
-  // glasses, and a completed counter offers no button to press.
+  // The seed finishes today's eight glasses, which is the row this screen used
+  // to get wrong. A day that has passed can still take another glass, so it
+  // carries the tick AND the press. Home withdrew the control the moment the
+  // day passed, which is a different question and the wrong one: the meal that
+  // breaks a calorie limit is exactly the one it refused to take.
+  // `scripts/check-offer.ts` is the same rule at the server.
+  await open("/");
+  const finished = await row(body, TYPE, 6);
+  check("a finished counter still says done", has(finished, "done"), finished.join(" | "));
+  check("and still offers the press", has(finished, "+1"), finished.join(" | "));
+
+  // And now a day nobody has drunk anything on yet, so the count can be
+  // watched moving from zero.
   const tomorrow = DateTime.now().setZone(TZ).plus({ days: 1 }).startOf("day").plus({ hours: 10 });
   await setClock(tomorrow.toISO());
   await open("/");

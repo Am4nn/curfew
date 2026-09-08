@@ -7,7 +7,7 @@ assumed, then what the work really is and what still needs answering.
 
 Four of the first seven turned out to be defects rather than ideas, and all
 four are done. Of the second five: five of the six faults under §8 are done, §9
-is done, §10 turned out to need nothing, and §11 is half done and half waiting
+is done, §10 was a real bug and is fixed, and §11 is half done and half waiting
 on a decision. What is left is design work, §1, §2, §5 and §12, and §8.6, which
 nobody asked for and which was found only by trying to measure §8.3: the dev
 site does not read the database this repo's own files say it does.
@@ -487,7 +487,7 @@ viewer that could do either would be a third place to do both.
 
 ---
 
-## 10. Evidence never reaches the group — NOTHING TO FIX
+## 10. Evidence never reaches the group — WAS A REAL BUG, FIXED
 
 **Asked for.** "Why are evidences not getting shared with groups? I did share
 them and agreed to sharing in settings."
@@ -499,11 +499,34 @@ correct. What is missing is the photographs: `groupEvidence` requires
 `confirmed_at`, and there is exactly **one** confirmed photograph in the whole
 database. The other 38 never became check-ins, which is §8.3.
 
-**So this is not a separate bug**, with one thing to confirm: that single
-confirmed gym photo from 4 September is shared, is in that group, and the tab
-carries no date window any more, so it SHOULD appear. If the tab shows nothing
-at all, a second fault is sitting behind the first, and it is worth finding
-before §8.3 hides it by fixing the supply.
+**That reasoning was wrong, and closing this on it was the mistake.** The
+sharing being right and the photographs being few said nothing about the query
+that reads them, and it was the query. It took being told a second time,
+against a flat claim that this needed nothing, to go and look.
+
+**Fixed 2026-09-08.** `groupEvidence` selected on the member, ordered by
+`confirmed_at DESC`, took the first page and THEN dropped the rows that were
+unconfirmed or of a type that member does not share evidence for. Postgres
+sorts nulls FIRST on a DESC order, so every abandoned upload sorted above every
+real photograph. Opening the camera and not sending leaves one behind, which is
+ordinary. Twenty of those filled the page, all twenty were dropped in the loop,
+and the tab said "Nothing shared here yet" to a group whose members had been
+sharing photographs for days. Enough abandoned uploads and it says that
+permanently.
+
+A limit applied before the filters is a limit on the wrong thing. Every filter
+is now in the WHERE: the member and the types they share evidence for as one
+condition, confirmed, not deleted. The loop's own checks stay as a second line.
+
+`bun run check:evidence` is the proof and runs in CI. One photograph and 45
+abandoned uploads taken after it, which is the shape of the account this was
+reported from. Two of its three checks fail on the commit before, with nought
+items back, which is the tab saying nothing was ever shared.
+
+**And the tab stopped saying that when it means something else.** A photograph
+whose URL cannot be signed is dropped per item, so one bad row cannot take the
+page down; with every row dropped, the message read as a quiet group. It now
+says the photographs could not be loaded and that nothing has been deleted.
 
 ---
 

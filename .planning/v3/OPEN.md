@@ -10,10 +10,10 @@ is settled it becomes a decision there and leaves this file.
 
 ## 1. Defects
 
-**All thirteen are fixed.** The original six on 2026-09-05 and 2026-09-06
+**All fourteen are fixed.** The original six on 2026-09-05 and 2026-09-06
 (`60ab7ec`, `e79d5bf`, `9abb998`), §1.7 found while building the consent-gate
-zone (`12df57e`), §1.8 to §1.11 on 2026-09-07, and §1.12 and §1.13 on
-2026-09-08. The last two were both found by curating v3.1's raw ideas, which
+zone (`12df57e`), §1.8 to §1.11 on 2026-09-07, §1.12 and §1.13 on
+2026-09-08, and §1.14 the same night. The last two were both found by curating v3.1's raw ideas, which
 turned out to be a better defect finder than any of the rounds run on purpose.
 
 ### 1.1 Rejoining a group silently did nothing — FIXED
@@ -153,6 +153,43 @@ fail on the commit before the fix, each reading Home's own row and then asking
 **Drift from the artboards, deliberate and recorded.** `V3HomeDone` draws every
 done row with a tick and no control. A done row can now carry both, with the
 control outlined rather than filled so a finished day does not shout.
+
+### 1.14 A group's evidence tab said nothing had ever been shared — FIXED
+
+Reported twice. The first time it was measured, reasoned about, and closed as
+needing nothing: the sharing flags were right and there was almost nothing
+confirmed to show, so the empty tab looked like an empty supply. The second
+report was flat contradiction, and it was correct.
+
+`groupEvidence` selected on the member, ordered by `confirmed_at DESC`, took
+the first page, and THEN dropped the rows that were unconfirmed or of a type
+that member does not share evidence for.
+
+**Postgres sorts nulls FIRST on a DESC order.** An evidence row is written when
+the upload URL is issued and confirmed when the check-in lands, so opening the
+camera and not sending leaves an unconfirmed row behind. That is ordinary
+behaviour, not a fault. Twenty of them sorted above every real photograph,
+filled the page, were all dropped in the loop, and the tab said "Nothing shared
+here yet" to a group whose members had been sharing for days. Enough of them
+and it says that permanently: the confirmed photographs can never reach a page.
+
+A limit applied before the filters is a limit on the wrong thing. Every filter
+now lives in the WHERE: the member and the types they share evidence for as one
+condition, confirmed, not deleted. The loop's checks stay as a second line of
+defence.
+
+`bun run check:evidence` is new and runs in CI: one photograph, 45 abandoned
+uploads taken after it, which is the shape of the account it was reported from.
+Two of its three checks fail on the commit before, with nought items back.
+
+**Beside it, the same sentence lying for a different reason.** The tab signs a
+URL per photograph and drops any that fails, so one bad row cannot take the
+page down. With every row dropped, the fallback read as a quiet group. It now
+says the photographs could not be loaded and that nothing has been deleted.
+
+**The lesson is not about SQL.** The first close was reasoning from adjacent
+facts, out loud, with confidence, instead of running the query. The check
+exists so the next person does not have to argue.
 
 ### 1.6 Timezone was resolved once and applied to all history — FIXED
 

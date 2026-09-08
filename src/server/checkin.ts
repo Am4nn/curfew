@@ -69,6 +69,11 @@ export interface CheckinStepView {
   inWindow: boolean;
   /** Would another press of it change anything? The module decides. */
   counts: boolean;
+  /**
+   * While a minimum gap is running, when the next press would count. Null
+   * otherwise. The engine's own rule, so the engine writes this sentence.
+   */
+  waitingUntil: string | null;
   /** How many check-ins this step already has this period. */
   count: number;
   repeats: boolean;
@@ -145,6 +150,20 @@ async function recordedFor(
 }
 
 /**
+ * When the minimum gap since the last press of this step runs out, or null if
+ * there is no gap set or nothing to measure from.
+ *
+ * Measured from the LATEST press rather than the first, so the gap is between
+ * consecutive presses. Engine-owned: the same rule for glasses, meals, doses
+ * and readings, and it asks nothing about what any of them mean.
+ */
+function gapEndsAt(minGap: number, mine: { at: Date }[]): Date | null {
+  if (minGap <= 0 || mine.length === 0) return null;
+  const last = mine.reduce((a, b) => (b.at > a.at ? b : a));
+  return new Date(last.at.getTime() + minGap * 60_000);
+}
+
+/**
  * Everything the check-in screen needs for one type, or null when the user does
  * not track it.
  */
@@ -196,6 +215,10 @@ export async function getCheckinState(
     // an Arrival form all evening and the press came back "already recorded".
     const spent = !(step.repeats ?? false) && mine.length > 0;
 
+    // And the gap, which is the engine's own rule rather than the module's.
+    const nextAt = gapEndsAt(activity.schedule.minGap, mine);
+    const waiting = nextAt !== null && instant < nextAt;
+
     return {
       key: step.key,
       label: step.label,
@@ -205,13 +228,16 @@ export async function getCheckinState(
       // window is the whole week, but only one session a day counts, so a
       // Tuesday evening press after a Tuesday morning one is not "open".
       //
-      // These three are the whole of "would a press do anything": the window,
-      // the module's own answer, and one arrival per period for a step that
-      // does not repeat. Every screen gates its controls on this and only this,
-      // so nothing is ever offered that the write path would refuse.
-      open: inWindow && counts && !spent,
+      // These four are the whole of "would a press do anything": the window,
+      // the module's own answer, one arrival per period for a step that does
+      // not repeat, and the gap since the last one. Every screen gates its
+      // controls on this and only this, so nothing is ever offered that the
+      // write path would refuse.
+      open: inWindow && counts && !spent && !waiting,
       inWindow,
       counts,
+      /** When the next press of this step would count, while a gap is running. */
+      waitingUntil: waiting && nextAt ? label(nextAt, timezone) : null,
       count: mine.length,
       repeats: step.repeats ?? false,
       fields: step.fields ?? [],
@@ -303,6 +329,7 @@ export type CheckinFailure =
   | "rate_limited"
   | "no_photo"
   | "already_counted"
+  | "too_soon"
   | "paused";
 
 export type CheckinResult =
@@ -412,6 +439,21 @@ export async function resolveCheckinTarget(
       ok: false,
       reason: "already_counted",
       message: `${step.label} is already recorded for today.`,
+    };
+  }
+
+  // The gap. Eight glasses in eight seconds is not a day anybody had, and the
+  // abuse ceilings are not a substitute: they exist to stop a stuck button, at
+  // 20 a minute, which is a burst by any honest reading.
+  const gapEnds = gapEndsAt(
+    activity.schedule.minGap,
+    recorded.filter((c) => c.step === stepKey),
+  );
+  if (gapEnds && instant < gapEnds) {
+    return {
+      ok: false,
+      reason: "too_soon",
+      message: `${step.label} counts again from ${label(gapEnds, timezone)}.`,
     };
   }
 

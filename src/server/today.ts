@@ -77,13 +77,20 @@ export async function todayFor(userId: string): Promise<Today> {
     const hint = state.steps.find((s) => s.hint)?.hint ?? null;
     const lastAt = state.recorded.at(-1)?.atLabel ?? null;
 
-    const status = !state.scheduled
+    const base = !state.scheduled
       ? "Not scheduled today"
       : state.passed
         ? (hint ?? (lastAt ? `Logged ${lastAt}` : "Done"))
         : open
           ? (hint ?? `${open.label} window closes ${open.closesLabel}`)
           : (hint ?? "No window open");
+
+    // A gap holds the control down, and the row has to say why or it reads as
+    // an activity that has stopped working. The module writes the count, the
+    // engine writes this, because the gap is the engine's rule.
+    const waiting = state.steps.find((s) => s.waitingUntil)?.waitingUntil ?? null;
+    const status =
+      waiting && !open && state.scheduled ? `${base} Next counts ${waiting}.` : base;
 
     rows.push({
       typeKey: activity.typeKey,

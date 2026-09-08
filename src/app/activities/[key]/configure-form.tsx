@@ -96,6 +96,10 @@ function DayCell({
   );
 }
 
+// Any date at all. No module decides `repeats` from which period it is asked
+// about, and this control only needs to know whether the step repeats.
+const ANY_DAY = "2026-01-01";
+
 function Stepper({
   value,
   min,
@@ -439,6 +443,31 @@ export function ConfigureForm({
           onChange={setConfig}
         />
       ))}
+
+      {/* Only for a step that repeats. There is nothing to space out on a type
+          you check in to once, and offering the control there would be a
+          setting that does nothing. */}
+      {type.steps(parsedConfig.success ? parsedConfig.data : type.defaults.config, ANY_DAY)
+        .some((s) => s.repeats) ? (
+        <FieldWrap
+          label="Gap between logs"
+          hint={
+            schedule.minGap === 0
+              ? "Off. Any number of logs, as fast as you like."
+              : `A log inside ${schedule.minGap} minutes of the last one is refused.`
+          }
+          error={errorFor("@minGap")}
+        >
+          <Stepper
+            value={schedule.minGap}
+            min={0}
+            max={240}
+            step={5}
+            unit="minutes"
+            onChange={(n) => setSchedule((s) => ({ ...s, minGap: n }))}
+          />
+        </FieldWrap>
+      ) : null}
 
       <FieldWrap
         label="Grace"

@@ -69,7 +69,7 @@ const id = `offer-${randomUUID().slice(0, 6)}`;
  */
 async function track(
   typeKey: string,
-  over: { config?: unknown; schedule?: Schedule } = {},
+  over: { config?: unknown; schedule?: Schedule; minGap?: number } = {},
 ) {
   const type = getActivityType(typeKey);
   await db.insert(userActivityConfig).values({
@@ -81,6 +81,7 @@ async function track(
         schedule: over.schedule ?? type.defaults.schedule,
         dayBoundary: type.defaults.dayBoundary,
         grace: type.defaults.grace,
+        minGap: over.minGap ?? 0,
       },
       config: over.config ?? type.defaults.config,
     },
@@ -278,16 +279,39 @@ try {
     JSON.stringify(gymAgain),
   );
 
+  // ---------------------------------------------------------------------
+  // The gap. Eight glasses in eight seconds is not a day anybody had.
+  // ---------------------------------------------------------------------
+
+  await track("water", { config: { glasses: 8 }, minGap: 30 });
+  const first = await press("water", "glass", "glass1");
+  check("the first glass is taken", first.ok, JSON.stringify(first));
+
+  const soon = await press("water", "glass", "glass2");
+  check(
+    "and the next one inside the gap is refused",
+    !soon.ok && soon.reason === "too_soon",
+    JSON.stringify(soon),
+  );
+
+  const gapped = await row("water");
+  check("and no control is offered while it runs", !gapped.open, shape(gapped));
+  check(
+    "and the row says when the next one counts",
+    gapped.status.includes("Next counts"),
+    gapped.status,
+  );
+
   // A day this activity is not scheduled on. The write path refuses it as
   // unscheduled, so nothing is offered for it either.
   const tomorrow = ((today.weekday % 7) + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
-  await track("water", { schedule: { kind: "days", days: [tomorrow] } });
+  await track("steps", { schedule: { kind: "days", days: [tomorrow] } });
 
-  const water = await row("water");
+  const water = await row("steps");
   check("an unscheduled day is not scheduled", !water.scheduled, shape(water));
   check("and nothing is recorded against it", !water.recorded, shape(water));
   check("and offers nothing", !water.open, shape(water));
-  const early = await press("water", "glass", "glass1");
+  const early = await press("steps", "count", "steps1");
   check(
     "and the server refuses it, which is why",
     !early.ok && early.reason === "unscheduled",

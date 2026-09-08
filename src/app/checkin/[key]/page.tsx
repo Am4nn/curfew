@@ -78,9 +78,11 @@ function Closed({
       <span className="text-[16px] leading-[1.5]">
         {!state.scheduled
           ? `${state.name} is not scheduled today.`
-          : spent
-            ? (spent.hint ?? `${spent.label} is already recorded for today.`)
-            : "No window is open."}
+          : spent?.waitingUntil
+            ? `${spent.label} counts again from ${spent.waitingUntil}.`
+            : spent
+              ? (spent.hint ?? `${spent.label} is already recorded for today.`)
+              : "No window is open."}
       </span>
       {state.scheduled && !spent && next ? (
         <span className="text-[11.5px] leading-[1.55] text-muted">

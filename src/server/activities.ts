@@ -137,6 +137,9 @@ export function defaultsFor(typeKey: string): UserActivity {
       schedule: type.defaults.schedule,
       dayBoundary: type.defaults.dayBoundary,
       grace: type.defaults.grace,
+      // Off unless somebody asks for it. A gap is a rule about your own
+      // honesty, and one nobody chose is a rule imposed.
+      minGap: 0,
     },
     config: type.defaults.config,
   };

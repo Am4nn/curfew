@@ -43,6 +43,19 @@ export const scheduleConfigSchema = z.object({
   // Missed periods forgiven per calendar month. Protects the streak only: the
   // fine still applies and reputation still dips (decision 5).
   grace: z.number().int().min(0).max(31),
+  /**
+   * Minutes that must pass between two presses of a repeating step. 0 is off.
+   *
+   * Eight glasses of water could be logged in eight seconds and the day
+   * passed, which is a record of a day nobody had. The engine owns this rather
+   * than the modules: it is the same rule for water, meals, doses and
+   * readings, and it is about the clock rather than about what a glass means
+   * (invariant 6).
+   *
+   * Defaulted rather than required, so every config row written before it
+   * existed still parses, and so nobody's day changes until they ask for it.
+   */
+  minGap: z.number().int().min(0).max(240).default(0),
 });
 export type ScheduleConfig = z.infer<typeof scheduleConfigSchema>;
 

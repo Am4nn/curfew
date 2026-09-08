@@ -32,6 +32,7 @@ import {
   evidence,
 } from "@/db/schema";
 import { groupEvidence } from "@/server/group-view";
+import { CONSENT_VERSION } from "@/server/consent";
 
 if (process.env.LOCAL_MODE !== "1") {
   console.error("check:evidence is local only. Run it with dotenv -e .env.local.");
@@ -91,7 +92,7 @@ try {
     emailVerified: true,
   });
   await db.insert(userApprovals).values({ userId: id, status: "approved", decidedAt: new Date() });
-  await db.insert(consentRecords).values({ userId: id, version: "1" });
+  await db.insert(consentRecords).values({ userId: id, version: CONSENT_VERSION });
   await db.insert(userSettings).values({
     userId: id,
     timezone: "Asia/Kolkata",
@@ -103,7 +104,7 @@ try {
     groupId,
     userId: id,
     role: "owner",
-    joinedAt: new Date(),
+    joinedAt: "2026-01-01",
   });
   await db.insert(groupActivityTypes).values({ groupId, typeKey: TYPE, accepted: true });
   await db.insert(memberShares).values({

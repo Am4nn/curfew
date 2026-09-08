@@ -19,8 +19,16 @@ export interface TodayRow {
   streak: number;
   /** Not one of this activity's days: shown greyed, and not counted. */
   scheduled: boolean;
-  /** The period already passes on what is recorded. */
+  /** The period already passes on what is recorded. Draws the tick. */
   done: boolean;
+  /**
+   * Something counted today. Counts toward the day at the top of Home.
+   *
+   * The same as `done` for the eleven types whose period is a day. Gym's is a
+   * week, so a session this afternoon leaves `done` false until the week is
+   * met, and the day's count would not move for work that plainly happened.
+   */
+  countedToday: boolean;
   /** A window is open and something can be pressed. */
   open: boolean;
   /**
@@ -85,6 +93,7 @@ export async function todayFor(userId: string): Promise<Today> {
       streak: standings.get(activity.typeKey)?.streak ?? 0,
       scheduled: state.scheduled,
       done: state.passed,
+      countedToday: state.countedToday,
       // Offered when another press would count, NOT when the period is still
       // failing. Those came apart in three places at once.
       //
@@ -114,10 +123,16 @@ export async function todayFor(userId: string): Promise<Today> {
 
   // Everything due today, and how much of it is done. An unscheduled activity
   // is not a miss and is not counted.
+  //
+  // Counted on `countedToday`, not `done`. They differ only for a period
+  // longer than a day, and there they differ in both directions: a gym session
+  // this afternoon moves this, where `done` would wait for the week; and once
+  // the week is met nothing more is wanted today, so it counts then too. A
+  // rest day in a met week is not a shortfall.
   const due = rows.filter((r) => r.scheduled);
   return {
     rows,
-    done: due.filter((r) => r.done).length,
+    done: due.filter((r) => r.countedToday).length,
     of: due.length,
   };
 }

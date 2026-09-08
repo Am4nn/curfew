@@ -131,7 +131,8 @@ async function row(typeKey: string): Promise<TodayRow> {
 }
 
 const shape = (r: TodayRow) =>
-  `scheduled=${r.scheduled} done=${r.done} open=${r.open} recorded=${r.recorded} "${r.status}"`;
+  `scheduled=${r.scheduled} done=${r.done} today=${r.countedToday} open=${r.open}` +
+  ` recorded=${r.recorded} "${r.status}"`;
 
 async function cleanup() {
   await db.delete(reputationDaily).where(inArray(reputationDaily.userId, [id]));
@@ -184,6 +185,13 @@ try {
 
   food = await row("food");
   check("and the day stops passing once it lands", !food.done, shape(food));
+  // Calories only accumulate, so a day over its limit is decided. The row used
+  // to state the two numbers and leave the reader to compare them.
+  check(
+    "and the row says the day is lost, not just the numbers",
+    food.status.includes("does not count"),
+    food.status,
+  );
 
   // Abstinence. The module allows a correction in as many words: someone who
   // taps "It held" and then corrects themselves is telling the truth the second
@@ -199,9 +207,23 @@ try {
   // not a day waiting to be checked in, so the button says Correct.
   check("and the row knows the declaration stands", sugar.recorded, shape(sugar));
 
+  // And it says WHICH answer stands. Without this the row read "Logged
+  // 10:15 PM" either way, so the one type whose whole record is a yes or a no
+  // was the one type that never said which.
+  check(
+    "and the row says which answer stands",
+    sugar.status.includes("held"),
+    sugar.status,
+  );
+
   await press("sugarfree", "declare", "slipped", { held: false });
   sugar = await row("sugarfree");
   check("and the correction is taken", !sugar.done, shape(sugar));
+  check(
+    "and the row says so in words",
+    sugar.status.includes("slipped"),
+    sugar.status,
+  );
 
   // ---------------------------------------------------------------------
   // Where it does not apply: a press that would do nothing is not offered.
@@ -232,9 +254,21 @@ try {
   // `countsNow`. The week is nowhere near passed, so this is the module's
   // answer being honoured rather than the period's.
   await track("gym");
+  // Gym's period is a WEEK, so its first session passes nothing. The day at
+  // the top of Home still has to move: a session this afternoon is plainly a
+  // thing done today, and the count read from `passed` sat there while it
+  // happened.
+  const dayBefore = (await todayFor(id)).done;
   await press("gym", "session", "gym1");
+  const dayAfter = (await todayFor(id)).done;
+  check(
+    "a gym session moves today's count, a week before it passes",
+    dayAfter === dayBefore + 1,
+    `${dayBefore} -> ${dayAfter}`,
+  );
 
   const gym = await row("gym");
+  check("and today is counted while the week is not", gym.countedToday && !gym.done, shape(gym));
   check("a week still short is not done", !gym.done, shape(gym));
   check("and today's second session is not offered", !gym.open, shape(gym));
   const gymAgain = await press("gym", "session", "gym2");

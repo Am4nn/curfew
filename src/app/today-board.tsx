@@ -95,7 +95,11 @@ export function TodayBoard({
   // already moved. The number it moved from is therefore this one minus one,
   // which is the only place the "3 → 4" comes from: nothing stores the old
   // count, and nothing needs to.
-  const rolled = recorded !== null && rows.some((r) => r.typeKey === recorded && r.done);
+  // `countedToday`, the same field the count above is made of. Read from
+  // `done` it would never roll for a gym session, because a week of three is
+  // not passed by its first.
+  const rolled =
+    recorded !== null && rows.some((r) => r.typeKey === recorded && r.countedToday);
   const from = rolled && done > 0 ? done - 1 : null;
 
   // The stamp marks the check-in that finished the day, so it needs both: one

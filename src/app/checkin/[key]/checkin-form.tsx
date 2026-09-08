@@ -134,7 +134,18 @@ function Field({
           step={field.step ?? 1}
           value={value}
           placeholder="Required"
-          onChange={(e) => onChange(e.target.value)}
+          // `min` and `max` on a number input are checked when a form is
+          // submitted and never while anyone types, and this is not a form.
+          // So five digits went in, and 0, and the server refused them after
+          // the photograph had already been uploaded. Refused here instead:
+          // digits only, and never past the field's own ceiling.
+          onChange={(e) => {
+            const next = e.target.value;
+            if (next === "") return onChange("");
+            if (!/^\d+$/.test(next)) return;
+            if (field.max !== undefined && Number(next) > field.max) return;
+            onChange(next);
+          }}
           aria-label={field.label}
           className="w-full bg-transparent text-[14px] text-fg outline-none placeholder:text-muted"
         />
@@ -168,9 +179,15 @@ export function CheckinForm({
   const [pending, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const missing = step.fields.filter(
-    (f) => f.kind === "number" && (values[f.key] ?? "") === "",
-  );
+  // Empty, or below the field's floor. Typing is clamped at the ceiling above,
+  // but a floor cannot be: 1 has to be typeable on the way to 1200, so 0 is
+  // caught here instead and Send stays down until it is fixed.
+  const missing = step.fields.filter((f) => {
+    if (f.kind !== "number") return false;
+    const raw = values[f.key] ?? "";
+    if (raw === "") return true;
+    return f.min !== undefined && Number(raw) < f.min;
+  });
   // Required means required ON THIS STEP: sleep asks on confirm and nowhere
   // else.
   const photoRequired =

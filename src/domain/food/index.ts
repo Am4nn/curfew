@@ -24,8 +24,11 @@ export const foodConfigSchema = z
   .strict();
 export type FoodConfig = z.infer<typeof foodConfigSchema>;
 
+// One MEAL's calories, not a day's. Nought is not a meal and four digits is
+// more than any plate, so the range says so rather than accepting a number
+// nobody meant and scoring the day on it.
 export const foodEvidenceSchema = z
-  .object({ calories: z.number().int().min(0).max(20000) })
+  .object({ calories: z.number().int().min(1).max(9999) })
   .strict();
 export type FoodEvidence = z.infer<typeof foodEvidenceSchema>;
 
@@ -103,8 +106,10 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
             kind: "number",
             key: "calories",
             label: "Calories",
-            min: 0,
-            max: 20000,
+            // Same range as the evidence schema. They move together or the
+            // screen accepts what the server refuses.
+            min: 1,
+            max: 9999,
             step: 10,
             unit: "cal",
           },
@@ -123,6 +128,16 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
       return pending === null
         ? `${calories} so far today. No limit set.`
         : `${calories + pending} today once this is sent. No limit set.`;
+    }
+    // Over the limit, the day is decided and calories only accumulate, so
+    // there is no reading of the rest of the day that passes. Saying the two
+    // numbers and leaving the comparison to the reader is not this app's
+    // register: it states the consequence.
+    if (pending === null && calories > limit) {
+      return `${calories} today, over the ${limit} limit. Today does not count.`;
+    }
+    if (pending !== null && calories + pending > limit) {
+      return `${calories + pending} once this is sent, over the ${limit} limit. Today would not count.`;
     }
     return pending === null
       ? `${calories} so far today. The limit is ${limit}.`

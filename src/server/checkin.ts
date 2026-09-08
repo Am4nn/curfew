@@ -95,6 +95,15 @@ export interface ActivityCheckinState {
   scheduled: boolean;
   /** Whether the period passes on what is recorded so far. */
   passed: boolean;
+  /**
+   * Did this activity get something done TODAY?
+   *
+   * Not the same question as `passed` for a type whose period is longer than a
+   * day. Gym's period is a week, so a session this afternoon passes nothing
+   * and yet is plainly a day at the gym. Home counts the day with this;
+   * the tick beside the row is still `passed`, which is the period.
+   */
+  countedToday: boolean;
   nowLabel: string;
   steps: CheckinStepView[];
   recorded: RecordedCheckin[];
@@ -247,6 +256,19 @@ export async function getCheckinState(
     config: activity.config,
     scheduled: isScheduledDay(activity.schedule.schedule, weekdayOf(period)),
     passed: evaluated.passed,
+    // Either nothing more is wanted from today, or today is one of the days
+    // the module counts. The first covers every daily type and a week already
+    // met; the second is the gym session that has just happened in a week
+    // still short. `daysDone` is the module's own answer, so nothing here
+    // learns what a session is (invariant 6).
+    countedToday:
+      evaluated.passed ||
+      daysDoneIn(typeKey, {
+        periodStart: period,
+        timezone,
+        config: activity.config,
+        checkins,
+      }).includes(DateTime.fromJSDate(instant, { zone: timezone }).toFormat("yyyy-MM-dd")),
     nowLabel: label(instant, timezone),
     steps: views,
     recorded: rows,

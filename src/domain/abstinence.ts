@@ -116,6 +116,23 @@ export function abstinenceActivity(spec: {
       ];
     },
 
+    // Which answer stands. Without this the row said "Logged 10:15 PM"
+    // whichever way you answered, so correcting "It held" to "I slipped"
+    // changed the tick and nothing else, and on a day with nothing declared
+    // yet it changed nothing at all on screen. The one type whose whole record
+    // is a yes or a no was the one type that never said which.
+    hint(input) {
+      const window = windowInstants(input.periodStart, input.timezone, input.config.window);
+      const declared = input.checkins
+        .filter((c) => c.step === DECLARE_STEP && within(c.at, window))
+        .sort((a, b) => a.at.getTime() - b.at.getTime())
+        .at(-1);
+      if (!declared) return null;
+      return declared.evidence?.held === true
+        ? "You said it held."
+        : "You said you slipped. Today does not count.";
+    },
+
     windows(config, periodStart, timezone) {
       return oneWindow(DECLARE_STEP, spec.label, periodStart, timezone, config.window);
     },

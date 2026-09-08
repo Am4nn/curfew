@@ -115,6 +115,13 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
         input.config.direction === "atMost" ? "at or below" : "at or above";
       return `The limit is ${limit} min. Anything ${direction} counts.`;
     }
+    // Over the limit is worth saying out loud, but not as "today does not
+    // count": the latest reading wins here, so a later one can still bring the
+    // day back. Food cannot, which is why its line is final and this is not.
+    const over = input.config.direction === "atMost" ? latest > limit : latest < limit;
+    if (over) {
+      return `${latest} min recorded, past the ${limit} limit. Today does not count as it stands.`;
+    }
     return `${latest} min recorded. The limit is ${limit}.`;
   },
 

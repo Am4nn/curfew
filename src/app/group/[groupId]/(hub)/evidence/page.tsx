@@ -4,8 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { groupEvidence, type EvidenceItem } from "@/server/group-view";
 import { readUrl } from "@/server/evidence";
 import { resolveUserTimezone, userDay } from "@/server/config";
-import { ActivityIcon } from "../../../../activity-icon";
-import { ReportButton } from "./report-button";
+import { EvidenceGrid } from "./evidence-grid";
 
 // The reason photos exist in a group. A dated log, newest first, and nothing
 // else: no reactions, no comments, no feed mechanics.
@@ -78,37 +77,23 @@ export default async function EvidenceTab({
             <span className="text-[10px] tracking-[0.16em] text-muted">
               {heading(day)}
             </span>
-            <div className="grid grid-cols-2 gap-3">
-              {byDay.get(day)!.map((item) => (
-                <div key={item.id} className="flex flex-col gap-[6px]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.url}
-                    alt={`${item.who}, ${item.typeName}`}
-                    className="aspect-square w-full border border-rule bg-surface object-cover"
-                  />
-                  <div className="flex items-center justify-between gap-[6px]">
-                    <span className="text-[11px]">{item.who}</span>
-                    <span className="text-[10px] text-muted">
-                      {DateTime.fromISO(item.at).setZone(timezone).toFormat("h:mm a")}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-[5px] text-[10px] text-muted">
-                      <ActivityIcon name={item.icon} size={11} />
-                      {item.typeName}
-                    </span>
-                    {item.mine ? null : (
-                      <ReportButton
-                        evidenceId={item.id}
-                        groupId={groupId}
-                        who={item.who}
-                      />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+            {/* The times are formatted here, in the viewer's own zone, on the
+                server: a client component would spell them from the device
+                clock (invariant 8). */}
+            <EvidenceGrid
+              groupId={groupId}
+              items={byDay.get(day)!.map((item) => ({
+                id: item.id,
+                url: item.url,
+                who: item.who,
+                typeName: item.typeName,
+                icon: item.icon,
+                timeLabel: DateTime.fromISO(item.at)
+                  .setZone(timezone)
+                  .toFormat("h:mm a"),
+                mine: item.mine,
+              }))}
+            />
           </section>
         ))
       )}

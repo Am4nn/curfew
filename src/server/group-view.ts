@@ -10,7 +10,13 @@ import {
   evidence,
   ledgerEntries,
 } from "@/db/schema";
-import { getActivityType, joiningScore, START_SCORE, type DayReason } from "@/domain";
+import {
+  getActivityType,
+  joiningScore,
+  ceilingFor,
+  START_SCORE,
+  type DayReason,
+} from "@/domain";
 import { assertMember, memberRole } from "./membership";
 import { acceptedTypes, sharesFor, ownerMoneyToggle } from "./sharing";
 import { moneyOnFor } from "./app-config";
@@ -221,11 +227,23 @@ export async function standingIn(
   const grace = graces.get(userId) ?? null;
   const opening = grace ? joiningScore(await globalScore(userId)) : START_SCORE;
 
+  // What the member shares OF WHAT THIS GROUP ACCEPTS. Sharing a type the
+  // group does not accept is not breadth, and counting the share rows alone
+  // could report more shared than there are accepted.
+  const sharedHere = new Set(shares.filter((s) => s.shared).map((s) => s.typeKey));
+  const counted = accepted.filter((a) => sharedHere.has(a.typeKey)).length;
+
   return {
     score: rows[0] ? Number(rows[0].score) : opening,
-    ceiling: rows[0] ? Number(rows[0].ceiling) : 1000,
+    // Before any day is scored there is no stored ceiling, and this read a
+    // literal 1000: the maximum, shown to a new member and to everyone still
+    // in grace, which is exactly when it is least likely to be theirs. It is
+    // the same arithmetic the nightly pass uses, on what they share today.
+    ceiling: rows[0]
+      ? Number(rows[0].ceiling)
+      : ceilingFor(accepted.length === 0 ? 1 : counted / accepted.length),
     breadth: {
-      shared: shares.filter((s) => s.shared).length,
+      shared: counted,
       accepted: accepted.length,
     },
     movements: rows.map((r) => ({

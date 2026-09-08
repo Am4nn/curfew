@@ -168,11 +168,12 @@ export function JoinForm({
         {busy ? "Joining" : "Join group"}
       </button>
 
+      {/* Red, the same treatment as Stop tracking. Declining revokes the
+          invite: the group has to send another one, and this screen is gone
+          either way. Grey read as the quiet way out of a decision, which is
+          the one thing it is not. */}
       <form action={declineAction.bind(null, inviteId)}>
-        <SubmitButton
-          className="h-11 w-full border border-rule text-[14px] text-muted"
-          pendingLabel="Declining"
-        >
+        <SubmitButton variant="destructive" full pendingLabel="Declining">
           Decline
         </SubmitButton>
       </form>

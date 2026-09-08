@@ -104,7 +104,9 @@ export function InviteRows({ invites }: { invites: InviteRow[] }) {
                   await refuseInviteAction(invite.id);
                 })
               }
-              className={buttonClass("secondary", "sm")}
+              // The same word for the same action as the join screen's, so it
+              // wears the same red. It revokes the invite either way.
+              className={buttonClass("destructive", "sm")}
             >
               {pending ? "Working" : "Decline"}
             </button>

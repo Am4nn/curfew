@@ -248,7 +248,7 @@ back as its own request.
 
 ---
 
-## 7. The Decline button on the join screen should be red
+## 7. The Decline button on the join screen should be red — DONE
 
 **Asked for.** Exactly that.
 
@@ -256,10 +256,18 @@ back as its own request.
 Join above it is the filled button. The `penalty` token is the house red and is
 already used for the destructive half of the leave-group confirmation.
 
-**What the work is.** One line. The only thing to settle is whether declining
-an invite is destructive in the way leaving a group is: a decline can be undone
-by asking for another invite, and the screen sits in front of somebody who has
-been invited by a friend. Red says "careful". Grey says "the quiet option".
+**Done 2026-09-08.** Red, `destructive`, the same treatment as Stop tracking.
+Declining revokes the invite and the sender can see it, so grey was saying "the
+quiet option" about the one thing on the screen that is not.
+
+**Home and Groups carry the same word for the same action**, through
+`InviteRows`, and they were grey too. Both are red now: one action, one colour,
+wherever it is offered.
+
+**No artboard drew it.** The join screen's mocks, `V3JoinSetup` and
+`V3JoinShare`, end at Join group; the Decline beneath it was added in the
+build. The invite card that Home and Groups draw did have one, and it is red in
+the mock now as well.
 
 ---
 

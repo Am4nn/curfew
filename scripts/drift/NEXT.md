@@ -121,20 +121,42 @@ be retried with nobody present.
 
 #### The two spikes
 
-1. **An evidence photo becomes structured facts.** One pipeline, two prompts:
-   a meal becomes calories and macros, a watch or scale face becomes the number
-   it shows. Both land on that activity's own detail row, beside what the person
-   entered, and neither is ever an input to `evaluate`.
-2. **The log becomes a weekly read.** Cross-activity patterns from events
-   alone. No photograph leaves. This is the cheap one and the one most likely
-   to be worth keeping.
+1. **Food, and only food.** The food module declares an optional note box on its
+   own check-in screen, so the engine does not learn what a meal is
+   (invariant 6). The note is the person's own words and goes in the check-in
+   event like any other entered value: it is worth having with the AI switched
+   off, and it is not a model output. The press records instantly, the model
+   runs after it, and calories and macros go to the derived table.
+2. **A page for asking.** Its own route, and the only place a person waits for a
+   model, because they pressed the thing that starts it. Two kinds of run: a
+   fixed set of reports (the weekly read, cross-activity patterns, schedule
+   tuning), and picking one of your own meal photographs and running it with a
+   prompt. Single-shot both ways and never a conversation, which is what keeps
+   it out of being the chat bot this was explicitly not. Results are stored and
+   dated, so last week's read is still there next month and re-running is an
+   explicit press rather than a page load.
 
-Meter reading was originally the friction-removal case: read the watch, fill the
-field, save the typing. That needed a model's number to reach scoring, and it
-was decided on 2026-09-15 that one never does. So it is not friction removal any
-more, it is a record: the person still types their own number and the photo's
-reading sits next to it. Weaker, and consistent, and the same pipeline as
-nutrition rather than a second one.
+Deriving numbers from photographs for the OTHER activities is dropped. It only
+ever paid for itself by filling the field and saving the typing, and a model's
+number never reaches scoring, so what was left was a record nobody asked for.
+
+Sharing does not change. A shared meal photograph reaches the group exactly as
+it does today, and the note and the nutrition stay private. No third toggle.
+
+**Two things that follow, and are not decided.**
+
+- **A re-run is a new row, not an edit.** Picking an old photograph and running
+  it again with a better prompt is a second derivation of the same meal. Append
+  and show the latest, the way `ledger_entries` takes a correction as a
+  compensating row rather than an update. "Written once, never recomputed" was
+  about the nightly replay and still holds: nothing but a person's press ever
+  causes a second run.
+- **Evidence is deleted after 30 days, so "do it later" has a deadline.** A meal
+  from six weeks ago has no photograph left to select. Either the page offers
+  only what is still stored and says why, or this is the argument for keeping a
+  downscaled copy, which is a new privacy question and not a small one.
+
+Where the structured output appears is open. The mocks get looked at first.
 
 **The spike must not touch a member's evidence.** Consent has not changed, so it
 runs on photographs taken for the purpose and on nothing out of R2. Judge it on

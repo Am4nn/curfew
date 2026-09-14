@@ -1,4 +1,4 @@
-name: Preview
+name: "Deploy: Preview"
 
 # Every push to main becomes the dev site, deployed from here rather than by
 # Vercel's GitHub App.

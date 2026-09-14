@@ -1,4 +1,4 @@
-name: Deploy
+name: "Deploy: Production"
 
 # Production ships on a version tag, never on a push. Vercel's git integration
 # ignores tags, so production deploys come from the CLI here and the Production
@@ -21,17 +21,20 @@ name: Deploy
 # it running here. A Vercel build that fails is never promoted, so production
 # keeps serving the previous deployment either way.
 #
-# Two ways in:
-#   a v* tag        deploys to PRODUCTION and promotes it
-#   Run workflow    deploys a PREVIEW, to prove the pipeline without touching
-#                   the live site. Use this first, and after any edit here.
+# One way in: a v* tag. It deploys to production and promotes it.
+#
+# There used to be a manual dispatch here that deployed a PREVIEW, as a way to
+# prove this pipeline without touching the live site, and as the way round
+# Vercel's GitHub App going quiet. `preview.yml` does both now, on every push
+# to main and on a dispatch of its own, so this was a second way to do one
+# thing and it left a workflow called "Deploy: Production" able to deploy
+# something that was not production.
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:
 
 concurrency:
-  group: deploy-${{ github.event_name == 'push' && 'production' || 'preview' }}
+  group: deploy-production
   cancel-in-progress: false
 
 jobs:
@@ -53,7 +56,6 @@ jobs:
   # Checked by SHA rather than by ref, because a tag can be moved to a commit
   # CI never saw.
   ci:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -66,17 +68,11 @@ jobs:
 
   deploy:
     needs: ci
-    # `needs` on a job that is skipped skips this one too, so a manual preview
-    # run has to say it wants to go ahead without the gate.
-    if: always() && (needs.ci.result == 'success' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      # A tag is the real thing. A manual run is a dry run against Preview.
-      TARGET: ${{ github.event_name == 'push' && 'production' || 'preview' }}
-      PROD: ${{ github.event_name == 'push' && '--prod' || '' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -92,7 +88,6 @@ jobs:
       # disagrees with it would put a number on screen that is not what shipped.
       # Bump package.json in the commit you tag.
       - name: Tag matches package.json version
-        if: github.event_name == 'push'
         run: |
           tag="${GITHUB_REF_NAME#v}"
           pkg="$(node -p "require('./package.json').version")"
@@ -105,17 +100,15 @@ jobs:
       # No --prebuilt: the source goes up and Vercel builds it, with the real
       # values of its own environment variables. The CLI prints the deployment
       # URL on stdout and its progress on stderr, so capturing stdout is enough.
-      - name: Deploy to $TARGET
+      - name: Deploy to production
         id: deploy
         run: |
-          url="$(bunx vercel deploy $PROD --yes --token="$VERCEL_TOKEN")"
+          url="$(bunx vercel deploy --prod --yes --token="$VERCEL_TOKEN")"
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "deployed $url"
 
       # Until this runs, the live domains still point at the previous build.
-      # Preview deployments have no domains to take, so this is tag-only.
       - name: Promote to the production domains
-        if: github.event_name == 'push'
         run: |
           bunx vercel promote "${{ steps.deploy.outputs.url }}" \
             --yes --token="$VERCEL_TOKEN"

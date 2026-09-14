@@ -188,15 +188,17 @@ and promotes. Four things about it are not obvious:
   domain means adding it there too. `bun run check:cors` says.
 
 - **A Preview deployment that never happens looks exactly like nothing
-  happening.** Vercel deploys `main` through its GitHub App, and when that
-  installation is suspended or waiting on a permissions approval the push events
-  stop arriving. Every setting still reads correctly, the repo is still linked,
-  the project is not paused, and there is no error anywhere, because Vercel
-  never learned there was anything to build. It happened on 2026-09-07 and cost
-  an hour: two commits landed on `main` with no deployment on either side.
-  `bunx vercel ls` is the fastest way to tell, and github.com/settings/installations
-  is where the approval is. The deploy workflow's `workflow_dispatch` run
-  deploys a Preview from the CLI, which is the way round it.
+  happening**, which is why neither deployment comes from Vercel's GitHub App
+  any more. When that installation is suspended or waiting on a permissions
+  approval the push events simply stop arriving: every setting still reads
+  correctly, the repo is still linked, the project is not paused, and there is
+  no error anywhere, because Vercel never learned there was anything to build.
+  It cost an hour on 2026-09-07 and happened again on 2026-09-15, when the
+  v3.0.0 release commit got no Preview at all. `Deploy: Preview` owns `main`
+  now and `Deploy: Production` owns the tag, both from the Actions tab, and
+  `vercel.json` turns the App's own deploys off for both branches.
+  `bunx vercel ls` still tells you what Vercel actually built, and
+  github.com/settings/installations is where an approval would sit.
 
 - **`vercel.json` pins `sin1`, and production's database is still in
   `us-east-2`.** That pairing is wrong, and it is safe only because no tag is

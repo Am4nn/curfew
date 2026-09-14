@@ -2,7 +2,7 @@ import { cache } from "react";
 import { and, eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { db } from "@/db";
-import { userActivities, userActivityConfig } from "@/db/schema";
+import { userActivities, userActivityConfig, memberShares } from "@/db/schema";
 import {
   resolveAt,
   resolveConfig,
@@ -235,12 +235,62 @@ export async function saveUserActivity(input: SaveActivityInput): Promise<void> 
 /**
  * Stop tracking. The history is kept and the streak freezes at its last value;
  * restarting resumes from zero (ACTIVITIES.md). Nothing is deleted.
+ *
+ * It also stops sharing the type with every group that was being shown it.
+ * `setShare` refuses to share a type you do not track, so sharing and tracking
+ * were meant to move together, and this was the one way they could come apart:
+ * share it, then stop tracking it, and the share row stood. A group's breadth
+ * counts share rows, so that stale row held a ceiling up on the strength of an
+ * activity that could no longer produce a period and so could never be missed.
+ * The share was also still on screen, telling the group it would see something
+ * it never would.
+ *
+ * Not in `sharing.ts`, which owns this table, because it imports this file and
+ * the pair would be a cycle. Everything that makes the table what it is holds:
+ * a new row, never an update, carrying the instant it took effect, so a group's
+ * ceiling drops from today and every day already scored is judged against the
+ * sharing that stood on it (invariant 5).
  */
 export async function stopTracking(userId: string, typeKey: string): Promise<void> {
+  const at = await now();
+
   await db.insert(userActivities).values({
     userId,
     typeKey,
     enabled: false,
-    effectiveAt: await now(),
+    effectiveAt: at,
   });
+
+  // Written second. A crash between the two leaves the type untracked and
+  // still shared, which is the state this is fixing and which the next stop
+  // press repairs; the other order would leave it shared-off and trackable,
+  // and nothing would ever put that right.
+  const rows = await db
+    .select({
+      id: memberShares.id,
+      groupId: memberShares.groupId,
+      shared: memberShares.shared,
+      effectiveAt: memberShares.effectiveAt,
+    })
+    .from(memberShares)
+    .where(and(eq(memberShares.userId, userId), eq(memberShares.typeKey, typeKey)));
+
+  const groupIds = [...new Set(rows.map((r) => r.groupId))];
+  const sharing = groupIds.filter((groupId) => {
+    const mine = rows.filter((r) => r.groupId === groupId);
+    return resolveAt(mine, at)?.shared === true;
+  });
+  if (sharing.length === 0) return;
+
+  await db.insert(memberShares).values(
+    sharing.map((groupId) => ({
+      groupId,
+      userId,
+      typeKey,
+      shared: false,
+      shareEvidence: false,
+      effectiveAt: at,
+      changedBy: userId,
+    })),
+  );
 }

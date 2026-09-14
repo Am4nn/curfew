@@ -318,7 +318,7 @@ nothing on the row changes.
 which answer stands: "You said it held." or "You said you slipped. Today does
 not count." In the module's own words, like every other type's line.
 
-### 8.3 Food asks for another Log after four
+### 8.3 Food asks for another Log after four — DONE, AND IT WAS MINE
 
 **Asked for.** "Food I logged 4 times but it just keeps on asking for Log."
 Corrected by the person who reported it: nothing failed, the photographs were
@@ -343,6 +343,38 @@ is why the control stayed, and there are exactly two candidates:
 
 The row's exact wording separates them in one glance, and reading it needs the
 database the dev site actually uses. See §8.6.
+
+**Settled 2026-09-14 from the deployment history, which answered it without
+the database.** It was the second candidate, and it was built 45 minutes before
+it was reported:
+
+```
+cd2d0ec  09-08 21:44  A control was offered on the wrong question   (§4)
+         09-08 21:59  deployed to dev as pxdehq5lt
+62ee6b8  09-08 22:48  Five more, and one of them is that evidence does not work
+```
+
+So dev had been serving the change for the best part of an hour when it was
+hit. Nothing was failing on calories, and nothing was broken: Food had met its
+count, kept its control on purpose, and said nothing about why.
+
+**The control stays, and that is not in question.** Food passes at its meal
+count with the total under the limit, so the meal that would BREAK the limit is
+the one meal a vanishing control refuses, and the day then scores as passed on
+what was recorded before it. That is the app rewarding not logging, which is
+what invariant 2 exists to forbid. Screen time is the same shape.
+
+**What was actually wrong is that nothing drew the line between an offer and a
+demand.** A row reading `3 of 3 meals · 1450 of 2000 cal` with a tick and a Log
+button is genuinely ambiguous, and the reasonable reading is the one that was
+reported: it has not noticed it is finished. The engine now says it, because
+whether another press would be taken is the engine's rule and not the module's:
+
+```
+600 so far today. The limit is 700. Another still counts.
+```
+
+`bun run check:offer` covers it and fails on the commit before.
 
 **The first measurement of this was against the wrong database**, and finding
 out why is the important part, so it is kept below rather than deleted.
@@ -630,6 +662,46 @@ consent copy and the terms both say what happens to photographs when you delete
 them, and "tonight" is a different promise from "now". If the answer has to be
 "now", the honest version is to keep the delete in the request and only make it
 concurrent, which turns forty round trips into one wait.
+
+---
+
+## 14. A group sees what you did before you joined it — DONE
+
+**Asked for.** Groups should only show evidence from after the member joined or
+the group was made, not everything.
+
+**True today, and it is the more serious kind of bug in this file.**
+`groupEvidence` filters on the member, on the types they share evidence for, on
+confirmed and on not deleted. There is no date in it anywhere. So joining a
+group with evidence sharing on hands over the entire back catalogue: track Gym
+for a year, join on a Tuesday, and the feed opens on a year of photographs
+nobody in that group was ever entitled to see.
+
+Nothing about it looks wrong from inside the app, which is why it lasted. The
+sharing toggle reads as a decision about what happens next, and it was
+answering a question about the past as well.
+
+**Done 2026-09-14.** Each member is bound by their OWN join date rather than
+the group's, so somebody who arrived last week does not inherit a founder's
+view. The cutoff is a condition in the WHERE beside the other three, for the
+reason §10 is about: a filter applied after the limit is a filter on the wrong
+rows.
+
+**The cutoff is built in the member's zone, not UTC.** `joined_at` is a date
+and carries no time, so the instant has to be made, and midnight UTC is half
+past five in the morning in Kolkata and falls in the PREVIOUS evening west of
+Greenwich. Building it in UTC would leak exactly the photographs this exists to
+hold back, for every member in a zone behind it.
+
+`bun run check:evidence` grew two checks and both fail on the commit before: a
+photograph confirmed a month before the join date, passing every other filter
+the function has, came back in the feed.
+
+**Left alone deliberately.** Someone who leaves and rejoins is bound by the
+join date of their current membership, so the gap they were away is closed
+along with everything before their first arrival. Whether a group should keep
+seeing what it already saw during a previous stint is a real question and
+nobody has asked it.
 
 ---
 

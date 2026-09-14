@@ -17,7 +17,7 @@
 //
 // Local only. It builds a throwaway group and deletes it again.
 import { randomUUID } from "node:crypto";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { db } from "@/db";
 import {
@@ -136,6 +136,34 @@ try {
   // And the page size counts photographs, not rows that will be thrown away.
   const paged = await groupEvidence(groupId, id, { limit: 1 });
   check("a page of one holds the photograph", paged.length === 1, `${paged.length}`);
+
+  // Nothing from before the member arrived.
+  //
+  // Turning sharing on says what happens next. It was handing over everything
+  // that had ever happened: join on a Tuesday having tracked this for a year
+  // and the feed opened on a year of photographs nobody in the group had ever
+  // been entitled to see.
+  //
+  // So: a photograph from well before the join date, confirmed, of a shared
+  // type, which is a row that passes every other filter this function has.
+  await photo(60 * 24 * 30, true);
+  const joined = DateTime.now().minus({ days: 7 }).toFormat("yyyy-MM-dd");
+  await db
+    .update(groupMembers)
+    .set({ joinedAt: joined })
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, id)));
+
+  const since = await groupEvidence(groupId, id);
+  check(
+    "nothing from before the member joined",
+    since.length === 1,
+    `${since.length} items back, joined ${joined}`,
+  );
+  check(
+    "and what came after is still there",
+    since.every((f) => f.at >= DateTime.fromISO(joined).toISO()!),
+    since.map((f) => f.at).join(", "),
+  );
 } finally {
   await cleanup();
 }

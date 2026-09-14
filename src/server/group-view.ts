@@ -24,7 +24,7 @@ import { gracesIn, type GracePeriod } from "./grace";
 import { pausesIn, currentPause, pausedDaysIn, type Pause } from "./pause";
 import { cleanRunIn, cleanRunsIn } from "./clean-run";
 import { globalScore } from "./scoring";
-import { userDay } from "./config";
+import { userDay, timezoneHistory } from "./config";
 import { now } from "@/lib/clock";
 
 // Everything the group hub reads. Every query here is behind assertMember
@@ -387,6 +387,21 @@ export async function weekStats(groupId: string, viewerId: string): Promise<Week
   };
 }
 
+/**
+ * The instant a member's join DAY began, in that member's own zone.
+ *
+ * `joined_at` is a date and carries no time, so the cutoff has to be built. It
+ * is built in the member's zone rather than UTC because a day belongs to the
+ * member (invariant 8's companion, and what `check:timezones` exists to hold):
+ * midnight UTC is half past five in the morning in Kolkata, and west of
+ * Greenwich it falls in the PREVIOUS local evening, which would leak the very
+ * photographs this is here to keep back.
+ */
+async function joinedFrom(userId: string, joinedAt: string): Promise<Date> {
+  const zone = (await timezoneHistory(userId)).at(new Date());
+  return DateTime.fromISO(joinedAt, { zone }).startOf("day").toJSDate();
+}
+
 export interface EvidenceItem {
   id: number;
   who: string;
@@ -419,16 +434,24 @@ export async function groupEvidence(
   await assertMember(groupId, viewerId);
 
   const members = await db
-    .select({ userId: groupMembers.userId, name: users.name })
+    .select({
+      userId: groupMembers.userId,
+      name: users.name,
+      joinedAt: groupMembers.joinedAt,
+    })
     .from(groupMembers)
     .innerJoin(users, eq(users.id, groupMembers.userId))
     .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)));
 
-  const allowed = new Map<string, { name: string; types: Set<string> }>();
+  const allowed = new Map<
+    string,
+    { name: string; types: Set<string>; from: Date }
+  >();
   for (const m of members) {
     const shares = await sharesFor(groupId, m.userId);
     const types = new Set(shares.filter((s) => s.shareEvidence).map((s) => s.typeKey));
-    if (types.size > 0) allowed.set(m.userId, { name: m.name, types });
+    if (types.size === 0) continue;
+    allowed.set(m.userId, { name: m.name, types, from: await joinedFrom(m.userId, m.joinedAt) });
   }
   if (allowed.size === 0) return [];
 
@@ -445,7 +468,18 @@ export async function groupEvidence(
   // Enough abandoned uploads and the feed is empty for good. A limit applied
   // before the filters is a limit on the wrong thing.
   const scope = [...allowed.entries()].map(([memberId, who]) =>
-    and(eq(evidence.userId, memberId), inArray(evidence.typeKey, [...who.types])),
+    and(
+      eq(evidence.userId, memberId),
+      inArray(evidence.typeKey, [...who.types]),
+      // Nothing from before this member arrived. Turning sharing on is a
+      // decision about what happens next, and it was handing over the whole
+      // back catalogue: join a group on a Tuesday having tracked Gym for a
+      // year, and the feed opened on a year of photographs nobody in it had
+      // ever been entitled to see. The member is bound by their own join date
+      // rather than the group's, so somebody who arrived last week does not
+      // inherit the visibility of a founder.
+      gte(evidence.confirmedAt, who.from),
+    ),
   );
 
   const rows = await db

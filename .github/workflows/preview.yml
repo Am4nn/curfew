@@ -75,7 +75,7 @@ jobs:
       - name: Point the dev domain at it
         run: |
           bunx vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" \
-            --yes --token="$VERCEL_TOKEN"
+            --token="$VERCEL_TOKEN"
           echo "$ALIAS -> ${{ steps.deploy.outputs.url }}"
 
       # The one thing neither the build nor the alias proves: that a stranger

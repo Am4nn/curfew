@@ -143,6 +143,34 @@ number never reaches scoring, so what was left was a record nobody asked for.
 Sharing does not change. A shared meal photograph reaches the group exactly as
 it does today, and the note and the nutrition stay private. No third toggle.
 
+#### One switch in Controls
+
+An `ai` key beside `money` and `photo_evidence`: the union in `app-config.ts`,
+a default in `controls.ts`, a row on the Controls screen with the sentence that
+says what flipping it does. Nothing new is invented, which is the point.
+
+- **Default off.** It ships off and comes on when the spike says the quality is
+  there and the consent text has landed, not before.
+- **Off stops every call and hides the page. It deletes nothing.** Invariant 11:
+  turning something off never rewrites history, and `controls.ts` already says
+  a switch hides a system and switching back restores what was hidden. Meals
+  already derived keep their numbers and show them again when it comes back on.
+- **The note box stays when AI is off.** The note is the person's own words
+  about their own meal. It is not a model output and it does not stop being
+  worth recording because the model is switched off. What the switch governs is
+  the call, not the person.
+- **It is also the incident switch.** One flip stops every image leaving the
+  building, which is the thing you want to be one flip on the day you want it.
+
+Easier than every other control, because AI is informational only. No scoring
+reads it, so there is no as-of resolution to get right and no period that has to
+be judged against the setting as it stood. That is a direct dividend of the
+"never reaches scoring, streaks or money" decision.
+
+The admin switch and consent are different questions and both have to be true.
+The switch says the system exists at all; the consent gate says this person's
+photograph may go to a provider. Neither substitutes for the other.
+
 **Two things that follow, and are not decided.**
 
 - **A re-run is a new row, not an edit.** Picking an old photograph and running

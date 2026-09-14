@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { can, getDriftReport } from "@/server/admin";
 import { runRebuildAction } from "../actions";
-import { ActionForm, SubmitButton } from "../../ui";
+import { Recompute } from "./recompute";
 import { evidenceOps, humanBytes } from "@/server/ops";
 import { now } from "@/lib/clock";
 import { userDay } from "@/server/config";
@@ -44,50 +44,17 @@ export default async function AdminOps({
 
   return (
     <>
-      <section className="mb-8 flex flex-col gap-[10px]">
-        <h2 className="text-[13px] font-semibold tracking-[0.1em]">RECOMPUTE</h2>
-        <form method="get" id="recompute-range" className="flex flex-col gap-[7px]">
-          <span className="text-[11px] tracking-[0.06em] text-muted">Range</span>
-          <div className="flex items-center gap-[9px]">
-            <input
-              type="date"
-              name="from"
-              defaultValue={from}
-              className="flex-1 border border-rule bg-transparent px-3 py-[10px] text-[14px]"
-            />
-            <span className="text-[11px] text-muted">to</span>
-            <input
-              type="date"
-              name="to"
-              defaultValue={to}
-              className="flex-1 border border-rule bg-transparent px-3 py-[10px] text-[14px]"
-            />
-          </div>
-        </form>
-        <div className="flex gap-[10px]">
-          {canVerify ? (
-            <button
-              type="submit"
-              form="recompute-range"
-              className="h-11 border border-rule px-4 text-[14px]"
-            >
-              Verify
-            </button>
-          ) : null}
-          {canRebuild ? (
-            <ActionForm action={runRebuildAction}>
-              <input type="hidden" name="from" value={from} />
-              <input type="hidden" name="to" value={to} />
-              <SubmitButton pendingLabel="Rebuilding" className="h-11 border border-rule px-4 text-[14px]">
-                Rebuild
-              </SubmitButton>
-            </ActionForm>
-          ) : null}
-        </div>
-        <p className="text-[11.5px] leading-[1.55] text-muted">
-          Verify recomputes and reports what differs. Rebuild writes the result.
-        </p>
-      </section>
+      {/* Keyed on the range the server rendered, so arriving at a different one
+          (the back button, an edited URL) resets the boxes to it rather than
+          leaving what was typed against a report of something else. */}
+      <Recompute
+        key={`${from}|${to}`}
+        from={from}
+        to={to}
+        canVerify={canVerify}
+        canRebuild={canRebuild}
+        rebuild={runRebuildAction}
+      />
 
       <section className="mb-8 flex flex-col gap-[10px]">
         <h2 className="text-[13px] font-semibold tracking-[0.1em]">EVIDENCE</h2>

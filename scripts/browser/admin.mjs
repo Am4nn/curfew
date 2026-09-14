@@ -92,4 +92,73 @@ export async function admin({ open, check, page, body, until }) {
     text.includes("No drift"),
     (/DRIFT[\s\S]{0,120}/.exec(text)?.[0] ?? text.slice(0, 120)),
   );
+
+  // -- Verify recomputes without reloading the page ---------------------------
+  // It was a `<button form="recompute-range">` on a `<form method="get">`, so
+  // pressing it was a native form submit: a full document navigation that tore
+  // the whole app down and built it again, scroll position and all. That is a
+  // reload however it is described, and it is what an admin saw.
+  //
+  // Both outcomes render the same screen, so this watches the two things only a
+  // real document load does: fire a `load` event, and take `window` with it.
+  // A client navigation does neither.
+  let loads = 0;
+  const countLoad = () => {
+    loads += 1;
+  };
+  page.on("load", countLoad);
+  await page.evaluate(() => {
+    window.__stayed = true;
+  });
+  await page.getByRole("button", { name: "Verify" }).click();
+  // Busy for the length of the recompute, back to "Verify" when the answer
+  // lands. Playwright re-injects this across a navigation, so under the old
+  // code it would have waited for the RELOADED page's button and then found no
+  // marker, which is the failure this is here to produce.
+  await page.waitForFunction(
+    () =>
+      [...document.querySelectorAll("button")].some(
+        (b) => /^verif/i.test((b.textContent ?? "").trim()) && !b.disabled,
+      ),
+    null,
+    { timeout: 120000 },
+  );
+  const stayed = await page.evaluate(() => window.__stayed === true);
+  page.off("load", countLoad);
+  check(
+    "Verify recomputes without reloading the page",
+    stayed && loads === 0,
+    stayed ? `${loads} document load(s)` : "the document was replaced",
+  );
+  check(
+    "and the range it reports is still on screen",
+    (await body()).includes("DRIFT, LAST RUN"),
+    (await body()).slice(0, 90),
+  );
+
+  // The other branch: an edited range, which navigates rather than refreshing.
+  // Worth its own check because the two dates and both buttons now share one
+  // piece of state, and that is what fixed the second defect here. Rebuild's
+  // hidden inputs used to carry the range the SERVER last rendered, so editing
+  // the dates and pressing Rebuild rewrote a different range from the one on
+  // screen. The drift line naming the edited range is that state being the
+  // single one both controls read.
+  //
+  // Read back off the URL and out of the box rather than off the drift copy.
+  // The box is keyed on what the SERVER rendered, so it holding the edited date
+  // is the server having been asked for that range, and it says so whether the
+  // range came back clean or carrying drift.
+  const edited = new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10);
+  await page.getByLabel("From").fill(edited);
+  await page.getByRole("button", { name: "Verify" }).click();
+  await page.waitForFunction(
+    (want) => location.search.includes(`from=${want}`),
+    edited,
+    { timeout: 60000 },
+  );
+  check(
+    "an edited range is the range it verifies",
+    (await page.getByLabel("From").inputValue()) === edited,
+    `box reads ${await page.getByLabel("From").inputValue()}, wanted ${edited} at ${page.url()}`,
+  );
 }

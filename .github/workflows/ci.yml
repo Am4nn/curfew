@@ -76,7 +76,21 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Reports, does not gate. An advisory is published by somebody else on
+      # their own schedule, and the two on this repo today are both in vitest,
+      # which is a test runner: it is not in the deployed bundle and never runs
+      # anywhere a stranger can reach. Blocking a release on that is blocking
+      # on another project's release timing.
+      #
+      # `check:deps` and `check:actions` below still gate, because those are
+      # about choices we made and can undo.
+      #
+      # Read the step. A HIGH or CRITICAL in something that ships is a stop,
+      # and this not failing the build is exactly why somebody has to look.
+      # Standing task after v3.0.0: vitest 3 to 4.1.11 or later, which closes
+      # GHSA-82fw-gwwq-j7x9 and is a major bump, so it is not a release-day job.
       - name: No known advisories
+        continue-on-error: true
         run: bun audit
 
       # Fails on anything deprecated that is not written down as deliberate, in

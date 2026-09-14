@@ -68,9 +68,24 @@ read by a lawyer, and photo evidence has never been driven end to end through a
 real camera. Neither is something the tests can catch. `JURISDICTION.city` in
 `src/server/policy.ts` is settled: Bengaluru, confirmed 2026-09-06.
 
-**All nine phases are done. What remains is the cutover**, below, and the
-`SCREENS.md` review gate, which is a person opening each screen beside its
-artboard.
+**All nine phases are done, and so are the fourteen items in
+`.planning/v3.1/SCOPE.md`**, a round of defects and redesigns found by using the
+dev build. Two of them were leaks: a group saw a member's whole back catalogue
+on joining, and shared evidence never reached the group at all. That file is
+the record; the work is in `main`.
+
+**This ships as v3.0.0, not v3.1.0.** v3 never reached production, so the nine
+phases and the fourteen items are one release. `v3.1` names when the work
+happened, not a version anyone ran.
+
+**What remains is the cutover**, below, and the `SCREENS.md` review gate, which
+is a person opening each screen beside its artboard.
+
+**One cutover step has to happen first, and it is not in the list below.**
+Vercel Preview's `DATABASE_URL_POOLED` and `DATABASE_URL_DIRECT` still name
+`curfew-apac`, not `curfew-apac-dev`. Point them at the dev branch BEFORE
+production takes over `curfew-apac`, or the dev site will be reading and
+writing the live database from the moment the cutover finishes.
 
 **The Configure and Check-in rows in `SCREENS.md` are unticked on purpose.**
 Ticking one means a person has opened the screen beside its artboard. Both sets

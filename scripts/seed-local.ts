@@ -1402,9 +1402,22 @@ async function main() {
   // and refuses to photograph a screen that needs a different one: running
   // shots.ts directly instead of run-all.mjs used to capture those against
   // whatever happened to be seeded, and produce a confident "No such page".
+  //
+  // `day` is the calendar day this fixture calls TODAY, and the browser suite
+  // refuses to run against a stale one. Every fixture that anchors on the real
+  // clock puts its "today" events on `anchor`, so once the member's zone rolls
+  // past midnight the whole fixture is describing yesterday: the water row
+  // reads "0 of 8 today" and the suite fails saying a finished counter is not
+  // finished, which is true and has nothing to do with the code. Seeding at
+  // 11:59 PM and running at 12:01 AM is all it takes, and CI crosses that line
+  // at 18:30 UTC every day.
   await writeFile(
     path.join(process.cwd(), "scripts", "drift", ".seeded.json"),
-    JSON.stringify({ fixture, at: new Date().toISOString() }, null, 2) + "\n",
+    JSON.stringify(
+      { fixture, at: new Date().toISOString(), day: anchor.toFormat("yyyy-MM-dd"), tz: TZ },
+      null,
+      2,
+    ) + "\n",
   );
   console.log(`fixture "${fixture}" seeded`);
 }

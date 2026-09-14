@@ -5,19 +5,40 @@ dev build, and a thirteenth on 2026-09-14. Nothing here is decided when it is wr
 written as it was asked, then what is actually true today, measured rather than
 assumed, then what the work really is and what still needs answering.
 
-Four of the first seven turned out to be defects rather than ideas, and all
-four are done. Of the second five: five of the six faults under §8 are done, §9
-is done, §10 was a real bug and is fixed, and §11 is half done and half waiting
-on a decision. What is left is design work, §1, §2, §5 and §12, and §8.6, which
-nobody asked for and which was found only by trying to measure §8.3: the dev
-site does not read the database this repo's own files say it does.
+**All fourteen are done, finished 2026-09-15.** Four of the first seven turned
+out to be defects rather than ideas. §10 and §14 were the two that mattered:
+both leaked one member's history to people who should never have seen it.
+
+**One thing here is not code and is not done: §8.6.** Vercel Preview's database
+variables still name `curfew-apac`, not `curfew-apac-dev`, so the dev site
+reads and writes the branch production is about to become. Nobody asked for it;
+it was found only by trying to measure §8.3. It has to be fixed in the Vercel
+dashboard before the cutover points production at that same branch.
+
+Two things found after the fourteen, both fixed, both worth reading because
+neither could have been caught by anything that existed:
+
+- **The sign-in page's own photographs were behind sign-in.** The middleware
+  matcher did not exclude `public/`, so a signed-out visitor got the page and
+  every image on it answered 307 with HTML. `bun run check:signin` is the only
+  check that runs against a real deployment, because both CI jobs that serve
+  the app set LOCAL_MODE, where the gate stands aside entirely.
+- **The browser fixture rots at midnight.** Every fixture anchored on the real
+  clock calls the seeded day "today", so a run that crosses midnight in
+  Asia/Kolkata fails saying a finished counter is not finished. `run.mjs`
+  refuses a stale fixture now rather than producing a confident sentence about
+  the wrong subject.
+
+**Version: this ships as v3.0.0, not v3.1.0.** v3 never reached production, so
+the nine phases and these fourteen items are one release. The folder name is
+the record of when the work happened, not a version that shipped.
 
 `.planning/v3/SCOPE.md` remains the decision log for v3. When an item here is
 settled it becomes a numbered decision there and leaves this file.
 
 ---
 
-## 1. The evidence and check-in flow, redesigned
+## 1. The evidence and check-in flow, redesigned — DONE
 
 **Asked for.** Open the camera as soon as Log is pressed on Home, rather than
 landing on a screen and pressing again. Then show the shot full size with the
@@ -91,7 +112,7 @@ visit, and the v3.1 artboards are the ones to review against.
 
 ---
 
-## 2. The sign-in screen
+## 2. The sign-in screen — DONE
 
 **Asked for.** A colour Google mark on the button. And since this is the
 landing page for everyone who has never signed in, redesign it.
@@ -113,7 +134,7 @@ recolouring. That constrains a design more than it sounds.
 
 ---
 
-## 3. A streak that moves the moment a session is logged — THIS IS A DEFECT
+## 3. A streak that moves the moment a session is logged — WAS A DEFECT, FIXED
 
 **Asked for.** "Make sure activities like gym have an instant streak +1 when
 marked complete, as streak is per day."
@@ -162,7 +183,7 @@ This one closes as §1.12 in `.planning/v3/OPEN.md`.
 
 ---
 
-## 4. Checking in after the week's minimum is met
+## 4. Checking in after the week's minimum is met — DONE
 
 **Asked for.** Gym is three a week. After the third, let them check in on a
 fourth day, saying something like "you have already met this week's target, but
@@ -253,7 +274,7 @@ then asking `performCheckin` whether it agrees.
 
 ---
 
-## 5. The configure screen, made easier
+## 5. The configure screen, made easier — DONE
 
 **Asked for.** Redesign and simplify.
 
@@ -344,7 +365,7 @@ the mock now as well.
 
 ---
 
-## 8. Five things wrong on the activity screens
+## 8. Five things wrong on the activity screens — DONE, except 8.6
 
 Given as one bullet, measured as five separate faults, plus a sixth nobody
 reported that was found while trying to measure the third.
@@ -630,7 +651,7 @@ says the photographs could not be loaded and that nothing has been deleted.
 
 ---
 
-## 11. The ceiling reads 1000 whatever you actually do — HALF DONE
+## 11. The ceiling reads 1000 whatever you actually do — DONE
 
 **Asked for.** "In a group where I haven't added many of the activities it
 accepts, the ceiling is still 1000. Why?"
@@ -671,7 +692,7 @@ it raising it from today.
 
 ---
 
-## 12. Group settings are as scattered as the configure screen
+## 12. Group settings are as scattered as the configure screen — DONE
 
 **Asked for.** The simplification asked for on the configure page is needed in
 group settings too. Everything is scattered.
@@ -717,7 +738,7 @@ pass actually did. That is the number §11 fixed.
 
 ---
 
-## 13. Deleting a photograph makes you wait
+## 13. Deleting a photograph makes you wait — DONE
 
 **Asked for.** Deleting a photo should be asynchronous. It takes a long time
 and the person sits there.

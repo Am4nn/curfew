@@ -28,6 +28,7 @@
 // those rows as drift rather than ignoring them: a stored day beyond the replay
 // would otherwise be the balance `resumePointFor` carries forward, and every
 // real day between now and then would never be computed at all.
+import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
 import { screens } from "./screens.mjs";
 import { balances } from "./balances.mjs";
@@ -40,6 +41,52 @@ import { configure } from "./configure.mjs";
 
 const BASE = process.env.BROWSER_BASE ?? "http://localhost:3000";
 const only = process.argv.slice(2).filter((a) => !a.startsWith("-"));
+
+/**
+ * Refuse a fixture that has gone stale overnight.
+ *
+ * Every fixture that anchors on the real clock puts its "today" events on the
+ * day it was seeded. Once the member's zone rolls past midnight, the whole
+ * fixture describes yesterday: Water reads "0 of 8 today" and this suite fails
+ * saying a finished counter is not finished. That is true, and has nothing to
+ * do with the app. Seeding at 11:59 PM and running at 12:01 AM is all it
+ * takes, and CI crosses midnight in Asia/Kolkata at 18:30 UTC every day.
+ *
+ * Checked here rather than left to fail, because the failure it produces is a
+ * confident sentence about the wrong subject. Cheap to fix and expensive to
+ * diagnose is exactly the shape that should stop the run.
+ */
+function checkFixtureIsToday() {
+  const path = new URL("../drift/.seeded.json", import.meta.url);
+  let seeded;
+  try {
+    seeded = JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    // An older fixture, seeded before this was written. Say so and carry on:
+    // refusing here would fail a run that is probably fine.
+    console.log("note: no fixture marker. Reseed if anything below looks like yesterday.");
+    return;
+  }
+  if (!seeded.day || !seeded.tz) return;
+
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: seeded.tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+  if (today !== seeded.day) {
+    console.error(
+      `\nThe fixture is stale. It was seeded for ${seeded.day} and it is now ` +
+        `${today} in ${seeded.tz}, so every "today" in the database is ` +
+        `yesterday.\n\nRun: bun run local:seed\n`,
+    );
+    process.exit(1);
+  }
+}
+
+checkFixtureIsToday();
 
 const SUITES = [
   ["screens", screens],

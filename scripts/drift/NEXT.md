@@ -1,13 +1,32 @@
 # Next session
 
-Last updated 2026-09-05, after the scoring, streak and money rebuild.
+Last updated 2026-09-15, on the way to tagging v3.0.0.
 
 ## Still open
 
-### The big one, and the only thing left from the original queue
+Nothing in code. What is left before a tag is in `.planning/v3/PLAN.md` under
+"The cutover", and every step of it is somebody's hands on the Neon and Vercel
+dashboards.
 
-Full verification of the engine, then simulation. Explicitly queued for after
-the UI, and the UI is now finished.
+### The big one: closed
+
+Full verification of the engine, then simulation, was the last item on the
+original queue. It is done.
+
+- `bun run verify` replays scoring, reputation, the streak, outcomes and the
+  ledger and diffs the stored rows. The cron runs it nightly and reports.
+- `bun run simulate` lives through 180 days on the real check-in path across 34
+  scenarios and 145 assertions: joining, leaving, sharing, un-sharing, grace
+  running out, money off, odd splits, four timezone shapes.
+- The pass over all twelve activities happened as the fourteen items in
+  `.planning/v3.1/SCOPE.md`, and it found what a pass like that is supposed to
+  find. Two were leaks.
+
+What is deliberately still true: agreeing with itself is not the same as being
+right. `verify` proves the stored rows match a recompute, and `simulate` is the
+thing that argues the recompute is right.
+
+### The old text, kept because the reasoning still holds
 
 - Verify scoring, reputation, streak and money calculation end to end, not
   screen by screen. `bun run verify` proves stored rows match a recompute; it
@@ -61,7 +80,6 @@ check-in feedback work.
 
 ## Needs a person, not code
 
-- `JURISDICTION.city` in `src/server/policy.ts` is a placeholder.
 - The terms have not been read by a lawyer.
 - **The production cutover.** Production still serves v2.5 from the old US
   Neon project while `vercel.json` pins `sin1`. That pairing is only safe

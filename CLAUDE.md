@@ -160,7 +160,7 @@ and reputation rows wait for `bun run score`. A scheduled GitHub Actions
 workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
 real nightly job, and it is not worth it while dev has three users.
 
-`package.json` carries `3.1.0`, cut as a tag on 2026-09-15. The admin header
+`package.json` carries `3.1.1`, cut as a tag on 2026-09-15. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.

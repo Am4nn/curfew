@@ -180,6 +180,15 @@ try {
   let food = await row("food");
   check("a passed day is still marked done", food.done, shape(food));
   check("and the meal that would break the limit is still offered", food.open, shape(food));
+  // Reported as "Food I logged 4 times but it just keeps on asking for Log",
+  // within an hour of the line above being built. It was not asking. A control
+  // on a met period is an offer, and a row that does not draw that distinction
+  // reads as an activity that has not noticed it is finished.
+  check(
+    "and the row says the control is an offer, not a demand",
+    food.status.includes("Another still counts"),
+    food.status,
+  );
 
   const second = await press("food", "meal", "meal2", { calories: 600 });
   check("and the press Home offered is one the server takes", second.ok, JSON.stringify(second));

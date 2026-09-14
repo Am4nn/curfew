@@ -85,12 +85,27 @@ export async function todayFor(userId: string): Promise<Today> {
           ? (hint ?? `${open.label} window closes ${open.closesLabel}`)
           : (hint ?? "No window open");
 
-    // A gap holds the control down, and the row has to say why or it reads as
-    // an activity that has stopped working. The module writes the count, the
-    // engine writes this, because the gap is the engine's rule.
+    // Two things the engine has to say about its own rules, because a row that
+    // does not say them reads as broken.
+    //
+    // A gap holds the control down, and without a word the activity looks like
+    // it has stopped working.
+    //
+    // A met period that still offers a control is the other way round, and it
+    // was reported as a bug within an hour of being built: four meals logged,
+    // the count met, and Food "just keeps on asking for Log". It was not
+    // asking. Once a repeating step has met the period, the control is an
+    // offer rather than a demand, and nothing on the row drew that line. Saying
+    // so is the engine's job and not the module's: what counts is the module's
+    // business, whether another press would still be taken is this one's.
     const waiting = state.steps.find((s) => s.waitingUntil)?.waitingUntil ?? null;
-    const status =
-      waiting && !open && state.scheduled ? `${base} Next counts ${waiting}.` : base;
+    const status = !state.scheduled
+      ? base
+      : waiting && !open
+        ? `${base} Next counts ${waiting}.`
+        : state.passed && open
+          ? `${base} Another still counts.`
+          : base;
 
     rows.push({
       typeKey: activity.typeKey,

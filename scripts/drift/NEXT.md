@@ -98,6 +98,44 @@ correctness, privacy and the ledger.
   reporting every one of them as drift forever, and what lets a nutrition
   history outlive the 30-day evidence deletion.
 
+#### Where it runs, decided 2026-09-15
+
+**AI is never in the press path.** A check-in is a button and it stays a button.
+Three placements, and a call that does not fit one of them does not get built:
+
+- **Nightly, with the cron.** Patterns and schedule tuning. Nobody is waiting.
+  Note that Vercel Cron does not run on Preview, so dev sees these only when
+  `bun run score` is run by hand.
+- **After the event has landed.** The photo pipeline. The check-in records
+  instantly and the derived row is written when the model answers. A failed
+  call leaves a check-in that still counts and a derived row that is simply
+  absent, which is the same visible under-write the rest of the app already
+  takes, since the driver has no transactions.
+- **Racing an interaction the person is already having.** Fire on photo
+  capture, while they are still looking at the review screen. The answer is
+  there or it is not, and nothing waits either way.
+
+Server-side in every case. The key cannot ship to a browser, so the client
+hands over an evidence key and the route does the work, which also means it can
+be retried with nobody present.
+
+#### The two spikes
+
+1. **An evidence photo becomes structured facts.** One pipeline, two prompts:
+   a meal becomes calories and macros, a watch or scale face becomes the number
+   it shows. Both land on that activity's own detail row, beside what the person
+   entered, and neither is ever an input to `evaluate`.
+2. **The log becomes a weekly read.** Cross-activity patterns from events
+   alone. No photograph leaves. This is the cheap one and the one most likely
+   to be worth keeping.
+
+Meter reading was originally the friction-removal case: read the watch, fill the
+field, save the typing. That needed a model's number to reach scoring, and it
+was decided on 2026-09-15 that one never does. So it is not friction removal any
+more, it is a record: the person still types their own number and the photo's
+reading sits next to it. Weaker, and consistent, and the same pipeline as
+nutrition rather than a second one.
+
 **The spike must not touch a member's evidence.** Consent has not changed, so it
 runs on photographs taken for the purpose and on nothing out of R2. Judge it on
 three numbers written down before starting: accuracy against about twenty real

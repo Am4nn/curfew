@@ -77,16 +77,37 @@ Six things any answer has to survive, all of them already written down:
 Also: an admin switch, the same as every other system (invariant 11), so it can
 be turned off without rewriting history.
 
-**What the framework decision is actually about**, in the order it matters:
-where the inference runs and what it costs per call; whether an answer can be
-pinned and replayed for `verify`; what happens when the provider is down or
-slow; whether images go to the same place as text; and how a prompt change is
-versioned, since `check:logic-version` exists precisely because a curve change
-has to repair itself and a prompt change is the same shape of problem.
+**Cost is not the constraint and should stop being discussed as one.** At three
+to ten users a food-photo call is a fraction of a cent and a weekly pattern read
+is a few cents a user. The bill is under $2 a month. What is expensive here is
+correctness, privacy and the ledger.
 
-My leaning, to be argued with rather than assumed: the provider SDK directly,
-one module, no framework, because the app needs one call in one place and every
-abstraction layer here would mostly be hiding the parts that need deciding.
+#### Decided 2026-09-15
+
+- **Spike first, ship nothing.** Two throwaway prototypes to see whether the
+  quality is worth any of the below. No schema, no consent change, no route.
+- **A model's answer never reaches scoring, streaks or money.** It is shown to
+  the person and stops there. A wrong guess must cost nothing, which keeps
+  invariants 1 and 7 whole and means a bad model is a disappointing feature
+  rather than a false fine.
+- **Photo plus the user's own description, to a zero-retention provider**, when
+  it ships. Accuracy is the reason; the price is that the consent gate and
+  `src/server/policy.ts` say so BEFORE the first call on a real member's photo.
+- **Derived numbers live in their own table, written once, never recomputed.**
+  They are inputs, not derivations. That is what keeps `verifyAll` from
+  reporting every one of them as drift forever, and what lets a nutrition
+  history outlive the 30-day evidence deletion.
+
+**The spike must not touch a member's evidence.** Consent has not changed, so it
+runs on photographs taken for the purpose and on nothing out of R2. Judge it on
+three numbers written down before starting: accuracy against about twenty real
+meals weighed or labelled by hand, latency, and cost per call. If accuracy is
+not there, the rest of this never happens and that is a good outcome for an
+afternoon.
+
+Framework, when the spike is over: the provider SDK directly, one module, no
+framework. The app needs one call in one place, and a layer on top would mostly
+hide the parts that need deciding. Argue with this rather than assuming it.
 
 ### The cutover: done
 

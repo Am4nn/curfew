@@ -21,7 +21,7 @@ export default async function Balances() {
   const settledEverywhere = owe.length === 0 && owed.length === 0;
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-5">
+    <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto max-w-[560px]">
         <header className="-mx-5 mb-6 border-b border-rule px-5 pb-[10px]">
           <Link href="/" className="flex items-center gap-2">

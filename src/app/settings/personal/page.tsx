@@ -26,7 +26,7 @@ export default async function PersonalSettings() {
   const zones = supportedZones();
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-5">
+    <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto max-w-[560px]">
         <header className="-mx-5 mb-6 flex items-center justify-between border-b border-rule px-5 pb-[10px]">
           <h1 className="flex items-center text-[15px] font-semibold tracking-[0.14em]">

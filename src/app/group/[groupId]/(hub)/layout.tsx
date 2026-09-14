@@ -22,7 +22,7 @@ export default async function GroupLayout({
   if (!header) notFound();
 
   return (
-    <main className="min-h-dvh pb-24">
+    <main className="min-h-dvh pb-nav">
       <div className="flex items-center gap-[10px] px-5 pb-[15px] pt-5">
         <BackLink fallback="/groups" className="text-[15px] text-muted" />
         <span className="text-[16px] font-semibold">{header.name}</span>

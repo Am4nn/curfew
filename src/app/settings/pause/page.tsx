@@ -219,7 +219,7 @@ export default async function PauseSettings() {
   const [held, today] = await Promise.all([currentPause(user.id), userDay(user.id)]);
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-5">
+    <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-5">
         <header className="-mx-5 mb-1 flex items-center justify-between border-b border-rule px-5 pb-[10px]">
           <h1 className="flex items-center text-[15px] font-semibold tracking-[0.14em]">

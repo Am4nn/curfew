@@ -59,7 +59,7 @@ export default async function ActivitiesPage() {
   );
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-5">
+    <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
           <QuorumMark size={15} />

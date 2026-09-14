@@ -54,7 +54,7 @@ export default async function GroupLedger({
       : `${r.fromUserId === user.id ? "You" : r.fromName} to ${r.toUserId === user.id ? "you" : r.toName}`;
 
   return (
-    <main className="min-h-dvh pb-24">
+    <main className="min-h-dvh pb-nav">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
         <div className="flex items-center gap-[9px]">
           <BackLink fallback={`/group/${groupId}/standing`} className="text-[14px] text-muted" />

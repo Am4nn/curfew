@@ -78,7 +78,7 @@ export function TabBar({ hasPendingInvite = false }: { hasPendingInvite?: boolea
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg">
+    <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg">
       <div className="mx-auto flex max-w-[560px]">
         {TABS.map((t) => {
           const active = t.match(pathname);

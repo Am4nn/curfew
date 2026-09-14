@@ -59,7 +59,7 @@ export default async function SharingPage() {
   }
 
   return (
-    <main className="min-h-dvh pb-24">
+    <main className="min-h-dvh pb-nav">
       <header className="flex items-center gap-[9px] border-b border-rule px-5 pb-[11px] pt-5">
         <BackLink fallback="/settings" className="text-[14px] text-muted" />
         <span className="text-[14px] font-semibold tracking-[0.14em]">

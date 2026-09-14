@@ -1,3 +1,68 @@
+/* IBM Plex Mono, self-hosted.
+ *
+ * `tailwind.config.ts` has said "IBM Plex Mono throughout. No system-sans
+ * anywhere." since the beginning and nothing ever loaded the font, so the
+ * stack fell through to `ui-monospace` and every phone drew the app in SF Mono
+ * or Roboto Mono. The artboards every screen was reviewed against are Plex.
+ * The design was right and the delivery was missing.
+ *
+ * Self-hosted rather than linked to Google: a third party in the critical path
+ * of the first paint, on a page that is otherwise one origin, for a file that
+ * never changes. 44 KB of latin ships; latin-ext only loads if a name needs it.
+ *
+ * `font-display: swap` so text is readable immediately and reflows into Plex,
+ * rather than holding a blank screen for a font. Regenerate with
+ * `bun run fetch:font`.
+ */
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-500-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-500-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 
 @tailwind base;
@@ -95,6 +160,19 @@
   :focus-visible {
     outline: 3px solid var(--accent);
     outline-offset: 2px;
+  }
+
+  /* A tap acts at once. Without this Safari holds every press for ~300ms
+     waiting to see whether it is the first half of a double-tap zoom, which on
+     a counter you press eight times a day is the difference between an app and
+     a website. */
+  button,
+  a,
+  [role="button"],
+  input,
+  select,
+  label {
+    touch-action: manipulation;
   }
 
   /* Form controls at 16px on small screens so mobile Safari does not zoom in on
@@ -244,5 +322,23 @@
   }
   ::-webkit-scrollbar-track {
     background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Clear the fixed tab bar.
+
+     It was `pb-24` in twenty-one places, which reserved the bar's height and
+     nothing else. Installed on a phone the page is drawn behind the home
+     indicator (viewportFit: cover), so the last row of every screen sat under
+     it. One class, so the next screen cannot forget. */
+  .pb-nav {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+
+  /* The bar itself. Its own padding has to grow too, or its labels sit under
+     the indicator rather than the content above them. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

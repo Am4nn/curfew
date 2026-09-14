@@ -31,7 +31,7 @@ export default async function GroupStats({
   const hardest = [...week.byType].sort((a, b) => a.percent - b.percent)[0];
 
   return (
-    <main className="min-h-dvh pb-24">
+    <main className="min-h-dvh pb-nav">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
         <div className="flex items-center gap-[9px]">
           <BackLink fallback={`/group/${groupId}`} className="text-[14px] text-muted" />

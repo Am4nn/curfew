@@ -69,7 +69,7 @@ export function PageSkeleton({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-5" aria-busy="true">
+    <main className="min-h-dvh px-5 pb-nav pt-5" aria-busy="true">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
           {back ? (

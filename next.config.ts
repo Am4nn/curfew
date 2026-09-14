@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
   // does not try to bundle its optional native bits into the production build.
   serverExternalPackages: ["pg"],
 
+  // The OG card reads a TTF off disk at runtime. Nothing imports it, so the
+  // tracer cannot see it and the file would be absent from the deployment: the
+  // card would 500 in production and be fine everywhere it was tested.
+  outputFileTracingIncludes: {
+    "/opengraph-image": ["./assets/fonts/**"],
+  },
+
   // Response headers, on every route.
   //
   // Deliberately the boring ones. There is no full Content-Security-Policy

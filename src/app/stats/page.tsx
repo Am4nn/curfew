@@ -47,7 +47,7 @@ export default async function StatsPage({
     // The photographs this activity asked for, beside the numbers they back up.
     const photos = await ownPhotos(user.id, { typeKey: a, limit: 6 });
     return (
-      <main className="min-h-dvh px-5 pb-24 pt-5">
+      <main className="min-h-dvh px-5 pb-nav pt-5">
         <div className="mx-auto flex max-w-[560px] flex-col gap-[22px]">
           <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
             <BackLink fallback="/stats" className="text-[14px] text-muted" />
@@ -115,7 +115,7 @@ export default async function StatsPage({
   const stats = await overviewFor(user.id);
 
   return (
-    <main className="min-h-dvh px-5 pb-24 pt-5">
+    <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
           <QuorumMark size={15} />

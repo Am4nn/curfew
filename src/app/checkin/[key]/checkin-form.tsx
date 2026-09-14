@@ -225,6 +225,7 @@ export function CheckinForm({
       periodStart: state.period,
       timezone: state.timezone,
       config: state.config,
+      schedule: state.schedule,
       checkins: state.recorded.map((r) => ({
         step: r.step,
         at: new Date(r.at),

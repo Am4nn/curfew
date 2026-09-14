@@ -15,6 +15,7 @@ import {
   type CheckinKind,
   type ConfigField,
   type EvidenceRule,
+  type Schedule,
   daysDoneIn,
 } from "@/domain";
 import { getUserActivity } from "./activities";
@@ -96,6 +97,12 @@ export interface ActivityCheckinState {
   timezone: string;
   /** The module's config, carried so the client can ask it for a live hint. */
   config: unknown;
+  /**
+   * The schedule, carried for the same reason. A module may read "how often"
+   * from it, so the client's own hint call needs it or it would answer a
+   * different question from the server's.
+   */
+  schedule: Schedule;
   /** False on a day this activity is not scheduled for. */
   scheduled: boolean;
   /** Whether the period passes on what is recorded so far. */
@@ -191,6 +198,7 @@ export async function getCheckinState(
     periodStart: period,
     timezone,
     config: activity.config,
+    schedule: activity.schedule.schedule,
     checkins,
   });
 
@@ -205,6 +213,7 @@ export async function getCheckinState(
         periodStart: period,
         timezone,
         config: activity.config,
+        schedule: activity.schedule.schedule,
         checkins,
         step: step.key,
         pending: null,
@@ -249,6 +258,7 @@ export async function getCheckinState(
           periodStart: period,
           timezone,
           config: activity.config,
+          schedule: activity.schedule.schedule,
           checkins,
           step: step.key,
           pending: null,
@@ -265,6 +275,7 @@ export async function getCheckinState(
           periodStart: period,
           timezone,
           config: activity.config,
+          schedule: activity.schedule.schedule,
           checkins: [...checkins, { step: step.key, at: instant }],
           step: step.key,
           pending: null,
@@ -280,6 +291,7 @@ export async function getCheckinState(
     period,
     timezone,
     config: activity.config,
+    schedule: activity.schedule.schedule,
     scheduled: isScheduledDay(activity.schedule.schedule, weekdayOf(period)),
     passed: evaluated.passed,
     // Either nothing more is wanted from today, or today is one of the days
@@ -293,6 +305,7 @@ export async function getCheckinState(
         periodStart: period,
         timezone,
         config: activity.config,
+        schedule: activity.schedule.schedule,
         checkins,
       }).includes(DateTime.fromJSDate(instant, { zone: timezone }).toFormat("yyyy-MM-dd")),
     nowLabel: label(instant, timezone),
@@ -352,6 +365,9 @@ export type CheckinTarget =
       ok: true;
       type: ReturnType<typeof getActivityType>;
       config: unknown;
+      /** Resolved as of this period, so a module reading "how often" gets
+       *  the number as it stood when the period was judged (invariant 5). */
+      schedule: Schedule;
       period: string;
       timezone: string;
       instant: Date;
@@ -430,6 +446,7 @@ export async function resolveCheckinTarget(
       periodStart: period,
       timezone,
       config: activity.config,
+      schedule: activity.schedule.schedule,
       checkins: recorded,
       step: stepKey,
       pending: null,
@@ -461,6 +478,7 @@ export async function resolveCheckinTarget(
     ok: true,
     type,
     config: activity.config,
+    schedule: activity.schedule.schedule,
     period,
     timezone,
     instant,
@@ -482,7 +500,7 @@ export async function performCheckin(
 
   const target = await resolveCheckinTarget(userId, input.typeKey, input.step);
   if (!target.ok) return target;
-  const { type, config, period, timezone, step } = target;
+  const { type, config, schedule, period, timezone, step } = target;
 
   // The check-in is the callback: the upload came first, this confirms it. A
   // required photo that is missing means no check-in at all, which is what
@@ -591,7 +609,16 @@ export async function performCheckin(
   // falls the right way. A crash here leaves the streak one behind until the
   // next close rebuilds it, and `verify` reports it in the meantime. The same
   // trade `confirmEvidence` takes one line above.
-  await bumpForPress(userId, input.typeKey, period, timezone, config, row.occurredAt, input.step);
+  await bumpForPress(
+    userId,
+    input.typeKey,
+    period,
+    timezone,
+    config,
+    schedule,
+    row.occurredAt,
+    input.step,
+  );
 
   return { ok: true, step: input.step, atLabel: label(row.occurredAt, timezone) };
 }
@@ -613,11 +640,12 @@ async function bumpForPress(
   period: string,
   timezone: string,
   config: unknown,
+  schedule: Schedule,
   at: Date,
   step: string,
 ): Promise<void> {
   const { checkins } = await recordedFor(userId, typeKey, period);
-  const input = { periodStart: period, timezone, config, checkins };
+  const input = { periodStart: period, timezone, config, schedule, checkins };
 
   // The same period as it stood a moment ago: everything except the press that
   // just landed. Identified by its server timestamp, which is unique to it.

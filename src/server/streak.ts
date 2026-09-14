@@ -7,10 +7,12 @@ import {
   periodUnit,
   periodStart,
   daysDoneIn,
+  getActivityType,
   EMPTY_STREAK,
   type StreakDay,
   type StreakState,
   type Checkin,
+  type Schedule,
 } from "@/domain";
 import { getUserActivity, listUserActivities } from "./activities";
 import { timezoneHistory, type ZoneHistory } from "./config";
@@ -104,7 +106,7 @@ async function activityDays(
   typeKey: string,
   unit: "day" | "week",
   zones: ZoneHistory,
-  inFlight: { period: string; config: unknown } | null,
+  inFlight: { period: string; config: unknown; schedule: Schedule } | null,
 ): Promise<{ days: StreakDay[]; closedThrough: string | null }> {
   const scored = await db
     .select({
@@ -195,6 +197,9 @@ async function activityDays(
       periodStart: s.periodStart,
       timezone: zones.on(s.periodStart),
       config: activity?.config,
+      // An untracked type still has history to count, and the schedule it was
+      // judged under is the one it declares.
+      schedule: activity?.schedule.schedule ?? getActivityType(typeKey).defaults.schedule,
       checkins: byPeriod.get(s.periodStart) ?? [],
     });
     for (const day of counted) done.add(day);
@@ -231,7 +236,7 @@ async function daysDoneInFlight(
   userId: string,
   typeKey: string,
   timezone: string,
-  inFlight: { period: string; config: unknown },
+  inFlight: { period: string; config: unknown; schedule: Schedule },
 ): Promise<string[]> {
   const rows = await db
     .select({ occurredAt: events.occurredAt, payload: events.payload })
@@ -249,6 +254,7 @@ async function daysDoneInFlight(
     periodStart: inFlight.period,
     timezone,
     config: inFlight.config,
+    schedule: inFlight.schedule,
     checkins: rows.map((row) => {
       const payload = (row.payload ?? {}) as Record<string, unknown>;
       return { step: String(payload.step), at: row.occurredAt, evidence: payload.evidence };
@@ -282,6 +288,7 @@ export async function rebuildStreak(
       boundary: activity.schedule.dayBoundary,
     }),
     config: activity.config,
+    schedule: activity.schedule.schedule,
   };
   const { days, closedThrough } = await activityDays(
     userId,

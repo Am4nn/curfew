@@ -1,3 +1,4 @@
+import type { Schedule } from "./schedule";
 import { describe, it, expect } from "vitest";
 import { getActivityType, registeredKeys } from "./index";
 import { foodActivity, FOOD_STEP } from "./food";
@@ -10,6 +11,7 @@ import { sugarfreeActivity } from "./sugarfree";
 import { DECLARE_STEP } from "./abstinence";
 import { clockLabel } from "./windows";
 
+const EVERY_DAY: Schedule = { kind: "days", days: [1, 2, 3, 4, 5, 6, 7] };
 // The sentences that ship, asserted verbatim against the mocks.
 
 const IST = "Asia/Kolkata";
@@ -101,6 +103,7 @@ describe("the line under the fields, in the module's own words", () => {
       periodStart: DAY,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins,
       step,
       pending: pending ?? null,
@@ -132,12 +135,12 @@ describe("the line under the fields, in the module's own words", () => {
     const config = { meals: 3, calorieLimit: 2000 } as never;
     // Both lines are on the mocks.
     expect(foodActivity.hint?.({
-      periodStart: DAY, timezone: IST, config, checkins: meals,
+      periodStart: DAY, timezone: IST, config, schedule: EVERY_DAY, checkins: meals,
       step: FOOD_STEP, pending: null,
     })).toBe("1180 so far today. The limit is 2000.");
 
     expect(foodActivity.hint?.({
-      periodStart: DAY, timezone: IST, config, checkins: meals,
+      periodStart: DAY, timezone: IST, config, schedule: EVERY_DAY, checkins: meals,
       step: FOOD_STEP, pending: { calories: 520 },
     })).toBe("1700 of 2000 once this is sent.");
   });
@@ -148,6 +151,7 @@ describe("the line under the fields, in the module's own words", () => {
         periodStart: DAY,
         timezone: IST,
         config: { glasses: 8 },
+        schedule: EVERY_DAY,
         checkins: [check(WATER_STEP, "08:00"), check(WATER_STEP, "10:00")],
         step: WATER_STEP,
         pending: null,
@@ -161,6 +165,7 @@ describe("the line under the fields, in the module's own words", () => {
         periodStart: DAY,
         timezone: IST,
         config: { target: 8000, direction: "atLeast" },
+        schedule: EVERY_DAY,
         checkins: [
           check(STEPS_STEP, "12:00", { steps: 3000 }),
           check(STEPS_STEP, "21:00", { steps: 9000 }),
@@ -177,6 +182,7 @@ describe("the line under the fields, in the module's own words", () => {
         periodStart: DAY,
         timezone: IST,
         config: { unit: "pages", target: 30 },
+        schedule: EVERY_DAY,
         checkins: [check(READING_STEP, "09:00", { amount: 20 })],
         step: READING_STEP,
         pending: { amount: 10 },

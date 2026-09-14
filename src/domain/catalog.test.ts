@@ -11,8 +11,10 @@ import { screenActivity, SCREEN_STEP } from "./screen";
 import { nightfastActivity } from "./nightfast";
 import { sugarfreeActivity } from "./sugarfree";
 import { DECLARE_STEP } from "./abstinence";
+import type { Schedule } from "./schedule";
 import { windowInstants } from "./windows";
 
+const EVERY_DAY: Schedule = { kind: "days", days: [1, 2, 3, 4, 5, 6, 7] };
 const IST = "Asia/Kolkata";
 const DAY = "2026-09-07";
 
@@ -39,7 +41,13 @@ describe("the catalog is complete", () => {
 
 describe("Food, the only type needing both pass shapes", () => {
   const evaluate = (checkins: ReturnType<typeof check>[], config = foodActivity.defaults.config) =>
-    foodActivity.evaluate({ periodStart: DAY, timezone: IST, config, checkins });
+    foodActivity.evaluate({
+      periodStart: DAY,
+      timezone: IST,
+      config,
+      schedule: EVERY_DAY,
+      checkins,
+    });
 
   const meal = (hhmm: string, calories: number) =>
     check(FOOD_STEP, hhmm, { calories });
@@ -78,6 +86,7 @@ describe("Study, target when set", () => {
       periodStart: DAY,
       timezone: IST,
       config: { minutesTarget },
+      schedule: EVERY_DAY,
       checkins,
     });
 
@@ -109,6 +118,7 @@ describe("Steps and Screen, the two threshold directions", () => {
       periodStart: DAY,
       timezone: IST,
       config: { target, direction: "atLeast" },
+      schedule: EVERY_DAY,
       checkins,
     });
 
@@ -117,6 +127,7 @@ describe("Steps and Screen, the two threshold directions", () => {
       periodStart: DAY,
       timezone: IST,
       config: { limitMinutes, direction: "atMost" },
+      schedule: EVERY_DAY,
       checkins,
     });
 
@@ -156,6 +167,7 @@ describe("Water, the counter", () => {
       periodStart: DAY,
       timezone: IST,
       config: { glasses },
+      schedule: EVERY_DAY,
       checkins: Array.from({ length: n }, (_, i) =>
         check(WATER_STEP, `${String(8 + (i % 12)).padStart(2, "0")}:00`),
       ),
@@ -180,6 +192,7 @@ describe("Reading, one unit at a time", () => {
       periodStart: DAY,
       timezone: IST,
       config: { unit, target },
+      schedule: EVERY_DAY,
       checkins: amounts.map((amount, i) =>
         check(READING_STEP, `${String(9 + i).padStart(2, "0")}:00`, { amount }),
       ),
@@ -208,6 +221,7 @@ describe("Office, inside the window", () => {
       periodStart: DAY,
       timezone: IST,
       config: officeActivity.defaults.config,
+      schedule: EVERY_DAY,
       checkins,
     });
 
@@ -237,6 +251,7 @@ describe("Supplements, once a day with no window", () => {
       periodStart: DAY,
       timezone: IST,
       config: { dosesPerDay: 1 },
+      schedule: EVERY_DAY,
       checkins: [check(SUPPLEMENTS_STEP, "03:00")],
     });
     expect(r.passed).toBe(true);
@@ -259,6 +274,7 @@ describe("abstinence types", () => {
       periodStart: DAY,
       timezone: IST,
       config: activity.defaults.config,
+      schedule: EVERY_DAY,
       checkins: [check(DECLARE_STEP, hhmm, { held })],
     });
 
@@ -269,6 +285,7 @@ describe("abstinence types", () => {
       periodStart: DAY,
       timezone: IST,
       config: nightfastActivity.defaults.config,
+      schedule: EVERY_DAY,
       checkins: [],
     });
     expect(r.passed).toBe(false);
@@ -291,6 +308,7 @@ describe("abstinence types", () => {
       periodStart: DAY,
       timezone: IST,
       config: nightfastActivity.defaults.config,
+      schedule: EVERY_DAY,
       checkins: [
         check(DECLARE_STEP, "07:00", { held: true }),
         check(DECLARE_STEP, "09:00", { held: false }),
@@ -313,6 +331,7 @@ describe("abstinence types", () => {
       periodStart: DAY,
       timezone: IST,
       config: nightfastActivity.defaults.config,
+      schedule: EVERY_DAY,
       step: DECLARE_STEP,
       checkins,
     }) ?? null;

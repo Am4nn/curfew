@@ -54,6 +54,19 @@ export interface EvaluateInput<Config, Evidence> {
   periodStart: string;
   timezone: string;
   config: Config;
+  /**
+   * The schedule this period was produced by, resolved as it stood on the
+   * period being judged (invariant 5).
+   *
+   * Here because "how often" is an engine concept every type can use, and Gym
+   * was carrying its own copy of it: the schedule said `perWeek` and the gym
+   * config said `sessionsPerWeek`, one number written twice from one control.
+   * The configure screen cannot draw one "how often" row while two exist, and
+   * nothing stopped them disagreeing. The module still decides whether the
+   * week passed, so the engine learns nothing about what a session is
+   * (invariant 6).
+   */
+  schedule: Schedule;
   checkins: Checkin<Evidence>[];
 }
 

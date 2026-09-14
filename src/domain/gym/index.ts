@@ -6,6 +6,7 @@ import type {
   CheckinWindow,
   EvaluateInput,
 } from "../types";
+import type { Schedule } from "../schedule";
 import { countPass } from "../pass";
 
 // The gym activity type. Sleep and Gym are the two shapes in the catalog:
@@ -15,15 +16,12 @@ import { countPass } from "../pass";
 // This module is the only place that knows a gym period counts sessions.
 // Everything outside consumes { passed, detail } (invariant 6).
 
-export const gymConfigSchema = z
-  .object({
-    // How many sessions the week needs. The engine's schedule already carries
-    // "any N per week"; this mirrors it so a module can be evaluated on its own
-    // in a test without a schedule beside it. The configure screen writes both
-    // from one control.
-    sessionsPerWeek: z.number().int().min(1).max(7),
-  })
-  .strict();
+// Nothing of its own. How many sessions the week needs is the schedule's
+// `perWeek`, which the engine already owns and draws with one control. This
+// used to mirror it as `sessionsPerWeek` so a module could be evaluated
+// without a schedule beside it, and the mirror was the bug: one number written
+// twice, from one control, with nothing keeping the two in step.
+export const gymConfigSchema = z.object({}).strict();
 
 export type GymConfig = z.infer<typeof gymConfigSchema>;
 
@@ -33,6 +31,20 @@ export const gymEvidenceSchema = z.object({}).strict();
 export type GymEvidence = z.infer<typeof gymEvidenceSchema>;
 
 export const GYM_STEP = "session";
+
+/** What a gym week asks for when the schedule is not the "any N a week" shape. */
+const DEFAULT_PER_WEEK = 3;
+
+/**
+ * How many days at the gym this week needs.
+ *
+ * The schedule is the only place this lives now. A gym schedule is "any N a
+ * week" by construction, so the other shape is not a target and the module
+ * falls back to its own default rather than inventing one from a day list.
+ */
+function needed(schedule: Schedule): number {
+  return schedule.kind === "minimum" ? schedule.perWeek : DEFAULT_PER_WEEK;
+}
 
 /**
  * The calendar days a session was recorded on, in the user's zone.
@@ -63,7 +75,7 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     schedule: { kind: "minimum", perWeek: 3 },
     dayBoundary: "midnight",
     grace: 2,
-    config: { sessionsPerWeek: 3 },
+    config: {},
   },
 
   configSchema: gymConfigSchema,
@@ -123,7 +135,7 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   // however many times you press.
   hint(input) {
     const days = sessionDays(input.checkins, input.timezone);
-    const need = input.config.sessionsPerWeek;
+    const need = needed(input.schedule);
     const today = DateTime.now().setZone(input.timezone).toFormat("yyyy-MM-dd");
     // A met week says so with the count: "4 of 3 this week", which is what the
     // mock draws and what the tick beside it already means. It used to add
@@ -150,12 +162,12 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     const days = [...sessionDays(input.checkins, input.timezone)].sort();
     const result = countPass(
       days.map((d) => ({ step: GYM_STEP, at: new Date(d) })),
-      { min: input.config.sessionsPerWeek },
+      { min: needed(input.schedule) },
     );
 
     return {
       passed: result.passed,
-      detail: { sessions: result.count, days, required: input.config.sessionsPerWeek },
+      detail: { sessions: result.count, days, required: needed(input.schedule) },
     };
   },
 

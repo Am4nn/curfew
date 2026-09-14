@@ -759,7 +759,7 @@ async function seedAdminExtras(skip: Set<string>): Promise<void> {
   const userId = "preview-admin";
 
   if (!skip.has("gym")) {
-    await trackType(userId, "gym", GYM_SCHEDULE(3), { sessionsPerWeek: 3 }, configFrom);
+    await trackType(userId, "gym", GYM_SCHEDULE(3), {}, configFrom);
     await seedGymEvents(userId, HISTORY_DAYS, anchor);
   }
 

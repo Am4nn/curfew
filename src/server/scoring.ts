@@ -381,6 +381,9 @@ export async function recomputeUser(
         periodStart: period,
         timezone: zone,
         config,
+        // As it stood on the period being scored, not as it stands now
+        // (invariant 5). `resolveConfig` above is what makes that true.
+        schedule: schedule.schedule,
         checkins: byTypePeriod.get(`${t.typeKey}|${period}`) ?? [],
       });
 

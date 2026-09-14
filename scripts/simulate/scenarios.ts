@@ -77,7 +77,8 @@ const WEEKDAY: ScheduleShape = { schedule: WEEKDAYS, dayBoundary: "midnight", gr
 
 const STEPS_CONFIG = { target: 8000, direction: "atLeast" as const };
 const WATER_CONFIG = { glasses: 8 };
-const GYM_CONFIG = { sessionsPerWeek: 3 };
+// Nothing of its own: how many sessions a week is the schedule's.
+const GYM_CONFIG = {};
 const OFFICE_CONFIG = { window: { open: "10:00", close: "14:00" } };
 
 const eq = (what: string, got: unknown, want: unknown): Check => ({

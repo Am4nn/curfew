@@ -61,7 +61,8 @@ describe("which days count toward a streak", () => {
     const days = daysDoneIn("gym", {
       periodStart: "2026-09-07",
       timezone: IST,
-      config: { sessionsPerWeek: 3 },
+      config: {},
+      schedule: { kind: "minimum", perWeek: 3 },
       checkins: [
         { step: "session", at: at("2026-09-07", 7) },
         { step: "session", at: at("2026-09-09", 19) },
@@ -75,7 +76,8 @@ describe("which days count toward a streak", () => {
     const days = daysDoneIn("gym", {
       periodStart: "2026-09-07",
       timezone: IST,
-      config: { sessionsPerWeek: 3 },
+      config: {},
+      schedule: { kind: "minimum", perWeek: 3 },
       checkins: [
         { step: "session", at: at("2026-09-08", 7) },
         { step: "session", at: at("2026-09-08", 20) },
@@ -89,7 +91,8 @@ describe("which days count toward a streak", () => {
     const days = daysDoneIn("gym", {
       periodStart: "2026-09-07",
       timezone: IST,
-      config: { sessionsPerWeek: 3 },
+      config: {},
+      schedule: { kind: "minimum", perWeek: 3 },
       checkins: [{ step: "session", at: at("2026-09-08", 7) }],
     });
     expect(days).toEqual(["2026-09-08"]);
@@ -103,6 +106,7 @@ describe("which days count toward a streak", () => {
         periodStart: "2026-09-07",
         timezone: IST,
         config: type.defaults.config,
+        schedule: type.defaults.schedule,
         checkins: [],
       });
       // Nothing recorded, so either the period did not pass and no day counts,

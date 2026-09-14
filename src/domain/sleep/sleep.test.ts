@@ -5,8 +5,10 @@ import {
   type SleepConfig,
   validateSleepWindows,
 } from "./index";
+import type { Schedule } from "../schedule";
 import type { Checkin } from "../types";
 
+const EVERY_DAY: Schedule = { kind: "days", days: [1, 2, 3, 4, 5, 6, 7] };
 const IST = "Asia/Kolkata";
 const PERIOD = "2026-08-31";
 
@@ -35,6 +37,7 @@ describe("sleep.evaluate", () => {
       periodStart: PERIOD,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins: [night, wake, confirm],
     });
     expect(r.passed).toBe(true);
@@ -53,6 +56,7 @@ describe("sleep.evaluate", () => {
       periodStart: PERIOD,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins: [night, wake],
     });
     expect(r.passed).toBe(false);
@@ -72,6 +76,7 @@ describe("sleep.evaluate", () => {
       periodStart: PERIOD,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins: [lateNight, wake, confirm],
     });
     expect(r.detail).toMatchObject({ night_ok: false });
@@ -83,6 +88,7 @@ describe("sleep.evaluate", () => {
       periodStart: PERIOD,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins: [
         checkin("night", "2026-08-31T22:00:00+05:30"),
         checkin("wake", "2026-09-01T07:00:00+05:30"),
@@ -97,6 +103,7 @@ describe("sleep.evaluate", () => {
       periodStart: PERIOD,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins: [night, wake, checkin("wake", "2026-09-01T07:40:00+05:30")],
     });
     // A second wake press cannot satisfy confirm.
@@ -109,6 +116,7 @@ describe("sleep.evaluate", () => {
       periodStart: PERIOD,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins: [night, laterWake, wake, confirm],
     });
     expect(r.detail).toMatchObject({ wake_at_minutes: 390 });
@@ -119,6 +127,7 @@ describe("sleep.evaluate", () => {
       periodStart: PERIOD,
       timezone: IST,
       config,
+      schedule: EVERY_DAY,
       checkins: [night, confirm],
     });
     expect(r.detail).toMatchObject({ wake_at_minutes: null });

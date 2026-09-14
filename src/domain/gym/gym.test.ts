@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { scheduleSchema, type Schedule } from "../schedule";
 import { gymActivity, gymConfigSchema, GYM_STEP } from "./index";
 import { periodUnit } from "../schedule";
 
@@ -9,11 +10,17 @@ function session(iso: string) {
   return { step: GYM_STEP, at: new Date(iso), evidence: {} };
 }
 
+/** The target is the schedule's, so a gym week is set by the schedule alone. */
+function weekly(perWeek: number): Schedule {
+  return { kind: "minimum", perWeek };
+}
+
 function evaluate(checkins: ReturnType<typeof session>[], sessionsPerWeek = 3) {
   return gymActivity.evaluate({
     periodStart: WEEK,
     timezone: IST,
-    config: { sessionsPerWeek },
+    config: {},
+    schedule: weekly(sessionsPerWeek),
     checkins,
   });
 }
@@ -45,7 +52,10 @@ describe("gym declaration", () => {
   it("repeats, because its period is a week and it needs several", () => {
     const [step] = gymActivity.steps(gymActivity.defaults.config, WEEK);
     expect(step.repeats).toBe(true);
-    expect(gymActivity.defaults.config.sessionsPerWeek).toBeGreaterThan(1);
+    // The number it needs comes from the schedule it ships with, not the
+    // config, which is now empty by design.
+    const { schedule } = gymActivity.defaults;
+    expect(schedule.kind === "minimum" && schedule.perWeek > 1).toBe(true);
   });
 
   // The one-a-day limit is countsNow's job, not the step's. Both have to be
@@ -57,6 +67,7 @@ describe("gym declaration", () => {
       periodStart: WEEK,
       timezone: IST,
       config,
+      schedule: gymActivity.defaults.schedule,
       step: GYM_STEP,
       checkins: [{ step: GYM_STEP, at: today, evidence: {} }],
     };
@@ -74,6 +85,7 @@ describe("gym declaration", () => {
       periodStart: WEEK,
       timezone: IST,
       config: gymActivity.defaults.config,
+      schedule: gymActivity.defaults.schedule,
       step: GYM_STEP,
       checkins: [day("2026-03-02"), day("2026-03-03"), day("2026-03-05"), day("2026-03-06")],
     });
@@ -86,13 +98,30 @@ describe("gym declaration", () => {
     expect(spanDays).toBe(7);
   });
 
-  it("rejects a config with an unknown field", () => {
-    expect(() => gymConfigSchema.parse({ sessionsPerWeek: 3, extra: 1 })).toThrow();
+  it("declares no config of its own", () => {
+    // It used to carry `sessionsPerWeek`, a mirror of the schedule's `perWeek`
+    // written from the same control. The schedule is the only place that
+    // number lives now, so anything offered here is a field nobody asked for.
+    expect(gymConfigSchema.parse({})).toEqual({});
+    expect(gymActivity.fields(gymActivity.defaults.config)).toEqual([]);
+    expect(() => gymConfigSchema.parse({ extra: 1 })).toThrow();
   });
 
-  it("rejects a minimum outside one to seven", () => {
-    expect(() => gymConfigSchema.parse({ sessionsPerWeek: 0 })).toThrow();
-    expect(() => gymConfigSchema.parse({ sessionsPerWeek: 8 })).toThrow();
+  it("and the minimum is bounded where it now lives", () => {
+    expect(() => scheduleSchema.parse({ kind: "minimum", perWeek: 0 })).toThrow();
+    expect(() => scheduleSchema.parse({ kind: "minimum", perWeek: 8 })).toThrow();
+    expect(scheduleSchema.parse({ kind: "minimum", perWeek: 3 })).toEqual({
+      kind: "minimum",
+      perWeek: 3,
+    });
+  });
+
+  it("a week still reads its target from the schedule it is given", () => {
+    // The point of the move: two sessions pass a two-a-week schedule and fail
+    // a three-a-week one, with the same config and the same check-ins.
+    const two = [session("2026-09-07T07:00:00+05:30"), session("2026-09-09T07:00:00+05:30")];
+    expect(evaluate(two, 2).passed).toBe(true);
+    expect(evaluate(two, 3).passed).toBe(false);
   });
 });
 

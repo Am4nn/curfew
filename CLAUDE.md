@@ -113,10 +113,31 @@ Delete it a week after nobody complains, and not before: it is the only copy.
 
 ## Deploying
 
-Production ships on a version tag, never on a push. `main` is a Vercel Preview
+Production ships on a version tag, never on a push. `main` is a Preview
 deployment served at `dev.curfew.amanarya.com` with deployment protection off,
 so anyone with the link can open it. Vercel's production branch is
 `production`, which nobody pushes.
+
+**Both deployments come from GitHub Actions, not from Vercel's GitHub App.**
+`deploy.yml` ships production on a `v*` tag; `preview.yml` ships `main` to the
+dev site on every push. `vercel.json` sets `deploymentEnabled` to false for both
+branches, so the App deploys nothing and one system owns each. Two systems
+deploying one branch is two deployments per push and a race for the alias.
+
+The App was the silent dependency this removes: when its installation is
+suspended or waiting on a permissions approval, push events stop arriving and
+nothing anywhere says so. It cost an hour on 2026-09-07, and on 2026-09-15 the
+v3.0.0 release commit got no Preview at all, leaving the dev site on an older
+build still bound to the database production was about to become. A deployment
+that fails is fine; one that silently does not happen is not.
+
+`preview.yml` is NOT gated on CI, which is the one place it differs from
+`deploy.yml`. The dev site is where a change is looked at, including a change
+CI is unhappy about. A failed build produces no new deployment and the previous
+one keeps serving, so the failure mode is "dev is behind" rather than "dev is
+broken". It finishes by running `check:signin` against the dev domain, which is
+the only check that exercises the sign-in gate at all: LOCAL_MODE makes the
+middleware stand aside in every CI job that serves the app.
 
 **An environment file says nothing about what a deployment reads.** `.env.*` is
 read by the commands in this repo and by nothing else; what a deployment

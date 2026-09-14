@@ -4,7 +4,8 @@
   ],
   "git": {
     "deploymentEnabled": {
-      "production": false
+      "production": false,
+      "main": false
     }
   },
   "crons": [

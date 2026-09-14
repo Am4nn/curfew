@@ -1,0 +1,87 @@
+name: Preview
+
+# Every push to main becomes the dev site, deployed from here rather than by
+# Vercel's GitHub App.
+#
+# Why this exists. The App is a silent dependency: when its installation is
+# suspended or waiting on a permissions approval, push events simply stop
+# arriving. Nothing errors. The repo is still linked, the project is not paused,
+# every setting reads correctly, and Vercel never learns there was anything to
+# build, so a Preview that never happens looks exactly like nothing happening.
+# It cost an hour on 2026-09-07 and happened again on 2026-09-15, when the
+# release commit got no Preview at all and the dev site sat on an older build
+# still pointing at the database production was about to become. A deployment
+# that fails is fine. One that silently does not occur is not.
+#
+# So main is deployed the same way production is: from a workflow, with a run
+# in the Actions tab either way. `vercel.json` turns the App's own deploys off
+# for this branch, because two systems deploying one branch is two deployments
+# per push and a race for the alias.
+#
+# NOT gated on CI, deliberately, and this is the one place it differs from
+# `deploy.yml`. The dev site is where a change is looked at, including a change
+# CI is unhappy about, and waiting for the full suite would make it useless for
+# that. A failed build simply produces no new deployment and the previous one
+# keeps serving, so the failure mode is "dev is a bit behind" rather than "dev
+# is broken". Production is the one that gates.
+
+on:
+  push:
+    branches: [main]
+  # A Preview on demand, without a commit.
+  workflow_dispatch:
+
+# Only the newest commit matters for a dev site, so a push that lands while
+# another is building cancels it rather than queueing behind it.
+concurrency:
+  group: preview
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # The dev site. Named here rather than left to Vercel's branch-domain
+      # setting, so the alias is asserted by something that can be read.
+      ALIAS: dev.curfew.amanarya.com
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # No --prebuilt and no --prod. The source goes up and Vercel builds it
+      # with the real values of its Preview environment variables, which are
+      # sensitive and never come back down to a local build. The CLI prints the
+      # deployment URL on stdout and its progress on stderr.
+      - name: Deploy a Preview
+        id: deploy
+        run: |
+          url="$(bunx vercel deploy --yes --token="$VERCEL_TOKEN")"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "deployed $url"
+
+      # Vercel usually moves a branch domain to the newest deployment on its
+      # own. "Usually" is what this workflow exists to stop relying on, and the
+      # command is idempotent, so it is asserted rather than assumed.
+      - name: Point the dev domain at it
+        run: |
+          bunx vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" \
+            --yes --token="$VERCEL_TOKEN"
+          echo "$ALIAS -> ${{ steps.deploy.outputs.url }}"
+
+      # The one thing neither the build nor the alias proves: that a stranger
+      # can still open the page. LOCAL_MODE makes the middleware stand aside in
+      # every CI job that serves the app, so the sign-in gate is the one path
+      # the whole suite never takes, and the sign-in page's own photographs sat
+      # behind it for a day because of that.
+      - name: A signed-out visitor can see the sign-in page
+        run: bun run check:signin -- --http=https://${{ env.ALIAS }}

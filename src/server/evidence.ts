@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DateTime } from "luxon";
-import { and, eq, isNull, lte, lt, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, isNotNull, lte, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { evidence, events } from "@/db/schema";
 import { getActivityType } from "@/domain";
@@ -215,14 +215,16 @@ export async function listOwnPhotos(userId: string): Promise<OwnPhoto[]> {
 }
 
 /**
- * Delete one photograph, verified to belong to this user first. Mirrors
- * `deletePhotos()`'s order: the object goes before the row is marked, and a
- * failed object delete leaves the row for the nightly sweep to retry.
+ * Delete one photograph, verified to belong to this user first.
+ *
+ * Same shape as `deletePhotos`: the row is marked and that is the answer. The
+ * ownership check is the `where`, so a row belonging to somebody else matches
+ * nothing and nothing is written. The object goes in tonight's sweep.
  */
 export async function deleteOnePhoto(userId: string, evidenceId: number): Promise<boolean> {
-  const [row] = await db
-    .select({ id: evidence.id, objectKey: evidence.objectKey })
-    .from(evidence)
+  const gone = await db
+    .update(evidence)
+    .set({ deletedAt: new Date() })
     .where(
       and(
         eq(evidence.id, evidenceId),
@@ -230,21 +232,9 @@ export async function deleteOnePhoto(userId: string, evidenceId: number): Promis
         isNull(evidence.deletedAt),
       ),
     )
-    .limit(1);
-  if (!row) return false;
+    .returning({ id: evidence.id });
 
-  try {
-    await deleteObject(row.objectKey);
-    await db
-      .update(evidence)
-      .set({ deletedAt: new Date() })
-      .where(eq(evidence.id, row.id));
-    return true;
-  } catch {
-    // Leave the row: it is the only pointer to a file still in the bucket,
-    // and the nightly sweep will try again.
-    return false;
-  }
+  return gone.length > 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -255,43 +245,100 @@ export interface SweepResult {
   expired: number;
   orphans: number;
   repaired: number;
+  /** Objects actually removed from the bucket, whatever marked them. */
+  purged: number;
   failed: number;
 }
 
 /**
- * Delete every photograph past its retention date, and every upload never
- * followed by a check-in.
+ * How many objects are deleted from R2 at once.
  *
- * The object goes before the row. A row marked deleted whose object survives is
- * a photograph we said we had removed and had not; a live row whose object is
- * already gone is simply swept again tomorrow.
+ * The number that was there before was one, in the sense that the loop awaited
+ * each delete before starting the next, which is why a person deleting forty
+ * photographs waited for forty round trips. Bounded rather than unbounded
+ * because a retention sweep can have hundreds of objects due on one night and
+ * firing them all at once is how a job gets rate limited by the thing it is
+ * trying to be polite to.
+ */
+const PURGE_AT_ONCE = 16;
+
+/**
+ * Delete a batch of objects from the bucket and write down which ones went.
+ *
+ * The row is marked only if its object is gone, and a failure leaves the row
+ * exactly as it was: `deleted_at` set, `purged_at` null, which is the state the
+ * purge case selects, so tomorrow night tries again. Nothing is ever lost track
+ * of, because the row that points at the file is never removed.
+ */
+async function purgeObjects(
+  rows: { id: number; objectKey: string }[],
+  instant: Date,
+): Promise<{ purged: number; failed: number }> {
+  let purged = 0;
+  let failed = 0;
+
+  for (let i = 0; i < rows.length; i += PURGE_AT_ONCE) {
+    const batch = rows.slice(i, i + PURGE_AT_ONCE);
+    const settled = await Promise.all(
+      batch.map(async (row) => {
+        try {
+          await deleteObject(row.objectKey);
+          return row.id;
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    const done = settled.filter((id): id is number => id !== null);
+    failed += batch.length - done.length;
+    if (done.length === 0) continue;
+
+    await db
+      .update(evidence)
+      .set({ purgedAt: instant })
+      .where(inArray(evidence.id, done));
+    purged += done.length;
+  }
+
+  return { purged, failed };
+}
+
+/**
+ * The nightly sweep. Three cases now, and the third is the one that makes an
+ * instant delete honest.
+ *
+ * Retention and abandoned uploads decide WHICH photographs should go, and both
+ * do it by marking rows. The purge case is the only thing in the app that
+ * removes an object from the bucket, and it takes everything marked and not yet
+ * gone: what retention marked a moment ago, what a person deleted this
+ * afternoon, and anything a previous night failed to remove.
+ *
+ * Marking before purging is the opposite of the order this used to run in, and
+ * it is safe for the reason migration 0022 exists: `deleted_at` no longer
+ * claims the file is gone. It claims the photograph is unreachable, which is
+ * true the instant the row is written.
  */
 export async function sweepEvidence(): Promise<SweepResult> {
   const instant = await now();
   const today = instant.toISOString().slice(0, 10);
-  const result: SweepResult = { expired: 0, orphans: 0, repaired: 0, failed: 0 };
+  const result: SweepResult = {
+    expired: 0,
+    orphans: 0,
+    repaired: 0,
+    purged: 0,
+    failed: 0,
+  };
 
+  // 1. Past its retention date. One statement, however many there are.
   const expired = await db
-    .select({ id: evidence.id, objectKey: evidence.objectKey })
-    .from(evidence)
+    .update(evidence)
+    .set({ deletedAt: instant })
     .where(and(lte(evidence.deleteAfter, today), isNull(evidence.deletedAt)))
-    .limit(500);
+    .returning({ id: evidence.id });
+  result.expired = expired.length;
 
-  for (const row of expired) {
-    try {
-      await deleteObject(row.objectKey);
-      await db
-        .update(evidence)
-        .set({ deletedAt: instant })
-        .where(eq(evidence.id, row.id));
-      result.expired += 1;
-    } catch {
-      // Leave the row: it is the only pointer to a file still in the bucket.
-      result.failed += 1;
-    }
-  }
-
-  // An upload with no check-in an hour later was abandoned.
+  // 2. An upload with no check-in an hour later was abandoned.
   const cutoff = new Date(instant.getTime() - 60 * 60 * 1000);
   const unconfirmed = await db
     .select({
@@ -310,6 +357,7 @@ export async function sweepEvidence(): Promise<SweepResult> {
     )
     .limit(500);
 
+  const orphans: number[] = [];
   for (const row of unconfirmed) {
     // Events are the truth (invariant 1). A check-in carrying this key means
     // the confirm failed, not that the photo is an orphan.
@@ -330,18 +378,29 @@ export async function sweepEvidence(): Promise<SweepResult> {
       result.repaired += 1;
       continue;
     }
-
-    try {
-      await deleteObject(row.objectKey);
-      await db
-        .update(evidence)
-        .set({ deletedAt: instant })
-        .where(eq(evidence.id, row.id));
-      result.orphans += 1;
-    } catch {
-      result.failed += 1;
-    }
+    orphans.push(row.id);
   }
+
+  if (orphans.length > 0) {
+    await db
+      .update(evidence)
+      .set({ deletedAt: instant })
+      .where(inArray(evidence.id, orphans));
+    result.orphans = orphans.length;
+  }
+
+  // 3. Everything marked and still in the bucket, including what the two cases
+  //    above just marked, so a photograph retention took tonight does not wait
+  //    for tomorrow night to actually go.
+  const outstanding = await db
+    .select({ id: evidence.id, objectKey: evidence.objectKey })
+    .from(evidence)
+    .where(and(isNotNull(evidence.deletedAt), isNull(evidence.purgedAt)))
+    .limit(2000);
+
+  const { purged, failed } = await purgeObjects(outstanding, instant);
+  result.purged = purged;
+  result.failed = failed;
 
   return result;
 }

@@ -105,10 +105,10 @@ export function DeleteForm({
 
   const confirmText = (p: NonNullable<Pending>) => {
     if (p.kind === "photos") {
-      return `${photos} ${photos === 1 ? "photo goes" : "photos go"} from storage within minutes. Your check-ins, streaks and standing are unaffected.`;
+      return `${photos} ${photos === 1 ? "photo disappears" : "photos disappear"} at once and nothing will show ${photos === 1 ? "it" : "them"} again. The ${photos === 1 ? "file goes" : "files go"} from storage tonight. Your check-ins, streaks and standing are unaffected.`;
     }
     if (p.kind === "photo") {
-      return "This cannot be undone. The photo goes from storage within minutes. The check-in stays as an anonymous count.";
+      return "This cannot be undone. The photo disappears at once and nothing will show it again; the file goes from storage tonight. The check-in stays as an anonymous count.";
     }
     if (p.kind === "activity") {
       return `Every scored period of ${p.name} goes, along with its photos. The check-ins stay as anonymous counts. Any fine already charged stays owed.`;
@@ -180,8 +180,8 @@ export function DeleteForm({
       </p>
 
       <p className="text-[11.5px] leading-[1.55] text-muted">
-        Photos go within minutes. Habit history goes with them. Nothing here can be
-        undone.
+        Photos disappear at once and the files go from storage tonight. Habit
+        history goes with them. Nothing here can be undone.
       </p>
 
       {pending && (pending.kind === "photo-pick" || pending.kind === "photo") ? (

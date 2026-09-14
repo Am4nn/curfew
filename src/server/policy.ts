@@ -82,6 +82,7 @@ export const TERMS: PolicySection[] = [
     lines: [
       "What you post stays yours. You give Curfew only what it needs to run: to store your photos, and to show them to the members you chose, for as long as they are kept.",
       "That permission ends when the photo is deleted, whether by you or by the retention sweep.",
+      "Deleting a photo hides it from everyone at once and nothing will serve it again. The file itself is removed from storage by the nightly sweep, so it can outlive the deletion by up to a day.",
       "You are responsible for what you post and for having the right to post it.",
     ],
   },

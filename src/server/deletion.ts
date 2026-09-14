@@ -15,7 +15,6 @@ import {
   memberShares,
   groupMembers,
 } from "@/db/schema";
-import { deleteObject } from "./r2";
 import { recordEvent } from "./events";
 import { userDay } from "./config";
 
@@ -73,40 +72,39 @@ export async function deletionSummary(userId: string): Promise<DeletionSummary> 
 }
 
 /**
- * Delete photographs. The objects go from the bucket first, then the rows are
- * marked, for the same reason the nightly sweep does it in that order: a row
- * saying a photo is gone while the file survives is the failure that matters.
+ * Delete photographs: one statement, and the person is not kept waiting.
+ *
+ * This used to delete each object from the bucket and then mark its row, one
+ * photograph at a time. Forty photographs was forty round trips from sin1 to
+ * R2 in series with somebody watching a spinner for all of them, and the order
+ * was not an accident: while one column meant both "the person asked" and "the
+ * file is gone", marking first would have been a row claiming a photograph was
+ * removed while it sat in the bucket.
+ *
+ * Migration 0022 gave those two facts a column each, so the honest version is
+ * now the fast one. Marking the rows is the whole of the work here, and from
+ * that instant the photographs are unreachable: every screen filters on
+ * `deleted_at`, and a presigned URL is only ever issued for a live row. The
+ * objects leave the bucket in tonight's sweep, which is the only thing that
+ * deletes one now, and which finds them by the state this leaves behind.
  */
 export async function deletePhotos(
   userId: string,
   typeKey?: string,
 ): Promise<number> {
-  const rows = await db
-    .select({ id: evidence.id, objectKey: evidence.objectKey })
-    .from(evidence)
+  const gone = await db
+    .update(evidence)
+    .set({ deletedAt: new Date() })
     .where(
       and(
         eq(evidence.userId, userId),
         isNull(evidence.deletedAt),
         typeKey ? eq(evidence.typeKey, typeKey) : sql`true`,
       ),
-    );
+    )
+    .returning({ id: evidence.id });
 
-  let gone = 0;
-  for (const row of rows) {
-    try {
-      await deleteObject(row.objectKey);
-      await db
-        .update(evidence)
-        .set({ deletedAt: new Date() })
-        .where(eq(evidence.id, row.id));
-      gone += 1;
-    } catch {
-      // Leave the row: it is the only pointer to a file still in the bucket,
-      // and the nightly sweep will try again.
-    }
-  }
-  return gone;
+  return gone.length;
 }
 
 /**

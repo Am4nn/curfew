@@ -295,6 +295,12 @@ jobs:
       - name: What you shared reaches the group
         run: bun run scripts/check-evidence.ts
 
+      - name: The ceiling is what you actually do
+        run: bun run scripts/check-ceiling.ts
+
+      - name: Deleting a photograph is instant and the file still goes
+        run: bun run scripts/check-purge.ts
+
   # The half only a browser can answer, and the half of break-in that needs a
   # server. Both used to run when somebody remembered.
   #

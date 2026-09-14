@@ -392,7 +392,13 @@ export const evidence = pgTable("evidence", {
   requestedAt: timestamp("requested_at", { withTimezone: true }).notNull().defaultNow(),
   confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
   deleteAfter: date("delete_after", { mode: "string" }).notNull(),
+  // The two are not the same fact, and holding them apart is what lets a
+  // delete return before the file is gone. `deletedAt` is the press: from that
+  // instant nothing shows the row and no presigned URL is issued for it, so
+  // the photograph is unreachable. `purgedAt` is the object leaving the
+  // bucket, which only the nightly sweep does. See migration 0022.
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  purgedAt: timestamp("purged_at", { withTimezone: true }),
 });
 
 // The streak, stored rather than derived on every read (migration 0019).

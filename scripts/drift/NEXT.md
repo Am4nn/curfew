@@ -1,6 +1,6 @@
 # Next session
 
-Last updated 2026-09-15, on the way to tagging v3.0.0.
+Last updated 2026-09-15, tagging v3.1.1.
 
 ## Still open
 
@@ -28,6 +28,65 @@ Worth doing because the last pass of this kind was the fourteen items in
 weekly types wrong. `bun run simulate` and the 266 unit tests cover the engine;
 what they cannot say is whether each type's own rules are the rules that were
 meant.
+
+### What AI is for in this app, asked for 2026-09-15
+
+Not a chat bot. The two things named: nutrition derived from a food photo plus
+whatever the user typed about it, and telling a person what their own patterns
+are. **The foundation is the decision, and it comes before any feature.**
+
+This is `CLAUDE.md`'s "AI-derived nutrition from a food photo" under Not in v3,
+coming back by name. It was deferred, not rejected.
+
+**The asset is the event log, not the model.** Anyone can put a model behind a
+text box. What almost nobody has is three hundred days of timestamped, evidenced
+presses with a schedule and an outcome attached to each. Patterns are a question
+about that log. Start from what the log can already answer and ask where a model
+adds something a query cannot, rather than starting from the model.
+
+Six things any answer has to survive, all of them already written down:
+
+- **A model output is not derivable from events, and `verify` replays
+  everything.** Invariant 1 says the derived tables are rebuildable from
+  `events`; the nightly `verifyAll` proves it by recomputing and diffing. Ask a
+  model twice and you may get two answers, so a recomputed nutrition number
+  would report as drift forever. The way out is that a model's answer is an
+  INPUT, recorded once and stored, never recomputed. Anything else breaks the
+  one property the whole engine is built on.
+- **Nothing outside a module knows what a type means** (invariant 6). Nutrition
+  belongs inside the food module, behind `evaluate`, and the engine still only
+  ever sees `{ passed, detail }`. If a design needs the engine to understand a
+  calorie, the design is wrong.
+- **A press must stay fast, idempotent and explicit** (invariant 9). A model
+  call is slow and can fail. So derivation happens AFTER the event lands, never
+  in the path of the button, and a failed derivation must leave a check-in that
+  still counts.
+- **Money.** If a model's answer can decide `passed`, a model can charge a fine.
+  That needs deciding out loud before it is built, not discovered afterwards.
+  The safe default is that a derived number informs the person and never the
+  ledger.
+- **The photo leaves the building.** Evidence is private and currently goes only
+  to R2. Sending it to a provider changes what Curfew does with a member's
+  photographs, so the Phase 9 consent gate and `src/server/policy.ts` have to
+  say so before a single call is made. This is a promise to users, not a
+  config change.
+- **Retention outlives the photo.** Evidence is deleted after 30 days. A derived
+  nutrition row has to survive that deletion or the history goes blank, which
+  means it is stored separately and is its own privacy question.
+
+Also: an admin switch, the same as every other system (invariant 11), so it can
+be turned off without rewriting history.
+
+**What the framework decision is actually about**, in the order it matters:
+where the inference runs and what it costs per call; whether an answer can be
+pinned and replayed for `verify`; what happens when the provider is down or
+slow; whether images go to the same place as text; and how a prompt change is
+versioned, since `check:logic-version` exists precisely because a curve change
+has to repair itself and a prompt change is the same shape of problem.
+
+My leaning, to be argued with rather than assumed: the provider SDK directly,
+one module, no framework, because the app needs one call in one place and every
+abstraction layer here would mostly be hiding the parts that need deciding.
 
 ### The cutover: done
 

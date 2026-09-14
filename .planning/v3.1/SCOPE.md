@@ -42,7 +42,52 @@ once as a `footnote` default in `camera.tsx:52` and once passed in at
   fields from `fields()`, so whatever is designed has to hold a number input,
   several of them, and none, without a per-type branch (invariant 6).
 
-**Open questions.** Below, Q1 to Q3.
+**A third piece, added 2026-09-14.** The abstinence check-in screen is almost
+all text, and it should not exist: answer it from Home and the app is simpler.
+
+**Designed and built 2026-09-14.** Three capture options were drawn and all
+three were rejected, correctly, for the same reason: each arranged controls
+around a single short number, and this screen is drawn from whatever `fields()`
+declares. A design that only works at one field is not a design for it. What
+shipped is one layout rule instead of one picture:
+
+> The photograph takes every pixel the sheet does not need.
+
+Gym declares no fields and gets an enormous photograph. Food declares calories
+and gets a slightly smaller one. Study declares two fields and no photograph,
+so the sheet becomes the whole screen and reads as the form the rest of the app
+is made of. Adding a type never touches it.
+
+**The camera opens on arrival**, for every type with a live photograph. It was
+two presses from Home to the viewfinder on the app's most-used screen. A type
+whose photograph is OPTIONAL gets "Without a photo" on the live view, which
+drops through to the fields: opening on arrival must not turn an allowance into
+a demand.
+
+**Three controls, each meaning one thing.** The version before this had a cross
+and a Discard that did the same job, which is why neither read as anything:
+
+```
+the cross   leaves, and nothing is recorded
+Retake      throws this frame away and reopens the shutter
+Send        records the check-in
+```
+
+A photograph you do not want is one you retake or one you walk away from. There
+was never a third thing for Discard to mean.
+
+**"Nothing is recorded until you save" is gone**, from both places it lived.
+
+**And an abstinence type is answered on its Home row.** Two buttons under the
+row, the same size as each other, because they are alternatives and not a
+suggestion with an escape. The old screen was a heading, the question the row
+had already asked, two buttons and two paragraphs, reached by a press, to
+record one boolean. The route still resolves for anything that deep-links to
+it; nothing in the app links there any more.
+
+**Drift, recorded.** `V3CheckinAbstain` and `V3Checkin` draw screens the app no
+longer opens from Home. Both are still reachable and still correct for a direct
+visit, and the v3.1 artboards are the ones to review against.
 
 ---
 
@@ -182,6 +227,29 @@ after the fourth session, on the day it was pressed.
 `bun run check:offer` is the proof and runs in CI. Seventeen checks, four of
 which fail on the commit before this one, each one reading Home's own row and
 then asking `performCheckin` whether it agrees.
+
+---
+
+## Decided 2026-09-14, so they are not re-litigated mid-build
+
+- **Gym's two weekly numbers: the schedule's `perWeek` wins.** "How often" is
+  an engine concept every type can use, resolved as-of the period like the rest
+  of scheduling. Gym stops declaring `sessionsPerWeek` and reads the target
+  from the schedule it is given; it still decides whether the week passed, so
+  nothing in the engine learns what a session is (invariant 6). This unblocks
+  §5, which cannot draw one "how often" row while two numbers exist.
+- **The plain-English rename reaches everywhere, admin included.** One
+  vocabulary, not two. It touches the module declarations, the configure
+  screen, the admin console and the artboards, and it is the largest single
+  piece of §5.
+- **The landing page's three photographs are generated, and the caption drops
+  the word "real".** They cannot be members' evidence: the sign-in page is the
+  one screen served to people who are not signed in, and putting anyone's
+  check-in on it would break the promise the page makes three lines above.
+  They are static files under `public/`, never R2, which needs a presigned URL
+  and a CORS origin a signed-out visitor does not have.
+- **Build order: §1, §2, §12, then §5.** The first three are contained. §5 is
+  666 lines plus a new method on twelve modules plus the rename, and goes last.
 
 ---
 

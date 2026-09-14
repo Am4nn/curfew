@@ -23,12 +23,22 @@ export function CheckinButton({
   label,
   typeKey,
   step,
+  evidence = {},
+  busyLabel = "Recording",
   className = DEFAULT_CLASS,
   onPressed,
 }: {
   label: string;
   typeKey: string;
   step: string;
+  /**
+   * What this press says, in the module's own words. Empty for a counter,
+   * where the press IS the whole answer; `{ held: false }` for an abstinence
+   * type answered from Home. Nothing here inspects it: it is handed to the
+   * action and the module's own schema decides whether it is valid.
+   */
+  evidence?: Record<string, unknown>;
+  busyLabel?: string;
   className?: string;
   /** Called once the press is recorded, before the refresh lands. */
   onPressed?: () => void;
@@ -50,7 +60,7 @@ export function CheckinButton({
       const res = await fetch("/api/checkin", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ typeKey, step, idem: newIdem(), evidence: {} }),
+        body: JSON.stringify({ typeKey, step, idem: newIdem(), evidence }),
       });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { message?: string };
@@ -75,7 +85,7 @@ export function CheckinButton({
         aria-busy={pending || undefined}
         className={className + " active:opacity-70"}
       >
-        {pending ? "Recording" : label}
+        {pending ? busyLabel : label}
       </button>
       {error ? <p className="mt-3 text-[13px] text-penalty">{error}</p> : null}
     </div>

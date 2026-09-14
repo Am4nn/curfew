@@ -1,15 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { compressFrame, type Compressed } from "@/lib/compress";
 
-// The camera: full bleed, one shutter, one close, then the frame with Retake
-// and Use this photo.
+// The camera: full bleed, one shutter, one close, then the frame you took with
+// whatever the activity wants answered about it underneath.
 //
 // The frame comes off the video stream, never a file. That is what makes "live
 // camera" a rule rather than a request: no File object exists here to
 // substitute. Forced dark whatever the theme, because a camera screen on a pale
 // background is a lamp in your face at 7 AM.
+//
+// One layout serves every type, and it is one sentence: the photograph takes
+// every pixel the sheet does not need. That is what the three earlier drafts of
+// this screen could not do. Each of them arranged controls around a single
+// short number, and this screen is drawn from whatever `fields()` declares, so
+// a design that only works at one field is not a design for it.
+//
+// Three controls, each meaning one thing, because the version before this had
+// a cross and a Discard that did the same job and so neither read as anything:
+//
+//   the cross   leaves, and nothing is recorded
+//   Retake      throws this frame away and reopens the shutter
+//   Send        records the check-in
+//
+// A photograph you do not want is one you retake or one you walk away from.
+// There was never a third thing for Discard to mean.
 
 type State =
   | { kind: "starting" }
@@ -18,6 +34,24 @@ type State =
   | { kind: "captured"; shot: Compressed };
 
 type Facing = "environment" | "user";
+
+function RetakeIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="square"
+      aria-hidden="true"
+    >
+      <path d="M20 11a8 8 0 1 0-1.6 5.6" />
+      <path d="M20 5v6h-6" />
+    </svg>
+  );
+}
 
 function SwitchIcon() {
   return (
@@ -45,11 +79,12 @@ export function Camera({
   quality,
   onUse,
   onClose,
-  useLabel = "Use this photo",
-  onDiscard,
+  onSkip,
+  useLabel = "Send",
+  sheet = null,
+  canUse = true,
   busy = false,
   error = null,
-  footnote = "Nothing is recorded yet. The check-in happens when you send it.",
 }: {
   title: string;
   closesLabel: string | null;
@@ -58,18 +93,27 @@ export function Camera({
   quality: number;
   onUse: (shot: Compressed) => void;
   onClose: () => void;
-  /** What the confirming button says. "Save" when it records the check-in. */
+  /**
+   * Offered on the live view when the photo is optional, and never when it is
+   * required. The camera opens on arrival now, so without this a type that
+   * merely ALLOWS a photograph would be demanding one.
+   */
+  onSkip?: () => void;
+  /** What the confirming button says. */
   useLabel?: string;
   /**
-   * Offered beside Retake when this camera IS the check-in screen, rather than
-   * a step inside one. Without it there is nothing on the confirm view that
-   * throws the photo away and leaves.
+   * Whatever the module wants answered about this frame, drawn by the caller
+   * from its own `fields()`. The sheet is as tall as its contents and the
+   * photograph takes everything left over, which is the whole layout rule: Gym
+   * declares no fields and gets an enormous photograph, Food declares one and
+   * gets a slightly smaller one. Nothing here knows which is which.
    */
-  onDiscard?: () => void;
+  sheet?: ReactNode;
+  /** False while the sheet is incomplete, so Send cannot record a bad answer. */
+  canUse?: boolean;
   /** The send is in flight: every control here is dead until it lands. */
   busy?: boolean;
   error?: string | null;
-  footnote?: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -188,21 +232,25 @@ export function Camera({
       {captured ? <div className="absolute inset-0 bg-black" /> : null}
 
       <div className="relative flex items-center justify-between p-5">
-        {captured ? (
-          <span className="w-[18px]" />
-        ) : (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close the camera"
-            className="text-[13px] opacity-80"
-          >
-            &#10005;
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={captured ? "Leave without recording" : "Close the camera"}
+          className="text-[13px] opacity-80"
+        >
+          &#10005;
+        </button>
         <span className="text-[11px] tracking-[0.16em] opacity-80">{title}</span>
         {captured ? (
-          <span className="text-[11px] text-muted">{nowLabel}</span>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => retake(captured)}
+            className="flex items-center gap-[7px] text-[11.5px] opacity-80 active:opacity-50 disabled:opacity-40"
+          >
+            <RetakeIcon />
+            Retake
+          </button>
         ) : canSwitch && state.kind === "live" ? (
           <button
             type="button"
@@ -219,52 +267,48 @@ export function Camera({
 
       {captured ? (
         <>
+          {/* No margin. The photograph takes everything the sheet leaves, and
+              `object-contain` keeps the whole frame visible, which is the point
+              of a screen you are checking a shot on. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={captured.url}
             alt="The frame you just took"
-            className="relative mx-5 min-h-0 flex-1 bg-black object-contain"
+            className="relative min-h-0 flex-1 bg-black object-contain"
           />
 
-          {error ? (
-            <p className="relative px-5 pt-3 text-[11.5px] leading-[1.5] text-penalty">
-              {error}
-            </p>
-          ) : null}
+          {/* Sized by its contents, never by a fraction of the screen. */}
+          <div className="relative flex flex-none flex-col border-t border-rule bg-bg">
+            <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-[14px]">
+              <span className="text-[13.5px] font-semibold">{title}</span>
+              <span className="text-[11px] text-muted">{nowLabel}</span>
+            </div>
 
-          <div className="relative flex gap-[10px] p-5">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => retake(captured)}
-              className="h-[46px] flex-1 border border-rule bg-transparent text-[13.5px] text-fg active:opacity-60 disabled:opacity-40"
-            >
-              Retake
-            </button>
-            {onDiscard ? (
+            {sheet ? <div className="px-5">{sheet}</div> : null}
+
+            {error ? (
+              <p className="px-5 pt-3 text-[11.5px] leading-[1.5] text-penalty">
+                {error}
+              </p>
+            ) : null}
+
+            <div className="px-5 pb-[22px] pt-4">
               <button
                 type="button"
-                disabled={busy}
-                onClick={onDiscard}
-                className="h-[46px] flex-1 border border-rule bg-transparent text-[13.5px] text-penalty active:opacity-60 disabled:opacity-40"
+                disabled={busy || !canUse}
+                aria-busy={busy || undefined}
+                onClick={() => use(captured)}
+                className={
+                  "h-[52px] w-full border text-[14.5px] active:opacity-60 " +
+                  (canUse
+                    ? "border-fg bg-fg font-semibold text-bg disabled:opacity-40"
+                    : "cursor-not-allowed border-rule bg-transparent text-muted")
+                }
               >
-                Discard
+                {busy ? "Sending" : useLabel}
               </button>
-            ) : null}
-            <button
-              type="button"
-              disabled={busy}
-              aria-busy={busy || undefined}
-              onClick={() => use(captured)}
-              className="h-[46px] flex-[1.6] border border-fg bg-fg text-[13.5px] font-semibold text-bg active:opacity-60 disabled:opacity-40"
-            >
-              {busy ? "Saving" : useLabel}
-            </button>
+            </div>
           </div>
-
-          <p className="relative px-5 pb-[30px] text-center text-[11px] leading-[1.55] text-muted">
-            {footnote}
-          </p>
         </>
       ) : (
         <>
@@ -303,6 +347,18 @@ export function Camera({
                 {/* The one round thing in the app. */}
                 <span style={{ borderRadius: "50%" }} className="h-[56px] w-[56px] bg-fg" />
               </button>
+              {/* Only when the photograph is optional. The camera opens on
+                  arrival now, so a type that merely allows one would otherwise
+                  be demanding it. */}
+              {onSkip ? (
+                <button
+                  type="button"
+                  onClick={onSkip}
+                  className="text-[11.5px] text-muted active:opacity-60"
+                >
+                  Without a photo
+                </button>
+              ) : null}
             </div>
           )}
         </>

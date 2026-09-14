@@ -172,7 +172,11 @@ export function CheckinForm({
   const router = useRouter();
   const [values, setValues] = useState<Record<string, string>>({});
   const [shot, setShot] = useState<Compressed | null>(null);
-  const [cameraOpen, setCameraOpen] = useState(false);
+  // Open on arrival. Pressing Log on Home used to land here on a form with a
+  // dormant thumbnail, so the viewfinder was two presses away on the screen
+  // this app exists for. It closes only when a type whose photograph is
+  // optional says "Without a photo", which drops through to the fields.
+  const [cameraOpen, setCameraOpen] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [attempted, setAttempted] = useState(false);
   const [sending, setSending] = useState(false);
@@ -345,13 +349,18 @@ export function CheckinForm({
     }
   }
 
-  function sendFields() {
+  /** What the step's own fields currently say, as the module wants them. */
+  function evidenceFromValues(): Record<string, unknown> {
     const evidence: Record<string, unknown> = {};
     for (const field of step.fields) {
       if (field.kind !== "number") continue;
       evidence[field.key] = Number(values[field.key]);
     }
-    void send(evidence);
+    return evidence;
+  }
+
+  function sendFields() {
+    void send(evidenceFromValues());
   }
 
   // The abstinence board: a question, two answers, the streak it moves, and
@@ -409,29 +418,60 @@ export function CheckinForm({
     );
   }
 
-  // A step that asks for a photo and nothing else does not need a screen to
-  // ask on. The camera IS the check-in: it opens straight from Home, and the
-  // frame it takes confirms with Retake, Discard and Save.
+  // The camera IS the check-in, for every type that takes a live photograph.
   //
-  // Three steps qualify today (gym's session, supplements' dose, sleep's
-  // confirm) and the condition is what qualifies them, not a list: photo
-  // required on THIS step, no fields, no question, and a live source, since a
-  // gallery pick opens the system picker rather than a camera.
-  if (photoRequired && step.fields.length === 0 && !gallery) {
+  // This used to be the fast path for one narrow case, a step that wanted a
+  // photograph and nothing else, and everything else landed on a form with a
+  // dormant thumbnail you had to press to open the camera. Two presses before
+  // the viewfinder, on the app's most-used screen.
+  //
+  // It is now the only path, because the sheet under the frame is drawn from
+  // `fields()` and so holds none, one or five of them without a branch. Gym
+  // asks nothing and gets an enormous photograph; Food asks for calories and
+  // gets a slightly smaller one. The engine never learns which is which.
+  //
+  // A gallery source is still excluded: that opens the system picker, and
+  // there is no viewfinder to open on arrival.
+  if (takesPhoto && !gallery && cameraOpen) {
     return (
       <Camera
-        title={`${state.name.toUpperCase()} · ${step.label.toUpperCase()}`}
+        title={`${state.name} · ${step.label}`}
         closesLabel={step.closesLabel}
         nowLabel={state.nowLabel}
         maxEdge={compression.maxEdge}
         quality={compression.quality}
-        useLabel="Save"
         busy={busy}
         error={error}
-        footnote="Nothing is recorded until you save."
+        canUse={missing.length === 0}
         onClose={() => router.back()}
-        onDiscard={() => router.back()}
-        onUse={(taken) => send({}, taken)}
+        // Offered only when the photograph is not required on this step, and
+        // it falls through to the fields below rather than sending: a type
+        // with an optional photo can still have something to answer.
+        onSkip={photoRequired ? undefined : () => setCameraOpen(false)}
+        sheet={
+          <div className="flex flex-col gap-[14px]">
+            {step.fields.map((field) => (
+              <Field
+                key={field.kind === "number" ? field.key : field.label}
+                field={field}
+                value={field.kind === "number" ? (values[field.key] ?? "") : ""}
+                onChange={(next) =>
+                  field.kind === "number"
+                    ? setValues((v) => ({ ...v, [field.key]: next }))
+                    : undefined
+                }
+                hint={hints[step.key] ?? step.hint}
+                required={photoRequired}
+              />
+            ))}
+            {step.fields.length === 0 && (hints[step.key] ?? step.hint) ? (
+              <span className="text-[11.5px] leading-[1.5] text-muted">
+                {hints[step.key] ?? step.hint}
+              </span>
+            ) : null}
+          </div>
+        }
+        onUse={(taken) => send(evidenceFromValues(), taken)}
       />
     );
   }
@@ -467,22 +507,6 @@ export function CheckinForm({
           accept="image/*"
           hidden
           onChange={(e) => pickFromGallery(e.target.files?.[0])}
-        />
-      ) : null}
-
-      {cameraOpen ? (
-        <Camera
-          title={`${state.name.toUpperCase()} \u00b7 ${step.label.toUpperCase()}`}
-          closesLabel={step.closesLabel}
-          nowLabel={state.nowLabel}
-          maxEdge={compression.maxEdge}
-          quality={compression.quality}
-          onClose={() => setCameraOpen(false)}
-          onUse={(taken) => {
-            if (shot) URL.revokeObjectURL(shot.url);
-            setShot(taken);
-            setCameraOpen(false);
-          }}
         />
       ) : null}
 

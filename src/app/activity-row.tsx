@@ -47,13 +47,26 @@ export function ActivityRow({
 }) {
   const status = optimistic && row.nextStatus ? row.nextStatus : row.status;
 
+  // An abstinence type is answered here, on this row, and has no screen of its
+  // own any more. It had one, and the screen was a heading, the same question
+  // the row had already asked, two buttons and two paragraphs, reached by a
+  // press, to record a single boolean. Nothing on it could not be said in the
+  // space under the row.
+  //
+  // `declare` is the module's own `checkin.kind`, so this is not a list of
+  // types: any type that declares itself answerable is answered here
+  // (invariant 6).
+  const declaring = row.kind === "declare" && row.open && row.step !== null;
+
   return (
     <div
       className={
-        "relative flex items-center gap-3 border-b border-rule py-[13px] " +
+        "relative border-b border-rule " +
+        (declaring ? "-mx-5 bg-surface px-5 " : "") +
         (row.scheduled ? "" : "opacity-[0.42]")
       }
     >
+      <div className={"flex items-center gap-3 " + (declaring ? "pb-[11px] pt-[13px]" : "py-[13px]")}>
       {/* The mark for a row that just changed. Positioned rather than a border,
           so it sits out in the page margin and the divider under every row
           stays exactly where it was; always mounted, so it fades both ways
@@ -115,7 +128,7 @@ export function ActivityRow({
               done
             </span>
           ) : null}
-          {row.open && row.step ? (
+          {row.open && row.step && !declaring ? (
             row.kind === "counter" ? (
               <CheckinButton
                 label="+1"
@@ -133,6 +146,40 @@ export function ActivityRow({
               </Link>
             )
           ) : null}
+        </div>
+      ) : null}
+      </div>
+
+      {/* The two answers, on their own line so neither is cramped and both are
+          the same size: an honest pair of alternatives, not a suggestion and an
+          escape. Already answered, they are the correction the module allows in
+          as many words, so they stay and the row's own line says which one
+          stands. */}
+      {declaring && row.step ? (
+        <div className="flex gap-[10px] pb-[14px]">
+          <CheckinButton
+            label="It held"
+            busyLabel="Saving"
+            typeKey={row.typeKey}
+            step={row.step}
+            evidence={{ held: true }}
+            onPressed={onRecord}
+            className={
+              "flex h-[42px] flex-[1.4] items-center justify-center text-[13px] disabled:opacity-60 " +
+              (row.done
+                ? "border border-rule text-fg"
+                : "border border-fg bg-fg font-semibold text-bg")
+            }
+          />
+          <CheckinButton
+            label="I slipped"
+            busyLabel="Saving"
+            typeKey={row.typeKey}
+            step={row.step}
+            evidence={{ held: false }}
+            onPressed={onRecord}
+            className="flex h-[42px] flex-1 items-center justify-center border border-rule text-[13px] text-penalty disabled:opacity-60"
+          />
         </div>
       ) : null}
     </div>

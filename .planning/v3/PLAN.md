@@ -172,11 +172,20 @@ be what the live site serves on its first day.
    Preview already points at `curfew-apac-dev`.
 3. `bun run migrate:production` against it, then check `activity_types` carries
    twelve rows, all disabled.
-4. **Make an admin again.** The wipe took every account with it, and a fresh
-   database has nobody who can approve anybody, so the first sign-in lands on
-   the pending screen with no way off it. Sign in once, then run the statement
-   under "Approve yourself" in the README against the same branch. Do this
-   before the tag: the alternative is discovering it on the live site.
+4. **Make an admin again, AFTER the tag.** The wipe took every account with
+   it, and a fresh database has nobody who can approve anybody, so the first
+   sign-in lands on the pending screen with no way off it. Sign in once, then
+   run the statement under "Approve yourself" in the README against the same
+   branch.
+
+   This step said "before the tag" and that is not possible, found on the day
+   (2026-09-15). Vercel binds environment variables at deploy time, so the
+   promoted deployment goes on reading whatever it was built with: until the
+   tag ships a build that reads `curfew-apac`, there is nothing serving that
+   database to sign in to, and the account Google creates on first sign-in
+   cannot exist yet. So the order is tag, sign in, approve, then step 5. There
+   is a window where the site is live and nobody can get in, which is what
+   invite-only with three people can afford.
 5. Enable the activity types the members will use, from admin Controls. Every
    one is disabled after a sync, and a type with no row is not offered.
 6. `vercel.json` already pins `sin1`. Check it is still there: it is only

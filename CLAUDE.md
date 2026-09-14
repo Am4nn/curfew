@@ -81,11 +81,12 @@ happened, not a version anyone ran.
 **What remains is the cutover**, below, and the `SCREENS.md` review gate, which
 is a person opening each screen beside its artboard.
 
-**One cutover step has to happen first, and it is not in the list below.**
-Vercel Preview's `DATABASE_URL_POOLED` and `DATABASE_URL_DIRECT` still name
-`curfew-apac`, not `curfew-apac-dev`. Point them at the dev branch BEFORE
-production takes over `curfew-apac`, or the dev site will be reading and
-writing the live database from the moment the cutover finishes.
+**Vercel Preview now names `curfew-apac-dev`, done 2026-09-15.** It named
+`curfew-apac` for twelve days, which would have left the dev site reading and
+writing the live database the moment the cutover finished. `--force` is not
+enough to change one of these: it overwrites the value and keeps the record's
+created date, and since the values are sensitive and never returned, that date
+is the only evidence anybody gets. Remove and re-add, then check the date moved.
 
 **The Configure and Check-in rows in `SCREENS.md` are unticked on purpose.**
 Ticking one means a person has opened the screen beside its artboard. Both sets
@@ -96,11 +97,19 @@ all of them waiting on later phases:
   reads "10:00 PM" or "22:00" follows the device. The artboards show 12-hour.
 - Streak, best and grace-left are live.
 
-**The cutover has not happened.** Production still serves v2.5 from the old Neon
-project, and `.env.production` is the only file pointing at it. At the cutover
-its two database values become `curfew-apac`'s default branch, which is emptied
-first: nothing from v1 or v2 is carried across (decision 22). The steps are in
-`PLAN.md` under "The cutover", and the old project is deleted a week later.
+**The cutover ran on 2026-09-15.** Both branches were emptied with
+`drop schema public cascade` and rebuilt from the numbered migrations: 5 users,
+4 groups, 99 events and 55 evidence rows went from `curfew-apac`, and 4, 3, 29
+and 39 from `curfew-apac-dev`. Nothing from v1 or v2 was carried across
+(decision 22). Both now carry twelve `activity_types`, all disabled.
+
+Vercel binds environment variables at deploy time, so pointing Production at
+the new branch changed nothing until the tag shipped a build that reads it.
+That is also why an admin can only be made AFTER the tag, corrected in
+`PLAN.md` step 4.
+
+The old `curfew` Neon project is still there and still holds v1 and v2's data.
+Delete it a week after nobody complains, and not before: it is the only copy.
 
 ## Deploying
 
@@ -129,9 +138,10 @@ and reputation rows wait for `bun run score`. A scheduled GitHub Actions
 workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
 real nightly job, and it is not worth it while dev has three users.
 
-`package.json` carries `3.0.0-dev` while v3 is being built, so the admin header
-reads `v3.0.0-dev` on every deployment of `main` and `v2.5.2` on the live site.
-The suffix comes off in the commit that gets tagged.
+`package.json` carries `3.0.0`, cut as a tag on 2026-09-15. The admin header
+reads that number, so the next version bump is the next release: add the `-dev`
+suffix back while the following version is being built, and take it off again in
+the commit that gets tagged.
 
 To release: bump `version` in `package.json`, commit, then
 `git tag vX.Y.Z && git push origin vX.Y.Z`. That runs

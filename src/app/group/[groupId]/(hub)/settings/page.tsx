@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { getActivityType, registeredKeys } from "@/domain";
 import { acceptedTypes, sharesFor, fineRuleFor } from "@/server/sharing";
-import { groupHeader } from "@/server/group-view";
+import { groupHeader, standingIn } from "@/server/group-view";
 import { getAppConfig, resolveAppSettingAt } from "@/server/app-config";
 import { listUserActivities } from "@/server/activities";
 import { standingFor } from "@/server/standing";
@@ -10,14 +10,22 @@ import { listGroupMembers } from "@/server/ledger";
 import { groupRoster, listGroupInvites } from "@/server/groups";
 import { userDay } from "@/server/config";
 import { now } from "@/lib/clock";
-import { SettingsForm, type ShareRow, type AcceptedRow } from "./settings-form";
+import { SettingsForm, type ShareRow, type AcceptedRow, type Panel } from "./settings-form";
+
+const PANELS: Panel[] = ["sharing", "cost", "types", "money", "members"];
 
 export default async function GroupSettingsTab({
   params,
+  searchParams,
 }: {
   params: Promise<{ groupId: string }>;
+  // Which half is showing and which panel is open. In the URL rather than in
+  // component state so Back leaves a panel instead of the group, and a link to
+  // one half is a link somebody can send.
+  searchParams: Promise<{ half?: string; panel?: string }>;
 }) {
   const { groupId } = await params;
+  const { half: halfParam, panel: panelParam } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect("/signin");
 
@@ -101,18 +109,39 @@ export default async function GroupSettingsTab({
       return { typeKey: key, name: type.name, icon: type.icon };
     });
 
+  // Your ceiling here, the same number the nightly pass computes, so the
+  // sentence at the top of Yours says what the scoring actually does rather
+  // than describing it in general terms.
+  const standing = await standingIn(groupId, user.id);
+
+  const isOwner = header.role === "owner";
+  // A member has no second half, so a link to it must not show them one.
+  const half = halfParam === "group" && isOwner ? "group" : "yours";
+  const asked = PANELS.find((p) => p === panelParam) ?? null;
+  // The owner-only panels are refused to a member here, not hidden in the
+  // component: a hidden control that still renders on a typed URL is not a
+  // permission, it is a decoration.
+  const panel =
+    asked && !isOwner && (asked === "types" || asked === "money" || asked === "members")
+      ? null
+      : asked;
+
   return (
     <SettingsForm
       groupId={groupId}
+      groupName={header.name}
       viewerId={user.id}
       members={memberRows}
       invites={inviteRows}
-      isOwner={header.role === "owner"}
+      isOwner={isOwner}
       moneyOn={header.moneyOn}
       appMoneyOn={appMoney === true}
       shares={shareRows}
       accepted={acceptedRows}
       addable={addable}
+      ceiling={standing.ceiling}
+      half={half}
+      panel={panel}
     />
   );
 }

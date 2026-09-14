@@ -687,6 +687,34 @@ rather than after it: fewer controls in front of anyone at once, no engine
 vocabulary, and the owner's half kept apart from the member's half so nobody
 scrolls through decisions that are not theirs to make.
 
+**Done 2026-09-14, on #5's pattern deliberately.** One vocabulary for both
+settings screens was the whole of the original ask, so this is the shape #5
+settled on rather than a second invention: a sentence saying where you stand,
+then a list where every row is one decision, then that decision on its own
+screen.
+
+Two halves behind one switch. A member sees no switch at all rather than a
+greyed one, because a greyed control is a thing somebody might one day press.
+
+```
+YOURS                       THE GROUP  (owner only)
+  What this group sees        Activities it accepts
+  What it costs you           Members
+  Leave group                 Fines
+```
+
+**A panel is a query parameter, not a route.** One page component, one set of
+queries, and Back leaves the panel rather than the group. It also means a link
+to one half is a link somebody can send.
+
+**The owner-only panels are refused in the page, not hidden in the component.**
+A member who types `?panel=money` gets the hub. A control that is merely not
+drawn is a decoration, not a permission.
+
+**The ceiling in the opening sentence is the real one**, read from `standingIn`
+rather than described in general terms, so the screen says what the nightly
+pass actually did. That is the number §11 fixed.
+
 ---
 
 ## 13. Deleting a photograph makes you wait

@@ -1,7 +1,7 @@
 # SCOPE.md — v3.1
 
-Seven raw ideas, given 2026-09-08, and five more the same day after an hour on
-the dev build. Nothing here is decided when it is written down. Each one is
+Seven raw ideas, given 2026-09-08, five more the same day after an hour on the
+dev build, and a thirteenth on 2026-09-14. Nothing here is decided when it is written down. Each one is
 written as it was asked, then what is actually true today, measured rather than
 assumed, then what the work really is and what still needs answering.
 
@@ -586,6 +586,50 @@ separate them.
 rather than after it: fewer controls in front of anyone at once, no engine
 vocabulary, and the owner's half kept apart from the member's half so nobody
 scrolls through decisions that are not theirs to make.
+
+---
+
+## 13. Deleting a photograph makes you wait
+
+**Asked for.** Deleting a photo should be asynchronous. It takes a long time
+and the person sits there.
+
+**True today.** Both delete paths do the work inside the request, and the bulk
+one does it one photograph at a time. `deletePhotos` (`deletion.ts:95`) loops
+over every row and awaits an R2 delete and then an UPDATE for each, in series,
+so forty photographs are forty round trips end to end from `sin1` to the
+bucket, with the person watching a spinner for all of them. `deleteOnePhoto`
+is the same shape for one.
+
+**The order is deliberate and it is what costs the time.** The object goes
+before the row is marked, so a row can never say deleted while the file is
+still in the bucket. That is the right way round for a promise about somebody's
+photographs, and it is why the work cannot simply be dropped.
+
+**What the work is, and the catch.** Marking the row first and letting the
+nightly sweep remove the objects would return at once, and a row marked deleted
+is already invisible everywhere: every screen filters on `deleted_at`, and the
+file is unreachable without a presigned URL, which is only ever issued for a
+live row. **But nothing would then remove the object.** `sweepEvidence`
+(`evidence.ts:269`) has two cases, retention and abandoned uploads, and both
+select `deleted_at IS NULL`. A row marked deleted whose object survives is
+picked up by nothing at all, so the file would sit in the bucket for good.
+
+So this is three pieces, not one:
+
+- A third sweep case: rows marked deleted whose object has not been removed.
+  That needs the two facts held apart, which the schema does not do today: a
+  `deleted_at` says both "the person asked" and "the file is gone". A second
+  column, or a retry queue.
+- Return before the objects go, so the screen is instant.
+- And whatever the answer, delete the objects concurrently rather than one
+  after another. Forty sequential round trips is slow even in a background job.
+
+**Open question.** How long may a file outlive the press that deleted it? The
+consent copy and the terms both say what happens to photographs when you delete
+them, and "tonight" is a different promise from "now". If the answer has to be
+"now", the honest version is to keep the delete in the request and only make it
+concurrent, which turns forty round trips into one wait.
 
 ---
 

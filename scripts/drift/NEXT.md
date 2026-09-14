@@ -4,9 +4,35 @@ Last updated 2026-09-15, on the way to tagging v3.0.0.
 
 ## Still open
 
-Nothing in code. What is left before a tag is in `.planning/v3/PLAN.md` under
-"The cutover", and every step of it is somebody's hands on the Neon and Vercel
-dashboards.
+### A full review of all twelve activities, asked for 2026-09-15
+
+One type at a time, end to end, and written down per type rather than as a
+verdict on the catalog:
+
+- **What it asks for.** Its config, its schedule, its windows, its evidence
+  rule, and whether the configure screen states that rule in words a person
+  would use.
+- **What counts.** Which presses `evaluate` accepts, what it does with more
+  than one, what it does with none, and what happens on a day the schedule
+  excludes.
+- **The streak.** Which days `daysDone` returns and when the count moves.
+  Eleven types answer "this day, if it passed"; gym is the one that does not,
+  and that asymmetry is where the weekly-streak bug lived before.
+- **Reputation and money.** What a miss costs in each group, how grace
+  interacts, and whether a fine can be charged at all for that type.
+- **The words.** `hint`, `summary` and the status line, against what the type
+  actually records.
+
+Worth doing because the last pass of this kind was the fourteen items in
+`.planning/v3.1/SCOPE.md`, and it found two leaks and a streak that counted
+weekly types wrong. `bun run simulate` and the 266 unit tests cover the engine;
+what they cannot say is whether each type's own rules are the rules that were
+meant.
+
+### The cutover: done
+
+Ran 2026-09-15. Both branches emptied and rebuilt, Vercel pointed at the right
+ones, an admin made, and v3.0.0 then v3.1.0 tagged.
 
 ### The big one: closed
 

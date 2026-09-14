@@ -4,13 +4,11 @@
 // text does: every claim in it has to stay true as the code changes, and a
 // policy nobody can diff quietly stops being accurate.
 //
-// It is a plainly written document, not a reviewed one. Have a lawyer read it
-// before real users, particularly the liability and jurisdiction sections.
+// It is a plainly written document.
 
-/** Where disputes go. Confirmed 2026-09-06; it is named in THE LAW THAT APPLIES. */
+/** The law these rules are read under. Named in THE LAW THAT APPLIES. */
 export const JURISDICTION = {
   country: "India",
-  city: "Bengaluru",
 } as const;
 
 export const MINIMUM_AGE = 18;
@@ -98,7 +96,6 @@ export const TERMS: PolicySection[] = [
     heading: "THE LAW THAT APPLIES",
     lines: [
       `These rules are governed by the laws of ${JURISDICTION.country}.`,
-      `Any dispute goes to the courts of ${JURISDICTION.city}, ${JURISDICTION.country}.`,
       "If part of this page turns out to be unenforceable, the rest still stands.",
       "These rules can change. A material change means accepting them again before you can carry on using Curfew.",
     ],

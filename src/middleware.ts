@@ -22,19 +22,33 @@ export function middleware(request: NextRequest) {
 }
 
 // Protect the dashboard. Auth routes, the sign-in page, the pending page, and
-// static assets are excluded.
+// every static asset are excluded.
 //
-// `landing` is the sign-in page's own three photographs, and leaving it out
-// broke them everywhere. A signed-out visitor got the page, and then every
-// image on it redirected to /signin, so the browser was handed HTML where it
-// asked for a WebP and drew a broken tile. `_next/image` is excluded and was
-// still 307ing, because the optimizer fetches the SOURCE over HTTP and that
-// fetch is what the gate was bouncing.
+// THE RULE IS "ANYTHING WITH A FILE EXTENSION", and it is that rather than a
+// list of folders because the list was wrong twice. First the sign-in page's
+// three photographs were gated, so a signed-out visitor got the page and every
+// image on it answered 307 with HTML. `landing` was added, and then the app
+// icons, the launch images, the self-hosted font, `manifest.webmanifest` and
+// `robots.txt` arrived and were gated in exactly the same way: no font on the
+// one page a stranger sees, no manifest so no install and no splash, and a
+// `robots.txt` that redirects, which tells a crawler nothing at all.
 //
-// This is the whole of `public/`, and it is three generated marketing images.
-// No member's evidence is served from here or ever can be: a photograph goes
-// through an authenticated route, which is the point of keeping it off the one
-// page served to people who are not signed in.
+// A list of folders has to be extended by whoever adds the next folder, and
+// nobody remembers, because the app works perfectly while signed in: the
+// session cookie carries every asset request straight through. It only breaks
+// for people who are not signed in, which is every new member and every
+// crawler. `\.` cannot be forgotten. No app route contains a dot; every static
+// file does.
+//
+// The three metadata routes Next generates have no extension, so they are
+// named: `apple-icon`, `opengraph-image`, `manifest`.
+//
+// None of this is a security boundary for anything private. A member's
+// photograph is served through an authenticated route and has never been in
+// `public/`, which holds the generated marketing images, the icons, the launch
+// images and the font.
 export const config = {
-  matcher: ["/((?!api|signin|pending|landing|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|signin|pending|_next|favicon\\.ico|apple-icon|opengraph-image|manifest|.*\\.).*)",
+  ],
 };

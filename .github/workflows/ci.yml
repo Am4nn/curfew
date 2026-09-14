@@ -76,21 +76,18 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # Reports, does not gate. An advisory is published by somebody else on
-      # their own schedule, and the two on this repo today are both in vitest,
-      # which is a test runner: it is not in the deployed bundle and never runs
-      # anywhere a stranger can reach. Blocking a release on that is blocking
-      # on another project's release timing.
+      # Gates again, as of vitest 5. It was made non-blocking to cut v3.0.0,
+      # because the only two advisories were in vitest, which is a test runner
+      # and is in nothing that ships, and blocking a release on somebody else's
+      # release timing is the wrong trade on release day. The upgrade closed
+      # them, so the exception has no subject and is gone.
       #
-      # `check:deps` and `check:actions` below still gate, because those are
-      # about choices we made and can undo.
-      #
-      # Read the step. A HIGH or CRITICAL in something that ships is a stop,
-      # and this not failing the build is exactly why somebody has to look.
-      # Standing task after v3.0.0: vitest 3 to 4.1.11 or later, which closes
-      # GHSA-82fw-gwwq-j7x9 and is a major bump, so it is not a release-day job.
+      # If this turns red on a morning when nothing in the repo changed, that
+      # is this step working: it reads the live registry. Look at what it found
+      # before reaching for `continue-on-error` again, and if the answer is
+      # genuinely "a dev dependency nobody can reach", say so in the commit
+      # rather than in the workflow.
       - name: No known advisories
-        continue-on-error: true
         run: bun audit
 
       # Fails on anything deprecated that is not written down as deliberate, in

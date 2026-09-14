@@ -26,8 +26,8 @@ import {
 
 // The zone the members are in. Everything here is judged from one place on
 // purpose: one daily cron is early or late for somebody whatever you pick, so
-// it is set for the people who actually use it. `JURISDICTION.city` is
-// Bengaluru and `DEFAULT_ZONE` in src/server/config.ts is this.
+// it is set for the people who actually use it: `DEFAULT_ZONE` in
+// src/server/config.ts is this.
 const ZONE = "Asia/Kolkata";
 
 let failed = 0;

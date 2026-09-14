@@ -409,7 +409,6 @@ runs in CI:
 
 ## 4. Needs a person, not code
 
-- **The terms have not been read by a lawyer.**
 - **The `SCREENS.md` review gate**: somebody opening each screen beside its
   artboard and ticking the row. What is left of it is the ticking. Round 5 of
   the drift audit (`scripts/drift/REPORT.md`, 2026-09-06) captured all eighty
@@ -423,8 +422,8 @@ runs in CI:
   variant of all six event seeders. The numbers behind both bands are covered
   by the simulation; the gold halo, the only glow in the app, is not.
 
-`JURISDICTION.city` is settled: Bengaluru, confirmed 2026-09-06. The value was
-already there and only the comment beside it still called itself a placeholder.
+`JURISDICTION` names a country and no city. A named court commits to a venue,
+and THE LAW THAT APPLIES reads correctly without one.
 
 ---
 

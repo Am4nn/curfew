@@ -148,3 +148,16 @@ why the gate is a person.
 Applies to commits, comments and every string that ships. No em-dashes. No
 emoji. Curfew is a clerk, not a coach: it states facts and consequences.
 "Window closes 7:45 AM. Miss it and today does not count." is the register.
+
+## The licence
+
+Curfew is under the [PolyForm Noncommercial License 1.0.0](./LICENSE). Read it,
+fork it, change it, run your own copy for yourself, and send a pull request:
+all of that is allowed. Using it for a commercial purpose is not, which
+includes running it as a product or a service for other people.
+
+By opening a pull request you license your contribution under the same terms.
+
+The licence covers the code and not the idea. Habit tracking with photo
+evidence is not something a licence can reserve, and anybody is free to build
+their own.

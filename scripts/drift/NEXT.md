@@ -80,7 +80,6 @@ check-in feedback work.
 
 ## Needs a person, not code
 
-- The terms have not been read by a lawyer.
 - **The production cutover.** Production still serves v2.5 from the old US
   Neon project while `vercel.json` pins `sin1`. That pairing is only safe
   because no tag is cut before the cutover.

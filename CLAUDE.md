@@ -63,10 +63,11 @@ start on data. Every screen is mocked in `.design/` and listed in
   `bun run break-in`, and CONTRIBUTING with the add-an-activity-type
   walkthrough.
 
-**Before launch, two things need a person, not code.** The terms have not been
-read by a lawyer, and photo evidence has never been driven end to end through a
-real camera. Neither is something the tests can catch. `JURISDICTION.city` in
-`src/server/policy.ts` is settled: Bengaluru, confirmed 2026-09-06.
+**One thing still needs a person, not code: use it on a phone.** Photo evidence
+has never been driven end to end through a real camera, and no test can hold one
+up to the screen. That single pass is also the `SCREENS.md` review, because you
+cannot photograph a meal without opening Home, the configure screen and the
+camera and looking at all three. One gate, not two.
 
 **All nine phases are done, and so are the fourteen items in
 `.planning/v3.1/SCOPE.md`**, a round of defects and redesigns found by using the

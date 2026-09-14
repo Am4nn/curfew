@@ -7,7 +7,7 @@
 
 <h1 align="center">Curfew</h1>
 
-<p align="center">A group accountability contract engine for nightly sleep check-ins.<br>People form private groups, commit to a routine, and pay each other when they miss.</p>
+<p align="center">A habit tracker that asks for proof.<br>Twelve habits on your own schedule, photo evidence where one is worth having,<br>and private groups that see only what you choose to share.</p>
 
 ---
 
@@ -16,8 +16,10 @@ order, `.planning/schema.sql` for the data model, and `CLAUDE.md` for the
 invariants and voice. `.planning/PRD.md` and `.planning/PLAN.md` are v1's, kept
 for the reasoning behind the invariants and superseded on scope.
 
-Status: **v2.5 deployed. v3 in progress on `main`, Phase 0 done.** Production
-serves the latest version tag, so `main` moving does not move the live site.
+Status: **v3.0.0 deployed, 2026-09-15.** Production serves the latest version
+tag, so `main` moving does not move the live site. Groups are invite-only and
+there is no open signup, so a copy you run is a copy for you and the people you
+invite.
 
 ## Stack
 
@@ -77,7 +79,7 @@ UPDATE user_approvals
  WHERE user_id = (SELECT id FROM users WHERE email = '125aryaaman@gmail.com');
 ```
 
-Reload and you land on the empty dashboard. That is the Phase 0 "done when".
+Reload and you land on the empty dashboard.
 
 The app refuses to demote its last admin, so you cannot lock yourself out
 through the UI. If the admin role is ever lost some other way (a direct DB
@@ -93,13 +95,25 @@ bun run typecheck   tsc --noEmit
 bun run migrate     apply migrations/*.sql, then sync the activity registry
 bun run auth:generate   regenerate Better Auth's table SQL (then reconcile)
 bun run test        Vitest, the domain core
+bun run lint        ESLint, type-aware, --max-warnings=0
 bun run verify      recompute a date range and diff the stored rows
+bun run browser     every screen and every form, against a running server
+bun run check:signin  can a stranger see the sign-in page (needs a deployment)
+bun run make:icons  home-screen icons and the iOS launch images
+bun run fetch:font  vendor IBM Plex Mono into public/fonts
 ```
 
+`CLAUDE.md` has the full list, including the narrow checks CI runs.
+
 Three env files, all gitignored, all with the same keys in the same order:
-`.env.local` (docker, mock data), `.env.preview` (the APAC database, and Vercel
-Preview), `.env.production` (the live database). `.env.example` is the key list.
-Only the values differ, so a key must exist in all three.
+`.env.local` (docker, mock data), `.env.preview` (`curfew-apac-dev`),
+`.env.production` (`curfew-apac`, the live branch). `.env.example` is the key
+list. Only the values differ, so a key must exist in all three.
+
+**An environment file says nothing about what a deployment reads.** These are
+read by the commands in this repo and by nothing else; what a deployment
+connects to lives in Vercel, per environment. The two can disagree silently and
+have.
 
 ## Local mode (no sign-in)
 
@@ -141,3 +155,10 @@ A **PREVIEW** bar is pinned to the bottom of every page. It drives a mock clock
 scrub to any instant and jump straight to the night / wake / confirm windows
 (times are IST, the seeded user's timezone) to see every check-in state. "real
 now" clears it.
+
+## Licence
+
+[PolyForm Noncommercial 1.0.0](./LICENSE). Read it, fork it, change it, run
+your own copy for yourself, and send a pull request. Using it for a commercial
+purpose is not granted, which includes running it as a product or a service for
+other people. See [CONTRIBUTING.md](./CONTRIBUTING.md).

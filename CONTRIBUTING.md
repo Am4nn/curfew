@@ -21,7 +21,7 @@ non-production run, so add a key to one and add it to all three.
 | File | Database | Used by |
 |---|---|---|
 | `.env.local` | docker Postgres, `LOCAL_MODE=1` | `bun run local`, `local:*` |
-| `.env.preview` | the shared preview project | `bun run dev`, `migrate`, `verify` |
+| `.env.preview` | `curfew-apac-dev` | `bun run dev`, `migrate`, `verify` |
 | `.env.production` | the live project | `migrate:production` |
 
 ## Adding an activity type
@@ -131,11 +131,24 @@ or its check-ins, that is a design problem worth raising.
 
 ```
 bun run typecheck
+bun run lint          # --max-warnings=0, so a warning is a failure
 bun run test
 bun run build
 bun run verify        # no drift against the preview database
 bun run break-in      # the security round; exits non-zero if anything gives
+bun run browser       # every screen, against a running server
 ```
+
+`bun run browser` needs `bun run local:seed` and `bun run local` first, and a
+fixture seeded on a different calendar day is refused rather than run: every
+fixture anchored on the real clock calls the day it was seeded "today".
+
+If you touched anything a signed-out visitor loads, or `src/middleware.ts`, run
+`bun run check:signin -- --http=<a deployment>`. It is the only check that
+exercises the sign-in gate at all: LOCAL_MODE makes the middleware stand aside
+in every job that serves the app, so the gate is the one path the suite never
+takes, and the sign-in page's own photographs and font have both been broken by
+it.
 
 If you touched a screen, open it beside its artboard in `.design/` and tick its
 row in `.planning/v3/SCREENS.md` in the same commit. If the screen and the mock

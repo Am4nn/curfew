@@ -5,9 +5,23 @@ on:
     branches: [main]
   pull_request:
 
-# Cancel superseded runs on the same ref.
+# Grouped by COMMIT, not by ref.
+#
+# By ref, a second push to main cancelled the first push's run, which is the
+# usual way to save minutes and was wrong here: the deploy workflow asks for
+# CI's conclusion on one exact SHA, and a cancelled run is not a pass. Pushing
+# a one-line docs commit while the release commit's CI was still going killed
+# it, and v3.1.0 then refused to deploy with "CI concluded 'cancelled'". The
+# gate was right and the thing it read had been shot in the back.
+#
+# Every commit that reaches main gets its own run now. That costs the minutes
+# the old grouping saved, and buys a tag that can be cut at any moment without
+# watching what else is in flight.
+#
+# `cancel-in-progress` stays true so that re-pushing the SAME commit, or a pull
+# request updated twice in a minute, still supersedes itself.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:

@@ -55,6 +55,12 @@ jobs:
       - name: The nightly job runs late enough to score last night
         run: bun run check:cron
 
+      # The browser suites are sharded across parallel jobs, and a suite no
+      # shard names would simply never run, greenly. This is the only thing that
+      # would notice.
+      - name: Every browser suite is run by some shard
+        run: bun run check:shards
+
       # The build validates env at module load and pre-renders routes. It never
       # connects to a database (queries run only per request), so dummy but
       # well-formed values are enough. Never put real secrets here.
@@ -334,7 +340,49 @@ jobs:
   # Vercel, and `next start` sets exactly that, so a built server here would
   # have no fixed identity and every route would redirect to sign-in. The
   # trade is a slower first hit per route, which the timeouts allow for.
+  # Sharded, because this job was the whole pipeline's wall clock: 306s against
+  # 105s for the next slowest, so every other job sat finished waiting for it.
+  #
+  # Split by MEASURED weight, not by guess. Of 213s of suite, pause is 40%,
+  # screens 28%, admin and counter together 25%, and the remaining four 7%. The
+  # shards below are those four groups, so the long pole is pause alone rather
+  # than all eight in a line.
+  #
+  # Sharding is what makes them independent, and independence is what makes the
+  # split legal. In one process the order is load-bearing: pause scrubs the
+  # preview clock days into the future and every read on a scrubbed page closes
+  # periods, so counter, declare and owners have to run before it or they are
+  # answering for a day that has not happened. A shard is its own database, its
+  # own server and its own seed, so that constraint stops existing between
+  # shards. Within a shard it still holds, and it still holds for free: run.mjs
+  # walks SUITES in its canonical order and skips what was not asked for, so
+  # naming suites here cannot reorder them.
+  #
+  # A suite no shard names would never run, and CI would be green and faster for
+  # it. `check:shards` in the check job is what refuses that.
+  #
+  # fail-fast is off. One shard failing tells you about that shard, and
+  # cancelling the other three to save a minute throws away the information you
+  # would want next.
   browser:
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - id: pause
+            suites: pause
+            breakin: false
+          - id: screens
+            suites: screens
+            breakin: false
+          - id: admin
+            suites: admin counter
+            breakin: false
+          # The light one carries break-in's HTTP half, since that needs a
+          # server and this shard has the most room.
+          - id: rest
+            suites: balances declare configure owners
+            breakin: true
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -344,11 +392,13 @@ jobs:
           POSTGRES_PASSWORD: ci
           POSTGRES_DB: ci
         ports: ["5432:5432"]
+        # Polled every 2s rather than every 10s. Postgres is ready in about a
+        # second and the job was waiting out the interval, not the database.
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
+          --health-interval 2s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 15
     env:
       LOCAL_MODE: "1"
       DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
@@ -371,24 +421,34 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Chromium is ~120MB and was downloaded on every run, now on every run of
+      # every shard. The key is the lockfile, so it is re-fetched when the
+      # playwright version moves and not otherwise.
+      - name: Cache chromium
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: playwright-${{ runner.os }}-
+
       - name: Install chromium
         run: bunx playwright install --with-deps chromium
 
-      - name: Migrate from empty
-        run: bun run scripts/migrate.ts
-
-      - name: Sync the activity registry
-        run: bun run scripts/sync-activities.ts
-
-      - name: Seed a history
-        run: bun run scripts/seed-local.ts
-
-      # Backgrounded, then waited for. `bun run local` reads .env.local, which
-      # is gitignored and does not exist here, so the server is started
-      # directly against the job's own environment.
-      - name: Start the app
+      # One step because the server has to start INSIDE it: a background process
+      # is only reliably alive for the step that launched it. Starting it first
+      # is the point. `next dev` takes about 18 seconds to boot and the database
+      # work takes about 3, so in sequence that was 21 seconds and here it is 18.
+      # Nothing touches the server until the curl below, so every route it
+      # compiles is compiled against a database that is already seeded.
+      #
+      # `bun run local` reads .env.local, which is gitignored and does not exist
+      # here, so the server is started directly against the job's environment.
+      - name: Start the app, and seed while it boots
         run: |
           bunx next dev > /tmp/next.log 2>&1 &
+          bun run scripts/migrate.ts
+          bun run scripts/sync-activities.ts
+          bun run scripts/seed-local.ts
           for i in $(seq 1 60); do
             curl -sf -o /dev/null http://localhost:3000 && exit 0
             sleep 2
@@ -396,7 +456,7 @@ jobs:
           echo "the server never answered"; cat /tmp/next.log; exit 1
 
       - name: Every screen, and the forms on them
-        run: bun run browser
+        run: bun run browser ${{ matrix.shard.suites }}
 
       # The suite says a screen failed; only the server knows why. Without this
       # the dev server's log is written to /tmp and thrown away with the runner,
@@ -410,7 +470,10 @@ jobs:
       # With a server up, the ten checks that skip themselves in the other job
       # actually run: signed-out routes, somebody else's group over HTTP, and
       # the positive control that proves the detector works.
+      # One shard, not four: the answer does not change per shard, and three
+      # repeats are three times the minutes for none of the information.
       - name: Break in, including the HTTP half
+        if: matrix.shard.breakin
         run: bun run scripts/break-in/run.ts
 
       - name: The server said nothing alarming

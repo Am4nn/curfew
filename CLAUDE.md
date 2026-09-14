@@ -318,7 +318,21 @@ seed       bun run local:seed      — mock data into the local database
 mocks      node .design/build-v3.mjs — regenerate every artboard
 cors       bun run check:cors      — can a browser upload from this origin
 signin     bun run check:signin    — can a stranger see the sign-in page
+shards     bun run check:shards    — CI still runs every browser suite
 ```
+
+`bun run browser` takes suite names: `bun run browser admin counter` runs those
+two. Order on the command line means nothing. `suites.mjs` holds the canonical
+order and the runner walks it, skipping what was not named, because `pause`
+scrubs the clock into the future and the three suites that answer for today
+have to precede it.
+
+CI runs the eight suites as **four parallel shards**, split by measured weight,
+so the job that was the pipeline's wall clock is no longer it. Each shard is its
+own database, server and seed, which is what makes them safe to reorder across.
+A suite that no shard names would never run and CI would be green and quicker
+for it, so `check:shards` compares the matrix against `suites.mjs` and fails on
+a suite that is missing, unknown, or run twice.
 
 CI runs typecheck, lint, test, build, the migration job, `break-in`, the
 simulation scenarios, `verify` against a seeded database, the seven narrow

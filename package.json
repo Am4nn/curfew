@@ -34,6 +34,7 @@
     "fetch:font": "bun run scripts/fetch-font.ts",
     "make:icons": "bun run scripts/make-app-icons.ts",
     "check:signin": "bun run scripts/check-signin.ts",
+    "check:shards": "bun run scripts/check-shards.ts",
     "check:evidence": "dotenv -e .env.local -- bun run scripts/check-evidence.ts",
     "check:ceiling": "dotenv -e .env.local -- bun run scripts/check-ceiling.ts",
     "check:purge": "dotenv -e .env.local -- bun run scripts/check-purge.ts",

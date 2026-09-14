@@ -30,14 +30,7 @@
 // real day between now and then would never be computed at all.
 import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
-import { screens } from "./screens.mjs";
-import { balances } from "./balances.mjs";
-import { admin } from "./admin.mjs";
-import { counter } from "./counter.mjs";
-import { owners } from "./owners.mjs";
-import { pause } from "./pause.mjs";
-import { declare } from "./declare.mjs";
-import { configure } from "./configure.mjs";
+import { SUITES, SUITE_NAMES } from "./suites.mjs";
 
 const BASE = process.env.BROWSER_BASE ?? "http://localhost:3000";
 const only = process.argv.slice(2).filter((a) => !a.startsWith("-"));
@@ -88,20 +81,16 @@ function checkFixtureIsToday() {
 
 checkFixtureIsToday();
 
-const SUITES = [
-  ["screens", screens],
-  ["balances", balances],
-  ["admin", admin],
-  // Before pause, which leaves the clock scrubbed several days out and every
-  // counter finished. This one needs a day with nothing on it.
-  ["counter", counter],
-  // Before pause, for the same reason as counter: it answers today.
-  ["declare", declare],
-  ["configure", configure],
-  // Before pause, which scrubs the clock and declares a trip.
-  ["owners", owners],
-  ["pause", pause],
-];
+// A name that is not a suite is a shard that runs nothing, and a shard that
+// runs nothing passes. CI's matrix is the caller that would make this mistake,
+// so it is refused here rather than reported as a green run of no checks.
+const unknown = only.filter((name) => !SUITE_NAMES.includes(name));
+if (unknown.length > 0) {
+  console.error(
+    `Not a suite: ${unknown.join(", ")}.\nThere are ${SUITE_NAMES.length}: ${SUITE_NAMES.join(", ")}`,
+  );
+  process.exit(1);
+}
 
 let failed = 0;
 let held = 0;
@@ -163,13 +152,64 @@ page.on("console", (m) => {
  * take longer than the timeout or reset the connection outright; a real failure
  * fails twice, so the retry cannot hide one.
  */
+/**
+ * Wait for the page to be ready, rather than for a length of time.
+ *
+ * This was `waitForTimeout(1200)`: a blind sleep after `domcontentloaded`, on
+ * every navigation, 62 of them. It was wrong in both directions. On a warm page
+ * React had finished at 660ms and the suite sat there for the other 540; on a
+ * cold route in CI, 1200ms after DOM-ready is a hope, not a guarantee, and the
+ * thing it was really standing in for was never measured at all.
+ *
+ * What it was standing in for is hydration. A suite that clicks a button before
+ * React has attached to it gets a press that does nothing, and then an `until`
+ * that times out 25 seconds later blaming the screen. So that is what is waited
+ * for: React's own root marker on the document, plus the text holding still
+ * across two reads. Both, because the markup can be complete before the handlers
+ * are and the handlers can be attached while a suspended boundary is still
+ * filling in.
+ *
+ * The ceiling is what makes the marker safe to depend on. React's container
+ * property is an internal name, so if a future version stops using it this
+ * degrades to a timed wait, which is exactly today's behaviour and not a
+ * failure. `ceilings` counts how often that happens and the run says so at the
+ * end, because a silent fallback to sleeping is how this would rot unnoticed.
+ */
+let ceilings = 0;
+async function settle(ceiling = 2000) {
+  const deadline = Date.now() + ceiling;
+  let previous = null;
+  let steady = 0;
+  for (;;) {
+    const hydrated = await page.evaluate(
+      () =>
+        Object.keys(document).some((k) => k.startsWith("__react")) ||
+        Object.keys(document.body).some((k) => k.startsWith("__react")),
+    );
+    const text = await page.locator("body").innerText();
+    if (hydrated && text !== "" && text === previous) {
+      steady += 1;
+      if (steady >= 2) return text;
+    } else {
+      steady = 0;
+    }
+    if (Date.now() >= deadline) {
+      ceilings += 1;
+      return text;
+    }
+    previous = text;
+    await page.waitForTimeout(100);
+  }
+}
+
+let opens = 0;
 async function open(route) {
+  opens += 1;
   let text;
   for (let attempt = 0; ; attempt += 1) {
     try {
       await page.goto(BASE + route, { waitUntil: "domcontentloaded", timeout: 120000 });
-      await page.waitForTimeout(1200);
-      text = await page.locator("body").innerText();
+      text = await settle();
     } catch (e) {
       if (attempt >= 1) throw e;
       await page.waitForTimeout(2000);
@@ -248,11 +288,16 @@ try {
   for (const [name, run] of SUITES) {
     if (only.length > 0 && !only.includes(name)) continue;
     console.log(`\n--- ${name} ---`);
+    const startedAt = Date.now();
+    const opensBefore = opens;
     try {
       await run(ctx);
     } catch (e) {
       check(`${name} ran to the end`, false, String(e));
     }
+    console.log(
+      `TIMING ${name} ${((Date.now() - startedAt) / 1000).toFixed(1)}s ${opens - opensBefore} opens`,
+    );
   }
 } finally {
   await clearClock();
@@ -263,6 +308,15 @@ try {
 // that renders the right words while throwing in the console is broken.
 if (errors.length > 0) {
   console.log(`\npage errors:\n  ${errors.join("\n  ")}`);
+}
+// If most navigations hit the ceiling, `settle` is no longer detecting anything
+// and has quietly become the blind sleep it replaced. Say so rather than just
+// getting slower.
+if (ceilings > opens / 2) {
+  console.log(
+    `\nnote: ${ceilings} of ${opens} navigations waited out the ceiling. React's` +
+      ` root marker is probably gone, so this is back to sleeping. See settle().`,
+  );
 }
 console.log(
   `\n${held} held, ${failed} failed${errors.length > 0 ? `, ${errors.length} page error(s)` : ""}`,

@@ -171,6 +171,38 @@ The admin switch and consent are different questions and both have to be true.
 The switch says the system exists at all; the consent gate says this person's
 photograph may go to a provider. Neither substitutes for the other.
 
+#### What the mocks have to answer, decided 2026-09-15
+
+- **The app writes every sentence.** The model returns findings as fields and
+  the app renders them from its own templates. This is what keeps the Voice
+  section of `CLAUDE.md` applying to the surface people read most, and it makes
+  the wording testable, which a sentence nobody wrote is not.
+- **A range, marked estimated.** "450 to 600 kcal, estimated." A clerk states
+  facts, and the fact about a calorie count read off a photograph is that it is
+  a range. A single number would state a precision the photograph cannot carry.
+- **Calories, the three macros, and the itemised breakdown.** Each thing the
+  model says it saw, with its own numbers, adding to the total.
+- **Two entry points**: inside `/stats`, which is already where a person goes to
+  ask about their own history, and something on Home for reach. Both disappear
+  when the switch is off.
+- **The picker offers only meals whose evidence still exists**, and says why the
+  older ones are not there. Evidence is deleted after 30 days. Keeping a
+  downscaled copy to extend that is a separate argument nobody has made yet.
+- **Pending and unreadable are drawn**, not discovered in code. A meal between
+  the press and the answer, and a meal the model could not read, are states the
+  screen has whether or not anybody designed them.
+
+**The itemisation is the reasoning.** Asked for the model's reasoning so a
+person can see what it has to say, and that contradicts the app writing every
+sentence, because reasoning is prose. The breakdown answers the same need
+better: it is how you tell whether 620 is nonsense, and it stays structured.
+If prose still looks necessary after the spike, it is quarantined as quoted
+machine output the way a person's own note is, and never as app copy.
+
+**Careful with the thing on Home.** `CLAUDE.md` lists generic line icons as
+section markers among the visual tells to avoid, and Home is the check-in
+surface. A labelled row is likelier to survive review than an icon.
+
 **Two things that follow, and are not decided.**
 
 - **A re-run is a new row, not an edit.** Picking an old photograph and running

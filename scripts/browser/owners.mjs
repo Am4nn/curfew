@@ -39,14 +39,21 @@ async function untilRow(page, name, predicate, timeout = 25000) {
   return text;
 }
 
+// Members and invites live behind the Members panel now: group settings was
+// five sections in one scroll serving two different people, and it was split
+// into a hub of panels. The half and the panel are in the URL deliberately, so
+// a link to one is a link somebody can send, and this uses that rather than
+// clicking its way in.
+const MEMBERS = `/group/${GROUP}/settings?half=group&panel=members`;
+
 export async function owners({ open, check, page, until }) {
-  let text = await open(`/group/${GROUP}/settings`);
+  let text = await open(MEMBERS);
   check(
-    "the settings tab says who runs the group",
-    text.includes("WHO RUNS THIS GROUP"),
+    "the settings hub has a panel for who runs the group",
+    text.includes("Members"),
     text.slice(0, 120),
   );
-  check("and lists the members", text.includes(MEMBER), text.slice(0, 160));
+  check("and it lists them", text.includes(MEMBER), text.slice(0, 160));
 
   // The rule that keeps a group administrable, asked of the screen rather than
   // of the function. Preview Admin is the only owner, so this must refuse, and
@@ -70,7 +77,7 @@ export async function owners({ open, check, page, until }) {
   check(`${MEMBER} can be taken back down`, row.includes("Member"), row);
 
   // The invite this group has out, and taking it back.
-  text = await open(`/group/${GROUP}/settings`);
+  text = await open(MEMBERS);
   check("the invites it has out are listed", text.includes("INVITES OUT"), text.slice(0, 120));
   check("with the address on it", text.includes("newcomer@curfew.local"));
 

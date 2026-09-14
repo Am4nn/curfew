@@ -45,12 +45,18 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
     targetField: "target",
   },
 
+  summary(config) {
+    return config.minutesTarget === null
+      ? "a sitting recorded, however long"
+      : `${config.minutesTarget} minutes of study`;
+  },
+
   fields() {
     return [
       {
         kind: "number",
         key: "minutesTarget",
-        label: "Target",
+        label: "Minutes a day",
         min: 5,
         max: 1440,
         step: 5,

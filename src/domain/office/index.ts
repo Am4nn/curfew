@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ActivityType } from "../types";
 import { WEEKDAYS } from "../schedule";
-import { windowSchema, oneWindow, windowInstants, within } from "../windows";
+import { windowSchema, oneWindow, windowInstants, within, clockLabel } from "../windows";
 import { countPass } from "../pass";
 
 // Office. Weekdays, inside a window (decision 46). The weekend is skipped by
@@ -36,11 +36,15 @@ export const officeActivity: ActivityType<OfficeConfig, OfficeEvidence> = {
   checkin: { kind: "tap" },
   chart: { kind: "binary", heading: "IN OR NOT" },
 
+  summary(config) {
+    return `in the office between ${clockLabel(config.window.open)} and ${clockLabel(config.window.close)}`;
+  },
+
   fields() {
     return [
       {
         kind: "timeRange",
-        label: "Window",
+        label: "Hours in the office",
         openKey: "window.open",
         closeKey: "window.close",
       },

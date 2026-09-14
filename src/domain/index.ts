@@ -107,6 +107,14 @@ export {
   type RankKey,
 } from "./ranks";
 export { getActivityType, registeredKeys, register, daysDoneIn } from "./registry";
+export {
+  ruleFor,
+  howOften,
+  listOfDays,
+  dayStarts,
+  forgiven,
+  type RuleText,
+} from "./rule";
 export type {
   ActivityType,
   CheckinStep,

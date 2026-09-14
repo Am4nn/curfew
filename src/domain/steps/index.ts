@@ -59,12 +59,19 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
 
   note: "Curfew cannot read your watch. The number is yours to enter.",
 
+  summary(config) {
+    const target = config.target.toLocaleString("en-US");
+    return config.direction === "atMost"
+      ? `${target} steps or fewer`
+      : `${target} steps or more`;
+  },
+
   fields() {
     return [
       {
         kind: "segmented",
         key: "direction",
-        label: "Rule",
+        label: "Pass when",
         options: [
           { value: "atLeast", label: "At or above" },
           { value: "atMost", label: "At or below" },
@@ -73,7 +80,7 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
       {
         kind: "number",
         key: "target",
-        label: "Target",
+        label: "Steps a day",
         min: 1000,
         max: 100000,
         step: 500,

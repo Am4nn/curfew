@@ -7,6 +7,7 @@ import {
   windowInstants,
   within,
   HHMM,
+  clockLabel,
   type Window,
 } from "./windows";
 
@@ -53,6 +54,8 @@ export function abstinenceActivity(spec: {
   prompt: (config: AbstinenceConfig) => string;
   /** The heading over this type's chart, in its own words. */
   chartHeading: string;
+  /** The rule in a person's words, for the top of the configure screen. */
+  rule: (config: AbstinenceConfig) => string;
   /** The line under the confirm window on the configure screen. */
   windowHint: string;
   /** The line under "No photo" on the configure screen. */
@@ -82,6 +85,10 @@ export function abstinenceActivity(spec: {
 
     note: spec.note,
 
+    summary(config) {
+      return `${spec.rule(config)}, confirmed between ${clockLabel(config.window.open)} and ${clockLabel(config.window.close)}`;
+    },
+
     fields() {
       return [
         ...(spec.cutoff
@@ -89,7 +96,7 @@ export function abstinenceActivity(spec: {
           : []),
         {
           kind: "timeRange",
-          label: "Confirm window",
+          label: "Confirmed between",
           openKey: "window.open",
           closeKey: "window.close",
           hint: spec.windowHint,

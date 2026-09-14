@@ -41,15 +41,19 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
   checkin: { kind: "camera" },
   chart: { kind: "binary", heading: "TAKEN OR MISSED" },
 
+  summary(config) {
+    return `${config.dosesPerDay} ${config.dosesPerDay === 1 ? "dose" : "doses"}`;
+  },
+
   fields() {
     return [
       {
         kind: "number",
         key: "dosesPerDay",
-        label: "Logs required",
+        label: "Doses a day",
         min: 1,
         max: 6,
-        unit: "per day",
+        unit: "doses",
       },
     ];
   },

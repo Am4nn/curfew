@@ -10,19 +10,25 @@ import { readingActivity } from "./reading";
 // with it, deliberately.
 
 const LABELS: Record<string, string[]> = {
-  sleep: ["Night window", "Wake window", "Confirm window"],
+  sleep: ["In bed between", "Up between", "Confirmed between"],
   gym: [],
-  food: ["Logs required", "Calorie limit"],
-  supplements: ["Logs required"],
-  office: ["Window"],
-  study: ["Target"],
-  steps: ["Rule", "Target"],
-  water: ["Target"],
-  reading: ["Count in", "Target"],
-  screen: ["Rule", "Limit"],
-  nightfast: ["Nothing after", "Confirm window"],
-  sugarfree: ["Confirm window"],
+  food: ["Meals a day", "Calorie limit"],
+  supplements: ["Doses a day"],
+  office: ["Hours in the office"],
+  study: ["Minutes a day"],
+  steps: ["Pass when", "Steps a day"],
+  water: ["Glasses a day"],
+  reading: ["Counted in", "Amount a day"],
+  screen: ["Pass when", "Hours a day"],
+  nightfast: ["Nothing after", "Confirmed between"],
+  sugarfree: ["Confirmed between"],
 };
+
+// Every one of these is a whole label, not a word the screen pads out. The
+// configure screen asks each as a question and lists each beside its value, so
+// "Target" was the engine asking what it wanted rather than a person asking
+// what they wanted. A label that reads as a question and as a row label is the
+// bar.
 
 describe("the twelve configure screens", () => {
   it("draw the controls their artboards draw, in that order", () => {
@@ -70,7 +76,7 @@ describe("the twelve configure screens", () => {
   it("Screen is stored in minutes and set in hours", () => {
     const limit = screenActivity
       .fields(screenActivity.defaults.config)
-      .find((f) => f.label === "Limit");
+      .find((f) => f.label === "Hours a day");
     expect(limit).toMatchObject({ kind: "number", unit: "hours", scale: 60 });
     // Two hours on the control is a hundred and twenty in the config.
     expect(screenActivity.defaults.config.limitMinutes).toBe(120);
@@ -99,11 +105,11 @@ describe("the twelve configure screens", () => {
   it("Reading labels its target in the unit chosen above it", () => {
     const pages = readingActivity
       .fields({ unit: "pages", target: 30 })
-      .find((f) => f.label === "Target");
+      .find((f) => f.label === "Amount a day");
     expect(pages).toMatchObject({ unit: "pages" });
     const minutes = readingActivity
       .fields({ unit: "minutes", target: 30 })
-      .find((f) => f.label === "Target");
+      .find((f) => f.label === "Amount a day");
     expect(minutes).toMatchObject({ unit: "minutes" });
   });
 });

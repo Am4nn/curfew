@@ -12,6 +12,7 @@ export const nightfastActivity = abstinenceActivity({
   label: "Confirm",
   window: { open: "06:00", close: "11:00" },
   cutoff: { label: "Nothing after", default: "20:00" },
+  rule: (config) => `nothing after ${clockLabel(config.cutoff ?? "20:00")}`,
   prompt: (config) =>
     `Nothing after ${clockLabel(config.cutoff ?? "20:00")} last night. Did it hold?`,
   chartHeading: "NIGHTS THAT HELD",

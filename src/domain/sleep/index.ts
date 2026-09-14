@@ -7,6 +7,7 @@ import type {
   CheckinWindow,
 } from "../types";
 import { EVERY_DAY } from "../schedule";
+import { clockLabel } from "../windows";
 
 // The sleep activity type. This module is the ONLY place that knows sleep has a
 // night, a wake and a confirm step, and the only place `night_ok` and friends
@@ -191,23 +192,27 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
     },
   ],
 
+  summary(config) {
+    return `in bed by ${clockLabel(config.night_close)}, up by ${clockLabel(config.wake_close)}`;
+  },
+
   fields() {
     return [
       {
         kind: "timeRange",
-        label: "Night window",
+        label: "In bed between",
         openKey: "night_open",
         closeKey: "night_close",
       },
       {
         kind: "timeRange",
-        label: "Wake window",
+        label: "Up between",
         openKey: "wake_open",
         closeKey: "wake_close",
       },
       {
         kind: "timeRange",
-        label: "Confirm window",
+        label: "Confirmed between",
         openKey: "confirm_open",
         closeKey: "confirm_close",
       },

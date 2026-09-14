@@ -101,6 +101,12 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   },
   // Nothing of its own. "Any 3 a week" is the engine's schedule, drawn by the
   // day picker, so a second control here would be the same number twice.
+  summary() {
+    // No numbers of its own. How many days a week is the schedule's, and the
+    // engine says that half.
+    return "a session at the gym";
+  },
+
   fields() {
     return [];
   },

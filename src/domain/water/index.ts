@@ -49,12 +49,16 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
     targetField: "target",
   },
 
+  summary(config) {
+    return `${config.glasses} ${config.glasses === 1 ? "glass" : "glasses"} of water`;
+  },
+
   fields() {
     return [
       {
         kind: "number",
         key: "glasses",
-        label: "Target",
+        label: "Glasses a day",
         min: 1,
         max: 30,
         unit: "glasses",

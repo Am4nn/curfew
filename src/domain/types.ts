@@ -241,6 +241,23 @@ export interface ActivityType<Config, Evidence> {
    * the user picked one control above it.
    */
   fields(config: Config): ConfigField[];
+  /**
+   * The rule this module enforces, as a sentence a person would say.
+   *
+   * "3 meals a day, under 2,000 calories." "In bed by 10:30 PM, up by
+   * 6:30 AM." The configure screen states the rule before it offers to change
+   * any of it, so somebody reads what they have set instead of reconstructing
+   * it from six controls.
+   *
+   * ONLY the module's own half. How often, when the day starts and how many
+   * misses are forgiven are the engine's, written once by the engine in one
+   * voice, because they read the same for all twelve types and a module
+   * writing them again would be twelve chances to word it differently.
+   *
+   * No leading capital and no full stop: the engine joins these into a
+   * sentence and punctuates it.
+   */
+  summary(config: Config): string;
   /** Properties of the type, stated at the top and never offered as controls. */
   facts?: { title: string; sub: string }[];
   /** The module's own footnote, above the stop control. */

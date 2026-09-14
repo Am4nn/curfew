@@ -268,6 +268,7 @@ verify     bun run verify          — recompute a range and diff stored rows
 seed       bun run local:seed      — mock data into the local database
 mocks      node .design/build-v3.mjs — regenerate every artboard
 cors       bun run check:cors      — can a browser upload from this origin
+signin     bun run check:signin    — can a stranger see the sign-in page
 ```
 
 CI runs typecheck, lint, test, build, the migration job, `break-in`, the
@@ -302,6 +303,15 @@ safe against any database and runs in CI on every push. Its HTTP half needs a
 server: `break-in:local` sweeps `localhost:3000` beside `bun run local`, and
 `bun run break-in -- --http=<origin>` sweeps a real-auth one. Without a server
 that half skips itself and says so.
+
+**`check:signin` is the one check CI cannot run**, and that is why it exists.
+Both CI jobs that touch a running app set LOCAL_MODE, and `previewEnabled()`
+makes the middleware stand aside entirely, so the gate is the one code path the
+whole suite never takes. The sign-in page's three photographs sat behind the
+gate for a day because of it: a signed-out visitor got the page, and every
+image on it answered 307 with HTML. Run it against a deployment after anything
+touches `src/middleware.ts` or `public/`:
+`bun run check:signin -- --http=https://dev.curfew.amanarya.com`.
 
 `check:cors` takes origins as arguments and defaults to the one in
 `BETTER_AUTH_URL`; `check:cors:production` is the same against the live bucket.

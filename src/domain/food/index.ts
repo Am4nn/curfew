@@ -69,15 +69,22 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
 
   note: "A photo is not proof. It records that you took one in the app, at a server timestamp.",
 
+  summary(config) {
+    const meals = `${config.meals} ${config.meals === 1 ? "meal" : "meals"}`;
+    return config.calorieLimit === null
+      ? meals
+      : `${meals}, under ${config.calorieLimit.toLocaleString("en-US")} calories`;
+  },
+
   fields() {
     return [
       {
         kind: "number",
         key: "meals",
-        label: "Logs required",
+        label: "Meals a day",
         min: 1,
         max: 10,
-        unit: "per day",
+        unit: "meals",
       },
       {
         kind: "number",

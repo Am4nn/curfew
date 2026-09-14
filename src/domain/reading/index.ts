@@ -57,12 +57,16 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
 
   // The target is labelled in the unit chosen one control above it, which is
   // why the fields are a function of the config and not a constant.
+  summary(config) {
+    return `${config.target} ${config.unit} of reading`;
+  },
+
   fields(config) {
     return [
       {
         kind: "segmented",
         key: "unit",
-        label: "Count in",
+        label: "Counted in",
         options: [
           { value: "minutes", label: "Minutes" },
           { value: "pages", label: "Pages" },
@@ -71,7 +75,7 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
       {
         kind: "number",
         key: "target",
-        label: "Target",
+        label: "Amount a day",
         min: 1,
         max: 5000,
         unit: config.unit,

@@ -58,12 +58,21 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
 
   note: "Curfew cannot read your screen time. The number is yours to enter.",
 
+  summary(config) {
+    const hours = config.limitMinutes / 60;
+    const amount = Number.isInteger(hours) ? `${hours}` : hours.toFixed(1);
+    const unit = amount === "1" ? "hour" : "hours";
+    return config.direction === "atLeast"
+      ? `${amount} ${unit} of screen time or more`
+      : `${amount} ${unit} of screen time or less`;
+  },
+
   fields() {
     return [
       {
         kind: "segmented",
         key: "direction",
-        label: "Rule",
+        label: "Pass when",
         options: [
           { value: "atLeast", label: "At or above" },
           { value: "atMost", label: "At or below" },
@@ -72,7 +81,7 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
       {
         kind: "number",
         key: "limitMinutes",
-        label: "Limit",
+        label: "Hours a day",
         min: 1,
         max: 24,
         unit: "hours",

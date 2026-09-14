@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import {
   getActivityType,
   scheduleConfigSchema,
+  ruleFor,
+  howOften,
   type ConfigField,
   type EvidenceRule,
   type ScheduleConfig,
@@ -282,6 +284,42 @@ function Note({ children, tone = "accent" }: { children: React.ReactNode; tone?:
 
 // --- the screen ------------------------------------------------------------
 
+/**
+ * One screen, twelve types, two presentations.
+ *
+ * It used to be every control at once: a day picker, the module's own fields,
+ * a gap, grace, and not one line saying what they added up to. Twelve controls
+ * on a screen that never states the rule is a screen you configure by
+ * guessing.
+ *
+ * So the rule comes first, written out (`ruleFor`), and the controls sit
+ * behind it. Setting one up and changing one are different jobs and get
+ * different shapes:
+ *
+ *  - SETTING UP, one question a screen. Nobody has an opinion about a minimum
+ *    gap before they have picked the days, and showing all of it at once is
+ *    what made this feel like a form to fill in.
+ *  - CHANGING one, a list. You came here to change ONE thing, and a list of
+ *    what is set lets you find it and leave. The rule is stated above it, so
+ *    the screen answers "what am I signed up for" without being read.
+ *
+ * Both are drawn from the same `panels` array, so a type that adds a field
+ * gets it in both, and neither knows what the field means (invariant 6).
+ */
+
+interface Panel {
+  id: string;
+  /** The row's label in the list, and the short name when setting up. */
+  label: string;
+  /** What it is set to now, for the right-hand side of a list row. */
+  value: string;
+  /** The question, asked in full. Only the setup flow shows this. */
+  question: string;
+  body: React.ReactNode;
+  /** True while this panel's own value will not save. */
+  broken: boolean;
+}
+
 export function ConfigureForm({
   typeKey,
   name,
@@ -313,8 +351,12 @@ export function ConfigureForm({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const dirty =
-    JSON.stringify({ schedule, config }) !== JSON.stringify(saved);
+  // Which panel is open. In the list this is the one thing being changed; in
+  // the setup flow, how far along you are.
+  const [open, setOpen] = useState<string | null>(null);
+  const [at, setAt] = useState(0);
+
+  const dirty = JSON.stringify({ schedule, config }) !== JSON.stringify(saved);
 
   // Everything wrong, against the field it belongs to. The schema says what is
   // valid; the module says what the schema cannot.
@@ -334,14 +376,13 @@ export function ConfigureForm({
     }
   }
   if (schedule.grace > 31) {
-    issues.push({ path: "@grace", message: "Grace cannot be more than the days in a month." });
+    issues.push({ path: "@grace", message: "More than the days in a month." });
   }
   const errorFor = (path: string) => issues.find((i) => i.path === path)?.message;
   const valid = issues.length === 0;
 
-  const fields = parsedConfig.success
-    ? type.fields(parsedConfig.data)
-    : type.fields(type.defaults.config);
+  const safeConfig = parsedConfig.success ? parsedConfig.data : type.defaults.config;
+  const fields = type.fields(safeConfig);
 
   const isMinimum = schedule.schedule.kind === "minimum";
   const days = schedule.schedule.kind === "days" ? schedule.schedule.days : [];
@@ -350,107 +391,96 @@ export function ConfigureForm({
     setSchedule((s) => ({ ...s, schedule: next }));
   }
 
-  function save(share?: boolean) {
-    setError(null);
-    startTransition(async () => {
-      try {
-        const result = await saveActivityAction({ typeKey, schedule, config, returnTo, share });
-        setSaved({ schedule, config });
-        if (result.redirectTo) {
-          router.push(result.redirectTo);
-        } else if (returnTo) {
-          router.push("/activities");
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "That did not save.");
-      }
+  // The rule as a person would say it. Drawn from the values on screen rather
+  // than the saved ones, so it moves as the controls move and you can read
+  // what you are about to save before you save it.
+  const rule = ruleFor(typeKey, parsedSchedule.success ? parsedSchedule.data : schedule, safeConfig);
+
+  // -------------------------------------------------------------------------
+  // The panels, built once and used by both presentations.
+  // -------------------------------------------------------------------------
+
+  const panels: Panel[] = [];
+
+  panels.push({
+    id: "days",
+    label: "How often",
+    value: howOften(schedule.schedule),
+    question: `How often do you want to do this?`,
+    broken: Boolean(errorFor("@schedule")),
+    body: (
+      <div className="flex flex-col gap-[9px]">
+        <div className="flex gap-[6px]">
+          {DAY_LABELS.map((label, i) => {
+            const day = (i + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
+            const on = !isMinimum && days.includes(day);
+            return (
+              <DayCell
+                key={i}
+                label={label}
+                on={on}
+                onClick={() => {
+                  const next = on ? days.filter((d) => d !== day) : [...days, day].sort();
+                  setSchedulePart({ kind: "days", days: next.length === 0 ? [day] : next });
+                }}
+              />
+            );
+          })}
+          <DayCell
+            label="ANY"
+            on={isMinimum}
+            wide
+            onClick={() =>
+              setSchedulePart(
+                isMinimum
+                  ? { kind: "days", days: [1, 2, 3, 4, 5, 6, 7] }
+                  : { kind: "minimum", perWeek: 3 },
+              )
+            }
+          />
+        </div>
+        {schedule.schedule.kind === "minimum" ? (
+          <Stepper
+            value={schedule.schedule.perWeek}
+            min={1}
+            max={7}
+            unit="days a week"
+            onChange={(n) => setSchedulePart({ kind: "minimum", perWeek: n })}
+          />
+        ) : null}
+        <span className="text-[11px] leading-[1.5] text-muted">
+          Pick the days, or ANY for a number of days a week whichever they fall on.
+        </span>
+      </div>
+    ),
+  });
+
+  for (const field of fields) {
+    const key = field.kind === "timeRange" ? field.label : field.key;
+    const err = field.kind === "timeRange" ? errorFor(field.openKey) : errorFor(field.key);
+    panels.push({
+      id: `field:${key}`,
+      label: field.label,
+      value: fieldValue(field, config),
+      question: `${field.label}?`,
+      broken: Boolean(err),
+      body: <ModuleField field={field} config={config} error={err} onChange={setConfig} />,
     });
   }
 
-  return (
-    <div className="flex flex-1 flex-col gap-[18px] overflow-y-auto px-5 pb-6 pt-[18px]">
-      {tracked ? (
-        <div className="flex items-center justify-between gap-3">
-          <StreakNumber value={streak} />
-          <span className="text-[11px] text-muted">days &middot; best {best}</span>
-        </div>
-      ) : (
-        <p className="text-[12.5px] leading-[1.6] text-muted">
-          {description}. These are the defaults.
-        </p>
-      )}
-
-      {type.facts?.map((fact) => (
-        <Fact key={fact.title} title={fact.title} sub={fact.sub} />
-      ))}
-
-      <FieldWrap label="Days">
-        <div className="flex flex-col gap-[9px]">
-          <div className="flex gap-[6px]">
-            {DAY_LABELS.map((label, i) => {
-              const day = (i + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
-              const on = !isMinimum && days.includes(day);
-              return (
-                <DayCell
-                  key={i}
-                  label={label}
-                  on={on}
-                  onClick={() => {
-                    const next = on ? days.filter((d) => d !== day) : [...days, day].sort();
-                    setSchedulePart({
-                      kind: "days",
-                      days: next.length === 0 ? [day] : next,
-                    });
-                  }}
-                />
-              );
-            })}
-            <DayCell
-              label="ANY"
-              on={isMinimum}
-              wide
-              onClick={() =>
-                setSchedulePart(
-                  isMinimum
-                    ? { kind: "days", days: [1, 2, 3, 4, 5, 6, 7] }
-                    : { kind: "minimum", perWeek: 3 },
-                )
-              }
-            />
-          </div>
-          {schedule.schedule.kind === "minimum" ? (
-            <Stepper
-              value={schedule.schedule.perWeek}
-              min={1}
-              max={7}
-              unit="days a week"
-              onChange={(n) => setSchedulePart({ kind: "minimum", perWeek: n })}
-            />
-          ) : null}
-        </div>
-      </FieldWrap>
-
-      {fields.map((field) => (
-        <ModuleField
-          key={field.kind === "timeRange" ? field.label : field.key}
-          field={field}
-          config={config}
-          error={
-            field.kind === "timeRange"
-              ? errorFor(field.openKey)
-              : errorFor(field.key)
-          }
-          onChange={setConfig}
-        />
-      ))}
-
-      {/* Only for a step that repeats. There is nothing to space out on a type
-          you check in to once, and offering the control there would be a
-          setting that does nothing. */}
-      {type.steps(parsedConfig.success ? parsedConfig.data : type.defaults.config, ANY_DAY)
-        .some((s) => s.repeats) ? (
+  // Only for a step that repeats. There is nothing to space out on a type you
+  // check in to once, and offering the control there would be a setting that
+  // does nothing.
+  if (type.steps(safeConfig, ANY_DAY).some((s) => s.repeats)) {
+    panels.push({
+      id: "gap",
+      label: "Time between logs",
+      value: schedule.minGap === 0 ? "no wait" : `${schedule.minGap} minutes`,
+      question: "How long between one log and the next?",
+      broken: Boolean(errorFor("@minGap")),
+      body: (
         <FieldWrap
-          label="Gap between logs"
+          label="Time between logs"
           hint={
             schedule.minGap === 0
               ? "Off. Any number of logs, as fast as you like."
@@ -467,14 +497,23 @@ export function ConfigureForm({
             onChange={(n) => setSchedule((s) => ({ ...s, minGap: n }))}
           />
         </FieldWrap>
-      ) : null}
+      ),
+    });
+  }
 
+  panels.push({
+    id: "grace",
+    label: "Misses forgiven",
+    value: schedule.grace === 0 ? "none" : `${schedule.grace} a month`,
+    question: "How many misses a month should be forgiven?",
+    broken: Boolean(errorFor("@grace")),
+    body: (
       <FieldWrap
-        label="Grace"
+        label="Misses forgiven"
         hint={
           graceLeft === null
-            ? undefined
-            : `${graceLeft} left this month.`
+            ? "A forgiven miss keeps the streak. It does not cancel a fine."
+            : `${graceLeft} left this month. A forgiven miss keeps the streak. It does not cancel a fine.`
         }
         error={errorFor("@grace")}
       >
@@ -482,39 +521,157 @@ export function ConfigureForm({
           value={schedule.grace}
           min={0}
           max={31}
-          unit="per month"
+          unit="a month"
           onChange={(n) => setSchedule((s) => ({ ...s, grace: n }))}
         />
       </FieldWrap>
+    ),
+  });
 
-      <EvidenceFact rule={type.evidence} />
+  function save(share?: boolean) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await saveActivityAction({ typeKey, schedule, config, returnTo, share });
+        setSaved({ schedule, config });
+        setOpen(null);
+        if (result.redirectTo) {
+          router.push(result.redirectTo);
+        } else if (returnTo) {
+          router.push("/activities");
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "That did not save.");
+      }
+    });
+  }
 
-      {type.note ? <Note>{type.note}</Note> : null}
+  const settling = tracked
+    ? schedule.schedule.kind === "minimum"
+      ? "Changes apply from Monday."
+      : "Changes apply from tomorrow."
+    : "A new activity does not move your reputation for 7 days.";
 
-      <p className="text-[11.5px] leading-[1.55] text-muted">
-        {tracked
-          ? schedule.schedule.kind === "minimum"
-            ? "Changes apply from Monday."
-            : "Changes apply from tomorrow."
-          : "A new activity does not move your reputation for 7 days."}
-      </p>
+  const problems =
+    !valid && dirty ? (
+      <Note tone="penalty">
+        {issues.length === 1
+          ? "One thing needs fixing before this can be saved."
+          : `${issues.length} things need fixing before this can be saved.`}
+      </Note>
+    ) : null;
 
-      {error ? <Note tone="penalty">{error}</Note> : null}
+  const shell = "flex flex-1 flex-col gap-[18px] overflow-y-auto px-5 pb-6 pt-[18px]";
 
-      {!valid && dirty ? (
-        <Note tone="penalty">
-          {issues.length === 1
-            ? "One thing needs fixing before this can be saved."
-            : `${issues.length} things need fixing before this can be saved.`}
-        </Note>
-      ) : null}
+  // -------------------------------------------------------------------------
+  // Setting one up: one question a screen.
+  // -------------------------------------------------------------------------
 
-      {/* Nothing pending: only the way out. Changed: Save, dead until valid. */}
-      {!tracked ? (
-        <div className="flex flex-col gap-[10px]">
+  if (!tracked) {
+    const last = at >= panels.length;
+    const panel = panels[at];
+    return (
+      <div className={shell}>
+        <Progress at={Math.min(at, panels.length)} of={panels.length + 1} />
+
+        {last ? (
+          <>
+            <RuleText rule={rule} />
+            <EvidenceFact rule={type.evidence} />
+            {type.note ? <Note>{type.note}</Note> : null}
+            <p className="text-[11.5px] leading-[1.55] text-muted">{settling}</p>
+            {error ? <Note tone="penalty">{error}</Note> : null}
+            {problems}
+            <div className="mt-auto flex flex-col gap-[10px] pt-2">
+              <button
+                type="button"
+                onClick={() => save(true)}
+                disabled={!valid || pending}
+                className={
+                  "h-11 w-full border text-[14px] " +
+                  (valid
+                    ? "border-fg bg-fg font-semibold text-bg"
+                    : "cursor-not-allowed border-rule text-muted")
+                }
+              >
+                {pending
+                  ? "Starting"
+                  : returnTo
+                    ? `Add and share ${name}`
+                    : `Start tracking ${name}`}
+              </button>
+              {returnTo ? (
+                <button
+                  type="button"
+                  onClick={() => save(false)}
+                  disabled={!valid || pending}
+                  className={
+                    "h-11 w-full border text-[14px] " +
+                    (valid ? "border-rule text-fg" : "cursor-not-allowed border-rule text-muted")
+                  }
+                >
+                  Add for myself only
+                </button>
+              ) : null}
+              <BackButton onClick={() => setAt(at - 1)} />
+            </div>
+          </>
+        ) : panel ? (
+          <>
+            <div className="flex flex-col gap-[6px]">
+              <p className="text-[15px] leading-[1.45]">{panel.question}</p>
+              {at === 0 ? (
+                <p className="text-[12px] leading-[1.55] text-muted">{description}.</p>
+              ) : null}
+            </div>
+            {at === 0
+              ? type.facts?.map((fact) => (
+                  <Fact key={fact.title} title={fact.title} sub={fact.sub} />
+                ))
+              : null}
+            {panel.body}
+            <div className="mt-auto flex flex-col gap-[10px] pt-2">
+              <button
+                type="button"
+                onClick={() => setAt(at + 1)}
+                disabled={panel.broken}
+                className={
+                  "h-11 w-full border text-[14px] " +
+                  (panel.broken
+                    ? "cursor-not-allowed border-rule text-muted"
+                    : "border-fg bg-fg font-semibold text-bg")
+                }
+              >
+                Next
+              </button>
+              {at > 0 ? <BackButton onClick={() => setAt(at - 1)} /> : null}
+            </div>
+          </>
+        ) : null}
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Changing one: the rule, then a list of what is set.
+  // -------------------------------------------------------------------------
+
+  const openPanel = panels.find((p) => p.id === open) ?? null;
+
+  if (openPanel) {
+    return (
+      <div className={shell}>
+        <span className="text-[11px] tracking-[0.06em] text-muted">
+          {openPanel.label.toUpperCase()}
+        </span>
+        {openPanel.body}
+        {error ? <Note tone="penalty">{error}</Note> : null}
+        {problems}
+        <p className="text-[11.5px] leading-[1.55] text-muted">{settling}</p>
+        <div className="mt-auto flex flex-col gap-[10px] pt-2">
           <button
             type="button"
-            onClick={() => save(true)}
+            onClick={() => (dirty ? save(true) : setOpen(null))}
             disabled={!valid || pending}
             className={
               "h-11 w-full border text-[14px] " +
@@ -523,56 +680,169 @@ export function ConfigureForm({
                 : "cursor-not-allowed border-rule text-muted")
             }
           >
-            {pending
-              ? "Starting"
-              : returnTo
-                ? `Add and share ${name}`
-                : `Start tracking ${name}`}
+            {pending ? "Saving" : dirty ? "Save" : "Done"}
           </button>
-          {returnTo ? (
-            <button
-              type="button"
-              onClick={() => save(false)}
-              disabled={!valid || pending}
-              className={
-                "h-11 w-full border text-[14px] " +
-                (valid ? "border-rule text-fg" : "cursor-not-allowed border-rule text-muted")
-              }
-            >
-              Add for myself only
-            </button>
-          ) : null}
-        </div>
-      ) : dirty ? (
-        <button
-          type="button"
-          onClick={() => save(true)}
-          disabled={!valid || pending}
-          className={
-            "h-11 w-full border text-[14px] " +
-            (valid
-              ? "border-fg bg-fg font-semibold text-bg"
-              : "cursor-not-allowed border-rule text-muted")
-          }
-        >
-          {pending ? "Saving" : "Save"}
-        </button>
-      ) : (
-        <form action={stopTrackingAction.bind(null, typeKey)}>
-          {/* A bare <form action> never sets this component's own transition
-              flag, so SubmitButton (useFormStatus) is the only thing that can
-              know this press happened. */}
-          <SubmitButton
-            variant="destructive"
-            full
-            pendingLabel={`Stopping ${name}`}
+          <button
+            type="button"
+            onClick={() => {
+              setSchedule(saved.schedule);
+              setConfig(saved.config);
+              setOpen(null);
+            }}
+            disabled={pending}
+            className="h-11 w-full border border-rule text-[14px] text-fg"
           >
-            Stop tracking {name}
-          </SubmitButton>
-        </form>
-      )}
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={shell}>
+      <div className="flex items-center justify-between gap-3">
+        <StreakNumber value={streak} />
+        <span className="text-[11px] text-muted">days &middot; best {best}</span>
+      </div>
+
+      <RuleText rule={rule} />
+
+      {type.facts?.map((fact) => (
+        <Fact key={fact.title} title={fact.title} sub={fact.sub} />
+      ))}
+
+      <div className="flex flex-col">
+        <span className="pb-[9px] text-[11px] tracking-[0.06em] text-muted">
+          CHANGE ONE THING
+        </span>
+        {panels.map((panel) => (
+          <button
+            key={panel.id}
+            type="button"
+            onClick={() => setOpen(panel.id)}
+            className="flex items-center justify-between gap-3 border-t border-rule py-[13px] text-left"
+          >
+            <span className="text-[13.5px]">{panel.label}</span>
+            <span className="flex min-w-0 items-center gap-[8px]">
+              <span className="truncate text-[12px] text-muted">{panel.value}</span>
+              <Chevron />
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <EvidenceFact rule={type.evidence} />
+      {type.note ? <Note>{type.note}</Note> : null}
+      {error ? <Note tone="penalty">{error}</Note> : null}
+
+      <form action={stopTrackingAction.bind(null, typeKey)}>
+        {/* A bare <form action> never sets this component's own transition
+            flag, so SubmitButton (useFormStatus) is the only thing that can
+            know this press happened. */}
+        <SubmitButton variant="destructive" full pendingLabel={`Stopping ${name}`}>
+          Stop tracking {name}
+        </SubmitButton>
+      </form>
     </div>
   );
+}
+
+/** The rule, stated. The one thing the old screen never did. */
+function RuleText({ rule }: { rule: { headline: string; notes: string[] } }) {
+  return (
+    <div className="flex flex-col gap-[10px] border-t border-rule pt-[14px]">
+      <span className="text-[11px] tracking-[0.06em] text-muted">THE RULE</span>
+      <p className="text-[15px] leading-[1.5]">{rule.headline}</p>
+      {rule.notes.map((note) => (
+        <p key={note} className="text-[11.5px] leading-[1.55] text-muted">
+          {note}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+/** How far through setting one up, as a rule rather than a number. */
+function Progress({ at, of }: { at: number; of: number }) {
+  return (
+    <div className="flex gap-[4px]" aria-label={`Step ${at + 1} of ${of}`}>
+      {Array.from({ length: of }, (_, i) => (
+        <span
+          key={i}
+          className={"h-[2px] flex-1 " + (i <= at ? "bg-fg" : "bg-rule")}
+          aria-hidden="true"
+        />
+      ))}
+    </div>
+  );
+}
+
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-11 w-full border border-rule text-[14px] text-fg"
+    >
+      Back
+    </button>
+  );
+}
+
+function Chevron() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="square"
+      className="flex-none text-muted"
+      aria-hidden="true"
+    >
+      <path d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+/**
+ * One field's current value, for the right of a list row.
+ *
+ * The list has to say what everything is set to or it is a list of words. The
+ * module declares the unit and the scale, so this reads those rather than
+ * knowing what any particular field means (invariant 6).
+ */
+function fieldValue(field: ConfigField, config: unknown): string {
+  if (field.kind === "timeRange") {
+    const open = text(get(config, field.openKey));
+    const close = text(get(config, field.closeKey));
+    return open && close ? `${hour12(open)} to ${hour12(close)}` : "not set";
+  }
+  if (field.kind === "time") {
+    const value = text(get(config, field.key));
+    return value ? hour12(value) : "not set";
+  }
+  if (field.kind === "segmented") {
+    const value = text(get(config, field.key));
+    return field.options.find((o) => o.value === value)?.label ?? "not set";
+  }
+  const raw = get(config, field.key);
+  if (raw === null || raw === undefined || raw === "") return field.offLabel ?? "off";
+  const scaled = Number(raw) / (field.scale ?? 1);
+  const shown = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1);
+  return field.unit ? `${shown} ${field.unit}` : shown;
+}
+
+/** "22:00" as "10:00 PM". The house clock is 12-hour (CLAUDE.md voice). */
+function hour12(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return hhmm;
+  const suffix = h < 12 ? "AM" : "PM";
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
 function ModuleField({

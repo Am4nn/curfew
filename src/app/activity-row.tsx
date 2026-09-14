@@ -61,9 +61,7 @@ export function ActivityRow({
   return (
     <div
       className={
-        "relative border-b border-rule " +
-        (declaring ? "-mx-5 bg-surface px-5 " : "") +
-        (row.scheduled ? "" : "opacity-[0.42]")
+        "relative border-b border-rule " + (row.scheduled ? "" : "opacity-[0.42]")
       }
     >
       <div className={"flex items-center gap-3 " + (declaring ? "pb-[11px] pt-[13px]" : "py-[13px]")}>
@@ -151,10 +149,14 @@ export function ActivityRow({
       </div>
 
       {/* The two answers, on their own line so neither is cramped and both are
-          the same size: an honest pair of alternatives, not a suggestion and an
-          escape. Already answered, they are the correction the module allows in
-          as many words, so they stay and the row's own line says which one
-          stands. */}
+          the same width: an honest pair of alternatives, not a suggestion and
+          an escape. Already answered, they are the correction the module allows
+          in as many words, so they stay and the row's own line says which one
+          stands.
+
+          The sizing is on the wrapper and the appearance on the button. They
+          are not the same element, and putting both in one place is what made
+          these come out small and shoved against the left edge. */}
       {declaring && row.step ? (
         <div className="flex gap-[10px] pb-[14px]">
           <CheckinButton
@@ -164,8 +166,9 @@ export function ActivityRow({
             step={row.step}
             evidence={{ held: true }}
             onPressed={onRecord}
+            wrapperClassName="flex-1"
             className={
-              "flex h-[42px] flex-[1.4] items-center justify-center text-[13px] disabled:opacity-60 " +
+              "flex h-[42px] w-full items-center justify-center text-[13px] disabled:opacity-60 " +
               (row.done
                 ? "border border-rule text-fg"
                 : "border border-fg bg-fg font-semibold text-bg")
@@ -178,7 +181,8 @@ export function ActivityRow({
             step={row.step}
             evidence={{ held: false }}
             onPressed={onRecord}
-            className="flex h-[42px] flex-1 items-center justify-center border border-rule text-[13px] text-penalty disabled:opacity-60"
+            wrapperClassName="flex-1"
+            className="flex h-[42px] w-full items-center justify-center border border-rule text-[13px] text-penalty disabled:opacity-60"
           />
         </div>
       ) : null}

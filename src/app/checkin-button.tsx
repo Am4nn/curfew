@@ -26,6 +26,7 @@ export function CheckinButton({
   evidence = {},
   busyLabel = "Recording",
   className = DEFAULT_CLASS,
+  wrapperClassName = "",
   onPressed,
 }: {
   label: string;
@@ -40,6 +41,15 @@ export function CheckinButton({
   evidence?: Record<string, unknown>;
   busyLabel?: string;
   className?: string;
+  /**
+   * The wrapper, not the button. The error message has to live somewhere, so
+   * this component is a div with a button inside it, which means the div is
+   * what a parent flex row actually lays out. Sizing classes passed as
+   * `className` reach the button and leave the div hugging its contents: two
+   * buttons meant to split a row came out small and shoved against the left
+   * edge. Layout goes here, appearance goes on `className`.
+   */
+  wrapperClassName?: string;
   /** Called once the press is recorded, before the refresh lands. */
   onPressed?: () => void;
 }) {
@@ -77,7 +87,7 @@ export function CheckinButton({
   }
 
   return (
-    <div>
+    <div className={wrapperClassName}>
       <button
         type="button"
         onClick={submit}

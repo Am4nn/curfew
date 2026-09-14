@@ -299,6 +299,54 @@ describe("abstinence types", () => {
     expect(r.passed).toBe(false);
   });
 
+  // What the Home row SAYS, which is a separate answer from whether the day
+  // passed. The row used to read "Logged 10:15 PM" whichever way you answered,
+  // so the one type whose whole record is a yes or a no was the one type that
+  // never said which.
+  //
+  // This lives here rather than in the browser suite because a press made
+  // through a browser is stamped by the database, not by the preview clock, so
+  // a press inside a scrubbed window records outside it and the row correctly
+  // ignores it. The sentence is only testable where the timestamps are ours.
+  const hintOf = (checkins: Parameters<typeof nightfastActivity.evaluate>[0]["checkins"]) =>
+    nightfastActivity.hint?.({
+      periodStart: DAY,
+      timezone: IST,
+      config: nightfastActivity.defaults.config,
+      step: DECLARE_STEP,
+      checkins,
+    }) ?? null;
+
+  it("writes a hint at all", () => {
+    // hintOf optional-chains, because the method is optional on the interface.
+    // Without this, deleting it would make every hint test below pass.
+    expect(typeof nightfastActivity.hint).toBe("function");
+  });
+
+  it("says nothing on a day with nothing declared", () => {
+    expect(hintOf([])).toBeNull();
+  });
+
+  it("says which answer stands", () => {
+    expect(hintOf([check(DECLARE_STEP, "08:00", { held: true })])).toBe("You said it held.");
+    expect(hintOf([check(DECLARE_STEP, "08:00", { held: false })])).toBe(
+      "You said you slipped. Today does not count.",
+    );
+  });
+
+  it("and a correction changes the sentence, not just the tick", () => {
+    expect(
+      hintOf([
+        check(DECLARE_STEP, "07:00", { held: true }),
+        check(DECLARE_STEP, "09:00", { held: false }),
+      ]),
+    ).toBe("You said you slipped. Today does not count.");
+  });
+
+  it("ignores a declaration outside the window, as evaluate does", () => {
+    expect(hintOf([check(DECLARE_STEP, "23:00", { held: false })])).toBeNull();
+  });
+
   it("carries no evidence, because absence cannot be photographed", () => {
     expect(nightfastActivity.evidence.level).toBe("none");
     expect(sugarfreeActivity.evidence.level).toBe("none");

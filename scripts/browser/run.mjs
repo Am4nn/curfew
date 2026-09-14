@@ -35,6 +35,7 @@ import { admin } from "./admin.mjs";
 import { counter } from "./counter.mjs";
 import { owners } from "./owners.mjs";
 import { pause } from "./pause.mjs";
+import { declare } from "./declare.mjs";
 
 const BASE = process.env.BROWSER_BASE ?? "http://localhost:3000";
 const only = process.argv.slice(2).filter((a) => !a.startsWith("-"));
@@ -46,6 +47,8 @@ const SUITES = [
   // Before pause, which leaves the clock scrubbed several days out and every
   // counter finished. This one needs a day with nothing on it.
   ["counter", counter],
+  // Before pause, for the same reason as counter: it answers today.
+  ["declare", declare],
   // Before pause, which scrubs the clock and declares a trip.
   ["owners", owners],
   ["pause", pause],

@@ -18,12 +18,15 @@ name: Preview
 # for this branch, because two systems deploying one branch is two deployments
 # per push and a race for the alias.
 #
-# NOT gated on CI, deliberately, and this is the one place it differs from
-# `deploy.yml`. The dev site is where a change is looked at, including a change
-# CI is unhappy about, and waiting for the full suite would make it useless for
-# that. A failed build simply produces no new deployment and the previous one
-# keeps serving, so the failure mode is "dev is a bit behind" rather than "dev
-# is broken". Production is the one that gates.
+# Gated on CI, the same as production. It WAITS for CI on this commit rather
+# than checking whether one happens to have finished: both workflows start from
+# the same push, so a glance would always find CI still running and either race
+# it or refuse. Deploying the moment a push lands means the dev site can be
+# serving a commit CI is about to fail, and then the one place anybody looks at
+# a change is showing something known broken.
+#
+# The cost is that dev trails CI by the length of a run. That is the trade, and
+# it was chosen deliberately.
 
 on:
   push:
@@ -38,7 +41,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Nothing is deployed until CI has finished on this exact commit and passed.
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Wait for CI, then require it passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: bash .github/wait-for-ci.sh
+
   deploy:
+    needs: ci
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -72,11 +88,46 @@ jobs:
       # Vercel usually moves a branch domain to the newest deployment on its
       # own. "Usually" is what this workflow exists to stop relying on, and the
       # command is idempotent, so it is asserted rather than assumed.
+      #
+      # --scope because the token can deploy to the project and still be
+      # refused the domain: "You don't have access to the domain
+      # dev.curfew.amanarya.com under am4nns-projects". Deploying reads the org
+      # from VERCEL_ORG_ID; alias does not, and has to be told.
+      #
+      # Not fatal on its own. Vercel's branch-domain behaviour has moved the
+      # alias correctly every time so far, so a failure here means the
+      # assertion could not be made, not that the domain is wrong. The step
+      # after it is what actually decides, by asking the domain.
       - name: Point the dev domain at it
+        continue-on-error: true
         run: |
           bunx vercel alias set "${{ steps.deploy.outputs.url }}" "$ALIAS" \
-            --token="$VERCEL_TOKEN"
+            --scope "$VERCEL_ORG_ID" --token="$VERCEL_TOKEN"
           echo "$ALIAS -> ${{ steps.deploy.outputs.url }}"
+
+      # And the domain is serving THIS build, which is the fact the step above
+      # was trying to guarantee. Asked over HTTP, so it holds however the alias
+      # got there, including when Vercel moved it and the assertion could not.
+      #
+      # The fingerprint is the set of `/_next/static/...` paths on the sign-in
+      # page. Those filenames are content hashes, so they change whenever the
+      # build does. Two builds of identical source fingerprint the same, which
+      # is the right answer: the domain is then serving the same app either way.
+      - name: The dev domain serves this build
+        run: |
+          fingerprint() {
+            curl -sS --fail --retry 3 --retry-delay 5 "$1/signin" \
+              | grep -oE "/_next/static/[^\"']+" | sort | md5sum | cut -d" " -f1
+          }
+          want="$(fingerprint "${{ steps.deploy.outputs.url }}")"
+          got="$(fingerprint "https://$ALIAS")"
+          echo "deployment $want"
+          echo "$ALIAS $got"
+          if [ -z "$want" ] || [ "$want" != "$got" ]; then
+            echo "$ALIAS is not serving this build."
+            exit 1
+          fi
+          echo "$ALIAS is serving this build."
 
       # The one thing neither the build nor the alias proves: that a stranger
       # can still open the page. LOCAL_MODE makes the middleware stand aside in

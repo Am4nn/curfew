@@ -35,7 +35,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Production does not ship unless CI passed on this exact commit.
+  # Production does not ship unless CI PASSED on this exact commit, and this
+  # waits for it rather than glancing at it.
+  #
+  # It used to require an already-completed run, which is a false negative on
+  # the ordinary case: a tag cut while CI is still running on the same commit
+  # found nothing completed and refused, when CI was going to pass two minutes
+  # later. Waiting covers that and the one that matters more, which is a tag
+  # racing a CI run that is about to fail.
   #
   # This used to be an inline typecheck and test here, which was a second,
   # shorter list of the same checks: the two could drift, and the deploy's copy
@@ -43,34 +50,19 @@ jobs:
   # carries everything CI runs, including the migration, security, simulation
   # and dependency jobs that were never repeated here.
   #
-  # CI runs on pushes to main, so the commit has to be on main and finished
-  # before the tag is pushed. It is checked by SHA rather than by ref, because a
-  # tag can be moved to a commit CI never saw.
+  # Checked by SHA rather than by ref, because a tag can be moved to a commit
+  # CI never saw.
   ci:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: CI passed on this commit
+      - uses: actions/checkout@v7
+      - name: Wait for CI, then require it passed
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          conclusion="$(gh api \
-            "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA&status=completed&per_page=1" \
-            --jq '.workflow_runs[0].conclusion // "none"')"
-          if [ "$conclusion" = "success" ]; then
-            echo "CI passed on $SHA"
-            exit 0
-          fi
-          if [ "$conclusion" = "none" ]; then
-            echo "No completed CI run for $SHA."
-            echo "Push the commit to main and let CI finish before tagging it."
-          else
-            echo "CI concluded '$conclusion' on $SHA. Not deploying."
-          fi
-          exit 1
+        run: bash .github/wait-for-ci.sh
 
   deploy:
     needs: ci

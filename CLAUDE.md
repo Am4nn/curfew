@@ -82,6 +82,15 @@ happened, not a version anyone ran.
 **What remains is the cutover**, below, and the `SCREENS.md` review gate, which
 is a person opening each screen beside its artboard.
 
+**v3.2 is specified and not built.** `.planning/v3.2/SCOPE.md` has thirteen
+items, numbered 15 to 27 to continue from v3.1, every one decided, with the
+build order at the end. The mocks are approved and on the canvas as `v3.2 Fixes`
+and `v3.2 AI`. Two items are already shipped and two need no code. The two that
+are more than they look are sleep, where the confirm window becomes anchored to
+the wake PRESS and every window in the app until now has been a clock time in
+config, and grace, which stops being a per-activity setting and becomes one
+manual pool for the account.
+
 **Vercel Preview now names `curfew-apac-dev`, done 2026-09-15.** It named
 `curfew-apac` for twelve days, which would have left the dev site reading and
 writing the live database the moment the cutover finished. `--force` is not

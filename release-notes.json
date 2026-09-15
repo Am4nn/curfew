@@ -1,0 +1,16 @@
+{
+  "3.2.0": [
+    {
+      "headline": "Your sleep confirm window moved.",
+      "detail": "It used to be a time you set. It now opens 30 minutes after you press Wake and stays open for 30 minutes, and your night and wake windows are untouched. A confirm you place yourself can be placed at an hour you are already up, which proves nothing. It starts tomorrow: tonight is judged by the windows you already had."
+    },
+    {
+      "headline": "Grace is now yours to spend.",
+      "detail": "Two a month for each activity you track, in one pool, used on whichever streak you choose after it breaks. It still only holds a streak, so fines and standing are untouched as they always were. Settings shows how many you have left."
+    },
+    {
+      "headline": "A shared photograph belongs to the group it was sent to.",
+      "detail": "Sharing an activity with a new group shares what you do from now on. Photographs taken before that stay where they were. Stopping sharing, or leaving, takes yours out of that group for good."
+    }
+  ]
+}

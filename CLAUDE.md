@@ -324,9 +324,19 @@ notice     bun run publish:notice  — announce a release to the people already 
 
 **A notice is never typed at the moment of publishing.** A controls change
 composes its own words from `SETTING_COPY`, and a release note is written in
-`src/server/release-notes.ts` in the same commit as the change it describes, so
-it goes through review with the code. A notice typed into a box at the moment of
-publishing can say something the change did not do, and nobody is reviewing it.
+`release-notes.json` at the repo root in the same commit as the change it
+describes, so it goes through review with the code. A notice typed into a box at
+the moment of publishing can say something the change did not do, and nobody is
+reviewing it.
+
+The notes are CONTENT, not code, and live at the root rather than under `src`
+for two reasons: they are rewritten every release, so a `const` would have
+claimed to be constant while being the most-edited thing in the repo, and
+nothing in the app ever reads them. The app reads `notices.body` out of the
+database; the only caller is `scripts/publish-notice.ts`, and the reader and its
+schema sit beside it. `scripts/release-notes.test.ts` validates the real file on
+every CI run, because otherwise the first thing to read it is the release
+itself, and a malformed file fails at the worst possible moment.
 
 `bun run publish:notice -- --version 3.2.0 --as you@example.com --dry` prints
 what would be published and to how many people. Drop `--dry` to send it, and use

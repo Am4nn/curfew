@@ -5,10 +5,10 @@
 //
 // Run by hand after the tag, against whichever database `.env.*` points at.
 // Publishing inserts one notice whose body is the entries in
-// `src/server/release-notes.ts`. Every account that existed before that moment
-// gets the blocking overlay until they press Got it, and every account created
-// afterwards never sees it (decision 80), because somebody who arrives next
-// month never knew the old behaviour.
+// `release-notes.json` at the repo root. Every account that existed before that
+// moment gets the blocking overlay until they press Got it, and every account
+// created afterwards never sees it (decision 80), because somebody who arrives
+// next month never knew the old behaviour.
 //
 // ---------------------------------------------------------------------------
 // WHAT `--as` IS, AND WHAT IT IS NOT
@@ -37,8 +37,12 @@ import { eq, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { notices, users } from "@/db/schema";
 import { publishNotice } from "@/server/notices";
-import { bodyFor, keyFor, RELEASE_NOTES } from "@/server/release-notes";
+import { bodyFor, keyFor, loadReleaseNotes, NOTES_PATH } from "./release-notes";
 import { can } from "@/server/admin";
+
+// Read and validate before anything else, so a malformed file fails here
+// rather than three checks later with a confusing message.
+const notes = loadReleaseNotes(NOTES_PATH);
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -52,19 +56,19 @@ const dry = process.argv.includes("--dry");
 if (!version || !asEmail) {
   console.error(
     "Usage: bun run publish:notice -- --version <x.y.z> --as <admin email> [--dry]\n" +
-      `Versions with notes: ${Object.keys(RELEASE_NOTES).join(", ") || "none"}`,
+      `Versions with notes: ${Object.keys(notes).join(", ") || "none"}`,
   );
   process.exit(1);
 }
 
-const body = bodyFor(version);
+const body = bodyFor(notes, version);
 if (!body) {
   console.error(
     `No release notes for ${version}.\n` +
       "Most releases change nothing a person would notice, and announcing those is how\n" +
       "an overlay that blocks the whole app becomes something people dismiss unread.\n" +
-      "If this one does need announcing, add it to src/server/release-notes.ts in the\n" +
-      "commit that made the change, so it goes through review with the code.",
+      `If this one does need announcing, add it to ${NOTES_PATH} in the commit that\n` +
+      "made the change, so it goes through review with the code.",
   );
   process.exit(1);
 }

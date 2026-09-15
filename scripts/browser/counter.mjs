@@ -56,6 +56,15 @@ export async function counter({ open, check, page, body, setClock, clearClock })
   // day passed, which is a different question and the wrong one: the meal that
   // breaks a calorie limit is exactly the one it refused to take.
   // `scripts/check-offer.ts` is the same rule at the server.
+  //
+  // Read at eight in the evening rather than at whatever hour this runs. The
+  // fixture's glasses are wall-clock hours, nine to four, and water has had a
+  // thirty minute gap between presses since item 18, so a real clock that has
+  // not reached half past four says "Next counts 4:30 PM" and withdraws the
+  // control correctly. CI crosses midnight in the fixture's zone at 18:30 UTC
+  // every day, so without this the check passes or fails on the hour.
+  const evening = DateTime.now().setZone(TZ).startOf("day").plus({ hours: 20 });
+  await setClock(evening.toISO());
   await open("/");
   const finished = await row(body, TYPE, 6);
   check("a finished counter still says done", has(finished, "done"), finished.join(" | "));

@@ -35,6 +35,38 @@ const files = readdirSync(migrationsDir)
   .filter((f) => f.endsWith(".sql"))
   .sort();
 
+// `--until 0025` stops after the first file whose name starts with that prefix.
+//
+// A release cannot apply every pending migration at one moment, because the
+// version now serving is still the OLD one until the promote finishes. An
+// additive migration is invisible to it and goes BEFORE the tag; a hostile one,
+// a DROP or a new NOT NULL, removes something that version still uses and has
+// to wait until AFTER. 0026 drops `activity_streaks.grace_spent`, which v3.1.1
+// wrote on every streak upsert, so applying it with the other three would have
+// broken streak writes for the length of the deploy.
+//
+// See `.planning/RELEASE.md`. Stopping AFTER the named file rather than before
+// it, because "apply up to and including this one" is how a person reading a
+// list of pending migrations decides where the line goes.
+const untilArg = process.argv.indexOf("--until");
+const until = untilArg === -1 ? null : process.argv[untilArg + 1];
+if (untilArg !== -1 && !until) {
+  console.error("--until needs a migration name or prefix, e.g. --until 0025");
+  process.exit(1);
+}
+
+let planned = files;
+if (until) {
+  const stop = files.findIndex((f) => f.startsWith(until));
+  if (stop === -1) {
+    console.error(`--until ${until} matches no migration.`);
+    process.exit(1);
+  }
+  planned = files.slice(0, stop + 1);
+  const held = files.length - planned.length;
+  console.log(`until ${files[stop]} (${held} later migration(s) held back)`);
+}
+
 // Preview runs against a local Postgres over node-postgres. Production/Neon
 // uses the serverless Pool (which needs a global WebSocket). Both expose the
 // same query/connect/end API.
@@ -62,7 +94,7 @@ try {
     ),
   );
 
-  for (const file of files) {
+  for (const file of planned) {
     if (applied.has(file)) {
       console.log(`skip  ${file}`);
       continue;

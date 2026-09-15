@@ -36,9 +36,21 @@ the tag would have broken streak writes for everyone until the promote
 finished. Splitting them breaks nothing at all.
 
 **So read every pending migration before you run any of them** and sort them
-into the two columns. `scripts/migrate.ts` applies everything pending in file
-order, so a split means running the hostile ones by hand afterwards, or holding
-them back in a later commit.
+into the two columns. `migrate.ts` takes `--until <name or prefix>` and stops
+after that file, which is how the split is done:
+
+```
+# before the tag: everything up to and including the last additive one
+bunx dotenv -e .env.production -- bun run scripts/migrate.ts --until 0025
+
+# after the promote: the rest
+bun run migrate:production
+```
+
+It prints how many it held back, so the count is on screen rather than in your
+head. The `migrate:production` script chains `sync-activities` after the runner,
+so pass `--until` to `migrate.ts` directly as above; arguments on the script
+would land on the wrong command.
 
 ---
 

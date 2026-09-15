@@ -130,7 +130,7 @@ export default async function Home({
             startsToday={away.startsOn === date}
           />
         ) : today.rows.length === 0 ? (
-          <NewUser inAGroup={groups.length > 0} />
+          <NewUser />
         ) : (
           <TodayBoard
             rows={today.rows}
@@ -188,7 +188,26 @@ export default async function Home({
           </section>
         ) : null}
 
-        {standings.length > 0 ? (
+        {standings.length === 0 ? (
+          // Making a group is the other half of the app, and it stays on Home
+          // until somebody is actually in one. It used to sit inside NewUser,
+          // behind an empty day as well as an empty group list, so tracking a
+          // single activity removed the only route to groups from this screen.
+          //
+          // It takes the slot the GROUPS section takes, which is the same slot
+          // in the mock: with no groups there are no balances and no grace
+          // notices either, so nothing sits between this and the day.
+          <section className="flex flex-col gap-[10px] border-t border-rule pt-[18px]">
+            <Link href="/groups" className={buttonClass("secondary", "lg", "w-full")}>
+              Create a group
+            </Link>
+            <p className="text-[11.5px] leading-[1.55] text-muted">
+              Groups are invite-only, and they only ever see the activities you
+              choose to share. Make one and invite the people who will notice
+              when you stop.
+            </p>
+          </section>
+        ) : (
           <section className="flex flex-col gap-[10px]">
             <span className="text-[10px] tracking-[0.16em] text-muted">GROUPS</span>
             <div className="flex flex-col">
@@ -210,7 +229,7 @@ export default async function Home({
               ))}
             </div>
           </section>
-        ) : null}
+        )}
       </div>
     </main>
   );
@@ -230,7 +249,7 @@ export default async function Home({
 // name and the line under it are the module's own words.
 const FIRST_FOUR = ["sleep", "water", "gym", "steps"];
 
-function NewUser({ inAGroup }: { inAGroup: boolean }) {
+function NewUser() {
   const available = new Set(registeredKeys());
   const starters = FIRST_FOUR.filter((key) => available.has(key)).map((key) => {
     const type = getActivityType(key);
@@ -283,28 +302,8 @@ function NewUser({ inAGroup }: { inAGroup: boolean }) {
         </div>
       </div>
 
-      {/* Making a group is the other half of the app, and a new arrival had no
-          way to reach it from here at all.
-
-          Both of these go once someone is already in a group: the sentence is
-          an explanation of what groups are, and it stops being news the moment
-          you are in one. The whole block goes once anything is tracked, since
-          this branch only renders on an empty day. */}
-      {inAGroup ? null : (
-        <>
-          <Link
-            href="/groups"
-            className={buttonClass("secondary", "lg", "w-full")}
-          >
-            Create a group
-          </Link>
-          <p className="text-[11.5px] leading-[1.55] text-muted">
-            Groups are invite-only, and they only ever see the activities you
-            choose to share. Make one and invite the people who will notice when
-            you stop.
-          </p>
-        </>
-      )}
+      {/* Create a group used to live here, which meant it went the moment a
+          single activity was tracked. It is on Home itself now, below. */}
     </section>
   );
 }

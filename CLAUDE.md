@@ -94,8 +94,7 @@ is a person opening each screen beside its artboard.
 **v3.2 is built.** All thirteen items in `.planning/v3.2/SCOPE.md`, numbered 15
 to 27 to continue from v3.1. That file is the record: every decision, what
 shipped where it differs, the five defects the work walked into, and the three
-decisions taken while building. `package.json` carries `3.2.0-dev` until the
-commit that gets tagged.
+decisions taken while building. **Shipped as v3.2.0 on 2026-09-16.**
 
 The two that were more than they looked, and what they changed:
 
@@ -189,10 +188,13 @@ and reputation rows wait for `bun run score`. A scheduled GitHub Actions
 workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
 real nightly job, and it is not worth it while dev has three users.
 
-`package.json` carries `3.1.1`, cut as a tag on 2026-09-15. The admin header
+`package.json` carries `3.2.0`, cut as a tag on 2026-09-16. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.
+
+**The steps are in `.planning/RELEASE.md`, and the order is not obvious.** Read
+it rather than working from this section.
 
 To release: bump `version` in `package.json`, commit, then
 `git tag vX.Y.Z && git push origin vX.Y.Z`. That runs

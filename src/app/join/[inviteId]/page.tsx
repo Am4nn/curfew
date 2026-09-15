@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { getActivityType } from "@/domain";
+import { getActivityType, joiningScore } from "@/domain";
+import { globalScore } from "@/server/scoring";
 import { listInvitesForEmail } from "@/server/groups";
 import { acceptedTypes } from "@/server/sharing";
 import { listUserActivities } from "@/server/activities";
@@ -25,9 +26,13 @@ export default async function JoinPage({
   const invite = invites.find((i) => i.id === inviteId);
   if (!invite) notFound();
 
-  const [accepted, mine] = await Promise.all([
+  // The number this screen promises has to be the number the engine opens on.
+  // `scoreUser` opens a group scope at `joiningScore(global as of the join
+  // date)`, so that is what is computed here rather than a constant.
+  const [accepted, mine, global] = await Promise.all([
     acceptedTypes(invite.groupId),
     listUserActivities(user.id),
+    globalScore(user.id),
   ]);
   const tracked = new Set(mine.filter((a) => a.enabled).map((a) => a.typeKey));
 
@@ -62,6 +67,7 @@ export default async function JoinPage({
         groupId={invite.groupId}
         groupName={invite.groupName}
         rows={rows}
+        opening={joiningScore(global)}
       />
     </main>
   );

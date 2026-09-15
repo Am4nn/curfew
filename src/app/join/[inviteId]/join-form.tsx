@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ceilingFor, rankFor, START_SCORE } from "@/domain";
+import { ceilingFor, rankFor } from "@/domain";
 import { ActivityIcon } from "../../activity-icon";
 import { RANK_TEXT } from "../../rank-icon";
 import { joinAction, declineAction } from "./actions";
@@ -23,11 +23,23 @@ export function JoinForm({
   groupId,
   groupName,
   rows,
+  opening,
 }: {
   inviteId: string;
   groupId: string;
   groupName: string;
   rows: JoinRow[];
+  /**
+   * What this person's score in this group will actually open at.
+   *
+   * Passed in rather than worked out here, because it comes from their global
+   * score and the engine resolves it as of the day they join. This screen said
+   * `START_SCORE` for a long time, which is where a GLOBAL score starts and is
+   * not what anybody joins a group on: a new user opens at 140, not 200, so
+   * the one number on the page was wrong by sixty points. Both readings land
+   * in INTENT, which is why it survived being looked at.
+   */
+  opening: number;
 }) {
   const [state, setState] = useState(() =>
     Object.fromEntries(
@@ -39,7 +51,7 @@ export function JoinForm({
 
   const sharing = rows.filter((r) => state[r.typeKey]?.shared).length;
   const ceiling = rows.length === 0 ? 1000 : ceilingFor(sharing / rows.length);
-  const startRank = rankFor(START_SCORE);
+  const startRank = rankFor(opening);
 
   function join() {
     setError(null);
@@ -148,7 +160,7 @@ export function JoinForm({
             : `Sharing ${sharing} of ${rows.length} caps your score at ${Math.round(ceiling)}.`}
         </span>
         <span className="text-[11px] leading-[1.55] text-muted">
-          You start at {START_SCORE},{" "}
+          You start at {Math.round(opening)},{" "}
           <span className={RANK_TEXT[startRank.key]}>{startRank.name}</span>.
         </span>
       </div>

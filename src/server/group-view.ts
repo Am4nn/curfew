@@ -105,7 +105,7 @@ export async function memberStandings(
     cleanRunsIn(groupId),
     pausesIn(groupId),
   ]);
-  const [scores, outcomes] = await Promise.all([
+  const [scores, outcomes, globals] = await Promise.all([
     db
       .select({
         userId: reputationDaily.userId,
@@ -127,12 +127,44 @@ export async function memberStandings(
       .from(activityOutcomes)
       .where(eq(activityOutcomes.groupId, groupId))
       .orderBy(activityOutcomes.periodStart),
+    // Everyone's GLOBAL score, for the members who have no row in this group
+    // yet. Batched here rather than called per member, since this loop already
+    // does one query each for shares.
+    db
+      .select({
+        userId: reputationDaily.userId,
+        score: reputationDaily.score,
+        day: reputationDaily.day,
+      })
+      .from(reputationDaily)
+      .where(
+        and(isNull(reputationDaily.groupId), inArray(reputationDaily.userId, ids)),
+      )
+      .orderBy(desc(reputationDaily.day)),
   ]);
 
   const latest = new Map<string, number>();
   for (const row of scores) {
     if (!latest.has(row.userId)) latest.set(row.userId, Number(row.score));
   }
+
+  const latestGlobal = new Map<string, number>();
+  for (const row of globals) {
+    if (!latestGlobal.has(row.userId)) latestGlobal.set(row.userId, Number(row.score));
+  }
+
+  /**
+   * What a member with no row in this group yet is standing on.
+   *
+   * This was `START_SCORE`, which is where a GLOBAL score starts and is not a
+   * number anybody has in a group. A member who had just joined showed 200
+   * until the first nightly close and then dropped to their real opening, about
+   * 140 for somebody new, so the list reported a sixty point fall for doing
+   * nothing. `scoreUser` opens the scope at exactly this, and `standingOf`
+   * below already computed it correctly for one member.
+   */
+  const opening = (userId: string) =>
+    joiningScore(latestGlobal.get(userId) ?? START_SCORE);
 
   const out: MemberStanding[] = [];
   for (const m of members) {
@@ -153,7 +185,7 @@ export async function memberStandings(
       userId: m.userId,
       name: m.name,
       you: m.userId === viewerId,
-      score: latest.get(m.userId) ?? START_SCORE,
+      score: latest.get(m.userId) ?? opening(m.userId),
       cleanDays: cleanRuns.get(m.userId) ?? 0,
       streaks: streaks || "nothing shared yet",
       grace: graces.get(m.userId) ?? null,
@@ -220,12 +252,19 @@ export async function standingIn(
     currentPause(userId),
   ]);
 
-  // In grace there is no stored day yet, so the number to show is the one the
-  // group will open them on: their own record, flattened into 100..300
-  // (decision 10). Showing the bare start score instead would be a number
-  // nothing is ever going to use.
+  // With no stored day the number to show is the one the group will open them
+  // on: their own record, flattened into 100..300 (decision 10). Showing the
+  // bare start score instead would be a number nothing is ever going to use.
+  //
+  // This used to do that only while a member was in GRACE and fall back to
+  // START_SCORE otherwise, which left the same wrong number on the other way to
+  // have no row: out of grace and not yet scored. That is not rare. Preview has
+  // no cron at all, so every member there sits in that state until somebody
+  // runs `bun run score` by hand.
   const grace = graces.get(userId) ?? null;
-  const opening = grace ? joiningScore(await globalScore(userId)) : START_SCORE;
+  const opening = rows[0]
+    ? Number(rows[0].score)
+    : joiningScore(await globalScore(userId));
 
   // What the member shares OF WHAT THIS GROUP ACCEPTS. Sharing a type the
   // group does not accept is not breadth, and counting the share rows alone
@@ -234,7 +273,7 @@ export async function standingIn(
   const counted = accepted.filter((a) => sharedHere.has(a.typeKey)).length;
 
   return {
-    score: rows[0] ? Number(rows[0].score) : opening,
+    score: opening,
     // Before any day is scored there is no stored ceiling, and this read a
     // literal 1000: the maximum, shown to a new member and to everyone still
     // in grace, which is exactly when it is least likely to be theirs. It is

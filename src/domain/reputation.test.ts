@@ -287,6 +287,21 @@ describe("the joining score", () => {
     // Someone who wrecked their global score rejoins below the default start.
     expect(joiningScore(50)).toBeLessThan(START_SCORE);
   });
+
+  // START_SCORE is where a GLOBAL score starts. Nobody ever opens a GROUP on
+  // it, and three screens showed it as though somebody did: the join screen
+  // promised "You start at 200" to a person who then opened at 140, and two
+  // reads fell back to it for a member with no stored day yet, so a fresh
+  // member's number dropped sixty points overnight for doing nothing. Both
+  // numbers sit in INTENT, which is why nobody caught it by looking.
+  //
+  // Pinned as a difference rather than as a value: any screen reaching for
+  // START_SCORE to describe a group standing is wrong, whatever the constants
+  // become later.
+  it("a brand-new user does NOT open a group on the global start score", () => {
+    expect(joiningScore(START_SCORE)).not.toBe(START_SCORE);
+    expect(joiningScore(START_SCORE)).toBe(140);
+  });
 });
 
 describe("replay is the whole model", () => {

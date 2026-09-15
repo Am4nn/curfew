@@ -2,6 +2,7 @@ import { getActivityType, type CheckinKind } from "@/domain";
 import { listUserActivities } from "./activities";
 import { getCheckinState } from "./checkin";
 import { standingsFor } from "./standing";
+import { openOffers, graceState } from "./restore";
 import { userDay } from "./config";
 
 // Home's list: every activity a person tracks, where it stands right now, and
@@ -47,25 +48,46 @@ export interface TodayRow {
    * to press, or when the module writes no hint.
    */
   nextStatus: string | null;
+  /**
+   * The streak that just ended, and what it would cost to bring it back.
+   *
+   * Set only when the offer is open AND the pool covers it (items 19 and 20).
+   * Not affordable means no control here at all: a disabled one is a thing to
+   * wonder about on the screen looked at most, and there is nothing to do about
+   * it from here. The grace screen keeps the offer, drops its button and says
+   * what it needs against what you have, which makes it the one place that
+   * explains why this row has no Restore.
+   */
+  restore: { cost: number; restoresTo: number } | null;
 }
 
 export interface Today {
   rows: TodayRow[];
   done: number;
   of: number;
+  /**
+   * Grace left in the pool this month.
+   *
+   * One number for the whole board rather than one a row: it is the account's,
+   * not the activity's (item 19). The sheet behind a Restore states the price
+   * against it.
+   */
+  graceLeft: number;
 }
 
 export async function todayFor(userId: string): Promise<Today> {
   const activities = (await listUserActivities(userId)).filter((a) => a.enabled);
-  if (activities.length === 0) return { rows: [], done: 0, of: 0 };
+  if (activities.length === 0) return { rows: [], done: 0, of: 0, graceLeft: 0 };
 
   // Every standing at once, then every check-in state at once. The rows do not
   // depend on each other, and awaiting them one activity at a time made Home
   // as slow as its longest chain of round trips rather than its slowest query.
   const standings = await standingsFor(userId);
-  const states = await Promise.all(
-    activities.map((a) => getCheckinState(userId, a.typeKey)),
-  );
+  const [states, offers, grace] = await Promise.all([
+    Promise.all(activities.map((a) => getCheckinState(userId, a.typeKey))),
+    openOffers(userId),
+    graceState(userId),
+  ]);
 
   const rows: TodayRow[] = [];
   activities.forEach((activity, i) => {
@@ -138,6 +160,12 @@ export async function todayFor(userId: string): Promise<Today> {
       open: state.scheduled && open !== null,
       recorded: state.recorded.length > 0,
       step: open?.key ?? null,
+      restore: (() => {
+        const offer = offers.find((o) => o.typeKey === activity.typeKey);
+        return offer?.affordable
+          ? { cost: offer.cost, restoresTo: offer.restoresTo }
+          : null;
+      })(),
       status,
       nextStatus: state.scheduled ? (open?.nextHint ?? null) : null,
     });
@@ -156,6 +184,7 @@ export async function todayFor(userId: string): Promise<Today> {
     rows,
     done: due.filter((r) => r.countedToday).length,
     of: due.length,
+    graceLeft: grace.left,
   };
 }
 

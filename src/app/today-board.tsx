@@ -30,6 +30,7 @@ export function TodayBoard({
   rows,
   done,
   of,
+  graceLeft,
   initialRecorded,
   dateLabel,
   dueIcons,
@@ -37,6 +38,8 @@ export function TodayBoard({
   rows: TodayRow[];
   done: number;
   of: number;
+  /** The account's grace pool, for the sheet behind a Restore. */
+  graceLeft: number;
   /** The type key named by `?done=`, when Home was reached from a check-in. */
   initialRecorded: string | null;
   /** The day, for the stamp, spelled by the server (invariant 8). */
@@ -159,6 +162,7 @@ export function TodayBoard({
           <ActivityRow
             key={row.typeKey}
             row={row}
+            graceLeft={graceLeft}
             recorded={recorded === row.typeKey}
             optimistic={optimistic === row.typeKey}
             onRecord={() => {

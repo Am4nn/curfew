@@ -26,6 +26,9 @@ const config: Config = {
         // and the only place it is used.
         dash: "var(--dash)",
         gold: "var(--gold)",
+        // The streak colour. The only place it is used as a colour rather than
+        // inside the flame's own gradient is the Restore control (item 19).
+        flame: "var(--flame)",
         rank: {
           doubt: "var(--rank-doubt)",
           intent: "var(--rank-intent)",

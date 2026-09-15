@@ -12,6 +12,7 @@ export async function screens({ open, check, page }) {
     ["/stats", "STATS"],
     ["/balances", "BALANCES"],
     ["/ranks", "HOW REPUTATION WORKS"],
+    ["/grace", "GRACE"],
     ["/settings", "SETTINGS"],
     ["/settings/personal", null],
     ["/settings/sharing", null],

@@ -100,6 +100,9 @@
   --rank-practice: #7fa8ff;
   --rank-discipline: #6ba17f;
   --rank-unbroken: #ff7a2f;
+  /* The streak colour, as a token rather than a literal. It was already in
+     three places as #ff7a2f before the restore control needed a fourth. */
+  --flame: #ff7a2f;
   --pass: #6ba17f;
   --accent: #7fa8ff;
   /* The heatmap ramp: none to all, five discrete steps from the near-black of
@@ -132,6 +135,8 @@
   --rank-practice: #2f5aa8;
   --rank-discipline: #2f5d3f;
   --rank-unbroken: #b8480f;
+  /* Darker on light, for the same reason the ranks are. */
+  --flame: #b8480f;
   --pass: #2f5d3f;
   --accent: #7fa8ff;
   /* The same five steps read against the light ground: they darken as the day

@@ -5,6 +5,7 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { hasAdminAccess } from "@/server/admin";
 import { getPersonalSettings } from "@/server/settings";
 import { listUserActivities } from "@/server/activities";
+import { graceState } from "@/server/restore";
 import { listUserGroups } from "@/server/groups";
 import { RETENTION_DAYS, listOwnPhotos } from "@/server/evidence";
 import { consentOf } from "@/server/consent";
@@ -28,14 +29,16 @@ export default async function Settings() {
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const [personal, admin, activities, groups, consent, ownPhotoRows] = await Promise.all([
-    getPersonalSettings(user.id),
-    hasAdminAccess(user.id),
-    listUserActivities(user.id),
-    listUserGroups(user.id),
-    consentOf(user.id),
-    listOwnPhotos(user.id),
-  ]);
+  const [personal, admin, activities, groups, consent, ownPhotoRows, grace] =
+    await Promise.all([
+      getPersonalSettings(user.id),
+      hasAdminAccess(user.id),
+      listUserActivities(user.id),
+      listUserGroups(user.id),
+      consentOf(user.id),
+      listOwnPhotos(user.id),
+      graceState(user.id),
+    ]);
   // A pause is global and rare, so it sits with the other things you set once.
   const held = await currentPause(user.id);
   const theme = (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
@@ -70,6 +73,15 @@ export default async function Settings() {
               label="Activities"
               value={`${tracked} tracked`}
               href="/activities"
+            />
+            {/* Beside retention and how reputation works, because it is the
+                same kind of fact: a rule the app applies to you. Not on the
+                configure screen, which is where it used to be as a number you
+                set yourself (item 19). */}
+            <Row
+              label="Grace"
+              value={`${grace.left} of ${grace.pool} left`}
+              href="/grace"
             />
             <Row
               label="Pause"

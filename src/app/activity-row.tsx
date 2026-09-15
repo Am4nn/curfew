@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import type { TodayRow } from "@/server/today";
-import { ActivityIcon, Flame } from "./activity-icon";
+import { ActivityIcon, DeadFlame, Flame } from "./activity-icon";
 import { CheckinButton } from "./checkin-button";
+import { RestoreButton } from "./restore-sheet";
 
 /**
  * One activity on Home: where it stands, and the one thing to do about it.
@@ -33,11 +34,14 @@ import { CheckinButton } from "./checkin-button";
  */
 export function ActivityRow({
   row,
+  graceLeft = 0,
   recorded = false,
   optimistic = false,
   onRecord,
 }: {
   row: TodayRow;
+  /** The account's pool, for the sheet behind a Restore. */
+  graceLeft?: number;
   /** This row is the one that just landed: it carries the mark. */
   recorded?: boolean;
   /** The press is not in the server's render yet, so show where it is going. */
@@ -95,6 +99,18 @@ export function ActivityRow({
                 {row.streak}
               </span>
             </span>
+          ) : row.restore ? (
+            // The run that just ended, in the same place, gone out (item 19).
+            // The status line is left alone: it still says what the week is
+            // doing, because that is still true, and a row that rewrites itself
+            // to talk about grace has stopped being a row about the activity.
+            // Exactly two things differ from an ordinary row, and this is one.
+            <span className="flex items-center gap-1">
+              <DeadFlame size={13} />
+              <span className="text-[12px] leading-none text-muted tabular-nums">
+                {row.restore.restoresTo}
+              </span>
+            </span>
           ) : null}
         </div>
         <span className="truncate text-[11.5px] text-muted">{status}</span>
@@ -107,8 +123,31 @@ export function ActivityRow({
           the control drops to the secondary treatment so a day already done
           does not shout at anyone. Where a press would do nothing the step is
           not open, so Sleep and Office read exactly as the mock draws them. */}
-      {row.done || (row.open && row.step) ? (
+      {row.done || row.restore || (row.open && row.step) ? (
         <div className="flex flex-none items-center gap-[10px]">
+          {/* The other thing that differs. It sits BESIDE Check in rather than
+              instead of it: the week ended, the activity did not, and checking
+              in is still the thing to do today. Outlined, so it reads as the
+              secondary offer it is while Check in keeps the filled treatment
+              it has on every other row.
+
+              Nothing here states the price. That belongs in the sheet, where
+              the decision is. And there is no button at all when the pool
+              cannot cover it: a disabled control is a thing to wonder about on
+              the screen looked at most, and the grey flame alone is what a
+              broken streak looked like before any of this existed. */}
+          {row.restore ? (
+            <RestoreButton
+              offer={{
+                typeKey: row.typeKey,
+                name: row.name,
+                icon: row.icon,
+                cost: row.restore.cost,
+                restoresTo: row.restore.restoresTo,
+                left: graceLeft,
+              }}
+            />
+          ) : null}
           {row.done ? (
             <span className="flex items-center gap-[6px] text-[12px] text-pass">
               <svg

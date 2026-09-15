@@ -145,6 +145,46 @@ export function Flame({ size = 13 }: { size?: number }) {
   );
 }
 
+/**
+ * The same flame, gone out (item 19).
+ *
+ * The whole message of a broken streak, and it needs no words. Static, never a
+ * control: the thing to press about it sits beside Check in. Snapchat does
+ * exactly this and it is why a broken streak reads instantly there without
+ * anything being said; its rounded pill and its glow are named in CLAUDE.md as
+ * things not to drift toward, so the structure is taken and the styling is not.
+ */
+export function DeadFlame({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className="flex-none" aria-hidden="true">
+      <path
+        d="M12 2c2.5 3.5 4.6 5.6 4.6 9.1a4.6 4.6 0 0 1-9.2 0c0-1.5.5-2.6 1.5-3.7C10.4 8.6 12 6.1 12 2Z"
+        fill="var(--dash)"
+      />
+    </svg>
+  );
+}
+
+/** A relight, for the control that offers one. */
+export function RestoreIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="square"
+      className="flex-none"
+      aria-hidden="true"
+    >
+      <path d="M20 12a8 8 0 1 1-2.6-5.9" />
+      <path d="M20 4v4h-4" />
+    </svg>
+  );
+}
+
 export function StreakNumber({ value, size = 30 }: { value: number; size?: number }) {
   return (
     <span className="flex items-center gap-[9px]">

@@ -136,6 +136,7 @@ export default async function Home({
             rows={today.rows}
             done={today.done}
             of={today.of}
+            graceLeft={today.graceLeft}
             initialRecorded={recorded}
             dateLabel={dateLabel}
             dueIcons={dueIcons}

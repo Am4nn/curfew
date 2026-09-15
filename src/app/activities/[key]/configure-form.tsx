@@ -561,7 +561,16 @@ export function ConfigureForm({
       </Note>
     ) : null;
 
-  const shell = "flex flex-1 flex-col gap-[18px] overflow-y-auto px-5 pb-6 pt-[18px]";
+  // No `overflow-y-auto`. It made this a scroller inside a page that also
+  // scrolls, and it could never do its job anyway: its parent is `min-h-dvh`,
+  // a MINIMUM, so `flex-1` here has no upper bound to clip against and the
+  // document scrolls regardless. One scroller, which is the page.
+  //
+  // `flex-1` stays, and it is what `mt-auto` on the button block pushes
+  // against: with a short panel the parent is exactly one viewport, this fills
+  // the rest of it, and Next sits on the bottom edge instead of floating under
+  // a half-empty screen.
+  const shell = "flex flex-1 flex-col gap-[18px] px-5 pb-6 pt-[18px]";
 
   // -------------------------------------------------------------------------
   // Setting one up: one question a screen.

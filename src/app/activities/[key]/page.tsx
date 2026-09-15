@@ -41,7 +41,13 @@ export default async function ConfigurePage({
   const standing = tracked ? await standingFor(user.id, key) : null;
 
   return (
-    <main className="flex min-h-dvh flex-col pb-16">
+    // `pb-nav`, not `pb-16`. The tab bar is `fixed bottom-0` over every route
+    // and every other screen reserves `calc(6rem + safe-area)` for it. This one
+    // reserved 4rem, so about 32px plus the home-indicator inset of the screen
+    // sat under the bar. On the setup flow that is the Next button: the page
+    // then scrolls, by roughly the height of what is hidden, while the panel
+    // above it is visibly half empty.
+    <main className="flex min-h-dvh flex-col pb-nav">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
         <div className="flex items-center gap-[9px]">
           <BackLink fallback="/activities" className="text-[14px] text-muted" />

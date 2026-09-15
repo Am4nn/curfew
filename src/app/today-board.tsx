@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { TodayRow } from "@/server/today";
 import { ActivityRow } from "./activity-row";
 import { DayComplete } from "./day-complete";
+import { finished } from "./haptics";
 
 /**
  * Today's count and today's rows, and the only thing on Home that knows a
@@ -109,6 +110,19 @@ export function TodayBoard({
   // just landed, and there is nothing left open. Opening Home on a day already
   // finished shows nothing, because nothing just happened.
   const justFinishedTheDay = recorded !== null && of > 0 && done === of;
+
+  // The second half of item 25, and it was written and never called. The press
+  // itself buzzes once from the button that sent it; the day being finished is
+  // a different fact, and this is the only place that knows it.
+  //
+  // `navigator.vibrate` replaces whatever is still running rather than queuing
+  // behind it, so the short tap a moment ago becomes this pattern instead of
+  // stuttering against it. Firing on the transition means a press that fills
+  // the last segment buzzes twice and a screen left open on a finished day
+  // buzzes not at all, which is the same rule the stamp above follows.
+  useEffect(() => {
+    if (justFinishedTheDay) finished();
+  }, [justFinishedTheDay]);
 
   return (
     <>

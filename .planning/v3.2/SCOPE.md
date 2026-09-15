@@ -193,6 +193,16 @@ walked into rather than scope creep:
   under a set clock is accepted against the scrubbed hour and recorded at the
   real one, so `check:offer` could not press its way to an anchored window.
 
+A sixth, found by reading the thirteen back afterwards rather than by a check:
+
+- **Item 25 shipped half of itself.** `haptics.ts` declares two patterns, one
+  buzz for a press and two for a day just completed, and `finished()` had no
+  caller anywhere. Nothing failed: lint does not mind an unused export, and the
+  half that was wired is the half on every press. `TodayBoard` already computed
+  `justFinishedTheDay` for the stamp, so the call site existed and was empty.
+  Worth saying why it survived CI: a buzz is the one thing in this app no check
+  can observe, on a device half of them do not have.
+
 ## Decisions taken while building
 
 Three the scope left open:

@@ -79,10 +79,22 @@ export async function acknowledgeAll(userId: string): Promise<number> {
  * the "Tell users what changed" checkbox was ticked (decision 57), which is
  * unticked by default.
  */
-export async function publishNotice(body: string, adminId: string): Promise<string> {
+export async function publishNotice(
+  body: string,
+  adminId: string,
+  /**
+   * An identity, for a notice that something can try to publish twice.
+   *
+   * A controls change passes none: the save happened once. A release note
+   * passes "release:3.2.0", and a second run returns null rather than
+   * announcing the same thing again to everybody who has already read it.
+   */
+  key?: string,
+): Promise<string | null> {
   const [row] = await db
     .insert(notices)
-    .values({ body, createdBy: adminId })
+    .values({ body, createdBy: adminId, key: key ?? null })
+    .onConflictDoNothing({ target: notices.key })
     .returning({ id: notices.id });
-  return row.id;
+  return row?.id ?? null;
 }

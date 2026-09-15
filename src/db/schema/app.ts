@@ -337,6 +337,17 @@ export const notices = pgTable("notices", {
     .references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   retiredAt: timestamp("retired_at", { withTimezone: true }),
+  /**
+   * What this notice IS, for the ones that can be published more than once.
+   *
+   * Null for a notice composed from a controls change: that save happened once
+   * and there is nothing to collide with. A release note carries
+   * "release:3.2.0" and a partial unique index (migration 0023) makes running
+   * the publish script a second time do nothing. Without it the second run
+   * inserts a second row, and everybody who had already acknowledged gets the
+   * overlay again saying the same thing.
+   */
+  key: text("key"),
 });
 
 export const noticeAcks = pgTable(

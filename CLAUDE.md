@@ -319,7 +319,31 @@ mocks      node .design/build-v3.mjs — regenerate every artboard
 cors       bun run check:cors      — can a browser upload from this origin
 signin     bun run check:signin    — can a stranger see the sign-in page
 shards     bun run check:shards    — CI still runs every browser suite
+notice     bun run publish:notice  — announce a release to the people already here
 ```
+
+**A notice is never typed at the moment of publishing.** A controls change
+composes its own words from `SETTING_COPY`, and a release note is written in
+`src/server/release-notes.ts` in the same commit as the change it describes, so
+it goes through review with the code. A notice typed into a box at the moment of
+publishing can say something the change did not do, and nobody is reviewing it.
+
+`bun run publish:notice -- --version 3.2.0 --as you@example.com --dry` prints
+what would be published and to how many people. Drop `--dry` to send it, and use
+`publish:notice:production` for the live one. Run it by hand after the tag; most
+releases change nothing a person would notice, and announcing those is how an
+overlay that blocks the whole app becomes something people dismiss unread.
+
+**`--as` is attribution, not access control, and nothing there could be.**
+Running it needs the connection string, and whoever holds that can insert a
+notice with one line of SQL. What the capability check buys is an honest record:
+it refuses to attribute a notice to an account that could not have published one
+through the app. The real guard is `--dry`, because publishing is final. There is
+no dismiss, only Got it, and an ack cannot be taken back.
+
+Publishing twice does nothing: a release note carries `key = release:<version>`
+and a partial unique index (migration 0023). Without it the second run inserts a
+second row and everybody who had already acknowledged gets the overlay again.
 
 `bun run browser` takes suite names: `bun run browser admin counter` runs those
 two. Order on the command line means nothing. `suites.mjs` holds the canonical

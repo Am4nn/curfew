@@ -35,6 +35,8 @@
     "make:icons": "bun run scripts/make-app-icons.ts",
     "check:signin": "bun run scripts/check-signin.ts",
     "check:shards": "bun run scripts/check-shards.ts",
+    "publish:notice": "dotenv -e .env.preview -- bun run scripts/publish-notice.ts",
+    "publish:notice:production": "dotenv -e .env.production -- bun run scripts/publish-notice.ts",
     "check:evidence": "dotenv -e .env.local -- bun run scripts/check-evidence.ts",
     "check:ceiling": "dotenv -e .env.local -- bun run scripts/check-ceiling.ts",
     "check:purge": "dotenv -e .env.local -- bun run scripts/check-purge.ts",

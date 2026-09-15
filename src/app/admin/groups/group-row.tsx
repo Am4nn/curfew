@@ -3,15 +3,19 @@
 import Link from "next/link";
 import { useServerAction } from "@/app/ui";
 import type { MoneyOverride } from "@/server/group-controls";
-import { setMoneyOverrideAction, setArchivedAction } from "./actions";
+import { setMoneyOverrideAction } from "./actions";
 
 // One group in the admin directory. Money can be switched on here for a single
-// group even when it is off everywhere else (decision 66), and a group is
-// archived rather than deleted (decision 67).
+// group even when it is off everywhere else (decision 66). It takes effect
+// immediately rather than going through the Controls save sheet: it is
+// per-group and reversible, and the sheet exists for changes that affect
+// everyone at once.
 //
-// These are the two admin actions that take effect immediately rather than
-// going through the Controls save sheet: they are per-group and reversible, and
-// the sheet exists for changes that affect everyone at once.
+// Archiving is NOT here. It was on this row and again on the group's own page,
+// and one of the two had to go: a list is where you scan, and a control that
+// freezes a whole group sitting a thumb's width from the name of the group
+// below it is the wrong place to put it. The badge stays, because that is
+// status rather than a control.
 
 const OPTIONS: { value: MoneyOverride; label: string; hint: string }[] = [
   { value: null, label: "Follow app", hint: "Whatever money is set to app-wide." },
@@ -24,7 +28,6 @@ export function GroupRow({
   override,
   moneyLabel,
   canWrite,
-  canArchive,
 }: {
   group: {
     groupId: string;
@@ -37,7 +40,6 @@ export function GroupRow({
   override: MoneyOverride;
   moneyLabel: string | null;
   canWrite: boolean;
-  canArchive: boolean;
 }) {
   const { run, pending, error } = useServerAction();
 
@@ -51,15 +53,6 @@ export function GroupRow({
           <span className="border border-rule px-[6px] py-px text-[9.5px] tracking-[0.1em] text-muted">
             ARCHIVED
           </span>
-        ) : canArchive ? (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => run(() => setArchivedAction(group.groupId, true))}
-            className="flex-none text-[11px] text-muted active:opacity-70 disabled:opacity-40"
-          >
-            {pending ? "Archiving" : "Archive"}
-          </button>
         ) : null}
       </div>
 
@@ -102,7 +95,7 @@ export function GroupRow({
         </div>
       ) : null}
 
-      {/* Both actions here used to swallow their failure entirely. */}
+      {/* This used to swallow its failure entirely. */}
       {error ? <span className="text-[11px] text-penalty">{error}</span> : null}
     </div>
   );

@@ -10,12 +10,11 @@ export default async function AdminGroups() {
   if (!user) redirect("/signin");
   if (!(await can(user.id, "groups.view"))) redirect("/admin");
 
-  const [groups, overrides, appConfig, canWrite, canArchive] = await Promise.all([
+  const [groups, overrides, appConfig, canWrite] = await Promise.all([
     listAllGroups(),
     moneyOverrides(),
     getAppConfig(),
     can(user.id, "settings.write"),
-    can(user.id, "groups.archive"),
   ]);
 
   const appWideMoneyOn = appConfig.settings.money === true;
@@ -41,12 +40,12 @@ export default async function AdminGroups() {
         rows={rows}
         appWideMoneyOn={appWideMoneyOn}
         canWrite={canWrite}
-        canArchive={canArchive}
       />
 
       <span className="text-[11.5px] leading-[1.55] text-muted">
         Archiving freezes a group: no check-ins count toward it, no fines, nobody can
-        join. Nothing is deleted and it can be brought back.
+        join. Nothing is deleted and it can be brought back. Archive a group from its
+        own page.
       </span>
     </section>
   );

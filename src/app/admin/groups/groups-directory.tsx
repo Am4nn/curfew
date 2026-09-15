@@ -24,12 +24,10 @@ export function GroupsDirectory({
   rows,
   appWideMoneyOn,
   canWrite,
-  canArchive,
 }: {
   rows: GroupDirectoryRow[];
   appWideMoneyOn: boolean;
   canWrite: boolean;
-  canArchive: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
@@ -95,7 +93,6 @@ export function GroupsDirectory({
               override={r.override}
               moneyLabel={r.moneyLabel}
               canWrite={canWrite}
-              canArchive={canArchive}
             />
           ))}
         </div>

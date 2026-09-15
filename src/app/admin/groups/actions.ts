@@ -3,11 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/session";
 import { requireCapability } from "@/server/admin";
-import {
-  setMoneyOverride,
-  setArchived,
-  type MoneyOverride,
-} from "@/server/group-controls";
+import { setMoneyOverride, type MoneyOverride } from "@/server/group-controls";
 
 export async function setMoneyOverrideAction(
   groupId: string,
@@ -20,13 +16,6 @@ export async function setMoneyOverrideAction(
   revalidatePath("/admin/groups");
 }
 
-export async function setArchivedAction(
-  groupId: string,
-  archived: boolean,
-): Promise<void> {
-  const user = await getSessionUser();
-  if (!user) throw new Error("not signed in");
-  await requireCapability(user.id, "groups.archive");
-  await setArchived(groupId, archived);
-  revalidatePath("/admin/groups");
-}
+// There was a setArchivedAction here, called by the Archive control on a row in
+// the groups list. Both went with item 26: an exported server action is a live
+// endpoint whether or not anything renders a button for it.

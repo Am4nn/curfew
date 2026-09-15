@@ -1,6 +1,6 @@
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { groups, groupSettings } from "@/db/schema";
+import { groupSettings } from "@/db/schema";
 import { resolveAt } from "@/domain";
 import { invalidateAppConfig } from "./app-config";
 
@@ -52,14 +52,7 @@ export async function setMoneyOverride(
   invalidateAppConfig();
 }
 
-/**
- * Archive a group rather than delete it (decision 67). Nothing is removed: the
- * ledger, the events and the history all stay, and money already owed is still
- * owed. Archiving only takes it out of circulation.
- */
-export async function setArchived(groupId: string, archived: boolean): Promise<void> {
-  await db
-    .update(groups)
-    .set({ archivedAt: archived ? new Date() : null })
-    .where(and(eq(groups.id, groupId)));
-}
+// Archiving lived here too, as a second setter that wrote `archived_at` and
+// nothing else. `archiveGroup` and `restoreGroup` in server/admin.ts are the
+// only ones now, and they record `admin.group.archived` beside the write. Two
+// ways to archive meant one of them left no trace of who did it.

@@ -42,6 +42,9 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
     grace: 2,
+    // An hour and a half between meals. Longer than water's, because two meals
+    // inside ninety minutes is one meal photographed twice.
+    minGap: 90,
     config: { meals: 3, calorieLimit: 2000 },
   },
 

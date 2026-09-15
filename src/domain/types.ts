@@ -208,6 +208,18 @@ export interface ScheduleDefaults {
   schedule: Schedule;
   dayBoundary: DayBoundary;
   grace: number;
+  /**
+   * Minutes between two presses of a repeating step, as this type's default.
+   *
+   * The FIELD is engine-owned and means the same everywhere (see
+   * `schedule.ts`); only the number belongs to the module, because how long is
+   * plausible between two of a thing is the one part of it that depends on what
+   * the thing is. Eight glasses in eight seconds is a record of a day nobody
+   * had, and zero was the default that allowed it.
+   *
+   * Omitted is 0, which is right for every type whose steps do not repeat.
+   */
+  minGap?: number;
 }
 
 // The contract every activity type implements.

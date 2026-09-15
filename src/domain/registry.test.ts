@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getActivityType, registeredKeys, daysDoneIn } from "./index";
+import { scheduleConfigSchema } from "./schedule";
 
 describe("registry", () => {
   it("registers the two shapes the engine was built against", () => {
@@ -46,6 +47,32 @@ describe("registry", () => {
       const type = getActivityType(key);
       expect(() => type.configSchema.parse(type.defaults.config), key).not.toThrow();
     }
+  });
+
+  it("every declared minGap is one the engine's schema will take", () => {
+    // The module declares the number; the field is the engine's, and the
+    // configure screen writes it back through this schema. A module declaring
+    // 500 would prefill a screen that refuses to save.
+    for (const key of registeredKeys()) {
+      const type = getActivityType(key);
+      const parse = () =>
+        scheduleConfigSchema.parse({
+          schedule: type.defaults.schedule,
+          dayBoundary: type.defaults.dayBoundary,
+          grace: type.defaults.grace,
+          minGap: type.defaults.minGap ?? 0,
+        });
+      expect(parse, key).not.toThrow();
+    }
+  });
+
+  it("water and meals ship with a wait between presses", () => {
+    // The hole item 18 closes: eight glasses in eight seconds passed the day,
+    // because the default was 0 for everything. These two are the types where
+    // several of a thing in one day is the whole rule, so a plausible interval
+    // is part of what the rule means. Every other type stays at 0 on purpose.
+    expect(getActivityType("water").defaults.minGap).toBe(30);
+    expect(getActivityType("food").defaults.minGap).toBe(90);
   });
 });
 

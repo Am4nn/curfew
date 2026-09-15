@@ -137,9 +137,12 @@ export function defaultsFor(typeKey: string): UserActivity {
       schedule: type.defaults.schedule,
       dayBoundary: type.defaults.dayBoundary,
       grace: type.defaults.grace,
-      // Off unless somebody asks for it. A gap is a rule about your own
-      // honesty, and one nobody chose is a rule imposed.
-      minGap: 0,
+      // The module's own number, or none. This was hardcoded to 0 on the
+      // grounds that a gap nobody chose is a rule imposed, which read well and
+      // meant water shipped with the hole it exists to close: eight glasses in
+      // eight seconds passed the day. It is still overridable on the configure
+      // screen, so it is a default rather than a rule.
+      minGap: type.defaults.minGap ?? 0,
     },
     config: type.defaults.config,
   };

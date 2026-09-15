@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 20px 11px;border-bottom:1px solid #2e2c28;"><div style="display:flex;align-items:center;gap:9px;"><span style="color:#8c8c8c;font-size:14px;">&#8249;</span><span style="font-size:14px;font-weight:600;letter-spacing:0.14em;">CHECK IN</span></div><span style="font-size:11px;color:#8c8c8c;">Nightfast &middot; 7:40 AM</span></div><div style="flex:1;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:18px;"><div style="display:flex;flex-direction:column;gap:8px;">
+          <span style="font-size:16px;line-height:1.5;">Nothing after 8:00 PM last night. Did it hold?</span>
+          <span style="font-size:11.5px;color:#8c8c8c;line-height:1.55;">Nobody can check this one. The record is only worth what your answer is worth.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button type="button" style="width:100%;height:52px;border:1px solid #f2f2f2;background:#f2f2f2;color:#0b0a09;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;">It held</button>
+          <button type="button" style="width:100%;height:52px;border:1px solid #2e2c28;background:transparent;color:#e4574b;font-family:inherit;font-size:15px;cursor:pointer;">I slipped</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid #2e2c28;border-bottom:1px solid #2e2c28;">
+          <span style="font-size:12.5px;color:#8c8c8c;">Current streak</span>
+          <span style="display:flex;align-items:center;gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" style="flex:none;"><defs><linearGradient id="fl42" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#ffc24b"></stop><stop offset="55%" stop-color="#ff7a2f"></stop><stop offset="100%" stop-color="#e4574b"></stop></linearGradient></defs><path d="M12 2c2.5 3.5 4.6 5.6 4.6 9.1a4.6 4.6 0 0 1-9.2 0c0-1.5.5-2.6 1.5-3.7C10.4 8.6 12 6.1 12 2Z" fill="url(#fl42)"></path><path d="M12 12.4c1 .9 1.6 1.7 1.6 2.8a1.6 1.6 0 0 1-3.2 0c0-.8.5-1.6 1.6-2.8Z" fill="#ffe6a1"></path></svg><span style="font-size:12px;font-weight:500;line-height:1;background-image:linear-gradient(95deg,#ffd23f,#ff7a2f,#e4574b);-webkit-background-clip:text;background-clip:text;color:transparent;">11</span></span>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="font-size:11.5px;color:#8c8c8c;line-height:1.55;">A slip breaks the streak and costs your standing in any group you share this with. It costs nothing else.</div></div></div>
+</x-dc>
+</body>
+</html>

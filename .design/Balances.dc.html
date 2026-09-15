@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    a { color: #7fa8ff; } a:hover { color: #a9c4ff; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;">
+
+  <!-- header with back to where you came from (Home) -->
+  <div style="display:flex;align-items:center;gap:8px;padding:20px 20px 14px;border-bottom:1px solid #2e2c28;">
+    <span style="color:#8c8c8c;font-size:13px;">&#8249;</span>
+    <div style="font-size:15px;font-weight:600;letter-spacing:0.14em;">BALANCES</div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:24px;">
+
+    <!-- net summary line -->
+    <div style="font-size:14px;line-height:1.55;">Across your groups you owe <span style="color:#e4574b;">&#8377;200</span> and are owed <span style="color:#6ba17f;">&#8377;200</span>.</div>
+
+    <!-- YOU OWE: each debt is per person, per group, with a quick settle -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:11px;letter-spacing:0.14em;color:#8c8c8c;">YOU OWE</div>
+
+      <div style="border:1px solid #2e2c28;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <span style="font-size:15px;">Alex</span>
+          <span style="font-size:12px;color:#8c8c8c;">Night Owls</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:17px;color:#e4574b;">&#8377;150</span>
+          <button type="button" style="border:1px solid #f2f2f2;background:#f2f2f2;color:#0b0a09;font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;cursor:pointer;">Settle</button>
+        </div>
+      </div>
+
+      <div style="border:1px solid #2e2c28;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <span style="font-size:15px;">Sam</span>
+          <span style="font-size:12px;color:#8c8c8c;">Weekend Club</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:17px;color:#e4574b;">&#8377;50</span>
+          <button type="button" style="border:1px solid #f2f2f2;background:#f2f2f2;color:#0b0a09;font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;cursor:pointer;">Settle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- inline settle, revealed under a row when Settle is tapped -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:11px;letter-spacing:0.14em;color:#8c8c8c;">SETTLE ALEX &middot; NIGHT OWLS</div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;border:1px solid #2e2c28;padding:11px 12px;font-size:14px;color:#f2f2f2;text-align:right;">150.00</div>
+        <button type="button" style="border:1px solid #f2f2f2;background:#f2f2f2;color:#0b0a09;font-family:inherit;font-size:13px;font-weight:600;padding:0 16px;cursor:pointer;">Mark settled</button>
+      </div>
+      <div style="font-size:12px;color:#8c8c8c;">Records a payment you made. Edit the amount for a partial settle.</div>
+    </div>
+
+    <!-- OWED TO YOU: informational, no action (they pay you) -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:11px;letter-spacing:0.14em;color:#8c8c8c;">OWED TO YOU</div>
+
+      <div style="border:1px solid #2e2c28;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <span style="font-size:15px;">Priya</span>
+          <span style="font-size:12px;color:#8c8c8c;">Night Owls</span>
+        </div>
+        <span style="font-size:17px;color:#6ba17f;">&#8377;200</span>
+      </div>
+
+      <div style="font-size:12px;color:#8c8c8c;line-height:1.5;">They settle from their own screen. Curfew never moves money, it only keeps the record.</div>
+    </div>
+
+  </div>
+
+  <!-- bottom tabs, arrived from Home so Home reads active -->
+  <div style="display:flex;border-top:1px solid #2e2c28;background:#0b0a09;">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#f2f2f2;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h14V9.5"></path></svg><span style="font-size:11px;">Home</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#8c8c8c;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 20a5.5 5.5 0 0 1 11 0"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.6"></path><path d="M15.5 20a5.5 5.5 0 0 0-1.2-3.5"></path></svg><span style="font-size:11px;">Groups</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#8c8c8c;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V11"></path><path d="M10 20V4"></path><path d="M16 20v-6"></path></svg><span style="font-size:11px;">Stats</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#8c8c8c;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line><circle cx="9" cy="8" r="2.3" fill="#0b0a09"></circle><circle cx="15" cy="16" r="2.3" fill="#0b0a09"></circle></svg><span style="font-size:11px;">Settings</span></div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

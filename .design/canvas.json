@@ -1,0 +1,1485 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "v2.5 App"
+    },
+    {
+      "id": "page-2",
+      "name": "v2.5 Admin"
+    },
+    {
+      "id": "page-3",
+      "name": "v3 Home"
+    },
+    {
+      "id": "page-4",
+      "name": "v3 Activities"
+    },
+    {
+      "id": "page-5",
+      "name": "v3 Configure"
+    },
+    {
+      "id": "page-6",
+      "name": "v3 Evidence"
+    },
+    {
+      "id": "page-7",
+      "name": "v3 Groups"
+    },
+    {
+      "id": "page-8",
+      "name": "v3 Ranks"
+    },
+    {
+      "id": "page-9",
+      "name": "v3 Stats"
+    },
+    {
+      "id": "page-10",
+      "name": "v3 Admin"
+    },
+    {
+      "id": "page-13",
+      "name": "v3 Gaps"
+    },
+    {
+      "id": "page-11",
+      "name": "v3 Settings"
+    },
+    {
+      "id": "page-31",
+      "name": "v3.1 Ranks and grace"
+    },
+    {
+      "id": "page-32",
+      "name": "v3.1 Pause"
+    },
+    {
+      "id": "page-33",
+      "name": "v3.1 Item 1 Capture"
+    },
+    {
+      "id": "page-34",
+      "name": "v3.1 Item 2 Sign in"
+    },
+    {
+      "id": "page-35",
+      "name": "v3.1 Item 5 Configure"
+    },
+    {
+      "id": "page-36",
+      "name": "v3.1 Item 12 Group settings"
+    },
+    {
+      "id": "page-38",
+      "name": "v3.2 Fixes"
+    },
+    {
+      "id": "page-37",
+      "name": "v3.2 AI"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Home",
+      "page": "page-1"
+    },
+    {
+      "file": "Loading.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Loading",
+      "page": "page-1"
+    },
+    {
+      "file": "Groups.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Groups",
+      "page": "page-1"
+    },
+    {
+      "file": "GroupHub.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group hub",
+      "page": "page-1"
+    },
+    {
+      "file": "Ledger.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group ledger",
+      "page": "page-1"
+    },
+    {
+      "file": "GroupWake.dc.html",
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group wake",
+      "page": "page-1"
+    },
+    {
+      "file": "Balances.dc.html",
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Balances",
+      "page": "page-1"
+    },
+    {
+      "file": "GroupHubOwner.dc.html",
+      "x": 3290,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group hub (make owner)",
+      "page": "page-1"
+    },
+    {
+      "file": "Rules.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Group rules",
+      "page": "page-1"
+    },
+    {
+      "file": "Stats.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Stats",
+      "page": "page-1"
+    },
+    {
+      "file": "Settings.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Settings",
+      "page": "page-1"
+    },
+    {
+      "file": "Signin.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Sign in",
+      "page": "page-1"
+    },
+    {
+      "file": "Pending.dc.html",
+      "x": 1880,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Pending",
+      "page": "page-1"
+    },
+    {
+      "file": "HomeNew.dc.html",
+      "x": 2350,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (new user)",
+      "page": "page-1"
+    },
+    {
+      "file": "HomeNewInvite.dc.html",
+      "x": 2820,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (new + invite)",
+      "page": "page-1"
+    },
+    {
+      "file": "AdminOverview.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Admin overview",
+      "page": "page-2"
+    },
+    {
+      "file": "AdminUsers.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Admin users",
+      "page": "page-2"
+    },
+    {
+      "file": "AdminInsights.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Admin insights",
+      "page": "page-2"
+    },
+    {
+      "file": "AdminOps.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Admin ops",
+      "page": "page-2"
+    },
+    {
+      "file": "V3Home.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Home (today)",
+      "page": "page-3"
+    },
+    {
+      "file": "V3HomeDone.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Home (all done)",
+      "page": "page-3"
+    },
+    {
+      "file": "V3HomeNoMoney.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Home (no money anywhere)",
+      "page": "page-3"
+    },
+    {
+      "file": "V3Notice.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Notice, over Home",
+      "page": "page-3"
+    },
+    {
+      "file": "V3NoticeGroups.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Notice, over a group",
+      "page": "page-3"
+    },
+    {
+      "file": "V3HomeEmpty.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (new user)",
+      "page": "page-3"
+    },
+    {
+      "file": "V3HomeStart.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (new user, redesigned)",
+      "page": "page-3"
+    },
+    {
+      "file": "V3HomeStartInvite.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (new user, invite waiting)",
+      "page": "page-3"
+    },
+    {
+      "file": "V3Activities.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Your activities",
+      "page": "page-4"
+    },
+    {
+      "file": "V3Catalog.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Add activity",
+      "page": "page-4"
+    },
+    {
+      "file": "V3CfgSleep.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Sleep",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgGym.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Gym",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgFood.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Food",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgSupplements.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Supplements",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgOffice.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Office",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgStudy.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Study",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgSteps.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Steps",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgWater.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Water",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgReading.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Reading",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgScreen.dc.html",
+      "x": 1880,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Screen",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgNightfast.dc.html",
+      "x": 0,
+      "y": 2000,
+      "w": 390,
+      "h": 844,
+      "title": "Nightfast",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgSugarfree.dc.html",
+      "x": 470,
+      "y": 2000,
+      "w": 390,
+      "h": 844,
+      "title": "Sugar-free",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgNew.dc.html",
+      "x": 940,
+      "y": 2000,
+      "w": 390,
+      "h": 844,
+      "title": "Steps (not tracked yet)",
+      "page": "page-5"
+    },
+    {
+      "file": "V3CfgErrors.dc.html",
+      "x": 1410,
+      "y": 2000,
+      "w": 390,
+      "h": 844,
+      "title": "Validation errors",
+      "page": "page-5"
+    },
+    {
+      "file": "V3Checkin.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Check-in (photo optional)",
+      "page": "page-6"
+    },
+    {
+      "file": "V3CheckinAbstain.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Check-in (abstinence)",
+      "page": "page-6"
+    },
+    {
+      "file": "V3CheckinRequired.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Check-in (photo required, blocked)",
+      "page": "page-6"
+    },
+    {
+      "file": "V3Camera.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Camera",
+      "page": "page-6"
+    },
+    {
+      "file": "V3CaptureConfirm.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Confirm the frame",
+      "page": "page-6"
+    },
+    {
+      "file": "V3CheckinReady.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Ready to send",
+      "page": "page-6"
+    },
+    {
+      "file": "V3Recorded.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Recorded, partial day",
+      "page": "page-6"
+    },
+    {
+      "file": "V3DayComplete.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "The day is complete",
+      "page": "page-6"
+    },
+    {
+      "file": "V3RecordedMotion.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Partial day, running",
+      "page": "page-6"
+    },
+    {
+      "file": "V3DayCompleteMotion.dc.html",
+      "x": 1880,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "The stamp, running",
+      "page": "page-6"
+    },
+    {
+      "file": "V3Groups.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Groups",
+      "page": "page-7"
+    },
+    {
+      "file": "V3GroupOverview.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group: overview",
+      "page": "page-7"
+    },
+    {
+      "file": "V3GroupStats.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group: stats",
+      "page": "page-7"
+    },
+    {
+      "file": "V3GroupEvidence.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group: evidence",
+      "page": "page-7"
+    },
+    {
+      "file": "V3GroupStanding.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Group: standing (money on)",
+      "page": "page-7"
+    },
+    {
+      "file": "V3GroupStandingNoMoney.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Group: standing (money off)",
+      "page": "page-7"
+    },
+    {
+      "file": "V3GroupSettings.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Group: settings",
+      "page": "page-7"
+    },
+    {
+      "file": "V3GroupLedgerFull.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Group: full ledger",
+      "page": "page-7"
+    },
+    {
+      "file": "V3JoinShare.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Join and choose sharing",
+      "page": "page-7"
+    },
+    {
+      "file": "V3JoinSetup.dc.html",
+      "x": 1880,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Join: set up first",
+      "page": "page-7"
+    },
+    {
+      "file": "V3Ranks.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "How reputation works",
+      "page": "page-8"
+    },
+    {
+      "file": "V3Stats.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Overview",
+      "page": "page-9"
+    },
+    {
+      "file": "V3StatsSleep.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Sleep (windowed)",
+      "page": "page-9"
+    },
+    {
+      "file": "V3StatsSteps.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Steps (numeric)",
+      "page": "page-9"
+    },
+    {
+      "file": "V3StatsGym.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Gym (weekly)",
+      "page": "page-9"
+    },
+    {
+      "file": "V3StatsAbstain.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Nightfast (abstinence)",
+      "page": "page-9"
+    },
+    {
+      "file": "V3AdminOverview.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Overview",
+      "page": "page-10"
+    },
+    {
+      "file": "V3AdminUsers.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Users",
+      "page": "page-10"
+    },
+    {
+      "file": "V3AdminGroups.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Groups",
+      "page": "page-10"
+    },
+    {
+      "file": "V3AdminInsights.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Insights",
+      "page": "page-10"
+    },
+    {
+      "file": "V3AdminControls.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Controls",
+      "page": "page-10"
+    },
+    {
+      "file": "V3AdminControlsConfirm.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Controls: confirm",
+      "page": "page-10"
+    },
+    {
+      "file": "V3AdminOps.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Ops",
+      "page": "page-10"
+    },
+    {
+      "file": "V3Signin.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Sign in",
+      "page": "page-13"
+    },
+    {
+      "file": "V3Pending.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Waiting for approval",
+      "page": "page-13"
+    },
+    {
+      "file": "V3Balances.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Balances",
+      "page": "page-13"
+    },
+    {
+      "file": "V3SettingsStored.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "What Curfew stores",
+      "page": "page-13"
+    },
+    {
+      "file": "V3SettingsRules.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "The rules",
+      "page": "page-13"
+    },
+    {
+      "file": "V3SettingsPersonal.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Personal (unresolved)",
+      "page": "page-13"
+    },
+    {
+      "file": "V3AdminReports.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Admin: reports",
+      "page": "page-13"
+    },
+    {
+      "file": "V3AdminUserOne.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Admin: one user",
+      "page": "page-13"
+    },
+    {
+      "file": "V3AdminGroupOne.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Admin: one group",
+      "page": "page-13"
+    },
+    {
+      "file": "V3Settings.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Settings",
+      "page": "page-11"
+    },
+    {
+      "file": "V3SettingsSharing.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "What you share",
+      "page": "page-11"
+    },
+    {
+      "file": "V3SettingsPhotos.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Your photos",
+      "page": "page-11"
+    },
+    {
+      "file": "V3Data.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Delete data",
+      "page": "page-11"
+    },
+    {
+      "file": "V31Ranks.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "How reputation works",
+      "page": "page-31"
+    },
+    {
+      "file": "V31StandingImmaculate.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Standing (IMMACULATE)",
+      "page": "page-31"
+    },
+    {
+      "file": "V31StandingClimbing.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Standing (UNBROKEN, climbing)",
+      "page": "page-31"
+    },
+    {
+      "file": "V31GroupGrace.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Members (someone in grace)",
+      "page": "page-31"
+    },
+    {
+      "file": "V31GraceOwn.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Standing (your own grace period)",
+      "page": "page-31"
+    },
+    {
+      "file": "V31HomeGrace.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (in grace somewhere)",
+      "page": "page-31"
+    },
+    {
+      "file": "V31PauseSettings.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Settings (where it lives)",
+      "page": "page-32"
+    },
+    {
+      "file": "V31PauseDeclare.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Declaring a pause",
+      "page": "page-32"
+    },
+    {
+      "file": "V31PauseActive.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "While it runs",
+      "page": "page-32"
+    },
+    {
+      "file": "V31HomePaused.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Home (paused)",
+      "page": "page-32"
+    },
+    {
+      "file": "V31GroupPaused.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Members (someone away)",
+      "page": "page-32"
+    },
+    {
+      "file": "V31StandingPaused.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Standing (paused)",
+      "page": "page-32"
+    },
+    {
+      "file": "V31StatsPaused.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Stats (a trip in it)",
+      "page": "page-32"
+    },
+    {
+      "file": "V31GroupStatsPaused.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Group stats (someone away)",
+      "page": "page-32"
+    },
+    {
+      "file": "V31RanksQuiet.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "How it works (quiet days)",
+      "page": "page-32"
+    },
+    {
+      "file": "V31CaptureE.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Photo + one field (Food)",
+      "page": "page-33"
+    },
+    {
+      "file": "V31CaptureE2.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Photo + no fields (Gym)",
+      "page": "page-33"
+    },
+    {
+      "file": "V31CaptureE3.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Fields + no photo (Study)",
+      "page": "page-33"
+    },
+    {
+      "file": "V31HomeDeclare.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Declared on Home, no screen at all",
+      "page": "page-33"
+    },
+    {
+      "file": "V31SigninE.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "The landing page",
+      "page": "page-34"
+    },
+    {
+      "file": "V31ConfigureD.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Setting up: Gym",
+      "page": "page-35"
+    },
+    {
+      "file": "V31ConfigureDSleep.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Setting up: Sleep",
+      "page": "page-35"
+    },
+    {
+      "file": "V31ConfigureC.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Editing: Gym",
+      "page": "page-35"
+    },
+    {
+      "file": "V31ConfigureCSleep.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Editing: Sleep, the hard one",
+      "page": "page-35"
+    },
+    {
+      "file": "V31ConfigureCFood.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Editing: Food",
+      "page": "page-35"
+    },
+    {
+      "file": "V31ConfigureCSugar.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Editing: Sugar-free, the easy one",
+      "page": "page-35"
+    },
+    {
+      "file": "V31GroupSettings.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Yours",
+      "page": "page-36"
+    },
+    {
+      "file": "V31GroupOwner.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "The group, owner only",
+      "page": "page-36"
+    },
+    {
+      "file": "V32SleepSetup.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Sleep, with the confirm fixed",
+      "page": "page-38"
+    },
+    {
+      "file": "V32SleepNotice.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "The 3.2.0 release note",
+      "page": "page-38"
+    },
+    {
+      "file": "V32GraceHome.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Grace: the action, on Home",
+      "page": "page-38"
+    },
+    {
+      "file": "V32GraceOffer.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Grace: the press",
+      "page": "page-38"
+    },
+    {
+      "file": "V32GraceSettings.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Grace: where the count lives",
+      "page": "page-38"
+    },
+    {
+      "file": "V32Grace.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Grace: the screen behind it",
+      "page": "page-38"
+    },
+    {
+      "file": "V32StopTracking.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Stopping, with what it costs",
+      "page": "page-38"
+    },
+    {
+      "file": "V32Photos.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Your photos, and who saw them",
+      "page": "page-38"
+    },
+    {
+      "file": "V32HomeGroups.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home keeps Create a group",
+      "page": "page-38"
+    },
+    {
+      "file": "V32CheckinFood.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Check in (food, with the note)",
+      "page": "page-37"
+    },
+    {
+      "file": "V32MealReading.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A meal, being read",
+      "page": "page-37"
+    },
+    {
+      "file": "V32MealRead.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A meal, read",
+      "page": "page-37"
+    },
+    {
+      "file": "V32MealUnread.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A meal it could not read",
+      "page": "page-37"
+    },
+    {
+      "file": "V32FoodDay.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "The day (the other placement)",
+      "page": "page-37"
+    },
+    {
+      "file": "V32Ai.dc.html",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Ask",
+      "page": "page-37"
+    },
+    {
+      "file": "V32AiRead.dc.html",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "A read of this week",
+      "page": "page-37"
+    },
+    {
+      "file": "V32Controls.dc.html",
+      "x": 940,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Controls (the switch)",
+      "page": "page-37"
+    },
+    {
+      "file": "V32HomeLink.dc.html",
+      "x": 1410,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (Ask as a link)",
+      "page": "page-37"
+    },
+    {
+      "file": "V32HomeIcon.dc.html",
+      "x": 1880,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "title": "Home (Ask as an icon)",
+      "page": "page-37"
+    },
+    {
+      "file": "V32Stats.dc.html",
+      "x": 0,
+      "y": 2000,
+      "w": 390,
+      "h": 844,
+      "title": "Stats (the other entry)",
+      "page": "page-37"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "app",
+      "x": 0,
+      "y": -140,
+      "w": 900,
+      "text": "v2.5, shipped. One bottom nav, Home as the command center, a tabbed group hub.",
+      "page": "page-1"
+    },
+    {
+      "id": "admin",
+      "x": 0,
+      "y": -140,
+      "w": 900,
+      "text": "Admin console, reached from the header for admins only. Never a bottom tab.",
+      "page": "page-2"
+    },
+    {
+      "id": "page-3",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "When an admin changes something and chooses to tell people, it arrives as a blocking overlay on whatever route the user is on, and nothing in the app works until it is acknowledged. Two boards show the same notice over Home and over a group. One notice at a time, and once acknowledged it never returns. Balances only appear when at least one of your groups tracks money. Turn money off everywhere and Curfew stops being a money app. Home is today at a glance. It leads with completion, not one streak, because every activity keeps its own streak on its own period. Each row carries its own flame and count, every streak number in the app wearing the flame gradient. One tap checks in. What that tap opens depends on the activity's evidence rule: nothing, a check-in page, or the camera. The two new-user boards lead with the catalog rather than a paragraph: someone who has just arrived is asking what this tracks and what happens if they miss, and four real activities naming what they measure answer that better than prose. An invite sits above that list and never instead of it, because accepting one while tracking nothing lands on the join screen with nothing to share.",
+      "page": "page-3"
+    },
+    {
+      "id": "page-4",
+      "x": 0,
+      "y": -150,
+      "w": 900,
+      "text": "Activities opens with your own record across everything, the global score, visible to you and nobody else. The catalog gives every type a one-word name and a line saying what it is, and adds with a plus. Both lists lead to the same configure screen on the next page.",
+      "page": "page-4"
+    },
+    {
+      "id": "page-5",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "All twelve configure screens, so the whole catalog can be reviewed at once. Real controls: steppers for counts, segmented switches for period, day pickers, time ranges, plain number fields. Evidence is not a control, it is a property of the type, stated and not offered. A tracked activity ends with stop tracking, an untracked one with a single add button. The last board shows the validation states: bad values are marked in place, and Save stays dead until they clear.",
+      "page": "page-5"
+    },
+    {
+      "id": "page-6",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "An abstinence type has its own two-answer screen, because there is nothing to attach and nothing to measure. A step that asks for a photo AND NOTHING ELSE has no screen at all: the camera is the check-in, it opens straight from Home, and the frame it takes confirms with Retake, Discard and Save. Three steps work that way today, sleep's confirm, gym's session and supplements' dose, and the condition is what qualifies them rather than a list: photo required on that step, no fields, no question. Everything that also asks for a number keeps the check-in page, always the same shape: a photo slot above the activity's own fields. Optional means Send works without one. Required means Send stays dead until a photo is attached. An attached photo carries a red cross to remove it. There is no note field anywhere: it was optional, never scored, never read by anybody, and it sat on every check-in asking to be filled in. Nothing is recorded until Send. The last two boards are what Send lands on, and neither is a screen of its own: both happen over Home, because that is where the eye goes next and Home already holds every number that just moved. A partial day gets nothing over the top at all. The count rolls, the fourth segment fills, the row flips to done and the flame ticks up, inside about 400ms, with a mark down the left of the row that changed so the eye finds it. It costs no screen and interrupts nothing, which is the only reason it still holds when someone logs four glasses of water in a minute. The complete day is the one moment that earns the screen, and it fires when the last scheduled activity closes: once a day at most, and on a bad day never. A clerk stamps the form and not the line item, so the stamp lands on the date, with the day's list under it compressed to five icons in one line. Home is dimmed to 93% rather than blacked out, so the rows stay faintly legible and it reads as something that happened to the screen you were on. Curfew does not congratulate on either board: the warmth is the record itself, the streak number and the flame it already wears.",
+      "page": "page-6"
+    },
+    {
+      "id": "page-7",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Group stats hang off Overview rather than taking a fifth tab: how the week went, which day was worst, how much of their own list each member hit, and what the whole group finds hard. The header is one line and the tabs sit under it with nothing competing: no chips, no counts, no second colour. Four tabs in every group. Standing puts money right after the rank, then the full ledger, which opens every fine, settlement and correction ever recorded. Sharing is one toggle per activity, with photos as a text choice underneath rather than a second toggle.",
+      "page": "page-7"
+    },
+    {
+      "id": "page-8",
+      "x": 0,
+      "y": -150,
+      "w": 900,
+      "text": "Reached from Settings and from the 'How it works' link on a group's Standing tab. DOUBT to IMMACULATE, a band on a 0 to 1000 number. IMMACULATE carries the only glow in the app.",
+      "page": "page-8"
+    },
+    {
+      "id": "page-9",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Overview first: perfect days this month, three figures worth knowing, eight weeks of days shaded by how much of each you did, then every activity's pass rate side by side. Under it a picker opens one activity at a time, and the chart follows the type. A windowed type plots when it happened against the window it had to land in. A numeric one plots the value against its target. A weekly one counts sessions against the minimum. An abstinence one is held or slipped, with a mark in every cell, because that green and red pair is not safe to read on colour alone.",
+      "page": "page-9"
+    },
+    {
+      "id": "page-10",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Reached from the header link, admins only, never a bottom tab. Overview is the numbers, last night's run, and the pending approvals with Approve and Reject inline. Users is a directory and nothing more: admin can see that a user has six activities, never what they are or what the photos show. Groups is the directory of every group, where money can be switched on for one group even when it is off everywhere else, and where a group is archived rather than deleted. Insights counts behaviour without reading it, including which types people add and then abandon. Controls regulates the whole app, money and photo evidence included, each switch hiding a system rather than deleting it. Nothing there saves on the flip: a flipped switch is marked unsaved, a bar offers Discard or Save, and Save asks again with the actual damage spelled out, one block a change. Telling users is a choice on that sheet, unticked by default. Ops keeps the v1 tools, recompute and drift, and adds the retention sweep.",
+      "page": "page-10"
+    },
+    {
+      "id": "page-13",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Nine live routes were reachable and undrawn, so nothing could tell whether they had drifted: there was nothing to drift from. Two of the nine turned out to render nothing at all, /checkin and /ledger both being redirects left over from v2.5, which leaves the seven screens here plus the two signed-out states. Every board is drawn from the route as it stands rather than redesigned, because a board is what a screen is reviewed against and inventing a different one would move the drift instead of measuring it. Balances is per person AND per group, because a settlement posts to one group's ledger, and the person owed settles from their own screen since Curfew never moves money. What Curfew stores and The rules are the consent text and the terms, readable at any time rather than only at the gate. Reports is the one place an admin sees a photograph, and only because a member asked them to. The user inspector counts behaviour and never reads it: how often somebody checked in, never what. Personal is the odd one and is marked so: its timezone half belongs there, and its sleep-windows half sets the same three windows the Sleep activity screen sets, through a different control. Two ways to change one thing is one too many, and that is a decision v3 has not made yet.",
+      "page": "page-13"
+    },
+    {
+      "id": "page-11",
+      "x": 0,
+      "y": -150,
+      "w": 1800,
+      "text": "Everything a user consented to is visible again here: retention, how reputation works, what is stored, what is never deleted, and every sharing toggle across every group in one place.",
+      "page": "page-11"
+    },
+    {
+      "id": "page-31",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Two changes. IMMACULATE was a score of 950 or more; the engine simulation showed a steady 87.5% completion settles at 969 and holds it, so the only glow in the app was being worn by a record with forty-five gaps a year. It is now the top band plus sixty days with nothing missed, and UNBROKEN moved from 850 to 900 so the top band stops covering a one-miss-a-week habit. A clean run is shown as a bar, because it is the one number a person can act on directly. The grace period is new: a member is not scored or fined by a group on the day they join, since joining at 11pm and being fined at midnight for a day you did not know you were being judged on is not accountability. Their own streak and their own record carry on untouched, which the member's own screen says in as many words. The group sees it too, on the members list, or the rest of them read a member sitting at nothing as someone who does not turn up.",
+      "page": "page-31"
+    },
+    {
+      "id": "page-32",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Reached from Settings, the same place the timezone and the sleep windows are set: a pause is rare, deliberate and global, so it is not on Home. How it works is the existing /ranks screen, reached from Settings, from the How it works link on a group Standing tab, and from Activities. A pause is a declared absence, and the design rests on one sentence: a paused day is a day with NOTHING SCHEDULED. Not a miss. That is why no fine can arise from it and why reputation is not marked down for it, both of which fall out of the engine rather than needing a rule. What it costs is the streak, outright: a streak is consecutive days and a pause is a gap, so grace does not cover one. That single decision is what removes the need for a quota. An earlier draft protected the streak too, which made a pause strictly better than being present and needed a monthly allowance, a reset date and an argument about the member stranded abroad on day 31. With the streak gone there is nothing left to game: pausing every weekend would reset the streak every weekend, and a weekday-only schedule already does the honest version of the same thing. The streak goes when the first paused day CLOSES, exactly the way a missed day takes one, not the moment the pause is declared: declaring is not itself a failure and must not read as one. Three days minimum so it is not a one-night excuse, declared in advance because declaring afterwards would convert a miss that already happened into a day that was never scheduled, and visible to the group with its dates, beside the score rather than instead of it. A member who is away still has a standing, and replacing the number with a tag reads as though they had been removed. Reputation still settles after seven quiet days, which is the second change here: that decay is now 1% of the score a day rather than a flat 3, so a 900 falls faster than a 300 and two months of silence reads as 523 rather than 738. Away four days costs nothing. Away four weeks costs what any four quiet weeks cost. The two stats boards close the last hole in it: a paused day produces no period, so before them a declared trip and a fortnight of not turning up drew the identical hole in the heatmap, and the screen could not tell a member which one they were looking at. An away day is now drawn rather than left blank, dashed and in the accent, in the legend and named with its dates underneath. Group stats cannot draw a member's days at all, so it says who is away and until when, above the two numbers those days are missing from, and shows the member with their dates rather than a bar at nothing, which would read as a week of failures.",
+      "page": "page-32"
+    },
+    {
+      "id": "page-33",
+      "x": 0,
+      "y": -150,
+      "w": 1800,
+      "text": "Item 1, settled on E. The photograph takes every pixel that is left and the sheet under it is exactly as tall as its contents, which is one rule rather than one picture: Food has a field, Gym has none and so gets an enormous photograph, Study has no photograph at all and the sheet becomes the whole screen. Adding an activity type never touches this.\n\nThe cross and Discard were the same action wearing two labels, which is why neither read as anything. There is one of each now: the cross LEAVES and nothing is recorded, Retake sits on the photograph because it is about the photograph, and Send is the only thing on the bottom edge. A photograph you do not want is one you retake or one you leave, and there was never a third thing for Discard to mean.\n\nThe fourth board is the other half of the ask: an abstinence type has no fields and no photograph, so it needs no screen at all. The row opens on Home, you answer there, and the line underneath says which answer stands.",
+      "page": "page-33"
+    },
+    {
+      "id": "page-34",
+      "x": 0,
+      "y": -150,
+      "w": 900,
+      "text": "Item 2. The wordmark was the thing that was off: cutting the page to nine words had shrunk CURFEW to 12px and the brand disappeared off its own landing page. It is back at 30px, anchored at the top where it belongs, and one real sentence sits under the headline saying what the app does, since nine words turned out to be fewer than a stranger needs.\n\nStill one screen and no scrolling. Three photographs, because the fastest way to explain an app about evidence is to show evidence, and a line under them saying what happens to those photographs, which is the question anybody sensible asks next. One call to action.\n\nNo testimonials, no user count, no logos. There are three users, and an invented number would be the one dishonest thing on a page whose whole pitch is honesty.",
+      "page": "page-34"
+    },
+    {
+      "id": "page-35",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Item 5, one screen with two presentations rather than two screens. Setting up on the top row, editing on the bottom. Same field list, same validation, one code path: two implementations of a screen that twelve modules feed is how drift starts.\n\nText is cut to what a person cannot work out for themselves. The \"Next: ...\" line under the wizard is gone, because a progress rule at the top already says how far along you are and naming the next question does not help you answer this one. \"Changes start tomorrow\" lost the clause explaining why, which the person has either already understood or does not need at the moment they are changing a number.\n\nThe bottom row is the part worth checking, because it is one design meeting three shapes. Sleep is the hard one: three time ranges, six times, which as a form is the screen everybody complained about and as a list is five rows. Food carries the sentence about both conditions holding, which is exactly the thing nobody could see in item 8. Sugar-free has almost nothing and says so, rather than leaving somebody hunting for settings they assume they have missed.\n\nThe prose at the top is the module writing its own rule, the way it already writes the line under a row on Home. The engine never assembles that sentence, so nothing here learns what a night or a meal is.",
+      "page": "page-35"
+    },
+    {
+      "id": "page-36",
+      "x": 0,
+      "y": -150,
+      "w": 900,
+      "text": "Item 12. The same brief as item 5, on a screen that was 581 lines and five labelled sections in one scroll, mixing what only you can change with what only an owner can. One switch at the top splits them. Yours carries the two sharing toggles per activity, the ceiling they buy you stated as a number rather than left to be worked out, and what the group costs you. The group carries what an owner decides, four rows deep rather than four sections long, and says in one line that nothing in it touches what you personally share. A member who is not an owner sees the switch with the right half absent, not greyed. The ceiling box is written the way item 11 now behaves: a number you can raise by sharing more, and stopping tracking an activity un-shares it and settles you at the lower one.",
+      "page": "page-36"
+    },
+    {
+      "id": "page-38",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "Items 15, 17, 19, 20, 22 and 23. SLEEP is the redesign here, not the strings: a confirm window that opens 30 minutes after the WAKE PRESS is anchored to an event, and every window until now has been a clock time in config. It stops being a setting because a confirm you place yourself can be placed where you are already up, and it carries the only photograph sleep asks for, which is why it survives at all. Existing members meet the change through the notice overlay that already exists and already blocks. Nothing new is built for it: a release note is a notice whose body came from release-notes.json instead of from a controls change, and the app cannot tell the difference. The words on that board are READ from that file rather than typed again here, because an artboard that paraphrases what ships disagrees with it by the second edit. It carries every change in the release, not only sleep, since that is what one person is made to read before they can use the app again. Two entries, not three: photographs stopped reaching groups joined after they were taken, which is real and is a privacy improvement, and it was cut because nobody was relying on the old behaviour and nobody has to act on the new one. The overlay blocks the whole app, so an entry that did not need reading spends something that only runs out once. It reaches only accounts that existed when it was published, which is decision 80 and exactly right here, and it starts tomorrow because config is insert-only with a future effective date. GRACE becomes one pool for the account: two a month per activity tracked, spent by hand, one grace per missed DAY so a weekly activity costs what it actually missed. It is fungible on purpose. Putting all of it on one activity is allowed, because grace holds a STREAK and nothing else, so doing that costs a fine and a dip in standing every time and needs no rule to discourage it. A per-activity cap would collapse the pool back into today's allowance with a button on it. The question was never the arithmetic, it was WHERE. Home carries the action and changes as little as possible: the status line still says what the week is doing, nothing states the price, and exactly two things differ from a normal row. The flame is out, which is the whole message and needs no words, and a Restore sits beside Check in, outlined so it reads as secondary while Check in keeps the filled treatment it has everywhere. Snapchat is the reference for the extinguished flame and only for that; its rounded pill and glow are both named in CLAUDE.md as things not to drift toward. Settings carries the count, beside retention and how reputation works, because it is the same kind of fact: a rule the app applies to you. A streak can break by more than you can afford. A week away from a daily activity costs seven grace and somebody holding six cannot take it, so Home shows no Restore on that row at all: a disabled control is a thing to wonder about on the screen looked at most, and the grey flame alone is what a broken streak looked like before any of this. The grace screen keeps the offer, drops its button and says what it needs against what you have, which makes it the one place that explains the row. CHECK-IN says nothing about groups. The tagging still happens at that press, which is what stops a group added tomorrow reaching today's photograph, but it is not a decision made there and a list of group names on the camera screen would read as one. Where a photograph went is answered on Your Photos, and a struck-through group saw it once and cannot any more. STOPPING an activity was a bare button and is four separate losses, one of them permanent: the photographs a group has seen leave when sharing stops and re-sharing does not bring them back. Home keeps Create a group until somebody is actually in one.",
+      "page": "page-38"
+    },
+    {
+      "id": "page-37",
+      "x": 0,
+      "y": -150,
+      "w": 2270,
+      "text": "AI, and the rules it is drawn to keep visible. Nothing on any of these boards is an input to scoring, a streak or a balance, and every board carrying a derived number says so on the board rather than in a document. That single decision is what makes the rest cheap: no period is ever judged against a reading, so the Controls switch needs no as-of resolution, and a wrong answer is a disappointing feature rather than a false fine. The app writes every sentence. The model returns fields and these templates render them, which is what keeps the Voice section applying to the surface people read most and what makes the wording testable, because a sentence nobody wrote cannot be. Asked for the model's reasoning too, which contradicts that, since reasoning is prose. WHAT IT SAW answers the same need better: each thing the model says it saw with its own numbers, adding to the total, which is how a person tells whether 620 is nonsense. A number read off a photograph is a range and marked estimated, because a clerk states facts and that is the fact about it; a single number would claim a precision the photograph cannot carry. Food is the only activity. Deriving numbers from photographs for the other eleven was dropped: it only ever paid for itself by filling the field and saving the typing, and since a model's number never reaches scoring, what was left was a record nobody asked for. The note box is the person's own words, goes in the check-in event like any other entered value, and stays when the switch is off, because the switch governs the call and not the person. Three meal states are drawn, not two: a meal between the press and the answer, and a meal that could not be read, are states the screen has whether or not anybody designed them, and the first of them is the whole latency argument made visible, since the check-in is already recorded before the reading starts. Ask is the only place anybody waits for a model, because they pressed the thing that starts it, and it is single-shot in both directions so it cannot drift into the chat bot this was explicitly not. Two open questions are drawn rather than argued: whether the reading belongs on the meal or on the day, and whether Home reaches Ask by a link or an icon. The link is the house pattern, since Admin is reached exactly that way from exactly that corner, and CLAUDE.md lists generic line icons as section markers among the visual tells to avoid.",
+      "page": "page-37"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-38"
+  }
+}

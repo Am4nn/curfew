@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { tapped } from "./haptics";
 
 // The one-tap check-in on Home. An explicit press, POSTed, never a GET and
 // never on load. The default styling is the full-height night button; callers
@@ -76,6 +77,11 @@ export function CheckinButton({
         const body = (await res.json().catch(() => ({}))) as { message?: string };
         setError(body.message ?? "That did not go through.");
       } else {
+        // A short buzz, where the device has one (item 25). After the server
+        // said yes, never on the press itself: a buzz for a check-in that was
+        // refused is the app telling somebody their day counted when it did
+        // not.
+        tapped();
         onPressed?.();
       }
       startTransition(() => router.refresh());

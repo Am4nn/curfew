@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+
+  </style>
+</helmet>
+<div style="position:relative;width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;"><div style="display:flex;align-items:center;gap:9px;padding:20px 20px 15px;">
+      <svg width="15" height="15" viewBox="0 0 32 32" shape-rendering="crispEdges" fill="#f2f2f2"><rect x="2" y="2" width="13" height="13"></rect><rect x="17" y="2" width="13" height="13"></rect><rect x="2" y="17" width="13" height="13"></rect></svg><span style="font-size:14px;font-weight:600;letter-spacing:0.16em;">ADMIN</span>
+      <span style="margin-left:auto;font-size:11px;color:#8c8c8c;">Back to app &#8250;</span>
+    </div>
+    <div style="display:flex;padding:0 20px;border-bottom:1px solid #2e2c28;"><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">OVERVIEW</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">USERS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">GROUPS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">INSIGHTS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#f2f2f2;padding-bottom:10px;box-shadow:inset 0 -2px 0 #f2f2f2;">CONTROLS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">OPS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">REPORTS</div></div><div style="flex:1;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:20px;"><div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:10px;letter-spacing:0.16em;color:#8c8c8c;">THE APP</div>
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#8c8c8c;">Money</span>
+        <span style="font-size:9.5px;letter-spacing:0.1em;color:#e4574b;border:1px solid #e4574b;padding:1px 5px;">UNSAVED</span>
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off means no group can turn on fines and no ledger is written anywhere.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #2e2c28;background:transparent;display:flex;align-items:center;justify-content:flex-start;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#8c8c8c;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#f2f2f2;">Photo evidence</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off means no type can ask for a photo. Existing photos are untouched.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#f2f2f2;">New groups</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off stops anyone creating a group. Existing ones carry on.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#f2f2f2;">Invites</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off stops every invite going out. Nobody new can join.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#8c8c8c;">Sign-ups</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off means an approved invite is the only way in.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #2e2c28;background:transparent;display:flex;align-items:center;justify-content:flex-start;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#8c8c8c;"></div></div>
+  </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:10px;letter-spacing:0.16em;color:#8c8c8c;">ACTIVITY TYPES</div>
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M20 14.5A8 8 0 0 1 9.5 4a8.2 8.2 0 1 0 10.5 10.5Z"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;">Sleep</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">96 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M3.5 11h11a5.5 5.5 0 0 1-11 0Z"></path><path d="M3.5 19h11"></path><path d="M19 4v16"></path><path d="M19 4c1.6 0 2.5 1.4 2.5 3.2S20.6 10.5 19 10.5"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;">Food</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">74 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M4 9v6"></path><path d="M7 6.5v11"></path><path d="M17 6.5v11"></path><path d="M20 9v6"></path><path d="M7 12h10"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;">Gym</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">68 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><rect x="6" y="2.6" width="12" height="18.8"></rect><path d="M10 5.6h4"></path><path d="M12 10v3.2l2.2 1.6"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;">Screen</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">5 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div>
+      </div>
+    </div></div><div style="border-top:1px solid #2e2c28;background:#17150f;padding:13px 20px;display:flex;align-items:center;gap:10px;">
+    <span style="flex:1;font-size:11.5px;color:#8c8c8c;">2 unsaved changes</span>
+    <button type="button" style="height:38px;padding:0 15px;border:1px solid #2e2c28;background:transparent;color:#f2f2f2;font-family:inherit;font-size:12.5px;cursor:pointer;">Discard</button>
+    <button type="button" style="height:38px;padding:0 15px;border:1px solid #e4574b;background:#e4574b;color:#0b0a09;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;">Save</button>
+  </div><div style="position:absolute;inset:0;background:#0b0a09d9;display:flex;align-items:flex-end;">
+    <div style="width:100%;max-height:78%;background:#0b0a09;border-top:1px solid #e4574b;display:flex;flex-direction:column;">
+      <div style="padding:20px 20px 6px;">
+        <span style="font-size:16px;font-weight:600;">Save 2 changes?</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:0 20px;display:flex;flex-direction:column;">
+        <div style="display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid #2e2c28;">
+                <div style="display:flex;align-items:center;gap:9px;">
+                  <span style="font-size:13.5px;">Money</span>
+                  <span style="font-size:9.5px;letter-spacing:0.1em;color:#e4574b;border:1px solid #e4574b;padding:1px 6px;">OFF</span>
+                </div>
+                <div style="display:flex;gap:9px;"><span style="color:#8c8c8c;font-size:11px;line-height:1.65;">&#8226;</span><span style="flex:1;font-size:12px;color:#8c8c8c;line-height:1.6;">9 groups track money right now. All of them stop tonight.</span></div><div style="display:flex;gap:9px;"><span style="color:#8c8c8c;font-size:11px;line-height:1.65;">&#8226;</span><span style="flex:1;font-size:12px;color:#8c8c8c;line-height:1.6;">41 members lose sight of what they owe until this is back on.</span></div><div style="display:flex;gap:9px;"><span style="color:#8c8c8c;font-size:11px;line-height:1.65;">&#8226;</span><span style="flex:1;font-size:12px;color:#8c8c8c;line-height:1.6;">Balances and every ledger entry stay exactly as they are.</span></div>
+              </div><div style="display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid #2e2c28;">
+                <div style="display:flex;align-items:center;gap:9px;">
+                  <span style="font-size:13.5px;">Screen</span>
+                  <span style="font-size:9.5px;letter-spacing:0.1em;color:#6ba17f;border:1px solid #6ba17f;padding:1px 6px;">ON</span>
+                </div>
+                <div style="display:flex;gap:9px;"><span style="color:#8c8c8c;font-size:11px;line-height:1.65;">&#8226;</span><span style="flex:1;font-size:12px;color:#8c8c8c;line-height:1.6;">Appears in the catalog for all 128 users at once.</span></div><div style="display:flex;gap:9px;"><span style="color:#8c8c8c;font-size:11px;line-height:1.65;">&#8226;</span><span style="flex:1;font-size:12px;color:#8c8c8c;line-height:1.6;">The 5 already tracking it are unaffected.</span></div>
+              </div>
+      </div>
+      <div style="padding:14px 20px 20px;display:flex;flex-direction:column;gap:12px;border-top:1px solid #2e2c28;">
+        <div style="display:flex;align-items:center;gap:9px;">
+    <span style="width:16px;height:16px;border:1px solid #2e2c28;background:transparent;display:flex;align-items:center;justify-content:center;flex:none;"></span>
+    <span style="font-size:12px;color:#8c8c8c;">Tell users what changed</span>
+  </div>
+        <span style="font-size:11px;color:#8c8c8c;line-height:1.55;">A switch hides a system. Nothing here deletes data, and switching back restores what was hidden.</span>
+        <div style="display:flex;gap:10px;">
+          <button type="button" style="flex:1;height:46px;border:1px solid #2e2c28;background:transparent;color:#f2f2f2;font-family:inherit;font-size:13.5px;cursor:pointer;">Cancel</button>
+          <button type="button" style="flex:1;height:46px;border:1px solid #e4574b;background:#e4574b;color:#0b0a09;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 20px 11px;border-bottom:1px solid #2e2c28;"><div style="display:flex;align-items:center;gap:9px;"><span style="color:#8c8c8c;font-size:14px;">&#8249;</span><span style="font-size:14px;font-weight:600;letter-spacing:0.14em;">PAUSE</span></div></div><div style="flex:1;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:20px;"><span style="font-size:13px;line-height:1.6;">Tell Curfew you are away. The days are not counted, in any group or on your own record.</span>
+
+        <div style="display:flex;gap:11px;">
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+    <span style="font-size:10px;letter-spacing:0.14em;color:#8c8c8c;">FROM</span>
+    <div style="border:1px solid #f2f2f2;padding:10px 11px;font-size:14px;">Tue 15 Sep</div>
+  </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+    <span style="font-size:10px;letter-spacing:0.14em;color:#8c8c8c;">TO</span>
+    <div style="border:1px solid #f2f2f2;padding:10px 11px;font-size:14px;">Fri 18 Sep</div>
+  </div>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:-8px;">
+          <span style="font-size:11.5px;color:#8c8c8c;">Starts tomorrow at the earliest.</span>
+          <span style="font-size:12px;">4 days</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:10px;letter-spacing:0.16em;color:#8c8c8c;">WHAT IT COSTS</div>
+          <div style="border:1px solid #e4574b;padding:13px;display:flex;flex-direction:column;gap:5px;">
+            <span style="font-size:13px;color:#e4574b;">Every streak ends at 0.</span>
+            <span style="font-size:11.5px;color:#8c8c8c;line-height:1.55;">A streak is consecutive days. A pause is a gap, and grace does not cover one. They end when the first paused day closes, the same as any day you miss, not the moment you declare.</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:10px;letter-spacing:0.16em;color:#8c8c8c;">WHAT IT SAVES</div>
+          <div style="display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+    <div style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:13px;">Reputation</span><span style="font-size:10.5px;color:#8c8c8c;">The days are not misses</span></div>
+    <span style="font-size:13px;color:#8c8c8c;text-align:right;">Not marked down</span>
+  </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+    <div style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:13px;">Money</span><span style="font-size:10.5px;color:#8c8c8c;">Nothing scheduled, nothing to fine</span></div>
+    <span style="font-size:13px;color:#8c8c8c;text-align:right;">Nothing owed</span>
+  </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+    <div style="display:flex;flex-direction:column;gap:2px;"><span style="font-size:13px;">After 7 days away</span><span style="font-size:10.5px;color:#8c8c8c;">The same as any quiet week</span></div>
+    <span style="font-size:13px;color:#8c8c8c;text-align:right;">Settles</span>
+  </div>
+          </div>
+        </div>
+
+        <button type="button" style="width:100%;height:44px;border:1px solid #f2f2f2;background:#f2f2f2;color:#0b0a09;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;">Declare</button>
+        <div style="font-size:11.5px;color:#8c8c8c;line-height:1.55;">Three days minimum. Your groups see the dates.</div></div></div>
+</x-dc>
+</body>
+</html>

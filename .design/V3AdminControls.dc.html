@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+
+  </style>
+</helmet>
+<div style="position:relative;width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;"><div style="display:flex;align-items:center;gap:9px;padding:20px 20px 15px;">
+      <svg width="15" height="15" viewBox="0 0 32 32" shape-rendering="crispEdges" fill="#f2f2f2"><rect x="2" y="2" width="13" height="13"></rect><rect x="17" y="2" width="13" height="13"></rect><rect x="2" y="17" width="13" height="13"></rect></svg><span style="font-size:14px;font-weight:600;letter-spacing:0.16em;">ADMIN</span>
+      <span style="margin-left:auto;font-size:11px;color:#8c8c8c;">Back to app &#8250;</span>
+    </div>
+    <div style="display:flex;padding:0 20px;border-bottom:1px solid #2e2c28;"><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">OVERVIEW</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">USERS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">GROUPS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">INSIGHTS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#f2f2f2;padding-bottom:10px;box-shadow:inset 0 -2px 0 #f2f2f2;">CONTROLS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">OPS</div><div style="margin-right:12px;font-size:9.5px;letter-spacing:0.08em;color:#8c8c8c;padding-bottom:10px;">REPORTS</div></div><div style="flex:1;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:20px;"><div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:10px;letter-spacing:0.16em;color:#8c8c8c;">THE APP</div>
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#8c8c8c;">Money</span>
+        <span style="font-size:9.5px;letter-spacing:0.1em;color:#e4574b;border:1px solid #e4574b;padding:1px 5px;">UNSAVED</span>
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off hides money everywhere except groups you switch on by hand under Groups.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #2e2c28;background:transparent;display:flex;align-items:center;justify-content:flex-start;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#8c8c8c;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#f2f2f2;">Photo evidence</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off means no type can ask for a photo. Existing photos are untouched.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#f2f2f2;">New groups</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off stops anyone creating a group. Existing ones carry on.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#f2f2f2;">Invites</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off stops every invite going out. Nobody new can join.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+  </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13.5px;color:#8c8c8c;">Sign-ups</span>
+        
+      </div>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Off means an approved invite is the only way in.</span>
+    </div>
+    <div style="width:40px;height:22px;border:1px solid #2e2c28;background:transparent;display:flex;align-items:center;justify-content:flex-start;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#8c8c8c;"></div></div>
+  </div>
+      </div>
+      <span style="font-size:11.5px;color:#8c8c8c;line-height:1.55;">A switch here takes effect at once and never deletes anything. Turning money off hides it; turning it back on brings the same balances back.</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:10px;letter-spacing:0.16em;color:#8c8c8c;">ACTIVITY TYPES</div>
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M20 14.5A8 8 0 0 1 9.5 4a8.2 8.2 0 1 0 10.5 10.5Z"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Sleep</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">96 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M3.5 11h11a5.5 5.5 0 0 1-11 0Z"></path><path d="M3.5 19h11"></path><path d="M19 4v16"></path><path d="M19 4c1.6 0 2.5 1.4 2.5 3.2S20.6 10.5 19 10.5"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Food</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">74 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M4 9v6"></path><path d="M7 6.5v11"></path><path d="M17 6.5v11"></path><path d="M20 9v6"></path><path d="M7 12h10"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Gym</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">68 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M12 3.2c3.4 4 6 6.6 6 10a6 6 0 0 1-12 0c0-3.4 2.6-6 6-10Z"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Water</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">51 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M4 20V5h10v15"></path><path d="M14 10h6v10"></path><path d="M7 8h1.5"></path><path d="M10 8h1.5"></path><path d="M7 12h1.5"></path><path d="M10 12h1.5"></path><path d="M7 16h4.5"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Office</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">44 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M4 5h7v14H4z"></path><path d="M13 5h7v14h-7z"></path><path d="M11 5v14"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Study</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">39 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M6 4c1.6 0 2.5 1.6 2.5 4S8 12.5 6 12.5 3.5 11 3.5 8.5 4.4 4 6 4Z"></path><path d="M4 15h4v3.5H4z"></path><path d="M17 8c1.6 0 2.5 1.6 2.5 4s-.5 4.5-2.5 4.5-2.5-1.5-2.5-4S15.4 8 17 8Z"></path><path d="M15 19h4v2.5h-4z"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Steps</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">33 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M6.5 13.5 13.5 6.5a4 4 0 0 1 5.6 5.6l-7 7a4 4 0 0 1-5.6-5.6Z"></path><path d="M10 10l5.6 5.6"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Supplements</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">21 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.4V12l3 2"></path><path d="M6 18 18 6"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Nightfast</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">17 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M12 7.2C10 5.4 7.4 4.6 3.5 4.6V18c3.9 0 6.5.8 8.5 2.6"></path><path d="M12 7.2c2-1.8 4.6-2.6 8.5-2.6V18c-3.9 0-6.5.8-8.5 2.6"></path><path d="M12 7.2v13.4"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Reading</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">14 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M4.6 8.6 12 4.4l7.4 4.2v6.8L12 19.6 4.6 15.4Z"></path><path d="M6 18.4 18 5.6"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Sugar-free</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">9 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div><div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #2e2c28;">
+                <span style="display:flex;flex:none;color:#f2f2f2;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><rect x="6" y="2.6" width="12" height="18.8"></rect><path d="M10 5.6h4"></path><path d="M12 10v3.2l2.2 1.6"></path></svg></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                  <span style="font-size:13.5px;color:#f2f2f2;">Screen</span>
+                  <span style="font-size:10.5px;color:#8c8c8c;">5 tracking</span>
+                </div>
+                <div style="width:40px;height:22px;border:1px solid #f2f2f2;background:#f2f2f2;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex:none;"><div style="width:16px;height:16px;background:#0b0a09;"></div></div>
+              </div>
+      </div>
+      <span style="font-size:11.5px;color:#8c8c8c;line-height:1.55;">Off hides a type from the catalog. Anyone already tracking it keeps it. The list is every type the app has: adding one is a code change, not a setting.</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:10px;letter-spacing:0.16em;color:#8c8c8c;">EVIDENCE</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+    <span style="font-size:11px;letter-spacing:0.06em;color:#8c8c8c;">Retention</span>
+    <div style="display:flex;border:1px solid #2e2c28;">
+    <div style="width:44px;display:flex;align-items:center;justify-content:center;border-right:1px solid #2e2c28;color:#8c8c8c;font-size:16px;">&#8722;</div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;"><span style="font-size:14px;">30</span><span style="font-size:12px;color:#8c8c8c;">days</span></div>
+    <div style="width:44px;display:flex;align-items:center;justify-content:center;border-left:1px solid #2e2c28;color:#8c8c8c;font-size:16px;">+</div>
+  </div>
+    
+  </div>
+      <span style="font-size:11.5px;color:#8c8c8c;line-height:1.55;">Shortening this deletes anything already older on the next sweep.</span>
+    </div></div><div style="border-top:1px solid #2e2c28;background:#17150f;padding:13px 20px;display:flex;align-items:center;gap:10px;">
+    <span style="flex:1;font-size:11.5px;color:#8c8c8c;">2 unsaved changes</span>
+    <button type="button" style="height:38px;padding:0 15px;border:1px solid #2e2c28;background:transparent;color:#f2f2f2;font-family:inherit;font-size:12.5px;cursor:pointer;">Discard</button>
+    <button type="button" style="height:38px;padding:0 15px;border:1px solid #e4574b;background:#e4574b;color:#0b0a09;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;">Save</button>
+  </div></div>
+</x-dc>
+</body>
+</html>

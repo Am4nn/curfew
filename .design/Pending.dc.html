@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;justify-content:center;padding:0 28px;gap:22px;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <svg width="30" height="30" viewBox="0 0 32 32" shape-rendering="crispEdges" fill="#f2f2f2"><rect x="2" y="2" width="13" height="13"></rect><rect x="17" y="2" width="13" height="13"></rect><rect x="2" y="17" width="13" height="13"></rect></svg>
+    <div style="font-size:30px;font-weight:600;letter-spacing:0.2em;">CURFEW</div>
+  </div>
+  <div style="border-left:3px solid #7fa8ff;background:#17150f;padding:14px 16px;font-size:14px;line-height:1.55;">Your account is waiting for an admin to approve it. You will get an email when the decision is made.</div>
+  <button type="button" style="height:44px;border:1px solid #2e2c28;background:transparent;color:#8c8c8c;font-family:inherit;font-size:14px;cursor:pointer;align-self:flex-start;padding:0 18px;">Sign out</button>
+</div>
+</x-dc>
+</body>
+</html>

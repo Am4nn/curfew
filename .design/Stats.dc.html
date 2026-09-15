@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    a { color: #7fa8ff; } a:hover { color: #a9c4ff; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;">
+
+  <div style="padding:20px 20px 14px;border-bottom:1px solid #2e2c28;">
+    <div style="font-size:15px;font-weight:600;letter-spacing:0.14em;">YOUR STATS</div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:22px;">
+
+    <!-- plain-language headline -->
+    <div style="font-size:15px;line-height:1.55;">You hit your window <span style="color:#6ba17f;">82%</span> of nights this month. Current streak <span style="color:#f2f2f2;">18</span>.</div>
+
+    <!-- wake time chart -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;">
+        <div style="font-size:11px;letter-spacing:0.14em;color:#8c8c8c;">WAKE TIME</div>
+        <div style="font-size:11px;color:#8c8c8c;">7-day average</div>
+      </div>
+      <svg viewBox="0 0 350 110" width="100%" style="display:block;">
+        <line x1="0" y1="28" x2="350" y2="28" stroke="#2e2c28" stroke-width="1"></line>
+        <line x1="0" y1="64" x2="350" y2="64" stroke="#2e2c28" stroke-width="1"></line>
+        <line x1="0" y1="100" x2="350" y2="100" stroke="#2e2c28" stroke-width="1"></line>
+        <polyline points="0,74 44,68 88,70 132,58 176,52 220,56 264,44 308,46 350,38" fill="none" stroke="#7fa8ff" stroke-width="2"></polyline>
+        <text x="0" y="20" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#8c8c8c">07:00</text>
+        <text x="0" y="96" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#8c8c8c">06:00</text>
+      </svg>
+      <div style="font-size:12px;color:#8c8c8c;">Waking earlier over the last two weeks.</div>
+    </div>
+
+    <!-- pass rate by day -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:11px;letter-spacing:0.14em;color:#8c8c8c;">PASS RATE BY DAY</div>
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;height:88px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;"><div style="width:100%;height:64%;background:#6ba17f;"></div><span style="font-size:10px;color:#8c8c8c;">Mon</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;"><div style="width:100%;height:80%;background:#6ba17f;"></div><span style="font-size:10px;color:#8c8c8c;">Tue</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;"><div style="width:100%;height:72%;background:#6ba17f;"></div><span style="font-size:10px;color:#8c8c8c;">Wed</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;"><div style="width:100%;height:88%;background:#6ba17f;"></div><span style="font-size:10px;color:#8c8c8c;">Thu</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;"><div style="width:100%;height:60%;background:#6ba17f;"></div><span style="font-size:10px;color:#8c8c8c;">Fri</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;"><div style="width:100%;height:40%;background:#6ba17f;"></div><span style="font-size:10px;color:#8c8c8c;">Sat</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%;"><div style="width:100%;height:52%;background:#6ba17f;"></div><span style="font-size:10px;color:#8c8c8c;">Sun</span></div>
+      </div>
+      <div style="font-size:12px;color:#8c8c8c;">Weekends are where you slip.</div>
+    </div>
+
+  </div>
+
+  <div style="display:flex;border-top:1px solid #2e2c28;background:#0b0a09;">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#8c8c8c;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h14V9.5"></path></svg>
+      <span style="font-size:11px;">Home</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#8c8c8c;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 20a5.5 5.5 0 0 1 11 0"></path><path d="M16.5 6.2a3 3 0 0 1 0 5.6"></path><path d="M15.5 20a5.5 5.5 0 0 0-1.2-3.5"></path></svg>
+      <span style="font-size:11px;">Groups</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#f2f2f2;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V11"></path><path d="M10 20V4"></path><path d="M16 20v-6"></path></svg>
+      <span style="font-size:11px;">Stats</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0 12px;color:#8c8c8c;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line><circle cx="9" cy="8" r="2.3" fill="#0b0a09"></circle><circle cx="15" cy="16" r="2.3" fill="#0b0a09"></circle></svg>
+      <span style="font-size:11px;">Settings</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+
+  </style>
+</helmet>
+<div style="width:390px;height:844px;background:#000;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;position:relative;">
+    <div style="position:absolute;inset:0;background:linear-gradient(160deg,#1c1a17,#0b0a09 60%,#121110);"></div>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#3a3733;font-size:12px;letter-spacing:0.2em;">LIVE PREVIEW</div>
+    <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:20px;">
+      <span style="font-size:13px;opacity:0.8;">&#10005;</span>
+      <span style="font-size:11px;letter-spacing:0.16em;opacity:0.8;">FOOD &middot; MEAL 3</span>
+      <span style="width:13px;"></span>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 20px 34px;">
+      <span style="font-size:11.5px;opacity:0.65;">Window closes 9:30 PM</span>
+      <div style="width:70px;height:70px;border:2px solid #f2f2f2;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <div style="width:56px;height:56px;background:#f2f2f2;border-radius:50%;"></div>
+      </div>
+    </div>
+  </div>
+</x-dc>
+</body>
+</html>

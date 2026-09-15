@@ -37,7 +37,18 @@ Thumbs.db
 # agent tooling
 .agents/
 .claude/
-.design/
+
+# The approved mocks are tracked (item 27). They were gitignored, and thirteen
+# artboards existed only on the canvas because of it: nothing in the repo knew
+# they were there, and regenerating would have destroyed them silently. They are
+# the design reference every screen is reviewed against, so losing one is losing
+# the thing the screen is supposed to match.
+#
+# The SEEDED CANVAS is not tracked. It is `build-v3.mjs` plus the design skill's
+# payload, about four megabytes of editor, and it is regenerated whole every
+# time. The artboards and the generator are the source; that file is the build.
+.design/curfew-redesign.html
+.design/*.seed.html
 
 # drizzle
 drizzle/meta/

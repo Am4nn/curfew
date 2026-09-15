@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0a09; }
+    ::-webkit-scrollbar { display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+
+  </style>
+</helmet>
+<div style="position:relative;width:390px;height:844px;background:#0b0a09;color:#f2f2f2;font-family:'IBM Plex Mono',ui-monospace,monospace;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 20px 11px;border-bottom:1px solid #2e2c28;"><div style="display:flex;align-items:center;gap:9px;"><span style="color:#8c8c8c;font-size:14px;">&#8249;</span><span style="font-size:14px;font-weight:600;letter-spacing:0.14em;">GYM</span></div></div>
+    <div style="flex:1;overflow-y:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:20px;"><div style="display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <span style="font-size:13.5px;color:#f2f2f2;">How often</span>
+    <span style="font-size:12.5px;color:#8c8c8c;display:flex;align-items:center;gap:8px;">3 a week<span>&#8250;</span></span>
+  </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #2e2c28;">
+    <span style="font-size:13.5px;color:#f2f2f2;">Day starts</span>
+    <span style="font-size:12.5px;color:#8c8c8c;display:flex;align-items:center;gap:8px;">Midnight<span>&#8250;</span></span>
+  </div>
+      </div></div>
+    <div style="position:absolute;inset:0;background:#0b0a09e6;display:flex;align-items:flex-end;">
+    <div style="width:100%;border-top:1px solid #2e2c28;background:#0b0a09;display:flex;flex-direction:column;gap:14px;padding:18px 20px 22px;">
+      <span style="font-size:16px;line-height:1.45;">Stop tracking Gym?</span>
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #2e2c28;">
+    <span style="flex:none;color:#e4574b;font-size:12px;line-height:1.5;">&mdash;</span>
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:12.5px;line-height:1.5;">Your 24 day streak goes to 0.</span>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Starting again starts at 1. Grace cannot restore a streak you ended yourself.</span>
+    </div>
+  </div>
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #2e2c28;">
+    <span style="flex:none;color:#e4574b;font-size:12px;line-height:1.5;">&mdash;</span>
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:12.5px;line-height:1.5;">Gym stops being shared with Morning Crew and Founders.</span>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">They stop seeing whether you went.</span>
+    </div>
+  </div>
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #2e2c28;">
+    <span style="flex:none;color:#e4574b;font-size:12px;line-height:1.5;">&mdash;</span>
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:12.5px;line-height:1.5;">The 18 photographs they have seen leave both groups.</span>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">Permanent. Tracking Gym again, or sharing it again, does not bring them back.</span>
+    </div>
+  </div>
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #2e2c28;">
+    <span style="flex:none;color:#e4574b;font-size:12px;line-height:1.5;">&mdash;</span>
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <span style="font-size:12.5px;line-height:1.5;">Your ceiling in both groups drops.</span>
+      <span style="font-size:10.5px;color:#8c8c8c;line-height:1.5;">You share one fewer of what they accept.</span>
+    </div>
+  </div>
+      </div>
+      <span style="font-size:11px;color:#8c8c8c;line-height:1.55;">Nothing is deleted. Your history stays, your photographs stay in Your Photos, and what you already owe stays owed.</span>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-top:2px;">
+        <button type="button" style="width:100%;height:46px;border:1px solid #e4574b;background:transparent;color:#e4574b;font-family:inherit;font-size:14px;font-weight:400;cursor:pointer;">Stop tracking Gym</button>
+        <button type="button" style="width:100%;height:46px;border:1px solid #2e2c28;background:transparent;color:#f2f2f2;font-family:inherit;font-size:14px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>
+  </div>
+</x-dc>
+</body>
+</html>

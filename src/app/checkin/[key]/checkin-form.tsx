@@ -7,6 +7,7 @@ import type { ActivityCheckinState, CheckinStepView } from "@/server/checkin";
 import { compressFile, type Compressed } from "@/lib/compress";
 import { Camera } from "./camera";
 import { checkInAction } from "./actions";
+import { tapped } from "@/app/haptics";
 
 // One check-in screen, twelve types. The photo slot, the fields, the question
 // and the words under them all come from the module (decision 90).
@@ -316,6 +317,7 @@ export function CheckinForm({
         evidence,
       });
       if (result.ok) {
+        tapped(); // where the device has one (item 25)
         // Home, not the activity screen. What a person wants to see after Send
         // is that it counted and what it did to the day, and Home already
         // holds both. `?done=` marks the row that just changed; on a day this

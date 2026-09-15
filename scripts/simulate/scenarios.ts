@@ -164,9 +164,12 @@ export const SCENARIOS: Scenario[] = [
     title: "One miss, then grace, pressed",
     question: "Does a streak somebody paid to restore come back to where it was?",
     async run() {
+      // The miss is YESTERDAY, not somewhere in the middle. The offer closes
+      // the moment the activity is checked in again, which is the rule and not
+      // an implementation detail: the run either came back or it did not.
       await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
       for (const d of days(-30, -1)) {
-        if (d === day(-10)) continue; // the miss
+        if (d === day(-1)) continue; // the miss
         await logSteps(d, 10000);
       }
       await scoreAll();
@@ -184,8 +187,8 @@ export const SCENARIOS: Scenario[] = [
 
       return {
         checks: [
-          eq("the miss ends the run", broken?.streak, 9),
-          eq("and best keeps the twenty", broken?.best, 20),
+          eq("the miss ends the run", broken?.streak, 0),
+          eq("and best keeps the twenty-nine", broken?.best, 29),
           eq("one missed day costs one grace", offer?.cost, 1),
           eq("and the offer says what comes back", offer?.restoresTo, 29),
           holds("the press is taken", used.ok, JSON.stringify(used)),
@@ -194,7 +197,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         notes: [
           "Grace does not add a day and does not take one away. The run continues,",
-          "and the twenty days before the miss are still in it.",
+          "and the twenty-nine days before the miss are still in it.",
           "One activity tracked, so the pool is two, and this cost one of them.",
         ],
       };
@@ -290,6 +293,9 @@ export const SCENARIOS: Scenario[] = [
       });
       const shortWeek = closed.at(-1)!;
       for (const d of all) {
+        // Nothing after the short week. The offer closes on the next session,
+        // so a session in the week still running would have closed it.
+        if (mondayOf(d) > shortWeek) continue;
         const dow = new Date(`${d}T00:00:00Z`).getUTCDay();
         const wanted = mondayOf(d) === shortWeek ? [1, 3] : [1, 3, 5];
         if (wanted.includes(dow)) await logGym(d);

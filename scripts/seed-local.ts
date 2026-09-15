@@ -199,7 +199,8 @@ async function wipe(): Promise<void> {
 interface ScheduleShape {
   schedule: Schedule;
   dayBoundary: DayBoundary;
-  grace: number;
+  /** Overrides the module's own default, which is what `trackType` fills in. */
+  minGap?: number;
 }
 
 async function trackType(
@@ -212,7 +213,14 @@ async function trackType(
   await db.insert(userActivityConfig).values({
     userId,
     typeKey,
-    config: { schedule, config },
+    // The gap comes from the MODULE unless the fixture says otherwise, which
+    // is what `defaultsFor` does when somebody sets an activity up for real
+    // (item 18). Without it the fixture's water has no wait between glasses
+    // and the screens describe a setup the app would never write.
+    config: {
+      schedule: { minGap: getActivityType(typeKey).defaults.minGap ?? 0, ...schedule },
+      config,
+    },
     effectiveFrom,
   });
   await db.insert(userActivities).values({
@@ -381,13 +389,12 @@ async function addEvidence(
 // Per-type history generators
 // ---------------------------------------------------------------------------
 
-const SLEEP_SCHEDULE: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "noon", grace: 2 };
+const SLEEP_SCHEDULE: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "noon" };
 const GYM_SCHEDULE = (perWeek: number): ScheduleShape => ({
   schedule: { kind: "minimum", perWeek },
   dayBoundary: "midnight",
-  grace: 2,
 });
-const DAILY_SCHEDULE: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "midnight", grace: 2 };
+const DAILY_SCHEDULE: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "midnight" };
 
 /** Per-user daily pattern for sleep: which of night/wake/confirm happened. */
 function sleepPattern(userId: string, dayIndex: number): string[] {
@@ -570,7 +577,6 @@ async function seedOfficeEvents(
   const schedule: ScheduleShape = {
     schedule: { kind: "days", days: scheduledDays as (1 | 2 | 3 | 4 | 5 | 6 | 7)[] },
     dayBoundary: "midnight",
-    grace: 2,
   };
   let n = 0;
   for (let i = days; i >= 1; i--) {
@@ -815,7 +821,6 @@ async function seedAdminExtras(skip: Set<string>): Promise<void> {
     const officeSchedule: ScheduleShape = {
       schedule: { kind: "days", days: officeDays },
       dayBoundary: "midnight",
-      grace: 2,
     };
     await trackType(userId, "office", officeSchedule, { window: { open: "10:00", close: "14:00" } }, configFrom);
     await seedOfficeEvents(userId, [...officeDays], HISTORY_DAYS, anchor);

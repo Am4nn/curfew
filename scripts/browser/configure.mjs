@@ -35,16 +35,25 @@ export async function configure({ open, check, page, body }) {
   check("and it offers to change one thing", has(text, "CHANGE ONE THING"));
 
   // The list has to say what everything is SET to, or it is a list of words.
+  // "Misses forgiven" was one of these and is gone with item 19: grace is one
+  // pool for the account, not a number set per activity.
   for (const [label, value] of [
     ["How often", "every day"],
     ["Glasses a day", "8 glasses"],
-    ["Misses forgiven", "2 a month"],
+    ["Time between logs", "30 minutes"],
   ]) {
     check(`the list says ${label} is ${value}`, has(text, label) && has(text, value), text.slice(0, 400));
   }
 
   // None of the engine's own words survive on the screen.
-  for (const word of ["Day boundary", "Grace", "Threshold", "Logs required", "perWeek"]) {
+  for (const word of [
+    "Day boundary",
+    "Grace",
+    "Misses forgiven",
+    "Threshold",
+    "Logs required",
+    "perWeek",
+  ]) {
     check(`and never says "${word}"`, !has(text, word));
   }
 

@@ -120,6 +120,14 @@ export async function setInitialTimezone(
  * configure screen put a wrapped row back. The engine's half is carried
  * through untouched now, which is what a screen that only edits windows means.
  */
+async function currentSchedule(userId: string, on: string): Promise<unknown> {
+  try {
+    return (await resolveUserSleepConfigRow(userId, on)).schedule;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function updateSleepWindows(
   userId: string,
   windows: unknown,
@@ -130,8 +138,12 @@ export async function updateSleepWindows(
   const errors = validateSleepWindows(config, timezone, effectiveFrom);
   if (errors.length > 0) throw new Error(errors[0]);
 
-  const current = await resolveUserSleepConfigRow(userId, effectiveFrom);
-  const schedule = current.schedule ?? {
+  // The engine's half as it will stand tomorrow, kept. `resolveUserSleepConfigRow`
+  // throws when NOTHING is effective on that date, which is a real state and
+  // not an error here: a scrubbed preview clock can sit before the app-wide
+  // default row's own effective date, and somebody saving windows in that
+  // state is saving their first row rather than amending one.
+  const schedule = (await currentSchedule(userId, effectiveFrom)) ?? {
     schedule: sleepDefaults.schedule,
     dayBoundary: sleepDefaults.dayBoundary,
     minGap: sleepDefaults.minGap ?? 0,

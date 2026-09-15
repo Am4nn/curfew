@@ -86,7 +86,13 @@ export function ruleFor(typeKey: string, schedule: ScheduleConfig, config: unkno
   const notes: string[] = [];
   const boundary = dayStarts(schedule.dayBoundary);
   if (boundary) notes.push(boundary);
-  if (schedule.minGap > 0) {
+  // Stated only where it can actually refuse a press. A step that takes one
+  // press a calendar day is already further apart than any gap this can be set
+  // to, so saying it would be describing a rule that never fires. Gym is the
+  // type that was doing exactly that; a value saved before the control was
+  // withdrawn is still in its config, and this is what stops it being read out.
+  const spaceable = type.steps(config, "2026-01-01").some((s) => s.repeats && !s.oncePerDay);
+  if (schedule.minGap > 0 && spaceable) {
     notes.push(
       schedule.minGap === 1
         ? "A minute has to pass between one press and the next."

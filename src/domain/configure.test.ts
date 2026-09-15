@@ -145,3 +145,48 @@ describe("what the schema cannot say, the module says", () => {
     expect(issues.some((i) => i.message.includes("cannot share a minute"))).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// The minimum gap is offered where it can refuse a press, and nowhere else.
+//
+// `repeats` is about the PERIOD and was the wrong question to ask. Gym's
+// session repeats, because a week of three is not done after the first, so the
+// configure screen offered "Time between logs" on an activity whose own
+// `countsNow` already refuses the second press until tomorrow. Nothing caught
+// it: a control that does nothing still renders, still saves, and still reads
+// back what you set.
+// ---------------------------------------------------------------------------
+describe("which types can space their presses out", () => {
+  const ANY_DAY = "2026-01-01";
+  const spaceable = (key: string) => {
+    const type = getActivityType(key);
+    const config = type.configSchema.parse(type.defaults.config ?? {});
+    return type.steps(config, ANY_DAY).some((s) => s.repeats && !s.oncePerDay);
+  };
+
+  it("gym cannot, because a session is once a calendar day", () => {
+    expect(spaceable("gym")).toBe(false);
+  });
+
+  it("water and food can, because a day takes several", () => {
+    expect(spaceable("water")).toBe(true);
+    expect(spaceable("food")).toBe(true);
+  });
+
+  it("a type checked in once a period cannot", () => {
+    expect(spaceable("office")).toBe(false);
+    expect(spaceable("sleep")).toBe(false);
+  });
+
+  // The rule that makes the flag worth having rather than a special case for
+  // gym: a step is only spaceable if two presses can land on the same day.
+  it("every step declaring oncePerDay also repeats", () => {
+    for (const key of registeredKeys()) {
+      const type = getActivityType(key);
+      const config = type.configSchema.parse(type.defaults.config ?? {});
+      for (const step of type.steps(config, ANY_DAY)) {
+        if (step.oncePerDay) expect(step.repeats).toBe(true);
+      }
+    }
+  });
+});

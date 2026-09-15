@@ -119,7 +119,18 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     // the config asked for. `countsNow` is what limits it to one a day; this
     // says the week is not done after the first.
     return [
-      { key: GYM_STEP, label: "Session", open: "00:00", close: "23:59", repeats: true },
+      {
+        key: GYM_STEP,
+        label: "Session",
+        open: "00:00",
+        close: "23:59",
+        repeats: true,
+        // And `countsNow` below is the reason: a second session on a Tuesday
+        // counts for nothing, so two presses are a day apart at the closest.
+        // Without this the configure screen offered a wait between logs, which
+        // for this type could never refuse a press anybody wanted to make.
+        oncePerDay: true,
+      },
     ];
   },
 

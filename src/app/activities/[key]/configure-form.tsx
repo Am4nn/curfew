@@ -478,10 +478,17 @@ export function ConfigureForm({
     });
   }
 
-  // Only for a step that repeats. There is nothing to space out on a type you
-  // check in to once, and offering the control there would be a setting that
-  // does nothing.
-  if (type.steps(safeConfig, ANY_DAY).some((s) => s.repeats)) {
+  // Only for a step that repeats WITHIN A DAY. There is nothing to space out on
+  // a type you check in to once, and offering the control there would be a
+  // setting that does nothing.
+  //
+  // `repeats` alone was the wrong question and Gym was the type it got wrong.
+  // Its session repeats, because a week of three is not done after the first,
+  // so this offered a wait between logs on an activity whose own rule already
+  // refuses the second press until tomorrow. The only presses such a wait could
+  // ever have refused are two straddling midnight, which are different days and
+  // both count, so the control could do nothing a person would want.
+  if (type.steps(safeConfig, ANY_DAY).some((s) => s.repeats && !s.oncePerDay)) {
     panels.push({
       id: "gap",
       label: "Time between logs",

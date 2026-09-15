@@ -176,8 +176,20 @@ async function recordedFor(
  * Measured from the LATEST press rather than the first, so the gap is between
  * consecutive presses. Engine-owned: the same rule for glasses, meals, doses
  * and readings, and it asks nothing about what any of them mean.
+ *
+ * A step that takes one press a calendar day is exempt, because for those the
+ * gap can only ever misfire. Gym's session is the case: two presses are a day
+ * apart at the closest, so the only pair a gap could refuse is one straddling
+ * midnight, a Monday 11:50 PM session and a Tuesday 12:10 AM one, which are two
+ * different days and both count. The configure screen no longer offers the
+ * control there, and this is what makes a value saved before that harmless.
  */
-function gapEndsAt(minGap: number, mine: { at: Date }[]): Date | null {
+function gapEndsAt(
+  step: CheckinStep,
+  minGap: number,
+  mine: { at: Date }[],
+): Date | null {
+  if (step.oncePerDay) return null;
   if (minGap <= 0 || mine.length === 0) return null;
   const last = mine.reduce((a, b) => (b.at > a.at ? b : a));
   return new Date(last.at.getTime() + minGap * 60_000);
@@ -245,7 +257,7 @@ export async function getCheckinState(
     const spent = !(step.repeats ?? false) && mine.length > 0;
 
     // And the gap, which is the engine's own rule rather than the module's.
-    const nextAt = gapEndsAt(activity.schedule.minGap, mine);
+    const nextAt = gapEndsAt(step, activity.schedule.minGap, mine);
     const waiting = nextAt !== null && instant < nextAt;
 
     return {
@@ -497,6 +509,7 @@ export async function resolveCheckinTarget(
   // abuse ceilings are not a substitute: they exist to stop a stuck button, at
   // 20 a minute, which is a burst by any honest reading.
   const gapEnds = gapEndsAt(
+    step,
     activity.schedule.minGap,
     recorded.filter((c) => c.step === stepKey),
   );

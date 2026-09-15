@@ -19,6 +19,20 @@ export interface CheckinStep {
    * does not repeat is refused.
    */
   repeats?: boolean;
+  /**
+   * Set when a repeating step still takes at most one press a CALENDAR DAY.
+   *
+   * `repeats` is about the period, and for a weekly type the two are not the
+   * same question. Gym's session repeats, because a week of three is not done
+   * after the first, and it is also once a day, because the second session on a
+   * Tuesday counts for nothing. Only the module knows that (invariant 6), so it
+   * says so here rather than the engine inferring it.
+   *
+   * What reads it: the minimum gap between logs. Spacing presses that can only
+   * be a day apart is a control that cannot change anything, whatever it is set
+   * to, and the configure screen does not offer it.
+   */
+  oncePerDay?: boolean;
   /** The numbers this check-in carries, drawn with the configure screen's controls. */
   fields?: ConfigField[];
   /** The question a `declare` step asks. */

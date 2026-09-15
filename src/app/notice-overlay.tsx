@@ -51,10 +51,15 @@ export async function NoticeOverlay() {
               );
             }),
           )}
-          <span className="text-[10.5px] text-muted">
-            {published.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-            {" \u00b7 from Curfew"}
-          </span>
+        </div>
+
+        {/* Outside the scroller. This is who sent it and when, which is chrome
+            rather than content: inside, a notice long enough to scroll pushed
+            it below the fold and the overlay lost its signature exactly when it
+            was carrying the most to read. */}
+        <div className="px-[18px] pb-3 pt-1 text-[10.5px] text-muted">
+          {published.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+          {" \u00b7 from Curfew"}
         </div>
 
         <div className="px-[18px] pb-[18px]">

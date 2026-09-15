@@ -17,10 +17,25 @@
 // release did not do, and nobody is reviewing it. Write the entry in the same
 // commit as the change it describes.
 //
-// A release note is not automatic. Most releases change nothing a person would
-// notice, and announcing those is how an overlay that blocks the whole app
-// becomes something people dismiss unread. Add an entry only when somebody
-// opening Curfew tomorrow would otherwise be confused by what they find.
+// A release note is not automatic, and the bar is higher than "this changed".
+// The overlay BLOCKS the whole app until it is acknowledged, so every entry
+// spends something that only runs out once: an overlay carrying things people
+// did not need is an overlay people learn to dismiss unread, and then the one
+// that mattered goes unread too.
+//
+// The test is whether somebody has to DO something differently tomorrow. A
+// window that moved, an allowance that is now theirs to spend: those change
+// what a person does. A leak closed, a query corrected, a number that was being
+// displayed wrong: those change what the code does, and the person carries on
+// exactly as before. Fixes go in the commit message.
+//
+// 3.2.0 is the example. Photographs stopped being visible to groups joined
+// after they were taken, which is a real change and a privacy improvement, and
+// it was cut from the notes: nobody was relying on the old behaviour and nobody
+// has to act on the new one. Two entries, not three.
+//
+// Keep the detail to what cannot be worked out from the headline. Three
+// sentences is usually too many.
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 

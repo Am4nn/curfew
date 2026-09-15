@@ -452,3 +452,28 @@ back toward:
 
 - Raise contradictions between the docs rather than picking one silently.
 - Prefer saying a design is wrong over working around it.
+- **Never block on a slow check.** Background it, or push and let CI run it,
+  and carry on with the next thing meanwhile.
+
+The slow ones are the browser suite, `simulate`, `verify`, `break-in` and
+anything else wanting a server or a database. Sitting and waiting for one is
+the wrong trade every time: typecheck, lint and the unit tests answer in
+seconds and catch most of what a change breaks, and **CI runs all of the slow
+ones on every push anyway**, in four parallel shards, against its own throwaway
+Postgres. So pushing IS the way to run them. It costs nothing, it needs no
+Docker on this machine, and a version tag will not deploy unless that whole run
+passed on the same SHA, which is the thing that actually protects production.
+
+Two rules that make this safe rather than sloppy:
+
+- **Say what was proved and what is still running.** "Typecheck, lint and 267
+  tests pass; the browser suite is running in CI" is honest. Reporting a pass
+  that has not come back is not, and neither is going quiet until it does.
+- **Do not start Docker, a dev server or a seed just to verify something CI
+  will verify.** A local run that needs three services to be up is three more
+  things that can fail for reasons that are not the change, and diagnosing
+  those is the time the waiting was supposed to save.
+
+Push to `main` freely for this. `main` is the dev site, not production,
+`Deploy: Preview` ships it, and a failed build leaves the previous deployment
+serving rather than breaking anything.

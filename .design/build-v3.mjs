@@ -2933,11 +2933,18 @@ put(
   ),
 );
 
-// PERSONAL is a v2.5 screen that v3 has not caught up with. Its timezone half
-// is the only place a timezone can be set and belongs here. Its sleep-windows
-// half sets the same three windows that /activities/sleep sets, through a
-// different control, and one of the two has to go. Drawn as it stands so the
-// duplication is visible rather than quietly blessed.
+// PERSONAL is the timezone, and now nothing else.
+//
+// It carried a SLEEP WINDOWS half, drawn here for two versions with a red note
+// underneath saying two ways to change one thing is one too many. That was the
+// right reading and this is the resolution: the windows half was v2's, from
+// when sleep was the whole app and its times were as personal as the zone. v3
+// gives every type one configure screen drawn from the module's own `fields()`,
+// so sleep's windows are at /activities/sleep with the other eleven types'.
+//
+// The zone stays because it is the one setting that belongs to no module and
+// every module reads: it decides when a day starts, when a window opens, and
+// which day a check-in lands on.
 put(
   "V3SettingsPersonal.dc.html",
   page(
@@ -2947,30 +2954,7 @@ put(
 
         ${fieldWrap("Timezone", select("Asia/Kolkata"), "IANA name, e.g. Asia/Kolkata")}
 
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          ${label("SLEEP WINDOWS")}
-          <div style="display:flex;flex-direction:column;">
-            ${[
-              ["Night open", "10:00 PM"],
-              ["Night close", "12:30 AM"],
-              ["Wake open", "6:00 AM"],
-              ["Wake close", "7:45 AM"],
-              ["Confirm open", "7:30 AM"],
-              ["Confirm close", "7:45 AM"],
-            ]
-              .map(
-                ([k, v]) =>
-                  `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid ${C.rule};">
-                    <span style="font-size:14px;">${k}</span>
-                    <span style="border:1px solid ${C.fg};padding:6px 10px;font-size:14px;">${v}</span>
-                  </div>`,
-              )
-              .join("")}
-          </div>
-          ${btn("Save windows", { filled: true, wide: false, h: 38, fs: 13, pad: 15 })}
-        </div>
-
-        ${note("These three windows are also set on the Sleep activity screen, by a different control. Two ways to change one thing is one too many, and this half of the screen is what v3 has not yet resolved.", C.penalty)}`,
+        ${note("Every activity is judged in this zone. Each one keeps its own times on its own screen, under Activities.", C.muted)}`,
       ),
     "settings",
   ),

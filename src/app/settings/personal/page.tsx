@@ -5,18 +5,28 @@ import { getPersonalSettings } from "@/server/settings";
 import { supportedZones } from "@/lib/zones";
 import { ActionForm, InfoHint, SubmitButton } from "../../ui";
 import { TimezoneSelect } from "../timezone-select";
-import { updateTimezoneAction, updateWindowsAction } from "../actions";
+import { updateTimezoneAction } from "../actions";
 
-// The confirm window left this list with item 17. It opens half an hour after
-// the wake press and stays open half an hour, which is not a time anybody
-// types: a confirm you can place yourself is a confirm you can place at an hour
-// you are already up.
-const WINDOW_FIELDS: [keyof Awaited<ReturnType<typeof getPersonalSettings>>["windows"], string][] = [
-  ["night_open", "Night open"],
-  ["night_close", "Night close"],
-  ["wake_open", "Wake open"],
-  ["wake_close", "Wake close"],
-];
+// SLEEP WINDOWS used to be on this screen, four `<input type="time">` rows and
+// a Save of their own. They were a leftover from the version where sleep WAS
+// the app: this screen is v2's, written on 2026-08-31, when there was one
+// activity and its windows were as personal as the timezone.
+//
+// v3 made sleep one of twelve types, each configured on one screen drawn from
+// the module's own `fields()`, and sleep declares Night window, Wake window and
+// Confirm there. So this was a second way to set the same two things, and the
+// only screen in the app that knew what `night_open` means outside the sleep
+// module, which invariant 6 exists to prevent.
+//
+// It was not harmless. Saving here wrote the module's half as the whole config
+// blob and broke Home for that person with a ZodError until a save through the
+// configure screen put a wrapped row back (v3.2, defect 2). Reading here parsed
+// the stored shape wrongly and 500'd this screen permanently for anyone who had
+// saved sleep settings once (drift REPORT.md, 18th bug). Two separate defects,
+// both from one duplicate.
+//
+// Sleep's windows are at /activities/sleep. The timezone stays: it is genuinely
+// personal, it belongs to no module, and every activity reads it.
 
 export default async function PersonalSettings() {
   const user = await getSessionUser();
@@ -33,11 +43,12 @@ export default async function PersonalSettings() {
         <header className="-mx-5 mb-6 flex items-center justify-between border-b border-rule px-5 pb-[10px]">
           <h1 className="flex items-center text-[15px] font-semibold tracking-[0.14em]">
             PERSONAL
-            <InfoHint label="How personal windows work">
-              Set the night and wake windows. A check-in counts only when you press
-              its button inside its window. The confirm opens half an hour after you
-              press Wake and is not a setting. These are personal and the same across
-              every group. Changes take effect tomorrow, not today.
+            <InfoHint label="How your timezone is used">
+              Every activity is judged in this zone: when a day starts, when a window
+              opens, and which day a check-in belongs to. It is the same across every
+              group. A change takes effect tomorrow, so a day already being judged is
+              not re-judged in a different zone. Each activity keeps its own times on
+              its own screen, under Activities.
             </InfoHint>
           </h1>
           <Link href="/settings" className="text-[12px] text-muted">‹ settings</Link>
@@ -61,27 +72,6 @@ export default async function PersonalSettings() {
           </div>
         </ActionForm>
 
-        <div className="mb-3 text-[11px] tracking-[0.14em] text-muted">SLEEP WINDOWS</div>
-        <ActionForm action={updateWindowsAction}>
-          {WINDOW_FIELDS.map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between gap-3 border-b border-rule py-3">
-              <label className="text-[14px]">{label}</label>
-              <input
-                type="time"
-                name={key}
-                required
-                defaultValue={personal.windows[key]}
-                className="border border-fg bg-transparent px-2 py-[6px] text-[14px]"
-              />
-            </div>
-          ))}
-          <SubmitButton
-            pendingLabel="Saving"
-            className="mt-3 border border-fg bg-fg px-4 py-[8px] text-[14px] text-bg"
-          >
-            Save windows
-          </SubmitButton>
-        </ActionForm>
       </div>
     </main>
   );

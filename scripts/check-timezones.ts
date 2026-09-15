@@ -34,7 +34,8 @@ import {
   consentRecords,
   events,
 } from "@/db/schema";
-import { setInitialTimezone, updateTimezone, updateSleepWindows } from "@/server/settings";
+import { setInitialTimezone, updateTimezone } from "@/server/settings";
+import { defaultsFor, saveUserActivity } from "@/server/activities";
 import { getCheckinState, performCheckin } from "@/server/checkin";
 import { userDay } from "@/server/config";
 import { WATER_STEP } from "@/domain";
@@ -132,17 +133,46 @@ try {
     eastRows.map((r) => `${r.effectiveFrom}=${r.timezone}`).join(" "),
   );
 
-  await updateSleepWindows(east, getActivityType("sleep").defaults.config);
-  const [sleepRow] = await db
-    .select({ effectiveFrom: userActivityConfig.effectiveFrom })
-    .from(userActivityConfig)
-    .where(
-      and(eq(userActivityConfig.userId, east), eq(userActivityConfig.typeKey, "sleep")),
-    );
+  // The same question about an ACTIVITY's config, through the path a person
+  // actually takes. This used to call `updateSleepWindows`, a second writer that
+  // only the personal settings screen used and that always dated tomorrow; both
+  // are gone, so this now exercises `saveUserActivity`, which every type shares
+  // and which has one more rule to prove: a FIRST setup lands today, because
+  // there is no period in progress for it to rewrite, and only a later change
+  // is future-dated (invariant 4).
+  const sleepDefaults = defaultsFor("sleep");
+  const saveSleep = () =>
+    saveUserActivity({
+      userId: east,
+      typeKey: "sleep",
+      enabled: true,
+      schedule: sleepDefaults.schedule,
+      config: sleepDefaults.config,
+    });
+  const sleepDates = async () =>
+    (
+      await db
+        .select({ effectiveFrom: userActivityConfig.effectiveFrom })
+        .from(userActivityConfig)
+        .where(
+          and(eq(userActivityConfig.userId, east), eq(userActivityConfig.typeKey, "sleep")),
+        )
+    ).map((r) => r.effectiveFrom);
+
+  await saveSleep();
+  const first = await sleepDates();
   check(
-    "a windows change lands on the same day",
-    sleepRow?.effectiveFrom === "2026-03-12",
-    sleepRow?.effectiveFrom ?? "no row",
+    "setting an activity up lands on the member's today, not the UTC one",
+    first.includes("2026-03-11"),
+    first.join(" ") || "no row",
+  );
+
+  await saveSleep();
+  const afterChange = await sleepDates();
+  check(
+    "and changing it lands on the member's tomorrow",
+    afterChange.includes("2026-03-12"),
+    afterChange.join(" ") || "no row",
   );
 
   // Two in the morning UTC is still yesterday in Midway (UTC-11). Read in UTC,

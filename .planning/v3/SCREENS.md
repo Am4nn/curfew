@@ -158,7 +158,7 @@ are what remain.
 | Balances | `/balances` | Per person and per group, with a settle on what you owe | [ ] |
 | What Curfew stores | `/settings/stored` | The consent text, readable at any time | [ ] |
 | The rules | `/settings/rules` | The terms, readable at any time | [ ] |
-| Personal (unresolved) | `/settings/personal` | Timezone, and the sleep windows the activity screen also sets | [ ] |
+| Personal | `/settings/personal` | The timezone, and nothing else. The sleep windows it also set were v2's and are at `/activities/sleep` | [ ] |
 | Pause: declaring | `/settings/pause` | The form, with what it costs stated above the button | [ ] |
 | Pause: declared | `/settings/pause` | Dates set, not started, so it can still be called off entirely | [ ] |
 | Pause: running | `/settings/pause` | Days left, extend, come back early | [ ] |

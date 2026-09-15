@@ -85,5 +85,5 @@ export type {
   CheckinKind,
   ChartSpec,
 } from "./types";
-export { sleepConfigSchema, validateSleepWindows, type SleepConfig } from "./sleep";
+export { sleepConfigSchema } from "./sleep";
 export { WATER_STEP } from "./water";

@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { updateTimezone, updateSleepWindows } from "@/server/settings";
+import { updateTimezone } from "@/server/settings";
 import type { FormState } from "../ui";
-import { field, trimmed } from "@/lib/form";
+import { trimmed } from "@/lib/form";
 
 async function approvedUser() {
   const user = await getSessionUser();
@@ -47,22 +47,7 @@ export async function adoptDeviceTimezoneAction(formData: FormData): Promise<voi
   revalidatePath("/", "layout");
 }
 
-export async function updateWindowsAction(
-  _state: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  try {
-    const user = await approvedUser();
-    const f = (k: string) => field(formData, k);
-    await updateSleepWindows(user.id, {
-      night_open: f("night_open"),
-      night_close: f("night_close"),
-      wake_open: f("wake_open"),
-      wake_close: f("wake_close"),
-    });
-    revalidatePath("/settings/personal");
-    return { ok: true };
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Those window times are not valid." };
-  }
-}
+// An `updateWindowsAction` lived here, naming sleep's four window keys. It went
+// with the control on the personal settings screen: sleep's windows are set on
+// sleep's own configure screen, drawn from the module's `fields()` like every
+// other type's.

@@ -1,25 +1,15 @@
 import { cache } from "react";
 import { DateTime } from "luxon";
-import { and, eq, isNull, or } from "drizzle-orm";
+import { eq, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
-import { userSettings, userActivityConfig } from "@/db/schema";
-import {
-  resolveConfig,
-  sleepConfigSchema,
-  type SleepConfig,
-  } from "@/domain";
+import { userSettings } from "@/db/schema";
+import { resolveConfig } from "@/domain";
 import { now } from "@/lib/clock";
 
-// A stored config row is either the module's config directly (the seed's own
-// userId-null default, written before saveUserActivity's wrapping existed) or
-// { schedule, config } (every real per-user save, see activities.ts's
-// splitConfig). Detect which one this is rather than assuming — assuming
-// wrapped breaks the seed default (no .schedule key to satisfy
-// scheduleConfigSchema), assuming flat breaks the first real save.
-function moduleConfigOf(raw: unknown): unknown {
-  const blob = raw as Record<string, unknown> | null;
-  return blob && typeof blob === "object" && "config" in blob ? blob.config : raw;
-}
+// A `moduleConfigOf` lived here, detecting which of the two shapes a stored
+// config row is in. Only the sleep resolver below used it, and that is gone;
+// `listUserActivities` has its own unwrap and is what everything else reads
+// activity config through.
 
 /** Where everybody starts, and what the seed writes as the NULL default row. */
 const DEFAULT_ZONE = "Asia/Kolkata";
@@ -127,43 +117,14 @@ export async function userDay(userId: string): Promise<string> {
   return DateTime.fromJSDate(instant, { zone: timezone }).toFormat("yyyy-MM-dd");
 }
 
-// Resolve a user's sleep windows as they stood on the period being scored. The
-// module validates the jsonb; the DB never does (invariant: config shape is the
-// module's concern).
-export async function resolveUserSleepConfigRow(
-  userId: string,
-  periodStart: string,
-): Promise<{ config: SleepConfig; schedule: unknown; version: number }> {
-  const rows = await db
-    .select({
-      scopeId: userActivityConfig.userId,
-      effectiveFrom: userActivityConfig.effectiveFrom,
-      config: userActivityConfig.config,
-      version: userActivityConfig.version,
-    })
-    .from(userActivityConfig)
-    .where(
-      and(
-        eq(userActivityConfig.typeKey, "sleep"),
-        or(eq(userActivityConfig.userId, userId), isNull(userActivityConfig.userId)),
-      ),
-    );
-
-  const row = resolveConfig(rows, periodStart);
-  if (!row) {
-    throw new Error(`no sleep config effective on ${periodStart}`);
-  }
-  // This was reading the raw blob directly against sleepConfigSchema, which
-  // only matches the seed's legacy flat default row and throws the moment a
-  // real per-user save (always wrapped as { schedule, config }) takes over.
-  //
-  // `schedule` comes back beside it, unparsed, so a caller writing a new row
-  // can put back the engine's half it did not come here to change. Undefined
-  // on a flat legacy row, which is the shape that has no engine half at all.
-  const blob = row.config as Record<string, unknown> | null;
-  return {
-    config: sleepConfigSchema.parse(moduleConfigOf(row.config)),
-    schedule: blob && typeof blob === "object" ? blob.schedule : undefined,
-    version: row.version,
-  };
-}
+// `resolveUserSleepConfigRow` stood here: the only place in the app that read
+// one named type's config out of this table. Its callers were the personal
+// settings screen's SLEEP WINDOWS block and the writer behind it, both removed,
+// because sleep's windows belong on sleep's own configure screen like every
+// other type's.
+//
+// It is not missed and should not come back. It read a column with two valid
+// shapes and parsed the wrong one, so /settings threw a ZodError and 500'd
+// permanently for anybody who had saved sleep settings once. Everything else
+// reads activity config through `listUserActivities`, which unwraps correctly
+// and does not need to know which type it is holding (invariant 6).

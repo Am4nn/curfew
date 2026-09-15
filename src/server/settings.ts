@@ -1,16 +1,8 @@
 import { DateTime } from "luxon";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { userSettings, userActivityConfig } from "@/db/schema";
-import {
-  getActivityType,
-  sleepConfigSchema,
-  validateSleepWindows,
-  type SleepConfig,
-} from "@/domain";
-
-const sleepDefaults = getActivityType("sleep").defaults;
-import { resolveUserTimezone, resolveUserSleepConfigRow, userDay } from "./config";
+import { userSettings } from "@/db/schema";
+import { resolveUserTimezone, userDay } from "./config";
 import { dayAfter } from "@/lib/day-format";
 import { now } from "@/lib/clock";
 
@@ -33,13 +25,16 @@ async function tomorrow(userId: string): Promise<string> {
 // Resolving as of today would always show the pre-save value and make a just-
 // saved change look lost. Scoring and check-in resolve per period separately and
 // are unaffected by this.
+// `windows` came back from here too, and reading them is what made this throw:
+// the stored column has two valid shapes and parsing the wrong one 500'd
+// /settings permanently for anyone who had saved sleep settings once. Nothing
+// asks this for sleep any more, so the fragile read is gone rather than fixed
+// again. The timezone belongs to no module and every activity reads it.
 export async function getPersonalSettings(
   userId: string,
-): Promise<{ timezone: string; windows: SleepConfig }> {
+): Promise<{ timezone: string }> {
   const t = await tomorrow(userId);
-  const timezone = await resolveUserTimezone(userId, t);
-  const { config } = await resolveUserSleepConfigRow(userId, t);
-  return { timezone, windows: config };
+  return { timezone: await resolveUserTimezone(userId, t) };
 }
 
 export async function updateTimezone(userId: string, timezone: string): Promise<void> {
@@ -107,59 +102,14 @@ export async function setInitialTimezone(
   return true;
 }
 
-/**
- * The night and wake windows, from the personal settings screen.
- *
- * The CONFIRM window is not here any more and cannot be: it opens half an hour
- * after the wake press (item 17), which is not a time anybody types.
- *
- * It wrote the module's half as the WHOLE blob, which is not the shape a config
- * row has: `splitConfig` reads `.schedule` off it and every real save wraps the
- * two together. Saving sleep windows here therefore broke Home for that person,
- * with a ZodError on a missing schedule, until another save through the
- * configure screen put a wrapped row back. The engine's half is carried
- * through untouched now, which is what a screen that only edits windows means.
- */
-async function currentSchedule(userId: string, on: string): Promise<unknown> {
-  try {
-    return (await resolveUserSleepConfigRow(userId, on)).schedule;
-  } catch {
-    return undefined;
-  }
-}
-
-export async function updateSleepWindows(
-  userId: string,
-  windows: unknown,
-): Promise<void> {
-  const config = sleepConfigSchema.parse(windows);
-  const effectiveFrom = await tomorrow(userId);
-  const timezone = await resolveUserTimezone(userId, effectiveFrom);
-  const errors = validateSleepWindows(config, timezone, effectiveFrom);
-  if (errors.length > 0) throw new Error(errors[0]);
-
-  // The engine's half as it will stand tomorrow, kept. `resolveUserSleepConfigRow`
-  // throws when NOTHING is effective on that date, which is a real state and
-  // not an error here: a scrubbed preview clock can sit before the app-wide
-  // default row's own effective date, and somebody saving windows in that
-  // state is saving their first row rather than amending one.
-  const schedule = (await currentSchedule(userId, effectiveFrom)) ?? {
-    schedule: sleepDefaults.schedule,
-    dayBoundary: sleepDefaults.dayBoundary,
-    minGap: sleepDefaults.minGap ?? 0,
-  };
-  const blob = { schedule, config };
-
-  await db
-    .insert(userActivityConfig)
-    .values({ userId, typeKey: "sleep", config: blob, effectiveFrom })
-    .onConflictDoUpdate({
-      target: [
-        userActivityConfig.userId,
-        userActivityConfig.typeKey,
-        userActivityConfig.effectiveFrom,
-      ],
-      set: { config: blob },
-    });
-}
+// `currentSchedule` and `updateSleepWindows` stood here: the write half of the
+// personal settings screen's SLEEP WINDOWS block, which is gone. Sleep's
+// windows are saved through `saveUserActivity` like every other type's, from
+// the one configure screen drawn from the module's `fields()`.
+//
+// Worth keeping the reason. This wrote the module's half as the WHOLE config
+// blob, which is not the shape a row has: `splitConfig` reads `.schedule` off
+// it. Saving sleep windows here broke Home for that person with a ZodError
+// until a save through the configure screen put a wrapped row back. A second
+// writer of one thing is how that happens.
 

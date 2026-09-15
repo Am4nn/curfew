@@ -18,6 +18,10 @@ Money is optional and can be switched off entirely.
 - `.planning/v3/OPEN.md` — **what is not done.** Every defect found and how it
   was closed, what the security round cannot say, what is untested, what needs
   a person rather than code, and the cutover. Start here.
+- `.planning/RELEASE.md` — **the production runbook.** Preflight, the order,
+  rollback, and the rule that decides it: an additive migration goes before the
+  tag and a hostile one after the promote, because the live version is still
+  running between them. Read it before every release, not only the first.
 - `.planning/PRD.md` — v1's what and why. Still the reasoning behind the
   invariants; superseded on scope.
 - `.planning/schema.sql` — the data model, with the immutability rules in

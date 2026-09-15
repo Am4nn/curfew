@@ -677,18 +677,24 @@ arithmetic the nightly pass uses, rather than a literal 1000. The breadth line
 beside it counted every share row, which could report more shared than
 accepted; it counts what the group accepts too.
 
-**The scoring half waits for a decision**, and the person who asked is right
-that the rule as designed is shared over accepted: share all six and the
-ceiling is 1000. The question is only whether a type you share and do not track
-should count toward it, since it can never produce a period and so can never be
-missed. Changing it changes how a day is scored, so it is a `LOGIC_VERSION`
-bump and a `verify` run, not a one-line edit.
+**The scoring half is CLOSED as moot, 2026-09-16, and the person who asked was
+right twice.** The question was whether a type you share and do not track should
+count toward the ceiling, since it can never produce a period and so can never
+be missed. It cannot arise. Sharing and tracking are welded together at both
+ends: `setShare` refuses a type you do not track, and `stopTracking` writes
+`shared: false` to every group that was being shown it. Those two functions are
+the only writers of `member_shares` in the codebase.
 
-**Open question.** What is a tracked type, for this purpose: enabled today, or
-enabled on the day being scored? Invariant 5 says the second, and
-`user_activities` is already effective-dated, so the answer exists. It is the
-difference between un-tracking something raising your ceiling retroactively and
-it raising it from today.
+So the rule change would be a no-op going forward, and all it could touch is
+days scored before those guards existed. Production carries 9 events and 3 users
+from a cutover the day before. A `LOGIC_VERSION` bump and a `verify` run to
+change nothing is not a trade worth making.
+
+**The one path left over is not this one.** An admin globally disabling an
+activity type stops anybody checking it in while their share row stands. It
+distorts nothing: `acceptedTypesAsOf` does not filter on the global switch
+either, so the type sits in the numerator and the denominator both and cancels
+out. Worth knowing, not worth a migration.
 
 ---
 

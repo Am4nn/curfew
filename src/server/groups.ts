@@ -4,6 +4,7 @@ import { groups, groupMembers, groupInvites, balances, users } from "@/db/schema
 import { assertMember, memberRole } from "./membership";
 import { groupInviteEmail, sendEmailBestEffort } from "./email";
 import { revokeTags } from "./evidence-tags";
+import { recordEvent } from "./events";
 import { userDay } from "./config";
 
 // Joining and leaving are dated in the MEMBER's own zone, not UTC. Both dates
@@ -466,4 +467,48 @@ export async function cancelInvite(inviteId: string, byUserId: string): Promise<
     .update(groupInvites)
     .set({ status: "revoked", respondedAt: new Date() })
     .where(eq(groupInvites.id, inviteId));
+}
+
+/**
+ * Archive every group nobody is in any more (item 24).
+ *
+ * A group is not deletable and never will be: the ledger, the events and the
+ * history stay, and money already owed is still owed. Leaving is what a member
+ * does instead, and the last member leaving is how a group reaches nobody.
+ * Something has to notice that, or an empty group sits there accepting nothing
+ * and being counted by every admin list for ever.
+ *
+ * Runs in the nightly job beside scoring, because a group emptying is not an
+ * event anybody presses: `leaveGroup` is the last press and the group is still
+ * a group at that instant. Doing it there rather than at the end of `leaveGroup`
+ * also means it catches a group emptied by any other route, including one
+ * emptied by hand in the database.
+ *
+ * Recorded with no user id. Nobody did this: the absence of everybody did.
+ */
+export async function archiveEmptyGroups(): Promise<number> {
+  const empty = await db
+    .select({ id: groups.id, name: groups.name })
+    .from(groups)
+    .where(
+      and(
+        isNull(groups.archivedAt),
+        sql`not exists (
+          select 1 from group_members gm
+          where gm.group_id = ${groups.id} and gm.left_at is null
+        )`,
+      ),
+    );
+  if (empty.length === 0) return 0;
+
+  const at = new Date();
+  for (const g of empty) {
+    await db.update(groups).set({ archivedAt: at }).where(eq(groups.id, g.id));
+    await recordEvent({
+      userId: null,
+      type: "group.emptied",
+      payload: { group_id: g.id, name: g.name },
+    });
+  }
+  return empty.length;
 }

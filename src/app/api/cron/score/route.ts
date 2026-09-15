@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { scoreAll } from "@/server/scoring";
 import { sweepEvidence } from "@/server/evidence";
+import { archiveEmptyGroups } from "@/server/groups";
 import { verifyAll } from "@/server/verify";
 import { recordEvent } from "@/server/events";
 
@@ -20,6 +21,12 @@ export async function GET(request: NextRequest) {
   // its date has already been used for everything it is going to be used for.
   const swept = await sweepEvidence();
 
+  // A group nobody is in any more (item 24). Groups are not deletable, so
+  // leaving is what a member does and the last one leaving is how a group
+  // reaches nobody. Something has to notice, or it sits there accepting
+  // nothing and being counted by every admin list for ever.
+  const emptied = await archiveEmptyGroups();
+
   // Then check the night's work, and REPORT it rather than repair it.
   //
   // Drift is evidence that something computed the wrong number. Silently
@@ -35,7 +42,13 @@ export async function GET(request: NextRequest) {
   const verified = { rows: drift.length, kinds: countKinds(drift) };
   await recordEvent({ type: "ops.verify.ran", payload: verified });
 
-  return NextResponse.json({ ok: true, ...result, evidence: swept, verify: verified });
+  return NextResponse.json({
+    ok: true,
+    ...result,
+    evidence: swept,
+    emptyGroupsArchived: emptied,
+    verify: verified,
+  });
 }
 
 /** How many of each kind, so the recorded run says what sort of wrong it was. */

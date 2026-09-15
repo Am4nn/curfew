@@ -35,9 +35,13 @@ setting changes that. Closed unless it recurs with a device and a duration.
 
 **24. Deleting a group.** Not being built. Groups are not deletable and members
 leave if they want to. A group that reaches zero members is archived by the
-nightly job. One edge case to handle when that lands: an owner leaving is how a
-group reaches zero, so leaving has to either refuse the last owner or hand over
-first.
+nightly job: `archiveEmptyGroups`, beside scoring and the sweeps, recording
+`group.emptied` with no user id, because nobody did it and the absence of
+everybody did.
+
+The edge case is already closed and was before this: `leaveGroup` refuses the
+last OWNER while other members remain, and lets them go once they are the only
+one left, which is exactly how a group reaches nobody.
 
 **25. Haptics.** `navigator.vibrate` behind feature detection. Android Chrome
 gets it, iOS gets nothing: WebKit exposes no vibration API at all. The known

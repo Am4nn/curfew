@@ -25,7 +25,6 @@ export const officeActivity: ActivityType<OfficeConfig, OfficeEvidence> = {
   defaults: {
     schedule: WEEKDAYS,
     dayBoundary: "midnight",
-    grace: 2,
     config: { window: { open: "10:00", close: "14:00" } },
   },
 

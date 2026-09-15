@@ -194,9 +194,9 @@ export const activityOutcomes = pgTable(
     periodStart: date("period_start", { mode: "string" }).notNull(),
     passed: boolean("passed").notNull(),
     // No grace_used here. Grace protects the streak and has never protected a
-    // fine (decision 5), so an outcome has nothing to say about it. Grace is
-    // recorded on activity_streaks.grace_spent, per calendar month, which is
-    // the thing it actually acts on. See migration 0020.
+    // fine (decision 5), so an outcome has nothing to say about it. Grace is a
+    // `grace.spent` event now, pressed by hand, which is the thing it actually
+    // acts on. See migrations 0020 and 0026.
     fineAmount: bigint("fine_amount", { mode: "number" }).notNull().default(0),
     currency: char("currency", { length: 3 }).notNull().default("INR"),
     rulesVersion: integer("rules_version"),
@@ -455,10 +455,6 @@ export const activityStreaks = pgTable(
     // judged when it ends, so the count has to survive between presses.
     weekStart: date("week_start", { mode: "string" }),
     weekSessions: integer("week_sessions").notNull().default(0),
-    graceSpent: jsonb("grace_spent")
-      .$type<Record<string, number>>()
-      .notNull()
-      .default({}),
     closedThrough: date("closed_through", { mode: "string" }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

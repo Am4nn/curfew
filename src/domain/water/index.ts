@@ -29,7 +29,6 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
   defaults: {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
-    grace: 2,
     // Half an hour between glasses. Eight of them is then spread over at least
     // three and a half hours, which is a day somebody drank water in rather
     // than a day somebody tapped a button eight times.

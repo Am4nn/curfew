@@ -35,7 +35,6 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
   defaults: {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
-    grace: 2,
     config: { unit: "minutes", target: 30 },
   },
 

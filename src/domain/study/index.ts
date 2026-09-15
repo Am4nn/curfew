@@ -29,7 +29,6 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
   defaults: {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
-    grace: 2,
     config: { minutesTarget: 60 },
   },
 

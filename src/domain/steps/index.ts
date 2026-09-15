@@ -37,7 +37,6 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
   defaults: {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
-    grace: 2,
     config: { target: 8000, direction: "atLeast" },
   },
 

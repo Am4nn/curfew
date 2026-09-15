@@ -50,12 +50,25 @@ export {
 } from "./schedule";
 export {
   streakOver,
-  graceLeft,
+  restoreOffer,
+  coveredDays,
   EMPTY as EMPTY_STREAK,
   type StreakDay,
   type StreakState,
   type StreakResult,
+  type RestoreOffer,
 } from "./streak";
+export {
+  GRACE_PER_ACTIVITY,
+  OFFER_MIN_DAYS,
+  OFFER_MAX_DAYS,
+  gracePool,
+  graceBalance,
+  offerOpen,
+  daysBetween as daysApart,
+  resetsOn,
+  type GraceBalance,
+} from "./grace";
 export {
   countPass,
   thresholdPass,
@@ -73,13 +86,7 @@ export {
   type EffectiveAtRow,
 } from "./config";
 export { splitFine, formatMoney, minorUnitExponent, type Share } from "./money";
-export {
-  fineFor,
-  scoreChain,
-  type FineRules,
-  type ChainPeriod,
-  type ChainOutcome,
-} from "./scoring";
+export { fineFor, type FineRules } from "./scoring";
 export {
   applyDay,
   replay,
@@ -112,7 +119,6 @@ export {
   howOften,
   listOfDays,
   dayStarts,
-  forgiven,
   type RuleText,
 } from "./rule";
 export {

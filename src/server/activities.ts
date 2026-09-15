@@ -137,7 +137,6 @@ export function defaultsFor(typeKey: string): UserActivity {
     schedule: {
       schedule: type.defaults.schedule,
       dayBoundary: type.defaults.dayBoundary,
-      grace: type.defaults.grace,
       // The module's own number, or none. This was hardcoded to 0 on the
       // grounds that a gap nobody chose is a rule imposed, which read well and
       // meant water shipped with the hole it exists to close: eight glasses in

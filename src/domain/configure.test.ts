@@ -53,8 +53,7 @@ describe("the twelve configure screens", () => {
           scheduleConfigSchema.parse({
             schedule: type.defaults.schedule,
             dayBoundary: type.defaults.dayBoundary,
-            grace: type.defaults.grace,
-          }),
+              }),
         key,
       ).not.toThrow();
     }

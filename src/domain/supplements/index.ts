@@ -26,7 +26,6 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
   defaults: {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
-    grace: 2,
     config: { dosesPerDay: 1 },
   },
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 // From the barrel, not from ./registry: importing the registry alone leaves it
 // empty, every type "missing", and the sweep over all twelve passing over
 // nothing at all.
-import { ruleFor, howOften, forgiven, dayStarts, registeredKeys, getActivityType } from "./index";
+import { ruleFor, howOften, dayStarts, registeredKeys, getActivityType } from "./index";
 import type { ScheduleConfig } from "./schedule";
 
 // The configure screen states the rule before it offers to change any of it,
@@ -12,7 +12,6 @@ import type { ScheduleConfig } from "./schedule";
 const sched = (over: Partial<ScheduleConfig> = {}): ScheduleConfig => ({
   schedule: { kind: "days", days: [1, 2, 3, 4, 5, 6, 7] },
   dayBoundary: "midnight",
-  grace: 2,
   minGap: 0,
   ...over,
 });
@@ -50,14 +49,10 @@ describe("the engine's own footnotes", () => {
     expect(dayStarts("noon")).toContain("noon to noon");
   });
 
-  it("says nothing about grace when there is none", () => {
-    expect(forgiven(0)).toBeNull();
-  });
-
-  it("counts grace in the singular and the plural", () => {
-    expect(forgiven(1)).toContain("One miss");
-    expect(forgiven(2)).toContain("2 misses");
-  });
+  // There were two tests here for `forgiven`: "2 misses a month are forgiven
+  // and do not break the streak." Grace is not an allowance attached to an
+  // activity any more (item 19), so it is not a fact about this activity's
+  // rule and no longer appears in its rule text.
 });
 
 describe("the rule for a whole activity", () => {
@@ -125,8 +120,8 @@ describe("every type can say what it asks for", () => {
   it("and the whole sentence reads as one for every type", () => {
     for (const key of registeredKeys()) {
       const type = getActivityType(key);
-      const { schedule, dayBoundary, grace } = type.defaults;
-      const { headline } = ruleFor(key, sched({ schedule, dayBoundary, grace }), type.defaults.config);
+      const { schedule, dayBoundary } = type.defaults;
+      const { headline } = ruleFor(key, sched({ schedule, dayBoundary }), type.defaults.config);
       expect(headline.endsWith("."), key).toBe(true);
       expect(headline, key).not.toContain("..");
       expect(headline, key).not.toContain("undefined");

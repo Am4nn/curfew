@@ -58,13 +58,11 @@ export function dayStarts(boundary: DayBoundary): string | null {
   return boundary === "noon" ? "A day runs noon to noon, so a night after midnight counts for the night before." : null;
 }
 
-/** Misses forgiven a month, when there are any. */
-export function forgiven(grace: number): string | null {
-  if (grace <= 0) return null;
-  return grace === 1
-    ? "One miss a month is forgiven and does not break the streak."
-    : `${grace} misses a month are forgiven and do not break the streak.`;
-}
+// `forgiven` was here: "2 misses a month are forgiven and do not break the
+// streak." Grace is not an allowance attached to an activity any more and is
+// never spent without being pressed (item 19), so it is not a fact about this
+// activity's rule and does not belong in this activity's rule text. Settings
+// carries the count, and the offer says the price at the moment of the press.
 
 export interface RuleText {
   /** The one-line rule. "Every day: 8 glasses of water a day." */
@@ -88,8 +86,6 @@ export function ruleFor(typeKey: string, schedule: ScheduleConfig, config: unkno
   const notes: string[] = [];
   const boundary = dayStarts(schedule.dayBoundary);
   if (boundary) notes.push(boundary);
-  const grace = forgiven(schedule.grace);
-  if (grace) notes.push(grace);
   if (schedule.minGap > 0) {
     notes.push(
       schedule.minGap === 1

@@ -5,6 +5,7 @@ import { activityScores } from "@/db/schema";
 import { getActivityType, graceMonth, type ChartSpec } from "@/domain";
 import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
+import { graceState } from "./restore";
 import { closeOutstanding } from "./scoring";
 import { timezoneHistory } from "./config";
 import { pausedDaysIn, pausesFor } from "./pause";
@@ -141,7 +142,6 @@ export async function overviewFor(userId: string): Promise<Overview> {
   const mine = (await listUserActivities(userId)).filter((a) => a.enabled);
   const byActivity: Overview["byActivity"] = [];
   let longestStreak = 0;
-  let graceLeft = 0;
 
   for (const a of mine) {
     const type = getActivityType(a.typeKey);
@@ -149,7 +149,6 @@ export async function overviewFor(userId: string): Promise<Overview> {
     const standing = await standingFor(userId, a.typeKey);
     if (standing) {
       longestStreak = Math.max(longestStreak, standing.streak);
-      graceLeft += standing.graceLeft;
     }
     byActivity.push({
       typeKey: a.typeKey,
@@ -169,7 +168,9 @@ export async function overviewFor(userId: string): Promise<Overview> {
     daysInMonth: monthDays - awayThisMonth,
     passRate,
     longestStreak,
-    graceLeft,
+    // The account's pool, not a sum of per-activity allowances: grace is one
+    // pool now and belongs to the person (item 19).
+    graceLeft: (await graceState(userId)).left,
     heatmap,
     away,
     awayThisMonth,
@@ -247,7 +248,7 @@ export async function chartFor(
     graceMonthLabel: graceMonth(today.toFormat("yyyy-MM-dd")),
     streak: standing?.streak ?? 0,
     best: standing?.best ?? 0,
-    graceLeft: standing?.graceLeft ?? 0,
+    graceLeft: (await graceState(userId)).left,
     others: all
       .filter((a) => a.typeKey !== typeKey)
       .map((a) => {

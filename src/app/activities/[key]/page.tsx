@@ -70,7 +70,6 @@ export default async function ConfigurePage({
         returnTo={from === "join" && invite ? `/join/${invite}` : undefined}
         streak={standing?.streak ?? 0}
         best={standing?.best ?? 0}
-        graceLeft={standing?.graceLeft ?? null}
       />
     </main>
   );

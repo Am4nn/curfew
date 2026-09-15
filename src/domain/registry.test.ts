@@ -37,7 +37,6 @@ describe("registry", () => {
         expect(type.chart.valueField, `${key} chart valueField`).toBeTruthy();
         expect(type.chart.targetField, `${key} chart targetField`).toBeTruthy();
       }
-      expect(type.defaults.grace, `${key} grace`).toBeGreaterThanOrEqual(0);
     }
   });
 
@@ -59,7 +58,6 @@ describe("registry", () => {
         scheduleConfigSchema.parse({
           schedule: type.defaults.schedule,
           dayBoundary: type.defaults.dayBoundary,
-          grace: type.defaults.grace,
           minGap: type.defaults.minGap ?? 0,
         });
       expect(parse, key).not.toThrow();

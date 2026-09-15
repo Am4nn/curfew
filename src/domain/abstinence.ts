@@ -72,7 +72,6 @@ export function abstinenceActivity(spec: {
     defaults: {
       schedule: EVERY_DAY,
       dayBoundary: "midnight",
-      grace: 2,
       config: { window: spec.window, cutoff: spec.cutoff?.default ?? null },
     },
 

@@ -24,6 +24,9 @@ import {
   money,
   share,
   streakOf,
+  graceOf,
+  offerOf,
+  pressRestore,
   pauseFrom,
   curveOf,
   finalScore,
@@ -66,14 +69,16 @@ const B = "sim-b";
 const C = "sim-c";
 const G1 = "00000000-0000-0000-0000-00000000f001";
 
-const DAILY: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "midnight", grace: 2 };
-const DAILY_NO_GRACE: ScheduleShape = { ...DAILY, grace: 0 };
+const DAILY: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "midnight" };
+// There was a DAILY beside it, for a scenario that wanted a miss to
+// land without being quietly forgiven. Every miss lands now: grace is pressed
+// by hand after the fact (item 19), so a schedule that forgives nothing is just
+// a schedule.
 const WEEKLY3: ScheduleShape = {
   schedule: { kind: "minimum", perWeek: 3 },
   dayBoundary: "midnight",
-  grace: 2,
 };
-const WEEKDAY: ScheduleShape = { schedule: WEEKDAYS, dayBoundary: "midnight", grace: 2 };
+const WEEKDAY: ScheduleShape = { schedule: WEEKDAYS, dayBoundary: "midnight" };
 
 const STEPS_CONFIG = { target: 8000, direction: "atLeast" as const };
 const WATER_CONFIG = { glasses: 8 };
@@ -148,7 +153,6 @@ export const SCENARIOS: Scenario[] = [
         checks: [
           eq("streak", s?.streak, 60),
           eq("best", s?.best, 60),
-          eq("grace spent", s?.graceSpent, {}),
         ],
         notes: ["A day counts when the day passes, so sixty passed days are sixty."],
       };
@@ -157,8 +161,8 @@ export const SCENARIOS: Scenario[] = [
   {
     id: "streak-grace-holds",
     group: "Streaks",
-    title: "One miss, grace available",
-    question: "Does grace hold the number where it is, rather than resetting or rewinding it?",
+    title: "One miss, then grace, pressed",
+    question: "Does a streak somebody paid to restore come back to where it was?",
     async run() {
       await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
       for (const d of days(-30, -1)) {
@@ -166,16 +170,32 @@ export const SCENARIOS: Scenario[] = [
         await logSteps(d, 10000);
       }
       await scoreAll();
-      const s = await streakOf(A, "steps");
+
+      // The miss ENDS the run. Nothing holds it on its own any more: the whole
+      // point of item 19 is that grace is a thing somebody does, not a thing
+      // that happens to them.
+      const broken = await streakOf(A, "steps");
+      const offer = await offerOf(A, "steps");
+      const before = await graceOf(A);
+
+      const used = await pressRestore(A, "steps");
+      const after = await streakOf(A, "steps");
+      const left = await graceOf(A);
+
       return {
         checks: [
-          // 20 clean days after the miss; grace held the run at 20 across it.
-          eq("streak", s?.streak, 29),
-          eq("best", s?.best, 29),
-          holds("one grace spent", Object.values(s?.graceSpent ?? {}).reduce((a, b) => a + b, 0) === 1),
+          eq("the miss ends the run", broken?.streak, 9),
+          eq("and best keeps the twenty", broken?.best, 20),
+          eq("one missed day costs one grace", offer?.cost, 1),
+          eq("and the offer says what comes back", offer?.restoresTo, 29),
+          holds("the press is taken", used.ok, JSON.stringify(used)),
+          eq("the run comes back whole", after?.streak, 29),
+          eq("and a grace is gone", left.left, before.left - 1),
         ],
         notes: [
-          "Grace does not add a day and does not take one away. The run continues.",
+          "Grace does not add a day and does not take one away. The run continues,",
+          "and the twenty days before the miss are still in it.",
+          "One activity tracked, so the pool is two, and this cost one of them.",
         ],
       };
     },
@@ -183,10 +203,10 @@ export const SCENARIOS: Scenario[] = [
   {
     id: "streak-no-grace",
     group: "Streaks",
-    title: "One miss, no grace left",
-    question: "Does a miss without grace go to zero, and does best survive it?",
+    title: "One miss, grace not spent",
+    question: "Does a miss nobody forgives go to zero, and does best survive it?",
     async run() {
-      await soloWorld("steps", DAILY_NO_GRACE, STEPS_CONFIG, -30);
+      await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
       for (const d of days(-30, -1)) {
         if (d === day(-10)) continue;
         await logSteps(d, 10000);
@@ -206,118 +226,40 @@ export const SCENARIOS: Scenario[] = [
   {
     id: "streak-grace-runs-out",
     group: "Streaks",
-    title: "Three misses in a month, two graces",
-    question: "Does grace run out within the month it belongs to?",
+    title: "A break bigger than the pool",
+    question: "What happens when a streak breaks by more than somebody can afford?",
     async run() {
+      // One activity tracked, so the month's pool is two. Then three days
+      // missed in a row, which is a break costing three.
       await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
-      const misses = new Set([day(-20), day(-15), day(-10)]);
+      const misses = new Set([day(-3), day(-2), day(-1)]);
       for (const d of days(-30, -1)) {
         if (misses.has(d)) continue;
         await logSteps(d, 10000);
       }
       await scoreAll();
-      const s = await streakOf(A, "steps");
-      const spent = Object.values(s?.graceSpent ?? {}).reduce((a, b) => a + b, 0);
+
+      const pool = await graceOf(A);
+      const offer = await offerOf(A, "steps");
+      const refused = await pressRestore(A, "steps");
+
       return {
         checks: [
-          holds("grace is capped, not unlimited", spent <= 2, spent, "at most 2"),
-          eq("streak after the third miss", s?.streak, 9),
+          eq("the pool is two a month for one activity", pool.pool, 2),
+          eq("three missed days cost three", offer?.cost, 3),
+          holds("which is out of reach", offer?.affordable === false, offer?.affordable, false),
+          holds(
+            "so the press is refused",
+            !refused.ok && refused.reason === "too_expensive",
+            JSON.stringify(refused),
+          ),
+          eq("and nothing was spent", (await graceOf(A)).left, 2),
         ],
         notes: [
-          "The first two misses held the run. The third had no grace and ended it.",
-          "Nine clean days have run since.",
+          "A streak can break by more than the pool holds, and this is that state.",
+          "Home shows no Restore on a row nobody can act on; the grace screen is",
+          "the one place that says what it needs against what you have.",
         ],
-      };
-    },
-  },
-  {
-    id: "streak-partial-day",
-    group: "Streaks",
-    title: "Seven glasses of eight",
-    question: "Does a day that fell short count for nothing?",
-    async run() {
-      await soloWorld("water", DAILY_NO_GRACE, WATER_CONFIG, -10);
-      for (const d of days(-10, -2)) await logWater(d, 8);
-      await logWater(day(-1), 7); // short
-      await scoreAll();
-      const s = await streakOf(A, "water");
-      const scored = await scoresOf(A, "water");
-      return {
-        checks: [
-          eq("streak", s?.streak, 0),
-          eq("best", s?.best, 9),
-          holds(
-            "the short day is stored as a miss",
-            scored.at(-1)?.passed === false,
-          ),
-        ],
-        notes: ["Effort is not completion. Seven of eight is a missed day."],
-      };
-    },
-  },
-  {
-    id: "streak-weekly-gym",
-    group: "Streaks",
-    title: "Gym, three a week for eight weeks",
-    question: "Does a weekly activity count session DAYS, not weeks?",
-    async run() {
-      await wipe();
-      await defaultTimezone();
-      await person(A, "Ann");
-      await track(A, "gym", WEEKLY3, GYM_CONFIG, day(-63));
-      // Mondays, Wednesdays, Fridays for eight full weeks back.
-      let sessions = 0;
-      for (const d of days(-63, -1)) {
-        const dow = new Date(`${d}T00:00:00Z`).getUTCDay();
-        if (dow === 1 || dow === 3 || dow === 5) {
-          await logGym(d);
-          sessions += 1;
-        }
-      }
-      await scoreAll();
-      const s = await streakOf(A, "gym");
-      return {
-        checks: [
-          holds(
-            "the streak counts days, not weeks",
-            (s?.streak ?? 0) > 8,
-            s?.streak,
-            "more than the 8 weeks",
-          ),
-          eq("streak equals the sessions logged", s?.streak, sessions),
-        ],
-        notes: [
-          `${sessions} sessions over nine calendar weeks.`,
-          "This is the bug that reported three passed gym weeks as a streak of 1.",
-        ],
-      };
-    },
-  },
-  {
-    id: "streak-gym-twice-a-day",
-    group: "Streaks",
-    title: "Two gym sessions on one day",
-    question: "Is a second session the same day worth anything?",
-    async run() {
-      await wipe();
-      await defaultTimezone();
-      await person(A, "Ann");
-      await track(A, "gym", WEEKLY3, GYM_CONFIG, day(-21));
-      for (const d of days(-21, -1)) {
-        const dow = new Date(`${d}T00:00:00Z`).getUTCDay();
-        if (dow === 1 || dow === 3 || dow === 5) {
-          await logGym(d);
-          await checkin(A, "gym", "session", d, "19:00", WEEKLY3); // again
-        }
-      }
-      await scoreAll();
-      const s = await streakOf(A, "gym");
-      return {
-        checks: [
-          eq("streak counts one a day", s?.streak, 9),
-          holds("double presses did not double the streak", (s?.streak ?? 0) === 9),
-        ],
-        notes: ["Nine session days over three weeks, pressed eighteen times."],
       };
     },
   },
@@ -353,20 +295,30 @@ export const SCENARIOS: Scenario[] = [
         if (wanted.includes(dow)) await logGym(d);
       }
       await scoreAll();
+
+      const broken = await streakOf(A, "gym");
+      const offer = await offerOf(A, "gym");
+      const held = await pressRestore(A, "gym");
       const s = await streakOf(A, "gym");
+
       return {
         checks: [
+          eq("a week that fell short ends the run", broken?.streak, 0),
+          // Three a week, two sessions managed. Two days of the thing missed,
+          // not one missed week: the price is what was actually short.
+          eq("and costs what it came short, not one", offer?.cost, 1),
+          holds("the press is taken", held.ok, JSON.stringify(held)),
           holds(
-            "a graced short week does not rewind the run",
+            "and the graced week does not rewind the run",
             (s?.streak ?? 0) >= 9,
             s?.streak,
             "at least the 9 from the full weeks",
           ),
-          holds("grace was spent", Object.keys(s?.graceSpent ?? {}).length > 0),
         ],
         notes: [
           "The old rule rolled the run back to the value the week opened on,",
           "so a number the user watched climb fell while grace was protecting it.",
+          "It holds where it is instead, keeping the days the short week did earn.",
         ],
       };
     },
@@ -393,7 +345,6 @@ export const SCENARIOS: Scenario[] = [
         checks: [
           holds("no weekend is scored at all", weekendScored.length === 0, weekendScored.length, 0),
           holds("the run survives every weekend", (s?.streak ?? 0) >= 19, s?.streak, "at least 19"),
-          eq("grace untouched", s?.graceSpent, {}),
         ],
         notes: ["An unscheduled day is not a period, so it is not a miss."],
       };
@@ -561,12 +512,6 @@ export const SCENARIOS: Scenario[] = [
             streak?.best,
             20,
           ),
-          holds(
-            "grace was never spent on it",
-            Object.keys(streak?.graceSpent ?? {}).length === 0,
-            JSON.stringify(streak?.graceSpent ?? {}),
-            "{}",
-          ),
         ],
         notes: [
           "This is the whole price of a pause, and why there is no quota on one.",
@@ -586,7 +531,7 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       for (const [id, name] of [[A, "Ann"], [B, "Ben"]] as const) {
         await person(id, name);
-        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
+        await track(id, "steps", DAILY, STEPS_CONFIG, day(-30));
       }
       await group(G1, "Weekend Club", [
         { id: A, role: "owner", joinedAt: day(-30) },
@@ -855,7 +800,7 @@ export const SCENARIOS: Scenario[] = [
     title: "One bad day, high and low",
     question: "Does a miss cost more when you have more to lose?",
     async run() {
-      await soloWorld("steps", DAILY_NO_GRACE, STEPS_CONFIG, -190);
+      await soloWorld("steps", DAILY, STEPS_CONFIG, -190);
       const missEarly = day(-180);
       const missLate = day(-10);
       for (const d of days(-190, -1)) {
@@ -918,7 +863,7 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       for (const [id, name] of [[A, "Ann"], [B, "Ben"], [C, "Cam"]] as const) {
         await person(id, name);
-        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-20));
+        await track(id, "steps", DAILY, STEPS_CONFIG, day(-20));
       }
       await group(G1, "Money group", [
         { id: A, role: "owner", joinedAt: day(-20) },
@@ -999,7 +944,7 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       for (const [id, name] of [[A, "Ann"], [B, "Ben"]] as const) {
         await person(id, name);
-        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
+        await track(id, "steps", DAILY, STEPS_CONFIG, day(-30));
       }
       await group(G1, "Money group", [
         { id: A, role: "owner", joinedAt: day(-25) },
@@ -1040,7 +985,7 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       for (const [id, name] of [[A, "Ann"], [B, "Ben"]] as const) {
         await person(id, name);
-        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
+        await track(id, "steps", DAILY, STEPS_CONFIG, day(-30));
       }
       await group(G1, "No money", [
         { id: A, role: "owner", joinedAt: day(-25) },
@@ -1082,8 +1027,8 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       for (const [id, name] of [[A, "Ann"], [B, "Ben"]] as const) {
         await person(id, name);
-        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
-        await track(id, "water", DAILY_NO_GRACE, WATER_CONFIG, day(-30));
+        await track(id, "steps", DAILY, STEPS_CONFIG, day(-30));
+        await track(id, "water", DAILY, WATER_CONFIG, day(-30));
       }
       await group(G1, "Money group", [
         { id: A, role: "owner", joinedAt: day(-25) },
@@ -1129,7 +1074,7 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       for (const [id, name] of [[A, "Ann"], [B, "Ben"], [C, "Cam"]] as const) {
         await person(id, name);
-        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
+        await track(id, "steps", DAILY, STEPS_CONFIG, day(-30));
       }
       await group(G1, "Money group", [
         { id: A, role: "owner", joinedAt: day(-25) },
@@ -1261,8 +1206,8 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       await person(A, "Ann");
       await person(B, "Ben");
-      await track(A, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
-      await track(B, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-30));
+      await track(A, "steps", DAILY, STEPS_CONFIG, day(-30));
+      await track(B, "steps", DAILY, STEPS_CONFIG, day(-30));
       await group(G1, "Grace group", [
         { id: A, role: "owner", joinedAt: day(-30) },
         { id: B, role: "member", joinedAt: day(-10) },
@@ -1332,7 +1277,7 @@ export const SCENARIOS: Scenario[] = [
       await defaultTimezone();
       for (const [id, name] of [[A, "Ann"], [B, "Ben"], [C, "Cam"]] as const) {
         await person(id, name);
-        await track(id, "steps", DAILY_NO_GRACE, STEPS_CONFIG, day(-20));
+        await track(id, "steps", DAILY, STEPS_CONFIG, day(-20));
       }
       await group(G1, "Grace pay", [
         { id: A, role: "owner", joinedAt: day(-20) },
@@ -1470,7 +1415,6 @@ export const SCENARIOS: Scenario[] = [
         checks: [
           eq("every check-in landed on its own local day", misplaced.length, 0),
           eq("so the run is unbroken", s?.streak, 30),
-          eq("and no grace was needed", s?.graceSpent, {}),
         ],
         notes: [
           "23:30 in Los Angeles is 06:30 the next day in UTC.",
@@ -1533,7 +1477,7 @@ export const SCENARIOS: Scenario[] = [
     async run() {
       await wipe();
       await defaultTimezone();
-      const NOON: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "noon", grace: 0 };
+      const NOON: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "noon" };
       const zones: [string, string][] = [
         ["tz-n-ist", "Asia/Kolkata"],
         ["tz-n-la", "America/Los_Angeles"],

@@ -29,7 +29,7 @@ import {
 } from "./world";
 import { rankFor } from "@/domain";
 
-const DAILY: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "midnight", grace: 2 };
+const DAILY: ScheduleShape = { schedule: EVERY_DAY, dayBoundary: "midnight" };
 const STEPS_CONFIG = { target: 8000, direction: "atLeast" as const };
 const WATER_CONFIG = { glasses: 8 };
 

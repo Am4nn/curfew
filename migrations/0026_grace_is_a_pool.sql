@@ -1,0 +1,29 @@
+-- ===========================================================================
+-- 0026  Grace stops being an allowance on the streak.
+--
+-- It was a per-activity number, set on the configure screen, spent
+-- automatically the moment a day was missed, counted here as a per-month tally
+-- on the counter row. Three things were wrong with that, and item 19 fixes all
+-- three: nobody chose it, so a streak was held by something the person never
+-- saw happen; it was a SETTING, so how forgiving the app is to you was a number
+-- you typed yourself; and it was per activity, so tracking more things bought
+-- more forgiveness for each of them.
+--
+-- Now: two a month for each activity tracked, in one pool for the account,
+-- spent by hand after a streak has already ended, recorded as a `grace.spent`
+-- event. Nothing is stored. The events are the truth (invariant 1) and every
+-- number the screens show is derived from them, so there is no counter to
+-- drift, no month rollover to run, and `verify` has nothing new to police.
+--
+-- Dropping the column is therefore not losing anything that was not derived: it
+-- was a cache of an automatic decision the app no longer makes. What a person
+-- was actually forgiven, before and after, is in `events`.
+--
+-- `user_activity_config.config->'schedule'->>'grace'` is left exactly where it
+-- is. That column is insert-only and is the record of how a period was judged
+-- (invariants 4 and 5), so rewriting it would be rewriting history. The schema
+-- stops reading the key and zod strips it, so the next save each person makes
+-- writes the current shape and nothing reads the old one meanwhile.
+-- ===========================================================================
+
+ALTER TABLE activity_streaks DROP COLUMN IF EXISTS grace_spent;

@@ -74,7 +74,6 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   defaults: {
     schedule: { kind: "minimum", perWeek: 3 },
     dayBoundary: "midnight",
-    grace: 2,
     config: {},
   },
 

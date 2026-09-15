@@ -236,7 +236,6 @@ type ConfigFieldShape =
 export interface ScheduleDefaults {
   schedule: Schedule;
   dayBoundary: DayBoundary;
-  grace: number;
   /**
    * Minutes between two presses of a repeating step, as this type's default.
    *

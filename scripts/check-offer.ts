@@ -84,7 +84,6 @@ async function track(
       schedule: {
         schedule: over.schedule ?? type.defaults.schedule,
         dayBoundary: type.defaults.dayBoundary,
-        grace: type.defaults.grace,
         minGap: over.minGap ?? 0,
       },
       config: over.config ?? type.defaults.config,

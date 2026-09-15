@@ -338,7 +338,6 @@ export function ConfigureForm({
   tracked,
   streak,
   best,
-  graceLeft,
   returnTo,
 }: {
   typeKey: string;
@@ -349,7 +348,6 @@ export function ConfigureForm({
   tracked: boolean;
   streak: number;
   best: number;
-  graceLeft: number | null;
   returnTo?: string;
 }) {
   const type = getActivityType(typeKey);
@@ -383,9 +381,6 @@ export function ConfigureForm({
     for (const issue of parsedSchedule.error.issues) {
       issues.push({ path: `@${issue.path.join(".")}`, message: issue.message });
     }
-  }
-  if (schedule.grace > 31) {
-    issues.push({ path: "@grace", message: "More than the days in a month." });
   }
   const errorFor = (path: string) => issues.find((i) => i.path === path)?.message;
   const valid = issues.length === 0;
@@ -516,32 +511,11 @@ export function ConfigureForm({
     });
   }
 
-  panels.push({
-    id: "grace",
-    label: "Misses forgiven",
-    value: schedule.grace === 0 ? "none" : `${schedule.grace} a month`,
-    question: "How many misses a month should be forgiven?",
-    broken: Boolean(errorFor("@grace")),
-    body: (
-      <FieldWrap
-        label="Misses forgiven"
-        hint={
-          graceLeft === null
-            ? "A forgiven miss keeps the streak. It does not cancel a fine."
-            : `${graceLeft} left this month. A forgiven miss keeps the streak. It does not cancel a fine.`
-        }
-        error={errorFor("@grace")}
-      >
-        <Stepper
-          value={schedule.grace}
-          min={0}
-          max={31}
-          unit="a month"
-          onChange={(n) => setSchedule((s) => ({ ...s, grace: n }))}
-        />
-      </FieldWrap>
-    ),
-  });
+  // "Misses forgiven" was a panel here, a stepper from 0 to 31 a month. It is
+  // gone with item 19. Grace is one pool for the account, two a month for each
+  // activity tracked, and it is not a setting: how forgiving the app is to you
+  // was a number you typed yourself, which is not a rule so much as a dial.
+  // Settings carries the count and the grace screen is where it is spent.
 
   function save(share?: boolean) {
     setError(null);

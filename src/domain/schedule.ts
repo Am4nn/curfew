@@ -40,9 +40,15 @@ export type PeriodUnit = "day" | "week";
 export const scheduleConfigSchema = z.object({
   schedule: scheduleSchema,
   dayBoundary: dayBoundarySchema,
-  // Missed periods forgiven per calendar month. Protects the streak only: the
-  // fine still applies and reputation still dips (decision 5).
-  grace: z.number().int().min(0).max(31),
+  // `grace` was here: missed periods forgiven per calendar month, per activity,
+  // spent automatically. It is one pool for the account now, spent by hand
+  // (item 19), so there is nothing per-activity left to store and nothing for
+  // the configure screen to offer.
+  //
+  // Not `.strict()`, so a row written before v3.2 still carries the number and
+  // still parses; the key is dropped, because zod strips what it does not know,
+  // and the next save writes the current shape. Nothing reads it in the
+  // meantime.
   /**
    * Minutes that must pass between two presses of a repeating step. 0 is off.
    *

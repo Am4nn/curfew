@@ -226,7 +226,6 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   defaults: {
     schedule: EVERY_DAY,
     dayBoundary: "noon",
-    grace: 2,
     config: {
       night_open: "21:30",
       night_close: "23:00",

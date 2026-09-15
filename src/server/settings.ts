@@ -134,7 +134,6 @@ export async function updateSleepWindows(
   const schedule = current.schedule ?? {
     schedule: sleepDefaults.schedule,
     dayBoundary: sleepDefaults.dayBoundary,
-    grace: sleepDefaults.grace,
     minGap: sleepDefaults.minGap ?? 0,
   };
   const blob = { schedule, config };

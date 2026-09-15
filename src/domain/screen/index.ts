@@ -36,7 +36,6 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
   defaults: {
     schedule: EVERY_DAY,
     dayBoundary: "midnight",
-    grace: 2,
     config: { limitMinutes: 120, direction: "atMost" },
   },
 

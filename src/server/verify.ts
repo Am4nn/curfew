@@ -249,14 +249,12 @@ async function verifyStreaks(userId: string, scores: ScoreRow[]): Promise<Drift[
       }
       continue;
     }
+    // `graceSpent` was diffed here too. It is not part of the streak any more:
+    // grace is one pool for the account, spent by hand and recorded as an
+    // event, so what would be compared is the event log against itself.
     const fields: [string, unknown, unknown][] = [
       ["current", s.current, computed.current],
       ["best", s.best, computed.best],
-      [
-        "graceSpent",
-        JSON.stringify(s.graceSpent ?? {}),
-        JSON.stringify(computed.graceSpent),
-      ],
     ];
     for (const [field, was, now] of fields) {
       if (was !== now) {

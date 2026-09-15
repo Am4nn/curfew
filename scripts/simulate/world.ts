@@ -40,6 +40,7 @@ import {
 } from "@/domain";
 import { CONSENT_VERSION } from "@/server/consent";
 import { declarePause } from "@/server/pause";
+import { graceState, offerOn, spendGrace } from "@/server/restore";
 import { setClock } from "@/lib/clock";
 
 export const TZ = "Asia/Kolkata";
@@ -54,7 +55,11 @@ export const day = (offsetFromToday: number) =>
 export interface ScheduleShape {
   schedule: Schedule;
   dayBoundary: DayBoundary;
-  grace: number;
+  /**
+   * `grace` used to be here, a per-activity monthly allowance. It is one pool
+   * for the account now, spent by hand (item 19), so a schedule has nothing to
+   * say about it. Scenarios that want grace spend it: `spendGrace`.
+   */
 }
 
 let idem = 0;
@@ -326,7 +331,6 @@ export async function share(
 export interface Standing {
   streak: number;
   best: number;
-  graceSpent: Record<string, number>;
 }
 
 export interface DayScore {
@@ -367,7 +371,7 @@ export async function streakOf(userId: string, typeKey: string): Promise<Standin
     .from(activityStreaks)
     .where(sql`${activityStreaks.userId} = ${userId} AND ${activityStreaks.typeKey} = ${typeKey}`);
   return row
-    ? { streak: row.current, best: row.best, graceSpent: row.graceSpent ?? {} }
+    ? { streak: row.current, best: row.best }
     : null;
 }
 
@@ -488,4 +492,33 @@ export async function scoresOf(
     settling: r.settling,
     paused: r.paused,
   }));
+}
+
+// --- grace ------------------------------------------------------------------
+//
+// Two a month for each activity tracked, in one pool for the account, spent by
+// hand after a streak has already ended (items 19 and 20). A scenario that
+// wants grace has to press for it, which is the whole point of the change: it
+// is not something the engine does quietly on somebody's behalf.
+
+/** What is left to spend, and what the month's allowance was. */
+export async function graceOf(userId: string): Promise<{ left: number; pool: number }> {
+  const state = await graceState(userId);
+  return { left: state.left, pool: state.pool };
+}
+
+/** The offer on one activity, or null when there is no ended run to restore. */
+export async function offerOf(
+  userId: string,
+  typeKey: string,
+): Promise<{ cost: number; restoresTo: number; affordable: boolean } | null> {
+  const offer = await offerOn(userId, typeKey);
+  return offer
+    ? { cost: offer.cost, restoresTo: offer.restoresTo, affordable: offer.affordable }
+    : null;
+}
+
+/** Press Restore. Returns what the server did, refusal included. */
+export async function pressRestore(userId: string, typeKey: string) {
+  return spendGrace(userId, typeKey);
 }

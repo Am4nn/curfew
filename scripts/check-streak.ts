@@ -62,7 +62,6 @@ async function track(typeKey: string, config?: unknown) {
       schedule: {
         schedule: type.defaults.schedule,
         dayBoundary: type.defaults.dayBoundary,
-        grace: type.defaults.grace,
       },
       config: config ?? type.defaults.config,
     },

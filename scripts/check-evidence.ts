@@ -135,7 +135,6 @@ try {
       schedule: {
         schedule: type.defaults.schedule,
         dayBoundary: type.defaults.dayBoundary,
-        grace: type.defaults.grace,
         minGap: type.defaults.minGap ?? 0,
       },
       config: type.defaults.config,

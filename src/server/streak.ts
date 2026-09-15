@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { activityScores, activityStreaks, events } from "@/db/schema";
 import {
   streakOver,
+  restoreOffer,
+  coveredDays,
   periodUnit,
   periodStart,
   daysDoneIn,
@@ -11,6 +13,7 @@ import {
   EMPTY_STREAK,
   type StreakDay,
   type StreakState,
+  type RestoreOffer,
   type Checkin,
   type Schedule,
 } from "@/domain";
@@ -43,7 +46,6 @@ import { now } from "@/lib/clock";
 export interface StoredStreak {
   current: number;
   best: number;
-  graceSpent: Record<string, number>;
   closedThrough: string | null;
   weekStart: string | null;
   weekSessions: number;
@@ -82,7 +84,6 @@ export async function readStreak(
   return {
     current: row.current,
     best: row.best,
-    graceSpent: row.graceSpent ?? {},
     closedThrough: row.closedThrough,
     weekStart: row.weekStart,
     weekSessions: row.weekSessions,
@@ -270,11 +271,61 @@ async function daysDoneInFlight(
  * scores and one type's check-ins, which is bounded by that type's history and
  * nothing else. `verify` calls it without writing, to diff.
  */
-export async function rebuildStreak(
+/**
+ * Which periods of one activity somebody has spent grace on.
+ *
+ * Read from `grace.spent` events over the whole history: grace spent in March
+ * still holds a March day when the streak is rebuilt in September. It lives
+ * here rather than beside the rest of grace in `restore.ts` because the REBUILD
+ * needs it and `restore.ts` needs the rebuild, and one of the two had to not
+ * import the other.
+ */
+export async function gracedPeriods(
   userId: string,
   typeKey: string,
-  opts: { write?: boolean } = {},
-): Promise<StoredStreak | null> {
+): Promise<Set<string>> {
+  const rows = await db
+    .select({ payload: events.payload })
+    .from(events)
+    .where(
+      and(
+        eq(events.userId, userId),
+        eq(events.type, "grace.spent"),
+        sql`${events.payload}->>'type_key' = ${typeKey}`,
+      ),
+    );
+
+  const out = new Set<string>();
+  for (const r of rows) {
+    const covering = ((r.payload ?? {}) as Record<string, unknown>).covering;
+    if (Array.isArray(covering)) for (const p of covering) out.add(String(p));
+  }
+  return out;
+}
+
+/** The days those periods touch, marked so the walk holds the run there. */
+function markGraced(
+  days: StreakDay[],
+  schedule: Schedule,
+  periods: Set<string>,
+): StreakDay[] {
+  if (periods.size === 0) return days;
+  const forgiven = new Set(coveredDays(days, schedule, [...periods]));
+  return days.map((d) => (forgiven.has(d.date) ? { ...d, graced: true } : d));
+}
+
+/** The day list one activity's walk is built from, with grace already applied. */
+async function walkFor(
+  userId: string,
+  typeKey: string,
+): Promise<{
+  activity: NonNullable<Awaited<ReturnType<typeof getUserActivity>>>;
+  days: StreakDay[];
+  closedThrough: string | null;
+  timezone: string;
+  instant: Date;
+  unit: "day" | "week";
+} | null> {
   const activity = await getUserActivity(userId, typeKey);
   if (!activity) return null;
 
@@ -290,18 +341,57 @@ export async function rebuildStreak(
     config: activity.config,
     schedule: activity.schedule.schedule,
   };
-  const { days, closedThrough } = await activityDays(
-    userId,
-    typeKey,
+  const { days, closedThrough } = await activityDays(userId, typeKey, unit, zones, inFlight);
+
+  return {
+    activity,
+    // Grace is applied here rather than decided in the walk (item 19). The
+    // periods somebody forgave are `grace.spent` events, so what reaches
+    // `streakOver` is a day already marked, and the walk stays a walk.
+    days: markGraced(
+      days,
+      activity.schedule.schedule,
+      await gracedPeriods(userId, typeKey),
+    ),
+    closedThrough,
+    timezone,
+    instant,
     unit,
-    zones,
-    inFlight,
+  };
+}
+
+/**
+ * What it would cost to bring this activity's ended streak back, or null.
+ *
+ * The same day list the rebuild uses, so the number on the button is the number
+ * the rebuild will produce. Grace already spent is already applied, which is
+ * what stops an offer being made twice for the same break.
+ */
+export async function offerFor(
+  userId: string,
+  typeKey: string,
+): Promise<RestoreOffer | null> {
+  const walk = await walkFor(userId, typeKey);
+  if (!walk) return null;
+  return restoreOffer(
+    walk.days,
+    walk.activity.schedule.schedule,
+    walk.closedThrough ?? undefined,
   );
+}
+
+export async function rebuildStreak(
+  userId: string,
+  typeKey: string,
+  opts: { write?: boolean } = {},
+): Promise<StoredStreak | null> {
+  const walk = await walkFor(userId, typeKey);
+  if (!walk) return null;
+  const { activity, days, closedThrough, timezone, instant, unit } = walk;
 
   const result = streakOver(
     days,
     activity.schedule.schedule,
-    activity.schedule.grace,
     EMPTY_STREAK,
     closedThrough ?? undefined,
   );
@@ -317,7 +407,6 @@ export async function rebuildStreak(
   const stored: StoredStreak = {
     current: result.current,
     best: result.best,
-    graceSpent: result.graceSpent,
     closedThrough,
     weekStart,
     weekSessions,
@@ -343,7 +432,6 @@ async function writeStreak(
       lastDay,
       weekStart: s.weekStart,
       weekSessions: s.weekSessions,
-      graceSpent: s.graceSpent,
       closedThrough: s.closedThrough,
     })
     .onConflictDoUpdate({
@@ -354,7 +442,6 @@ async function writeStreak(
         lastDay: sql`excluded.last_day`,
         weekStart: sql`excluded.week_start`,
         weekSessions: sql`excluded.week_sessions`,
-        graceSpent: sql`excluded.grace_spent`,
         closedThrough: sql`excluded.closed_through`,
         updatedAt: sql`now()`,
       },
@@ -404,7 +491,6 @@ export async function bumpStreak(
     {
       current,
       best: Math.max(stored.best, current),
-      graceSpent: stored.graceSpent,
       closedThrough: stored.closedThrough,
       weekStart: week,
       // A new week starts its own count; the same week continues.
@@ -465,7 +551,6 @@ export async function allStreaks(userId: string): Promise<Map<string, StoredStre
       {
         current: row.current,
         best: row.best,
-        graceSpent: row.graceSpent ?? {},
         closedThrough: row.closedThrough,
         weekStart: row.weekStart,
         weekSessions: row.weekSessions,
@@ -505,5 +590,5 @@ export async function recomputeStreak(
 ): Promise<StreakState | null> {
   const rebuilt = await rebuildStreak(userId, typeKey, { write: false });
   if (!rebuilt) return null;
-  return { current: rebuilt.current, best: rebuilt.best, graceSpent: rebuilt.graceSpent };
+  return { current: rebuilt.current, best: rebuilt.best };
 }

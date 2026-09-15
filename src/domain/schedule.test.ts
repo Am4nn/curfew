@@ -63,18 +63,24 @@ describe("the schema refuses shapes nobody means", () => {
     const parsed = scheduleConfigSchema.parse({
       schedule: { kind: "minimum", perWeek: 3 },
       dayBoundary: "midnight",
-      grace: 2,
     });
-    expect(parsed.grace).toBe(2);
+    expect(parsed.schedule).toEqual({ kind: "minimum", perWeek: 3 });
+    expect(parsed.minGap).toBe(0);
   });
 
-  it("rejects a negative grace", () => {
-    expect(() =>
-      scheduleConfigSchema.parse({
-        schedule: EVERY_DAY,
-        dayBoundary: "midnight",
-        grace: -1,
-      }),
-    ).toThrow();
+  it("takes a row written before v3.2 and drops the retired grace", () => {
+    // Grace left this schema with item 19: it is one pool for the account now,
+    // not a per-activity allowance. Zod strips what it does not know, so an old
+    // row still parses and the next save writes the current shape.
+    const parsed = scheduleConfigSchema.parse({
+      schedule: EVERY_DAY,
+      dayBoundary: "midnight",
+      grace: 2,
+    });
+    expect(parsed).toEqual({
+      schedule: EVERY_DAY,
+      dayBoundary: "midnight",
+      minGap: 0,
+    });
   });
 });

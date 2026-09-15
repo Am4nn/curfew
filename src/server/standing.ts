@@ -1,13 +1,14 @@
 import { cache } from "react";
-import { DateTime } from "luxon";
-import { graceLeft, graceMonth } from "@/domain";
 import { listUserActivities } from "./activities";
 import { closeOutstanding } from "./scoring";
 import { allStreaks, closeStreaks, rebuildStreak } from "./streak";
-import { now } from "@/lib/clock";
 
-// A user's standing in one activity: the streak, the best it has ever been, and
-// how much grace is left this month.
+// A user's standing in one activity: the streak and the best it has ever been.
+//
+// Grace used to be here too, as a per-activity allowance with a per-activity
+// count of what was left. It is one pool for the account now (item 19), so it
+// is a property of the person rather than of the activity and lives in
+// `restore.ts`.
 //
 // It is a ROW READ. The streak lives in activity_streaks, the press moves it,
 // and this reads it. It used to load every closed period for the type and walk
@@ -23,8 +24,6 @@ export interface Standing {
   typeKey: string;
   streak: number;
   best: number;
-  graceLeft: number;
-  gracePerMonth: number;
 }
 
 /**
@@ -46,7 +45,6 @@ export const standingsFor = cache(
     await closeStreaks(userId);
 
     const stored = await allStreaks(userId);
-    const today = DateTime.fromJSDate(await now(), { zone: "utc" }).toFormat("yyyy-MM-dd");
 
     for (const activity of activities) {
       // Missing means this type has never been counted: a first check-in that
@@ -59,12 +57,6 @@ export const standingsFor = cache(
         typeKey: activity.typeKey,
         streak: s.current,
         best: s.best,
-        graceLeft: graceLeft(
-          { current: s.current, best: s.best, graceSpent: s.graceSpent },
-          graceMonth(today),
-          activity.schedule.grace,
-        ),
-        gracePerMonth: activity.schedule.grace,
       });
     }
     return out;

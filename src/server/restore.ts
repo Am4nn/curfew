@@ -205,6 +205,12 @@ export type SpendResult =
  * (see `src/db/index.ts`). The event is the truth and the counter is a cache,
  * so a crash between them leaves a streak one rebuild behind rather than grace
  * spent on nothing.
+ *
+ * Two presses at once could both pass the check and both write. The window is
+ * between the read and the write and is small, because the second press
+ * re-walks and finds the first press's event already forgiving those periods,
+ * which leaves no offer to make. Same shape as the check-in path, and the same
+ * reason: there is no transaction to take.
  */
 export async function spendGrace(userId: string, typeKey: string): Promise<SpendResult> {
   const [offer, balance] = await Promise.all([offerOn(userId, typeKey), graceState(userId)]);

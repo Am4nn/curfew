@@ -51,14 +51,14 @@ export interface TodayRow {
   /**
    * The streak that just ended, and what it would cost to bring it back.
    *
-   * Set only when the offer is open AND the pool covers it (items 19 and 20).
-   * Not affordable means no control here at all: a disabled one is a thing to
-   * wonder about on the screen looked at most, and there is nothing to do about
-   * it from here. The grace screen keeps the offer, drops its button and says
-   * what it needs against what you have, which makes it the one place that
-   * explains why this row has no Restore.
+   * Set whenever the offer is open. `affordable` is what decides the CONTROL:
+   * not affordable means no Restore here at all, because a disabled one is a
+   * thing to wonder about on the screen looked at most and there is nothing to
+   * do about it from here. The grey flame still shows, which is what a broken
+   * streak looked like before any of this, and the grace screen keeps the
+   * offer, drops its button and says what it needs against what you have.
    */
-  restore: { cost: number; restoresTo: number } | null;
+  restore: { cost: number; restoresTo: number; affordable: boolean } | null;
 }
 
 export interface Today {
@@ -162,8 +162,12 @@ export async function todayFor(userId: string): Promise<Today> {
       step: open?.key ?? null,
       restore: (() => {
         const offer = offers.find((o) => o.typeKey === activity.typeKey);
-        return offer?.affordable
-          ? { cost: offer.cost, restoresTo: offer.restoresTo }
+        return offer
+          ? {
+              cost: offer.cost,
+              restoresTo: offer.restoresTo,
+              affordable: offer.affordable,
+            }
           : null;
       })(),
       status,

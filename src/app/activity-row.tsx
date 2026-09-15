@@ -123,7 +123,7 @@ export function ActivityRow({
           the control drops to the secondary treatment so a day already done
           does not shout at anyone. Where a press would do nothing the step is
           not open, so Sleep and Office read exactly as the mock draws them. */}
-      {row.done || row.restore || (row.open && row.step) ? (
+      {row.done || row.restore?.affordable || (row.open && row.step) ? (
         <div className="flex flex-none items-center gap-[10px]">
           {/* The other thing that differs. It sits BESIDE Check in rather than
               instead of it: the week ended, the activity did not, and checking
@@ -136,7 +136,7 @@ export function ActivityRow({
               cannot cover it: a disabled control is a thing to wonder about on
               the screen looked at most, and the grey flame alone is what a
               broken streak looked like before any of this existed. */}
-          {row.restore ? (
+          {row.restore?.affordable ? (
             <RestoreButton
               offer={{
                 typeKey: row.typeKey,

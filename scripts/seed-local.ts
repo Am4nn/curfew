@@ -876,8 +876,21 @@ async function seedTodayPartial(): Promise<void> {
   const userId = "preview-admin";
   const period = anchor.toFormat("yyyy-MM-dd");
 
-  for (let g = 0; g < 8; g++) {
-    await checkin(userId, "water", "glass", anchor.set({ hour: 9 + g }).toJSDate(), DAILY_SCHEDULE, {});
+  // Today's glasses end BEFORE now rather than at a fixed hour. Water has a
+  // thirty minute gap between presses since item 18, and a glass dated later
+  // today leaves that gap running against a clock that has not reached it: the
+  // row then reads "Next counts 4:30 PM" at one in the morning, which is true
+  // and is not a state anybody would ever be in.
+  const lastGlass = DateTime.min(anchor.set({ hour: 16 }), DateTime.now().setZone(TZ).minus({ minutes: 45 }));
+  for (let g = 7; g >= 0; g--) {
+    await checkin(
+      userId,
+      "water",
+      "glass",
+      lastGlass.minus({ hours: g }).toJSDate(),
+      DAILY_SCHEDULE,
+      {},
+    );
   }
 
   const nfConfig = { window: { open: "06:00", close: "11:00" }, cutoff: "20:00" };
@@ -933,9 +946,22 @@ async function seedTodayCompletions(): Promise<void> {
     steps: 9500,
   });
 
-  // Water: all 8 glasses today.
-  for (let g = 0; g < 8; g++) {
-    await checkin(userId, "water", "glass", anchor.set({ hour: 9 + g }).toJSDate(), DAILY_SCHEDULE, {});
+  // Water: all 8 glasses today, the last of them before now. See the note in
+  // seedTodayPartial: a glass dated later today leaves the gap running against
+  // a clock that has not reached it.
+  const lastGlass = DateTime.min(
+    anchor.set({ hour: 16 }),
+    DateTime.now().setZone(TZ).minus({ minutes: 45 }),
+  );
+  for (let g = 7; g >= 0; g--) {
+    await checkin(
+      userId,
+      "water",
+      "glass",
+      lastGlass.minus({ hours: g }).toJSDate(),
+      DAILY_SCHEDULE,
+      {},
+    );
   }
 
   // Nightfast: today's confirm, held.

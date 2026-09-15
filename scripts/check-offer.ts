@@ -387,12 +387,35 @@ try {
 
   await press("sleep", "night", "night1");
 
-  // Six in the morning, inside the wake window. Still nothing for the confirm.
-  setClock(night.plus({ days: 1 }).set({ hour: 6 }).toJSDate());
-  const wake = await press("sleep", "wake", "wake1");
-  check("the wake press is taken inside its window", wake.ok, JSON.stringify(wake));
+  // Six in the morning, inside the wake window.
+  //
+  // The wake event is inserted with its own timestamp rather than pressed.
+  // `recordEvent` leaves occurred_at to the DATABASE clock (invariant 8), which
+  // does not move when the app clock is scrubbed, so a press made here would be
+  // stamped with the real hour and would not sit in the window it was made in.
+  // The anchor is a precondition; what is being checked is the confirm.
+  const wakeAt = night.plus({ days: 1 }).set({ hour: 6 }).toJSDate();
+  setClock(wakeAt);
+  const wakePeriod = (await getCheckinState(id, "sleep"))!.period;
+  await db.insert(events).values({
+    userId: id,
+    type: "checkin.sleep.wake",
+    payload: {
+      type_key: "sleep",
+      step: "wake",
+      period_start: wakePeriod,
+      idem: `${id}-wake1`,
+      evidence: {},
+    },
+    occurredAt: wakeAt,
+  });
 
   confirm = await stepOf("sleep", "confirm");
+  check(
+    "the wake press is recorded",
+    (await stepOf("sleep", "wake")).count === 1,
+    `${(await stepOf("sleep", "wake")).count} presses`,
+  );
   check(
     "the confirm now has times, half an hour out",
     confirm.waitingOn === null && confirm.opensLabel === "6:30 AM",

@@ -6,7 +6,7 @@ import { ActivityIcon } from "../../activity-icon";
 import { setShareAction } from "../../group/[groupId]/(hub)/settings/actions";
 import { CheckRow, Toggle, useServerAction } from "@/app/ui";
 
-export interface ShareRow {
+interface ShareRow {
   typeKey: string;
   name: string;
   icon: string;

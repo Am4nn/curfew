@@ -90,13 +90,13 @@ export interface FieldIssue {
   message: string;
 }
 
-export interface HintInput<Config, Evidence> extends EvaluateInput<Config, Evidence> {
+interface HintInput<Config, Evidence> extends EvaluateInput<Config, Evidence> {
   step: string;
   /** What is typed into the fields right now, not yet recorded. */
   pending?: Partial<Evidence> | null;
 }
 
-export interface EvaluateResult {
+interface EvaluateResult {
   passed: boolean;
   // The module's own detail. The engine stores it verbatim and never inspects
   // it (invariant 6).
@@ -134,7 +134,7 @@ export type CheckinKind = "tap" | "counter" | "number" | "camera" | "declare";
 
 // A module names its chart and the engine draws it, the same way it draws the
 // check-in affordance.
-export type ChartKind = "windowed" | "numeric" | "weekly" | "binary";
+type ChartKind = "windowed" | "numeric" | "weekly" | "binary";
 
 /**
  * Everything the engine needs to draw a module's chart without knowing what the
@@ -233,7 +233,7 @@ type ConfigFieldShape =
 
 // What the engine owns for every activity, whatever its type (decision 79).
 // The period unit is derived from the schedule, never stored beside it.
-export interface ScheduleDefaults {
+interface ScheduleDefaults {
   schedule: Schedule;
   dayBoundary: DayBoundary;
   /**

@@ -21,7 +21,7 @@ import { getActivityType } from "./registry";
 const DAY_NAMES = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 /** "Monday, Wednesday and Friday". Oxford comma deliberately absent. */
-export function listOfDays(days: number[]): string {
+function listOfDays(days: number[]): string {
   const names = [...days].sort((a, b) => a - b).map((d) => DAY_NAMES[d] ?? "");
   if (names.length <= 1) return names[0] ?? "";
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;

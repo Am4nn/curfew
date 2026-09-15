@@ -15,7 +15,7 @@ export const STEPS_STEP = "count";
 
 // Direction is a setting, not a constant: it was always data rather than two
 // code paths (decision 52), and someone cutting down can say so.
-export const stepsConfigSchema = z
+const stepsConfigSchema = z
   .object({
     target: z.number().int().min(100).max(100000),
     direction: z.enum(["atLeast", "atMost"]),
@@ -23,7 +23,7 @@ export const stepsConfigSchema = z
   .strict();
 export type StepsConfig = z.infer<typeof stepsConfigSchema>;
 
-export const stepsEvidenceSchema = z
+const stepsEvidenceSchema = z
   .object({ steps: z.number().int().min(0).max(200000) })
   .strict();
 export type StepsEvidence = z.infer<typeof stepsEvidenceSchema>;

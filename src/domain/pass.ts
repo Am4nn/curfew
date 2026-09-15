@@ -39,7 +39,7 @@ export function countPass<E>(
 // A threshold runs in either direction (decision 52). Steps passes at or above
 // its target; Screen passes at or below its limit. Same field, opposite
 // comparison, so the direction is data rather than two code paths.
-export type Direction = "atLeast" | "atMost";
+type Direction = "atLeast" | "atMost";
 
 export interface ThresholdRule {
   direction: Direction;

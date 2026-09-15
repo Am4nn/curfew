@@ -24,7 +24,7 @@ import { required } from "@/lib/env";
 const LOCAL = process.env.LOCAL_MODE === "1";
 
 /** Where LOCAL_MODE keeps objects. Gitignored, wiped by hand. */
-export const LOCAL_STORE = path.join(process.cwd(), ".r2-local");
+const LOCAL_STORE = path.join(process.cwd(), ".r2-local");
 
 /**
  * Object keys we will touch on disk. Deliberately narrower than R2 would

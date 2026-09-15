@@ -166,7 +166,7 @@ export async function recordSettlement(input: {
   return row;
 }
 
-export async function getUserGroups(
+async function getUserGroups(
   userId: string,
 ): Promise<{ groupId: string; name: string }[]> {
   return db

@@ -10,8 +10,8 @@ import { thresholdPass, sumField } from "../pass";
 
 export const READING_STEP = "session";
 
-export const readingUnitSchema = z.enum(["minutes", "pages"]);
-export const readingConfigSchema = z
+const readingUnitSchema = z.enum(["minutes", "pages"]);
+const readingConfigSchema = z
   .object({
     unit: readingUnitSchema,
     target: z.number().int().min(1).max(5000),
@@ -21,7 +21,7 @@ export type ReadingConfig = z.infer<typeof readingConfigSchema>;
 
 // One field, whatever the unit. The config says what the number means, so the
 // evidence does not have to carry two of them.
-export const readingEvidenceSchema = z
+const readingEvidenceSchema = z
   .object({ amount: z.number().int().min(0).max(5000) })
   .strict();
 export type ReadingEvidence = z.infer<typeof readingEvidenceSchema>;

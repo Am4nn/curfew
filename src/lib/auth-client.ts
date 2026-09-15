@@ -2,6 +2,9 @@
 
 import { createAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient();
+const authClient = createAuthClient();
 
-export const { signIn, signOut, useSession } = authClient;
+// `useSession` came out of here too and nothing ever called it. Who is signed
+// in is answered on the server, by `getSessionUser`, so a client hook for it
+// would be a second answer to a question that already has one.
+export const { signIn, signOut } = authClient;

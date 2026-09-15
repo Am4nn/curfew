@@ -59,7 +59,7 @@ export interface StreakState {
   best: number;
 }
 
-export interface StreakStep {
+interface StreakStep {
   /** The day, or for a weekly activity the Monday of the week judged. */
   at: string;
   current: number;

@@ -39,7 +39,7 @@ const rowsOf = (result: unknown): Row[] => {
  * for today to be in it, which every screen that shows a rank has already done
  * through `standingsFor`.
  */
-export const cleanRunFor = cache(
+const cleanRunFor = cache(
   async (userId: string): Promise<Map<string, number>> => {
     const result = await db.execute(sql`
       WITH missed AS (

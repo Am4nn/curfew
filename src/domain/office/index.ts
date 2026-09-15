@@ -10,10 +10,10 @@ import { countPass } from "../pass";
 
 export const OFFICE_STEP = "arrive";
 
-export const officeConfigSchema = z.object({ window: windowSchema }).strict();
+const officeConfigSchema = z.object({ window: windowSchema }).strict();
 export type OfficeConfig = z.infer<typeof officeConfigSchema>;
 
-export const officeEvidenceSchema = z.object({}).strict();
+const officeEvidenceSchema = z.object({}).strict();
 export type OfficeEvidence = z.infer<typeof officeEvidenceSchema>;
 
 export const officeActivity: ActivityType<OfficeConfig, OfficeEvidence> = {

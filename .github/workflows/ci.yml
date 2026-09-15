@@ -61,6 +61,15 @@ jobs:
       - name: Every browser suite is run by some shard
         run: bun run check:shards
 
+      # Every check above asks whether the code that RUNS is right. None of them
+      # asks whether there is code that does not run. `finished()` in
+      # `haptics.ts` was written, documented and exported, and item 25 shipped
+      # one of its two patterns because nothing called the other: typecheck,
+      # lint, 301 tests and eight browser suites were all green over it. Lint
+      # owns everything inside one file; this is the part that needs two.
+      - name: Nothing exported is unreachable
+        run: bun run check:dead
+
       # The build validates env at module load and pre-renders routes. It never
       # connects to a database (queries run only per request), so dummy but
       # well-formed values are enough. Never put real secrets here.

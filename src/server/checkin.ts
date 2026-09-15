@@ -46,7 +46,7 @@ function label(at: Date, timezone: string): string {
 // Reading
 // ---------------------------------------------------------------------------
 
-export interface RecordedCheckin {
+interface RecordedCheckin {
   step: string;
   /** ISO, so the whole state crosses to a client component unchanged. */
   at: string;
@@ -344,7 +344,7 @@ export async function getCheckinState(
 // The press carries its own key. Uniqueness in the database is on that key, so
 // a retried or replayed request records nothing, while a second deliberate
 // press records a second check-in.
-export const checkinInputSchema = z
+const checkinInputSchema = z
   .object({
     typeKey: z.string().min(1).max(40),
     step: z.string().min(1).max(40),
@@ -355,7 +355,7 @@ export const checkinInputSchema = z
   })
   .strict();
 
-export type CheckinFailure =
+type CheckinFailure =
   | "untracked"
   | "unscheduled"
   | "unknown_step"

@@ -15,7 +15,9 @@ import type { ReportReason } from "@/lib/report-reasons";
 // one image because somebody asked them to, and the fact they looked is on the
 // report.
 
-export { REPORT_REASONS, type ReportReason } from "@/lib/report-reasons";
+// The reasons themselves were re-exported from here and nobody took them:
+// every caller, the admin table and the report sheet both, imports
+// `@/lib/report-reasons` directly, which is where they live.
 
 /**
  * Report a photo. Only somebody who can see it may report it, which is the

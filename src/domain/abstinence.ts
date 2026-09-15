@@ -32,13 +32,13 @@ export const DECLARE_STEP = "declare";
 // The window is when you CONFIRM. The cut-off is the time the abstinence
 // starts, which only some of these types have: nightfast has a "nothing after"
 // time, sugar-free is simply the whole day.
-export const abstinenceConfigSchema = z
+const abstinenceConfigSchema = z
   .object({ window: windowSchema, cutoff: HHMM.nullable() })
   .strict();
 export type AbstinenceConfig = z.infer<typeof abstinenceConfigSchema>;
 
 // The whole payload: did it hold. There is nothing else to record.
-export const abstinenceEvidenceSchema = z.object({ held: z.boolean() }).strict();
+const abstinenceEvidenceSchema = z.object({ held: z.boolean() }).strict();
 export type AbstinenceEvidence = z.infer<typeof abstinenceEvidenceSchema>;
 
 export function abstinenceActivity(spec: {

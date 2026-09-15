@@ -6,7 +6,7 @@
 // miss a field (decision 98). Sizes come from the type (decision 97).
 
 /** Bigger than this is refused before it is read. A video, usually. */
-export const MAX_SOURCE_BYTES = 50_000_000;
+const MAX_SOURCE_BYTES = 50_000_000;
 
 export interface Compressed {
   blob: Blob;

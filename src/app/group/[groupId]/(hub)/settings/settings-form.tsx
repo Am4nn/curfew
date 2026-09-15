@@ -38,13 +38,13 @@ import {
 // page component with one set of queries, and Back works without a layout that
 // has to know whether to draw the hub's tabs.
 
-export interface MemberRow {
+interface MemberRow {
   userId: string;
   name: string;
   role: "owner" | "member";
 }
 
-export interface InviteRow {
+interface InviteRow {
   id: string;
   email: string;
   invitedByName: string;

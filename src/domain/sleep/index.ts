@@ -25,8 +25,8 @@ const HHMM = z
  * you can place at an hour you are already up, and the confirm carries the only
  * photograph sleep asks for (decision 45), which is the whole reason it exists.
  */
-export const CONFIRM_DELAY_MINUTES = 30;
-export const CONFIRM_OPEN_MINUTES = 30;
+const CONFIRM_DELAY_MINUTES = 30;
+const CONFIRM_OPEN_MINUTES = 30;
 
 /**
  * Four keys, and deliberately NOT `.strict()`.
@@ -72,7 +72,7 @@ function retiredConfirm(config: SleepConfig): { open: string; close: string } | 
 }
 
 // The timestamp is the evidence for sleep, so the payload is empty.
-export const sleepEvidenceSchema = z.object({}).strict();
+const sleepEvidenceSchema = z.object({}).strict();
 export type SleepEvidence = z.infer<typeof sleepEvidenceSchema>;
 
 // The two windows that ARE clock times. Confirm is not one of them any more.

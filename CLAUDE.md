@@ -344,6 +344,7 @@ mocks      node .design/build-v3.mjs — regenerate every artboard
 cors       bun run check:cors      — can a browser upload from this origin
 signin     bun run check:signin    — can a stranger see the sign-in page
 shards     bun run check:shards    — CI still runs every browser suite
+dead       bun run check:dead      — nothing is exported that nothing imports
 notice     bun run publish:notice  — announce a release to the people already here
 sleep      bun run migrate:sleep   — move existing members onto the anchored confirm
 ```
@@ -396,6 +397,19 @@ no dismiss, only Got it, and an ack cannot be taken back.
 Publishing twice does nothing: a release note carries `key = release:<version>`
 and a partial unique index (migration 0023). Without it the second run inserts a
 second row and everybody who had already acknowledged gets the overlay again.
+
+**`check:dead` is knip, and it is the one check that asks whether code RUNS at
+all.** Everything else asks whether running code is right. `finished()` in
+`haptics.ts` was written, documented and exported, and nothing called it: item
+25 shipped one of its two patterns while typecheck, lint, 301 tests and eight
+browser suites stayed green over it. ESLint owns everything inside one file, at
+`--max-warnings=0`, so this is only the part that needs two: an export nobody
+imports, a file nobody imports, a dependency that is used and undeclared.
+
+It found `sharp` imported by `make:icons` and never declared, which worked only
+because Next happens to depend on it. Prefer deleting what it finds to silencing
+it; if something really is reached another way, say so by making it an `entry`
+in `knip.json`, where the reason is visible.
 
 `bun run browser` takes suite names: `bun run browser admin counter` runs those
 two. Order on the command line means nothing. `suites.mjs` holds the canonical

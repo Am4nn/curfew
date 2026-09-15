@@ -280,7 +280,7 @@ async function daysDoneInFlight(
  * needs it and `restore.ts` needs the rebuild, and one of the two had to not
  * import the other.
  */
-export async function gracedPeriods(
+async function gracedPeriods(
   userId: string,
   typeKey: string,
 ): Promise<Set<string>> {

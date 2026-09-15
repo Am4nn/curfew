@@ -6,7 +6,7 @@ import { z } from "zod";
 
 // Luxon's numbering: 1 is Monday, 7 is Sunday. A week runs Monday to Sunday in
 // the user's timezone and is judged at week end.
-export const weekdaySchema = z.union([
+const weekdaySchema = z.union([
   z.literal(1), z.literal(2), z.literal(3), z.literal(4),
   z.literal(5), z.literal(6), z.literal(7),
 ]);
@@ -31,7 +31,7 @@ export type Schedule = z.infer<typeof scheduleSchema>;
 // When a day starts for this activity. Sleep needs noon to noon so a 00:30
 // check-in attaches to the night that just ended; everything else wants
 // midnight.
-export const dayBoundarySchema = z.enum(["midnight", "noon"]);
+const dayBoundarySchema = z.enum(["midnight", "noon"]);
 export type DayBoundary = z.infer<typeof dayBoundarySchema>;
 
 export type PeriodUnit = "day" | "week";

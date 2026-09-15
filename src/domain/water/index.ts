@@ -12,12 +12,12 @@ import { countPass } from "../pass";
 
 export const WATER_STEP = "glass";
 
-export const waterConfigSchema = z
+const waterConfigSchema = z
   .object({ glasses: z.number().int().min(1).max(30) })
   .strict();
 export type WaterConfig = z.infer<typeof waterConfigSchema>;
 
-export const waterEvidenceSchema = z.object({}).strict();
+const waterEvidenceSchema = z.object({}).strict();
 export type WaterEvidence = z.infer<typeof waterEvidenceSchema>;
 
 export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {

@@ -22,7 +22,7 @@ import { recordEvent } from "./events";
 import { userDay } from "./config";
 import { accountDisabledEmail, approvalEmail, sendEmailBestEffort } from "./email";
 import { userBalances } from "./groups";
-import { scoreAll, rebuildAll } from "./scoring";
+import { rebuildAll } from "./scoring";
 import { verifyAll, type Drift } from "./verify";
 import { evidenceOps } from "./ops";
 import {
@@ -36,7 +36,7 @@ import {
 
 // The user's role. is_admin is honoured as 'admin' for any row not yet migrated
 // or seeded the old way.
-export async function getRole(userId: string): Promise<Role> {
+async function getRole(userId: string): Promise<Role> {
   const row = await db.query.userApprovals.findFirst({
     where: eq(userApprovals.userId, userId),
   });
@@ -66,10 +66,10 @@ export async function getCapabilities(userId: string): Promise<Capability[]> {
   return roleCapabilities(await getRole(userId));
 }
 
-// Retained: 'admin' is the top role. Used where a plain admin check is clearer.
-export async function isAdmin(userId: string): Promise<boolean> {
-  return (await getRole(userId)) === "admin";
-}
+// An `isAdmin` helper stood here, kept for "where a plain admin check is
+// clearer". No such caller ever arrived: every check in the console goes
+// through `can()` and its capabilities, which is the shape that survives a
+// role being added.
 
 async function scalar(query: Promise<{ n: unknown }[]>): Promise<number> {
   const [row] = await query;
@@ -733,14 +733,11 @@ export async function restoreGroup(adminId: string, groupId: string): Promise<vo
   });
 }
 
-export async function runScoring(
-  adminId: string,
-  from?: string,
-): Promise<{ users: number }> {
-  const result = await scoreAll(from ? { from } : {});
-  await recordEvent({ userId: adminId, type: "admin.scoring.ran", payload: { from: from ?? null, ...result } });
-  return result;
-}
+// A `runScoring` stood here, recording `admin.scoring.ran`. Nothing called it
+// and no screen offered it, which is right: scoring is the nightly job's, and
+// the console's one scoring control is Rebuild, which rewrites derived tables
+// and writes no money. `getLastRun` answers "did last night go well" from
+// `ops.verify.ran`, which the cron records, so nothing read that event either.
 
 /**
  * Rewrites activity_scores, activity_outcomes and reputation_daily for the

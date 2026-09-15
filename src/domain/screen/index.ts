@@ -14,7 +14,7 @@ import { thresholdPass, latestField } from "../pass";
 export const SCREEN_STEP = "reading";
 
 // Stored in minutes, set in hours. The field declares the scale between them.
-export const screenConfigSchema = z
+const screenConfigSchema = z
   .object({
     limitMinutes: z.number().int().min(1).max(1440),
     direction: z.enum(["atLeast", "atMost"]),
@@ -22,7 +22,7 @@ export const screenConfigSchema = z
   .strict();
 export type ScreenConfig = z.infer<typeof screenConfigSchema>;
 
-export const screenEvidenceSchema = z
+const screenEvidenceSchema = z
   .object({ minutes: z.number().int().min(0).max(1440) })
   .strict();
 export type ScreenEvidence = z.infer<typeof screenEvidenceSchema>;

@@ -66,7 +66,7 @@ export async function updateTimezone(userId: string, timezone: string): Promise<
  * and every day boundary is read on somebody else's midnight, silently, until
  * they find the Settings screen.
  */
-export async function hasOwnTimezone(userId: string): Promise<boolean> {
+async function hasOwnTimezone(userId: string): Promise<boolean> {
   const [row] = await db
     .select({ version: userSettings.version })
     .from(userSettings)

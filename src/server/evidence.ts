@@ -3,7 +3,6 @@ import { DateTime } from "luxon";
 import { and, eq, inArray, isNull, isNotNull, lte, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { evidence, events } from "@/db/schema";
-import { getActivityType } from "@/domain";
 import { presign, deleteObject } from "./r2";
 import { rateLimit } from "./ratelimit";
 import { resolveCheckinTarget } from "./checkin";
@@ -23,15 +22,15 @@ const CONTENT_TYPES = ["image/webp", "image/jpeg"] as const;
 /**
  * After compression. The default is 1920px at quality 0.85, which lands around
  * 400 KB for a photograph and well over the old 2 MB ceiling for a busy frame.
- * Raise this and `compressionFor` together, or the browser produces a file the
- * server refuses to sign for.
+ * Raise this and the compression in `checkin-form.tsx` together, or the browser
+ * produces a file the server refuses to sign for.
  */
 export const MAX_UPLOAD_BYTES = 4_000_000;
 
 /** Presigned URLs a user may ask for in an hour. */
 const UPLOADS_PER_HOUR = 60;
 
-export const uploadRequestSchema = z
+const uploadRequestSchema = z
   .object({
     typeKey: z.string().min(1).max(40),
     step: z.string().min(1).max(40),
@@ -413,8 +412,8 @@ export async function sweepEvidence(): Promise<SweepResult> {
   return result;
 }
 
-/** What the browser should compress to, for one type (decision 97). */
-export function compressionFor(typeKey: string): { maxEdge: number; quality: number } {
-  const rule = getActivityType(typeKey).evidence;
-  return { maxEdge: rule.maxEdge ?? 1920, quality: rule.quality ?? 0.85 };
-}
+// A `compressionFor` stood here, reading decision 97's per-type `maxEdge` and
+// `quality`. Nothing called it: the compression a camera actually uses is
+// resolved on the CLIENT, in `checkin-form.tsx`, off the same two fields with
+// the same two fallbacks, because that is where the canvas is. Decision 97 is
+// live; this was a second copy of it on the wrong side of the wire.

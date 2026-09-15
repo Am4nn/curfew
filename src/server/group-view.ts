@@ -203,7 +203,7 @@ export async function memberStandings(
   });
 }
 
-export interface Movement {
+interface Movement {
   day: string;
   delta: number;
   reason: DayReason;

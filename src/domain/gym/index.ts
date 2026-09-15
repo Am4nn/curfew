@@ -27,7 +27,7 @@ export type GymConfig = z.infer<typeof gymConfigSchema>;
 
 // A session carries nothing but the fact it happened. The photo lives in the
 // evidence table, not here.
-export const gymEvidenceSchema = z.object({}).strict();
+const gymEvidenceSchema = z.object({}).strict();
 export type GymEvidence = z.infer<typeof gymEvidenceSchema>;
 
 export const GYM_STEP = "session";

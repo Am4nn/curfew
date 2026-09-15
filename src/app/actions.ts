@@ -1,14 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import {
   createGroup,
   inviteToGroup,
   declineInvite,
   dismissInvite,
-  leaveGroup,
 } from "@/server/groups";
 import type { FormState } from "./ui";
 import { field, trimmed } from "@/lib/form";
@@ -86,18 +84,7 @@ export async function dismissInviteAction(inviteId: string): Promise<void> {
   revalidatePath("/groups");
 }
 
-export async function leaveGroupAction(
-  _state: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  try {
-    const user = await approvedUser();
-    await leaveGroup(field(formData, "groupId"), user.id);
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Could not leave the group." };
-  }
-  // Left the group: send them back to the dashboard. redirect() throws, so it
-  // must sit outside the try/catch above.
-  revalidatePath("/");
-  redirect("/");
-}
+// A `leaveGroupAction` lived here and nothing called it. The control that
+// leaves a group is on the group's own settings hub and binds that file's
+// action, which is the one that runs; this was the copy left behind when
+// settings became a hub (v3.1 item 12).

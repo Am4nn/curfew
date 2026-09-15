@@ -14,7 +14,7 @@ import { countPass, thresholdPass, sumField } from "../pass";
 
 export const FOOD_STEP = "meal";
 
-export const foodConfigSchema = z
+const foodConfigSchema = z
   .object({
     meals: z.number().int().min(1).max(10),
     // Null means the user tracks meals but not calories. The photo is still
@@ -27,7 +27,7 @@ export type FoodConfig = z.infer<typeof foodConfigSchema>;
 // One MEAL's calories, not a day's. Nought is not a meal and four digits is
 // more than any plate, so the range says so rather than accepting a number
 // nobody meant and scoring the day on it.
-export const foodEvidenceSchema = z
+const foodEvidenceSchema = z
   .object({ calories: z.number().int().min(1).max(9999) })
   .strict();
 export type FoodEvidence = z.infer<typeof foodEvidenceSchema>;

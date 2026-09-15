@@ -7,7 +7,7 @@
 // It is a plainly written document.
 
 /** The law these rules are read under. Named in THE LAW THAT APPLIES. */
-export const JURISDICTION = {
+const JURISDICTION = {
   country: "India",
 } as const;
 

@@ -40,7 +40,7 @@ export interface Drift {
  * is how a fine could be charged at 750 for a 500 miss without anything
  * noticing.
  */
-export async function verifyUser(
+async function verifyUser(
   userId: string,
   opts: { from?: string; to?: string } = {},
 ): Promise<Drift[]> {

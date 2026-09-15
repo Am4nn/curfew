@@ -9,7 +9,7 @@
 // top by construction, which is what stops a perfect record on one easy habit
 // outranking a good record on five hard ones.
 
-export const MIN_SCORE = 0;
+const MIN_SCORE = 0;
 export const MAX_SCORE = 1000;
 
 /**

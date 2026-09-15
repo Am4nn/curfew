@@ -9,12 +9,12 @@ import { countPass } from "../pass";
 
 export const SUPPLEMENTS_STEP = "dose";
 
-export const supplementsConfigSchema = z
+const supplementsConfigSchema = z
   .object({ dosesPerDay: z.number().int().min(1).max(6) })
   .strict();
 export type SupplementsConfig = z.infer<typeof supplementsConfigSchema>;
 
-export const supplementsEvidenceSchema = z.object({}).strict();
+const supplementsEvidenceSchema = z.object({}).strict();
 export type SupplementsEvidence = z.infer<typeof supplementsEvidenceSchema>;
 
 export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvidence> = {

@@ -35,7 +35,7 @@ export const GRACE_PER_ACTIVITY = 2;
  * offer to undo something that happened three weeks ago is not a decision
  * anybody is still making.
  */
-export const OFFER_MIN_DAYS = 1;
+const OFFER_MIN_DAYS = 1;
 export const OFFER_MAX_DAYS = 14;
 
 /**

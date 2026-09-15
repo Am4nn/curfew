@@ -28,17 +28,10 @@ register(screenActivity);
 register(nightfastActivity);
 register(sugarfreeActivity);
 
-export {
-  periodStart,
-  daysInPeriod,
-  weekdayOf,
-  graceMonth,
-  type PeriodSpec,
-} from "./period";
+export { periodStart, daysInPeriod, weekdayOf, graceMonth } from "./period";
 export {
   periodUnit,
   isScheduledDay,
-  scheduleSchema,
   scheduleConfigSchema,
   EVERY_DAY,
   WEEKDAYS,
@@ -46,7 +39,6 @@ export {
   type ScheduleConfig,
   type DayBoundary,
   type PeriodUnit,
-  type Weekday,
 } from "./schedule";
 export {
   streakOver,
@@ -55,53 +47,21 @@ export {
   EMPTY as EMPTY_STREAK,
   type StreakDay,
   type StreakState,
-  type StreakResult,
   type RestoreOffer,
 } from "./streak";
-export {
-  GRACE_PER_ACTIVITY,
-  OFFER_MIN_DAYS,
-  OFFER_MAX_DAYS,
-  gracePool,
-  graceBalance,
-  offerOpen,
-  daysBetween as daysApart,
-  resetsOn,
-  type GraceBalance,
-} from "./grace";
-export {
-  countPass,
-  thresholdPass,
-  sumField,
-  latestField,
-  type Direction,
-  type CountRule,
-  type ThresholdRule,
-} from "./pass";
-export {
-  resolveConfig,
-  resolveAt,
-  resolveMoney,
-  type EffectiveRow,
-  type EffectiveAtRow,
-} from "./config";
-export { splitFine, formatMoney, minorUnitExponent, type Share } from "./money";
-export { fineFor, type FineRules } from "./scoring";
+export { graceBalance, offerOpen, resetsOn, type GraceBalance } from "./grace";
+export { resolveConfig, resolveAt, resolveMoney } from "./config";
+export { splitFine, formatMoney, minorUnitExponent } from "./money";
+export { fineFor } from "./scoring";
 export {
   applyDay,
-  replay,
   ceilingFor,
   joiningScore,
   CONSTANTS,
   START_SCORE,
   LOGIC_VERSION,
-  MIN_SCORE,
   MAX_SCORE,
-  type DayInput,
-  type DayResult,
   type DayReason,
-  type ReplayDay,
-  type ReplayRow,
 } from "./reputation";
 export {
   RANKS,
@@ -110,91 +70,20 @@ export {
   isImmaculate,
   daysToImmaculate,
   nextRank,
-  type Rank,
   type RankKey,
 } from "./ranks";
-export { getActivityType, registeredKeys, register, daysDoneIn } from "./registry";
-export {
-  ruleFor,
-  howOften,
-  listOfDays,
-  dayStarts,
-  type RuleText,
-} from "./rule";
-export {
-  consequencesOf,
-  listNames,
-  STOP_FOOTNOTE,
-  type StopCost,
-  type Consequence,
-} from "./stop-cost";
+export { getActivityType, registeredKeys, daysDoneIn } from "./registry";
+export { ruleFor, howOften, dayStarts } from "./rule";
+export { consequencesOf, STOP_FOOTNOTE, type StopCost, type Consequence } from "./stop-cost";
 export type {
-  ActivityType,
   CheckinStep,
   CheckinWindow,
   Checkin,
-  EvaluateInput,
-  EvaluateResult,
-  HintInput,
   EvidenceRule,
   ConfigField,
   FieldIssue,
   CheckinKind,
-  ChartKind,
   ChartSpec,
-  ScheduleDefaults,
 } from "./types";
-export {
-  sleepActivity,
-  sleepConfigSchema,
-  sleepEvidenceSchema,
-  validateSleepWindows,
-  type SleepConfig,
-  type SleepEvidence,
-} from "./sleep";
-export {
-  gymActivity,
-  gymConfigSchema,
-  gymEvidenceSchema,
-  GYM_STEP,
-  type GymConfig,
-  type GymEvidence,
-} from "./gym";
-export {
-  windowSchema,
-  windowInstants,
-  oneWindow,
-  within,
-  clockLabel,
-  ALL_DAY,
-  HHMM,
-  type Window,
-} from "./windows";
-export {
-  abstinenceActivity,
-  abstinenceConfigSchema,
-  abstinenceEvidenceSchema,
-  DECLARE_STEP,
-  type AbstinenceConfig,
-  type AbstinenceEvidence,
-} from "./abstinence";
-export { foodActivity, foodConfigSchema, FOOD_STEP, type FoodConfig } from "./food";
-export {
-  supplementsActivity,
-  supplementsConfigSchema,
-  SUPPLEMENTS_STEP,
-  type SupplementsConfig,
-} from "./supplements";
-export { officeActivity, officeConfigSchema, OFFICE_STEP, type OfficeConfig } from "./office";
-export { studyActivity, studyConfigSchema, STUDY_STEP, type StudyConfig } from "./study";
-export { stepsActivity, stepsConfigSchema, STEPS_STEP, type StepsConfig } from "./steps";
-export { waterActivity, waterConfigSchema, WATER_STEP, type WaterConfig } from "./water";
-export {
-  readingActivity,
-  readingConfigSchema,
-  READING_STEP,
-  type ReadingConfig,
-} from "./reading";
-export { screenActivity, screenConfigSchema, SCREEN_STEP, type ScreenConfig } from "./screen";
-export { nightfastActivity } from "./nightfast";
-export { sugarfreeActivity } from "./sugarfree";
+export { sleepConfigSchema, validateSleepWindows, type SleepConfig } from "./sleep";
+export { WATER_STEP } from "./water";

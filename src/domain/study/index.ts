@@ -10,12 +10,12 @@ import { countPass, thresholdPass, sumField } from "../pass";
 
 export const STUDY_STEP = "session";
 
-export const studyConfigSchema = z
+const studyConfigSchema = z
   .object({ minutesTarget: z.number().int().min(1).max(1440).nullable() })
   .strict();
 export type StudyConfig = z.infer<typeof studyConfigSchema>;
 
-export const studyEvidenceSchema = z
+const studyEvidenceSchema = z
   .object({ minutes: z.number().int().min(0).max(1440) })
   .strict();
 export type StudyEvidence = z.infer<typeof studyEvidenceSchema>;

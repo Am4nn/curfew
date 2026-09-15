@@ -19,7 +19,7 @@ import { resolveAt, resolveMoney, registeredKeys } from "@/domain";
 // history directly through resolveAppSettingAt below. The cache serves the
 // interface, where only "now" matters.
 
-export const APP_CONFIG_TAG = "app-config";
+const APP_CONFIG_TAG = "app-config";
 
 export type AppSettingKey =
   | "money"

@@ -282,20 +282,9 @@ export async function dismissInvite(inviteId: string, userEmail: string): Promis
     .where(eq(groupInvites.id, inviteId));
 }
 
-// Every member's net in one group, from the balances view. Positive means owes.
-export async function groupBalances(
-  groupId: string,
-): Promise<Map<string, { currency: string; netOwed: number }>> {
-  const rows = await db
-    .select({ userId: balances.userId, currency: balances.currency, netOwed: balances.netOwed })
-    .from(balances)
-    .where(eq(balances.groupId, groupId));
-  const m = new Map<string, { currency: string; netOwed: number }>();
-  for (const r of rows) {
-    if (r.userId) m.set(r.userId, { currency: r.currency ?? "INR", netOwed: Number(r.netOwed ?? 0) });
-  }
-  return m;
-}
+// A `groupBalances` stood here, every member's net in one group. Nothing read
+// it. The money tab asks the ledger for the rows it shows and `netFor` answers
+// one person's, which are the two questions anything actually has.
 
 // Per-group net for a user, from the balances view. Positive means owes.
 export async function userBalances(

@@ -128,7 +128,7 @@ export function TimeChart({
   );
 }
 
-export function Figure({
+function Figure({
   title,
   suffix,
   children,

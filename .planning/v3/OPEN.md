@@ -421,6 +421,15 @@ runs in CI:
   missed, which means a longer history than the current 45 and a perfect
   variant of all six event seeders. The numbers behind both bands are covered
   by the simulation; the gold halo, the only glow in the app, is not.
+- **The nine v3.2 boards are unticked and the fixture cannot draw four of
+  them.** Nothing in any fixture has a BROKEN streak, so Home's grey flame,
+  the Restore beside Check in, the sheet and the grace screen's two open
+  offers have never been on a screen. The engine underneath them is covered
+  three ways over, by the unit tests, by three simulation scenarios that press
+  Restore and by `check:offer`, so what is missing is specifically the
+  drawing. A fixture that ends one streak yesterday and leaves another broken
+  by more than the pool can afford would cover all four at once, and is the
+  next thing to build for the gallery.
 
 `JURISDICTION` names a country and no city. A named court commits to a venue,
 and THE LAW THAT APPLIES reads correctly without one.

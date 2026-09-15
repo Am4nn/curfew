@@ -1,4 +1,4 @@
-import { and, eq, isNull, lt, notExists, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, lt, notExists, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { notices, noticeAcks, users } from "@/db/schema";
 
@@ -94,7 +94,19 @@ export async function publishNotice(
   const [row] = await db
     .insert(notices)
     .values({ body, createdBy: adminId, key: key ?? null })
-    .onConflictDoNothing({ target: notices.key })
+    // The `where` here is the INDEX PREDICATE, not a filter on rows. The index
+    // this arbitrates on is PARTIAL,
+    // `WHERE key IS NOT NULL` (migration 0023), because a controls change
+    // passes no key and several of those must coexist. Postgres will not infer
+    // a partial index from a bare `ON CONFLICT (key)`: it refuses the statement
+    // outright with "no unique or exclusion constraint matching the ON CONFLICT
+    // specification", so this did not double-publish, it failed every time.
+    //
+    // Nothing caught it. `release-notes.test.ts` validates the FILE, the only
+    // caller with a key is a script CI never runs, and the admin sheet's path
+    // passes no key and so never reaches the arbiter. It was found by running
+    // the release for real.
+    .onConflictDoNothing({ target: notices.key, where: isNotNull(notices.key) })
     .returning({ id: notices.id });
   return row?.id ?? null;
 }

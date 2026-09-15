@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { saveUserActivity, stopTracking } from "@/server/activities";
+import { stopTrackingCost } from "@/server/stop-cost";
 import { getAppConfig } from "@/server/app-config";
-import type { ScheduleConfig } from "@/domain";
+import { consequencesOf, type Consequence, type ScheduleConfig } from "@/domain";
 
 export async function saveActivityAction(input: {
   typeKey: string;
@@ -53,6 +54,20 @@ export async function saveActivityAction(input: {
     return { redirectTo: input.returnTo };
   }
   return { redirectTo: null };
+}
+
+/**
+ * What stopping this activity would cost, asked for when the sheet opens.
+ *
+ * Read on the press rather than on every configure page load. It is four
+ * queries to answer a question nobody asks most visits, and asking it at the
+ * moment of the press is also the only way the numbers are the ones in front of
+ * the person pressing.
+ */
+export async function stopCostAction(typeKey: string): Promise<Consequence[]> {
+  const user = await getSessionUser();
+  if (!user) throw new Error("not signed in");
+  return consequencesOf(typeKey, await stopTrackingCost(user.id, typeKey));
 }
 
 export async function stopTrackingAction(typeKey: string): Promise<void> {

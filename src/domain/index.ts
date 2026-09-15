@@ -115,6 +115,13 @@ export {
   forgiven,
   type RuleText,
 } from "./rule";
+export {
+  consequencesOf,
+  listNames,
+  STOP_FOOTNOTE,
+  type StopCost,
+  type Consequence,
+} from "./stop-cost";
 export type {
   ActivityType,
   CheckinStep,

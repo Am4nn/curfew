@@ -63,6 +63,42 @@ export async function configure({ open, check, page, body }) {
   check("cancelling returns to the list", has(text, "CHANGE ONE THING"));
 
   // ----------------------------------------------------------------------
+  // Stopping states what it costs (item 22).
+  //
+  // Opened and cancelled, never confirmed: a real stop would take Water off
+  // this user for every suite after this one, and the failure worth catching
+  // is a sheet that does not open, says nothing, or offers no way out. The
+  // press itself is `stopTracking`, which has its own coverage.
+  // ----------------------------------------------------------------------
+  const stop = page.getByRole("button", { name: "Stop tracking Water", exact: true });
+  check("the list offers to stop tracking", (await stop.count()) === 1);
+
+  await stop.first().click();
+  await page.waitForTimeout(500);
+  text = await body();
+
+  check("stopping asks first", has(text, "Stop tracking Water?"), text.slice(-400));
+  check(
+    "and says what is kept",
+    has(text, "Nothing is deleted.") && has(text, "Your Photos"),
+    text.slice(-300),
+  );
+  check(
+    "and the confirm is a second press, not the first",
+    (await stop.count()) === 2,
+    `${await stop.count()} buttons`,
+  );
+
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await page.waitForTimeout(400);
+  text = await body();
+  check(
+    "and backing out leaves it tracked",
+    has(text, "CHANGE ONE THING") && !has(text, "Stop tracking Water?"),
+    text.slice(0, 200),
+  );
+
+  // ----------------------------------------------------------------------
   // Setting one up: one question a screen.
   // ----------------------------------------------------------------------
   await open(`/activities/${UNTRACKED}`);

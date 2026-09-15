@@ -14,8 +14,8 @@ import {
   type FieldIssue,
 } from "@/domain";
 import { CameraIcon, StreakNumber } from "../../activity-icon";
-import { saveActivityAction, stopTrackingAction } from "./actions";
-import { SubmitButton } from "@/app/ui";
+import { saveActivityAction } from "./actions";
+import { StopSheet } from "./stop-sheet";
 
 // One configure screen, twelve types. Five controls, drawn from the module's
 // declared fields (decision 88): a day picker, a stepper, a typed box, a
@@ -745,14 +745,9 @@ export function ConfigureForm({
       {type.note ? <Note>{type.note}</Note> : null}
       {error ? <Note tone="penalty">{error}</Note> : null}
 
-      <form action={stopTrackingAction.bind(null, typeKey)}>
-        {/* A bare <form action> never sets this component's own transition
-            flag, so SubmitButton (useFormStatus) is the only thing that can
-            know this press happened. */}
-        <SubmitButton variant="destructive" full pendingLabel={`Stopping ${name}`}>
-          Stop tracking {name}
-        </SubmitButton>
-      </form>
+      {/* Four things happen on this press and it used to name none of them
+          (item 22). One of them is permanent. */}
+      <StopSheet typeKey={typeKey} name={name} />
     </div>
   );
 }

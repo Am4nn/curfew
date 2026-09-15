@@ -11,7 +11,7 @@ import {
 import { listUserActivities } from "./activities";
 import { recordEvent } from "./events";
 import { userDay } from "./config";
-import { offerFor, rebuildStreak } from "./streak";
+import { allStreaks, offerFor, rebuildStreak } from "./streak";
 
 // Spending grace: the pool, the offers, and the press (items 19 and 20).
 //
@@ -138,14 +138,28 @@ export interface OpenOffer {
  */
 export async function openOffers(userId: string): Promise<OpenOffer[]> {
   const today = await userDay(userId);
-  const [activities, balance] = await Promise.all([
+  const [activities, balance, counters] = await Promise.all([
     listUserActivities(userId),
     graceState(userId),
+    allStreaks(userId),
   ]);
 
   const out: OpenOffer[] = [];
   for (const activity of activities) {
     if (!activity.enabled) continue;
+
+    // The stored counter first, because it is a row read and `offerFor` is a
+    // walk of every day since the join date. Home asks this for every activity
+    // on every load, and the common case is that nothing is broken at all.
+    //
+    // Both conditions are necessary for an offer and neither is sufficient, so
+    // this only ever skips work the walk would have thrown away: a live run has
+    // nothing to restore, and a counter that has never been above zero never
+    // had a run to lose. A type with no counter yet is not skipped, because
+    // absent is not the same as zero.
+    const counter = counters.get(activity.typeKey);
+    if (counter && (counter.current > 0 || counter.best === 0)) continue;
+
     const offer = await offerFor(userId, activity.typeKey);
     if (!offer) continue;
     // `offerFor` already returns nothing once a later day is done, which is

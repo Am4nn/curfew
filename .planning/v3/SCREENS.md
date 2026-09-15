@@ -182,3 +182,29 @@ look like.
 |---|---|---|---|
 | Who runs this group | `/group/[id]/settings` | Every member, their role, and the control to change it. Owner only | [ ] |
 | Invites out | `/group/[id]/settings` | Pending invites with who sent each, and a cancel on the ones you may take back | [ ] |
+
+## v3.2 (v3.2 Fixes, page-38)
+
+Six screens changed and one is new. Every one has an artboard, which is the
+difference from the block above: the mocks were drawn and approved before any
+of this was written, and `.design/` is tracked now (item 27), so losing one is
+no longer a thing that can happen quietly.
+
+`V32GraceHome` is the row somebody will see most, and it took five drafts. What
+the earlier ones got wrong is written into `build-v3.mjs` beside it, because the
+wrong answers are the useful part: a dashed strip made the quietest row the
+tallest, Restore in place of Check in took the check-in away, a grey chip was
+too quiet to find, and a flame chip put the offer in the streak slot where a
+streak that is gone still looked live.
+
+| Artboard | Route | State | Done |
+|---|---|---|---|
+| Sleep, with the confirm fixed | `/activities/sleep` | Night and wake windows set, confirm stated and not offered | [ ] |
+| Telling people it moved | `/` | The 3.2.0 release note, in the overlay that already blocks | [ ] |
+| Grace: the action, on Home | `/` | A run that ended: the flame out, Restore beside Check in | [ ] |
+| Grace: the press | `/` | The sheet. What comes back, what it costs, how long it lasts | [ ] |
+| Grace: where the count lives | `/settings` | "6 of 8 left", beside retention and how reputation works | [ ] |
+| Grace: the screen behind it | `/grace` | The pool, what is open, what has gone. Includes one nobody can afford | [ ] |
+| Stopping, with what it costs | `/activities/[key]` | Four consequences, one of them permanent | [ ] |
+| Your photos, and who saw them | `/settings/photos` | A list rather than a grid, with a struck-through group | [ ] |
+| Home keeps Create a group | `/` | Something tracked, no group yet, and still a way to make one | [ ] |

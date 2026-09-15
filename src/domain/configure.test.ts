@@ -10,7 +10,10 @@ import { readingActivity } from "./reading";
 // with it, deliberately.
 
 const LABELS: Record<string, string[]> = {
-  sleep: ["In bed between", "Up between", "Confirmed between"],
+  // The mock is V32SleepSetup. Confirm window is a `fixed` row: it states the
+  // rule and offers no control, because it opens half an hour after the wake
+  // press and is not a time anybody types (item 17).
+  sleep: ["Night window", "Wake window", "Confirm window"],
   gym: [],
   food: ["Meals a day", "Calorie limit"],
   supplements: ["Doses a day"],
@@ -115,13 +118,13 @@ describe("the twelve configure screens", () => {
 });
 
 describe("what the schema cannot say, the module says", () => {
+  // No confirm pair: it opens half an hour after the wake press (item 17), so
+  // there is nothing here for a person to get wrong about it.
   const base = {
     night_open: "22:00",
     night_close: "00:30",
     wake_open: "06:30",
     wake_close: "07:45",
-    confirm_open: "07:45",
-    confirm_close: "09:00",
   };
 
   it("a good night has nothing wrong with it", () => {

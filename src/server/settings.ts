@@ -3,10 +3,13 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { userSettings, userActivityConfig } from "@/db/schema";
 import {
+  getActivityType,
   sleepConfigSchema,
   validateSleepWindows,
   type SleepConfig,
 } from "@/domain";
+
+const sleepDefaults = getActivityType("sleep").defaults;
 import { resolveUserTimezone, resolveUserSleepConfigRow, userDay } from "./config";
 import { dayAfter } from "@/lib/day-format";
 import { now } from "@/lib/clock";
@@ -104,6 +107,19 @@ export async function setInitialTimezone(
   return true;
 }
 
+/**
+ * The night and wake windows, from the personal settings screen.
+ *
+ * The CONFIRM window is not here any more and cannot be: it opens half an hour
+ * after the wake press (item 17), which is not a time anybody types.
+ *
+ * It wrote the module's half as the WHOLE blob, which is not the shape a config
+ * row has: `splitConfig` reads `.schedule` off it and every real save wraps the
+ * two together. Saving sleep windows here therefore broke Home for that person,
+ * with a ZodError on a missing schedule, until another save through the
+ * configure screen put a wrapped row back. The engine's half is carried
+ * through untouched now, which is what a screen that only edits windows means.
+ */
 export async function updateSleepWindows(
   userId: string,
   windows: unknown,
@@ -113,16 +129,26 @@ export async function updateSleepWindows(
   const timezone = await resolveUserTimezone(userId, effectiveFrom);
   const errors = validateSleepWindows(config, timezone, effectiveFrom);
   if (errors.length > 0) throw new Error(errors[0]);
+
+  const current = await resolveUserSleepConfigRow(userId, effectiveFrom);
+  const schedule = current.schedule ?? {
+    schedule: sleepDefaults.schedule,
+    dayBoundary: sleepDefaults.dayBoundary,
+    grace: sleepDefaults.grace,
+    minGap: sleepDefaults.minGap ?? 0,
+  };
+  const blob = { schedule, config };
+
   await db
     .insert(userActivityConfig)
-    .values({ userId, typeKey: "sleep", config, effectiveFrom })
+    .values({ userId, typeKey: "sleep", config: blob, effectiveFrom })
     .onConflictDoUpdate({
       target: [
         userActivityConfig.userId,
         userActivityConfig.typeKey,
         userActivityConfig.effectiveFrom,
       ],
-      set: { config },
+      set: { config: blob },
     });
 }
 

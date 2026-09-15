@@ -77,6 +77,17 @@ export interface CheckinStepView {
    * otherwise. The engine's own rule, so the engine writes this sentence.
    */
   waitingUntil: string | null;
+  /**
+   * Why this step has no times yet, when it is anchored to another press.
+   *
+   * Sleep's confirm opens half an hour after the Wake press. Until that press
+   * there is no window, so there are no times to show and this sentence goes
+   * where they would have been. The module writes the sentence and names the
+   * step: the engine never learns what it is waiting for (invariant 6), only
+   * which press would end the wait, which is enough to know whether the wait
+   * is the thing worth saying right now.
+   */
+  waitingOn: { step: string; message: string } | null;
   /** How many check-ins this step already has this period. */
   count: number;
   repeats: boolean;
@@ -195,7 +206,11 @@ export async function getCheckinState(
   for (const row of rows) row.atLabel = label(new Date(row.at), timezone);
 
   const steps = type.steps(activity.config, period);
-  const windows = type.windows(activity.config, period, timezone);
+  // With the check-ins, because a window can be anchored to a press: sleep's
+  // confirm opens half an hour after Wake. Without them the module comes back
+  // marked `waitingOn`, which is the right answer for a press that has not
+  // happened and the wrong one for a press that has.
+  const windows = type.windows(activity.config, period, timezone, checkins);
   const evaluated = type.evaluate({
     periodStart: period,
     timezone,
@@ -207,8 +222,11 @@ export async function getCheckinState(
   const views: CheckinStepView[] = steps.map((step) => {
     const window = windows.find((w) => w.step === step.key);
     const mine = checkins.filter((c) => c.step === step.key);
+    // A window waiting on another press has not started, whatever its times
+    // say: those are the widest it could turn out to be, carried so that
+    // anything asking "is the period over" waits long enough.
     const inWindow = window
-      ? instant >= window.opensAt && instant <= window.closesAt
+      ? !window.waitingOn && instant >= window.opensAt && instant <= window.closesAt
       : false;
     const counts =
       type.countsNow?.({
@@ -233,8 +251,11 @@ export async function getCheckinState(
     return {
       key: step.key,
       label: step.label,
-      opensLabel: window ? label(window.opensAt, timezone) : "",
-      closesLabel: window ? label(window.closesAt, timezone) : "",
+      // No times while a window is waiting on a press. Showing the widest it
+      // could be would read as a window that is open and is not.
+      opensLabel: window && !window.waitingOn ? label(window.opensAt, timezone) : "",
+      closesLabel: window && !window.waitingOn ? label(window.closesAt, timezone) : "",
+      waitingOn: window?.waitingOn ?? null,
       // Open means the window is open AND another press would count. Gym's
       // window is the whole week, but only one session a day counts, so a
       // Tuesday evening press after a Tuesday morning one is not "open".
@@ -421,12 +442,24 @@ export async function resolveCheckinTarget(
     };
   }
 
+  // Read before the window, because a window can be anchored to one of them:
+  // sleep's confirm opens half an hour after the Wake press.
+  const { checkins: recorded } = await recordedFor(userId, typeKey, period);
+
   const step = type.steps(activity.config, period).find((s) => s.key === stepKey);
   const window = type
-    .windows(activity.config, period, timezone)
+    .windows(activity.config, period, timezone, recorded)
     .find((w) => w.step === stepKey);
   if (!step || !window) {
     return { ok: false, reason: "unknown_step", message: "No such check-in." };
+  }
+
+  // A window anchored to a press that has not happened has not opened, and its
+  // times are the widest it could turn out to be rather than a window anybody
+  // can be inside. Refused with the module's own sentence, which says what is
+  // missing: "Confirm closed 8:00 AM" would be a lie in both halves.
+  if (window.waitingOn) {
+    return { ok: false, reason: "closed", message: window.waitingOn.message };
   }
 
   // The window is decided here, from the server clock and the resolved config.
@@ -442,7 +475,6 @@ export async function resolveCheckinTarget(
   // The module's own answer to "would another press change anything?". Gym
   // counts one session a calendar day, so a second press on the same day is
   // refused here rather than recorded and silently thrown away by evaluate.
-  const { checkins: recorded } = await recordedFor(userId, typeKey, period);
   const counts =
     type.countsNow?.({
       periodStart: period,

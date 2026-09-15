@@ -91,14 +91,10 @@ const configFrom = anchor.minus({ days: 60 }).toFormat("yyyy-MM-dd");
 // timezone default) that should simply always resolve.
 const EPOCH = "2000-01-01";
 
-const DEFAULT_WINDOWS = {
-  night_open: "22:00",
-  night_close: "22:45",
-  wake_open: "06:00",
-  wake_close: "07:00",
-  confirm_open: "07:30",
-  confirm_close: "07:45",
-};
+// The module's own defaults, so the fixture is the app's shape rather than a
+// second copy of it. The confirm window is not in here and cannot be: it opens
+// half an hour after the wake press (item 17).
+const DEFAULT_WINDOWS = getActivityType("sleep").defaults.config;
 
 // Fixed ids. See the header comment.
 const GROUP_NIGHT_OWLS = "00000000-0000-0000-0000-0000000000a1";
@@ -423,37 +419,70 @@ function deterministicFraction(seed: string): number {
   return ((h >>> 0) % 1000) / 1000;
 }
 
+/**
+ * A night's presses, at the instants the app would have accepted them.
+ *
+ * The confirm window is anchored to the WAKE press (item 17), so it cannot be
+ * resolved until that press exists. Each window is therefore asked for against
+ * what has already happened, which is exactly how `getCheckinState` asks.
+ * Doing it any other way seeds confirms outside any window, and a fixture
+ * full of nights the app would have failed.
+ *
+ * Every press sits at the middle of its own window unless told otherwise.
+ * `wakeFraction` moves the wake press around inside its window so the wake-time
+ * chart has something to plot, and `wakeAt` names the instant outright, which
+ * is what a fixture needing the confirm window at a particular hour wants:
+ * the confirm follows the press, so the press is the thing to place.
+ */
+function sleepPresses(
+  windowsConfig: typeof DEFAULT_WINDOWS,
+  period: string,
+  steps: string[],
+  opts: { wakeFraction?: number; wakeAt?: Date } = {},
+): { step: string; at: Date }[] {
+  const sleep = getActivityType("sleep");
+  const out: { step: string; at: Date }[] = [];
+  for (const step of ["night", "wake", "confirm"]) {
+    if (!steps.includes(step)) continue;
+    if (step === "wake" && opts.wakeAt) {
+      out.push({ step, at: opts.wakeAt });
+      continue;
+    }
+    const w = sleep.windows(windowsConfig, period, TZ, out).find((x) => x.step === step);
+    // A confirm with no wake press before it has no window to land in, which
+    // is the point of the redesign rather than a gap in the fixture.
+    if (!w || w.waitingOn) continue;
+    const span = w.closesAt.getTime() - w.opensAt.getTime();
+    const fraction = step === "wake" ? (opts.wakeFraction ?? 0.5) : 0.5;
+    out.push({ step, at: new Date(w.opensAt.getTime() + span * fraction) });
+  }
+  return out;
+}
+
 async function seedSleepEvents(
   userId: string,
   windowsConfig: typeof DEFAULT_WINDOWS,
   days: number,
   from: DateTime,
 ): Promise<number> {
-  const sleep = getActivityType("sleep");
   let n = 0;
   for (let i = days; i >= 1; i--) {
     const period = from.minus({ days: i }).toFormat("yyyy-MM-dd");
-    const wins = sleep.windows(windowsConfig, period, TZ);
-    const doSteps = sleepPattern(userId, i);
-    for (const w of wins) {
-      if (!doSteps.includes(w.step)) continue;
-      // Every step but wake keeps the old midpoint. Wake gets a deterministic
-      // wobble within its window (0.15 to 0.85 of the span) so the wake-time
-      // chart has something to plot; it stays inside the window on purpose,
-      // so it never flips a day that was seeded to pass.
-      const span = w.closesAt.getTime() - w.opensAt.getTime();
-      const fraction =
-        w.step === "wake" ? 0.15 + deterministicFraction(`${userId}:${i}`) * 0.7 : 0.5;
-      const at = new Date(w.opensAt.getTime() + span * fraction);
+    const presses = sleepPresses(windowsConfig, period, sleepPattern(userId, i), {
+      // Inside the window on purpose, 0.15 to 0.85 of its span, so a wobble
+      // never flips a night that was seeded to pass.
+      wakeFraction: 0.15 + deterministicFraction(`${userId}:${i}`) * 0.7,
+    });
+    for (const { step, at } of presses) {
       // Sleep REQUIRES a photo on confirm and nowhere else (decision 45), so a
       // seeded confirm without one is data the app itself could never produce.
       // It is also the only type anybody in the fixture shares evidence for,
       // which is why the group evidence tab had nothing to show.
       const key =
-        w.step === "confirm"
+        step === "confirm"
           ? await addEvidence(userId, "sleep", "confirm", period, at)
           : undefined;
-      await checkin(userId, "sleep", w.step, at, SLEEP_SCHEDULE, {}, key);
+      await checkin(userId, "sleep", step, at, SLEEP_SCHEDULE, {}, key);
       n++;
     }
   }
@@ -873,13 +902,15 @@ async function buildAllDone(): Promise<void> {
 
 async function seedTodayCompletions(): Promise<void> {
   const userId = "preview-admin";
-  const sleep = getActivityType("sleep");
 
   // Sleep: today's period (noon boundary) gets all three steps.
   const period = anchor.toFormat("yyyy-MM-dd");
-  for (const w of sleep.windows(DEFAULT_WINDOWS, period, TZ)) {
-    const at = new Date((w.opensAt.getTime() + w.closesAt.getTime()) / 2);
-    await checkin(userId, "sleep", w.step, at, SLEEP_SCHEDULE, {});
+  for (const { step, at } of sleepPresses(DEFAULT_WINDOWS, period, [
+    "night",
+    "wake",
+    "confirm",
+  ])) {
+    await checkin(userId, "sleep", step, at, SLEEP_SCHEDULE, {});
   }
 
   // Gym: fill every day from this week's Monday through today, so the weekly
@@ -1093,38 +1124,47 @@ async function buildCheckinOpenSleepConfirm(): Promise<void> {
   await runScoring();
 
   // Confirm's window is on the morning AFTER the period it belongs to
-  // (sleep.ts: instantWithin treats an hour < 12 as the following day). With
-  // the seeded DEFAULT_WINDOWS (confirm_open 07:30, confirm_close 07:45),
-  // period P's confirm window is (P+1) 07:30-07:45 IST. For that window to
-  // land on the target calendar date, P is the day BEFORE it.
+  // (sleep.ts: instantWithin treats an hour < 12 as the following day), so for
+  // it to land on the target calendar date, P is the day BEFORE it.
   //
-  //   period P = 2026-01-14
-  //   confirm window = 2026-01-15 07:30-07:45 IST = 2026-01-15T02:00Z to
-  //                     2026-01-15T02:15Z
+  // It is not a clock time any more (item 17). It opens half an hour after the
+  // WAKE press and stays open half an hour, so the press is what places it,
+  // and this fixture places the press rather than guessing an instant:
   //
-  // 09:00:00.000Z is 14:30 IST that day -- well outside the 15-minute
-  // confirm window, so the guessed instant does NOT work here. The correct
-  // instant to give the harness is 2026-01-15T02:07:00.000Z (comfortably
-  // inside the window).
+  //   period P    = 2026-01-14
+  //   wake press  = 2026-01-15 06:52 IST
+  //   confirm     = 2026-01-15 07:22 to 07:52 IST
+  //               = 2026-01-15T01:52Z to 02:22Z
+  //
+  // The harness clock is 2026-01-15T02:07:00.000Z, 07:37 IST, in the middle of
+  // it. 09:00:00.000Z, which is what the harness guesses by default, is 14:30
+  // IST and nowhere near.
   const P = DateTime.fromISO(CHECKIN_TARGET_DATE, { zone: TZ }).minus({ days: 1 });
   const effectiveFrom = P.minus({ days: 60 }).toFormat("yyyy-MM-dd");
   await trackType("preview-admin", "sleep", SLEEP_SCHEDULE, DEFAULT_WINDOWS, effectiveFrom);
 
-  const sleep = getActivityType("sleep");
   // History before P, ordinary pattern.
   for (let i = 20; i >= 1; i--) {
     const period = P.minus({ days: i }).toFormat("yyyy-MM-dd");
-    for (const w of sleep.windows(DEFAULT_WINDOWS, period, TZ)) {
-      const at = new Date((w.opensAt.getTime() + w.closesAt.getTime()) / 2);
-      await checkin("preview-admin", "sleep", w.step, at, SLEEP_SCHEDULE, {});
+    for (const { step, at } of sleepPresses(DEFAULT_WINDOWS, period, [
+      "night",
+      "wake",
+      "confirm",
+    ])) {
+      await checkin("preview-admin", "sleep", step, at, SLEEP_SCHEDULE, {});
     }
   }
-  // Period P itself: night and wake done, confirm deliberately left open.
+  // Period P itself: night and wake done, confirm deliberately left open. The
+  // wake press is placed at 06:52 so the half hour it opens covers the instant
+  // the harness freezes the clock at, worked out above.
   const periodP = P.toFormat("yyyy-MM-dd");
-  for (const w of sleep.windows(DEFAULT_WINDOWS, periodP, TZ)) {
-    if (w.step === "confirm") continue;
-    const at = new Date((w.opensAt.getTime() + w.closesAt.getTime()) / 2);
-    await checkin("preview-admin", "sleep", w.step, at, SLEEP_SCHEDULE, {});
+  const wakeAt = DateTime.fromISO(CHECKIN_TARGET_DATE, { zone: TZ })
+    .set({ hour: 6, minute: 52 })
+    .toJSDate();
+  for (const { step, at } of sleepPresses(DEFAULT_WINDOWS, periodP, ["night", "wake"], {
+    wakeAt,
+  })) {
+    await checkin("preview-admin", "sleep", step, at, SLEEP_SCHEDULE, {});
   }
 }
 

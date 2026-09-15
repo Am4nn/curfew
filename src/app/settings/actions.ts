@@ -59,8 +59,6 @@ export async function updateWindowsAction(
       night_close: f("night_close"),
       wake_open: f("wake_open"),
       wake_close: f("wake_close"),
-      confirm_open: f("confirm_open"),
-      confirm_close: f("confirm_close"),
     });
     revalidatePath("/settings/personal");
     return { ok: true };

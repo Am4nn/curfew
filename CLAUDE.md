@@ -329,7 +329,24 @@ cors       bun run check:cors      — can a browser upload from this origin
 signin     bun run check:signin    — can a stranger see the sign-in page
 shards     bun run check:shards    — CI still runs every browser suite
 notice     bun run publish:notice  — announce a release to the people already here
+sleep      bun run migrate:sleep   — move existing members onto the anchored confirm
 ```
+
+**Two things are run by hand after the 3.2.0 tag, in this order:
+`migrate:sleep`, then `publish:notice`.** The first is the change and the second
+is what tells people about it, so announcing before moving them says something
+that is not true yet. Both take `--dry`, both are idempotent, and both have to
+be run twice: once for dev and once with the `:production` variant.
+
+`migrate:sleep` exists because sleep's confirm window stopped being two clock
+times in config and became half an hour that opens half an hour after the WAKE
+press. Config is insert-only and resolved as it stood on the period being judged
+(invariant 5), so the old rows are not wrong: the module still reads them and
+still judges those nights the way they were judged. Nothing changes for an
+existing member until a row without the retired pair takes effect, which is what
+this writes, dated tomorrow in that member's own zone. **Forgetting it is
+silent**: the app works, the release note has been read, and nobody's confirm
+window has moved.
 
 **A notice is never typed at the moment of publishing.** A controls change
 composes its own words from `SETTING_COPY`, and a release note is written in

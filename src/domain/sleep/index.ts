@@ -17,27 +17,68 @@ const HHMM = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "expected HH:mm");
 
-export const sleepConfigSchema = z
-  .object({
-    night_open: HHMM,
-    night_close: HHMM,
-    wake_open: HHMM,
-    wake_close: HHMM,
-    confirm_open: HHMM,
-    confirm_close: HHMM,
-  })
-  .strict();
+/**
+ * The confirm window, anchored to the wake press (item 17).
+ *
+ * It opens half an hour after you say you are up and stays open half an hour.
+ * It is not a setting and cannot be: a confirm you place yourself is a confirm
+ * you can place at an hour you are already up, and the confirm carries the only
+ * photograph sleep asks for (decision 45), which is the whole reason it exists.
+ */
+export const CONFIRM_DELAY_MINUTES = 30;
+export const CONFIRM_OPEN_MINUTES = 30;
+
+/**
+ * Four keys, and deliberately NOT `.strict()`.
+ *
+ * Config is insert-only and resolved as it stood on the period being judged
+ * (invariant 5), so rows written before v3.2 still carry `confirm_open` and
+ * `confirm_close`, and those rows are still the truth about how those nights
+ * were scored. `windows` reads them off such a row and judges it the old way.
+ *
+ * Zod's default is to STRIP an unknown key rather than reject it, which is
+ * exactly right here and is the whole reason `.strict()` is gone: an old row
+ * still parses, so the configure screen opens on it, and every save writes the
+ * current four keys because `saveUserActivity` stores what the schema returned.
+ * A row that still has the retired pair is a row nobody has saved since, and
+ * `bun run migrate:sleep` is what moves those forward on a date invariant 4
+ * allows. The typo-catching `.strict()` bought is covered by the module being
+ * typed `ActivityType<SleepConfig>`, which rejects a misspelled default at the
+ * compiler rather than at runtime.
+ */
+export const sleepConfigSchema = z.object({
+  night_open: HHMM,
+  night_close: HHMM,
+  wake_open: HHMM,
+  wake_close: HHMM,
+});
 
 export type SleepConfig = z.infer<typeof sleepConfigSchema>;
+
+/**
+ * A pre-v3.2 config's own confirm window, or null.
+ *
+ * Read off the raw stored object rather than the parsed one, because the parse
+ * is what strips them. Both have to be there and both have to be times: half a
+ * window is not a window anybody was judged against.
+ */
+function retiredConfirm(config: SleepConfig): { open: string; close: string } | null {
+  const raw = config as unknown as Record<string, unknown>;
+  const open = raw.confirm_open;
+  const close = raw.confirm_close;
+  if (typeof open !== "string" || typeof close !== "string") return null;
+  if (!HHMM.safeParse(open).success || !HHMM.safeParse(close).success) return null;
+  return { open, close };
+}
 
 // The timestamp is the evidence for sleep, so the payload is empty.
 export const sleepEvidenceSchema = z.object({}).strict();
 export type SleepEvidence = z.infer<typeof sleepEvidenceSchema>;
 
-const STEPS = [
+// The two windows that ARE clock times. Confirm is not one of them any more.
+const CLOCK_STEPS = [
   { key: "night", label: "Night", open: "night_open", close: "night_close" },
   { key: "wake", label: "Wake", open: "wake_open", close: "wake_close" },
-  { key: "confirm", label: "Confirm", open: "confirm_open", close: "confirm_close" },
 ] as const;
 
 // Absolute instant of a wall-clock "HH:mm" within a noon-to-noon period.
@@ -53,6 +94,28 @@ function instantWithin(
   const midnight = DateTime.fromISO(periodStart, { zone: timezone }).startOf("day");
   const day = h < 12 ? midnight.plus({ days: 1 }) : midnight;
   return day.set({ hour: h, minute: m, second: 0, millisecond: 0 });
+}
+
+/** The luxon pair a CheckinWindow carries, as the Dates it carries. */
+function toWindow(w: {
+  step: string;
+  label: string;
+  opensAt: DateTime;
+  closesAt: DateTime;
+}): CheckinWindow {
+  return {
+    step: w.step,
+    label: w.label,
+    opensAt: w.opensAt.toJSDate(),
+    closesAt: w.closesAt.toJSDate(),
+  };
+}
+
+/** "07:00" plus 60 is "08:00". Wraps at midnight, which no caller here does. */
+function addMinutes(hhmm: string, minutes: number): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const total = (h * 60 + m + minutes) % (24 * 60);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 
 /** "HH:mm" as minutes since midnight, for the wake-time chart's axis. */
@@ -75,7 +138,7 @@ export function validateSleepWindows(
   timezone: string,
   forPeriodStart: string,
 ): string[] {
-  const resolved = STEPS.map((step) => ({
+  const resolved = CLOCK_STEPS.map((step) => ({
     ...step,
     opensAt: instantWithin(forPeriodStart, timezone, config[step.open]),
     closesAt: instantWithin(forPeriodStart, timezone, config[step.close]),
@@ -95,12 +158,15 @@ export function validateSleepWindows(
     }
   }
 
-  const [night, wake, confirm] = resolved;
+  const [night, wake] = resolved;
   if (night.closesAt > wake.opensAt) {
     errors.push("Wake window overlaps the night window.");
   }
-  if (wake.closesAt > confirm.opensAt) {
-    errors.push("Confirm window overlaps the wake window.");
+  // The confirm hangs off the wake press, so the latest it can finish is an
+  // hour after the wake window shuts. That has to land inside the same
+  // noon-to-noon day, or a night could end after the day it belongs to.
+  if (wake.closesAt.plus({ minutes: CONFIRM_DELAY_MINUTES + CONFIRM_OPEN_MINUTES }) >= periodClosesAt) {
+    errors.push("Wake window must close an hour before noon, so the confirm fits.");
   }
 
   return errors;
@@ -112,7 +178,7 @@ export function validateSleepWindows(
 export function sleepIssues(config: SleepConfig): FieldIssue[] {
   const zone = "UTC";
   const day = "2026-01-05";
-  const resolved = STEPS.map((step) => ({
+  const resolved = CLOCK_STEPS.map((step) => ({
     ...step,
     opensAt: instantWithin(day, zone, config[step.open]),
     closesAt: instantWithin(day, zone, config[step.close]),
@@ -133,17 +199,17 @@ export function sleepIssues(config: SleepConfig): FieldIssue[] {
     }
   }
 
-  const [night, wake, confirm] = resolved;
+  const [night, wake] = resolved;
   if (night.closesAt > wake.opensAt) {
     issues.push({
       path: "wake_open",
       message: "Wake overlaps the night window. They cannot share a minute.",
     });
   }
-  if (wake.closesAt > confirm.opensAt) {
+  if (wake.closesAt.plus({ minutes: CONFIRM_DELAY_MINUTES + CONFIRM_OPEN_MINUTES }) >= periodClosesAt) {
     issues.push({
-      path: "confirm_open",
-      message: "Confirm overlaps the wake window. They cannot share a minute.",
+      path: "wake_open",
+      message: "The confirm runs an hour after this closes, and has to finish before noon.",
     });
   }
   return issues;
@@ -162,12 +228,10 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
     dayBoundary: "noon",
     grace: 2,
     config: {
-      night_open: "22:00",
-      night_close: "00:30",
-      wake_open: "06:30",
-      wake_close: "07:45",
-      confirm_open: "07:45",
-      confirm_close: "11:00",
+      night_open: "21:30",
+      night_close: "23:00",
+      wake_open: "05:30",
+      wake_close: "07:00",
     },
   },
 
@@ -193,28 +257,32 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   ],
 
   summary(config) {
-    return `in bed by ${clockLabel(config.night_close)}, up by ${clockLabel(config.wake_close)}`;
+    return (
+      `in bed between ${clockLabel(config.night_open)} and ${clockLabel(config.night_close)}, ` +
+      `up between ${clockLabel(config.wake_open)} and ${clockLabel(config.wake_close)}, ` +
+      `then a photograph ${CONFIRM_DELAY_MINUTES} minutes after you say you are up`
+    );
   },
 
   fields() {
     return [
       {
         kind: "timeRange",
-        label: "In bed between",
+        label: "Night window",
         openKey: "night_open",
         closeKey: "night_close",
       },
       {
         kind: "timeRange",
-        label: "Up between",
+        label: "Wake window",
         openKey: "wake_open",
         closeKey: "wake_close",
       },
       {
-        kind: "timeRange",
-        label: "Confirmed between",
-        openKey: "confirm_open",
-        closeKey: "confirm_close",
+        kind: "fixed",
+        label: "Confirm window",
+        value: `${CONFIRM_DELAY_MINUTES} min after wake`,
+        note: `Open for ${CONFIRM_OPEN_MINUTES} minutes. Not a setting, or you could place it where you are already up.`,
       },
     ];
   },
@@ -226,27 +294,118 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   },
 
   steps(config: SleepConfig): CheckinStep[] {
-    return STEPS.map((s) => ({
-      key: s.key,
-      label: s.label,
-      open: config[s.open],
-      close: config[s.close],
-    }));
+    const retired = retiredConfirm(config);
+    return [
+      ...CLOCK_STEPS.map((s) => ({
+        key: s.key,
+        label: s.label,
+        open: config[s.open],
+        close: config[s.close],
+      })),
+      {
+        key: "confirm",
+        label: "Confirm",
+        // A step's open and close are clock times, and the confirm's are not
+        // known until Wake is pressed. The widest it could be is what goes
+        // here; the real pair is on the WINDOW, which is what anything that
+        // matters reads.
+        open: retired?.open ?? addMinutes(config.wake_open, CONFIRM_DELAY_MINUTES),
+        close:
+          retired?.close ??
+          addMinutes(config.wake_close, CONFIRM_DELAY_MINUTES + CONFIRM_OPEN_MINUTES),
+      },
+    ];
   },
 
-  windows(config, periodStart, timezone): CheckinWindow[] {
-    return STEPS.map((s) => ({
+  windows(config, periodStart, timezone, checkins = []): CheckinWindow[] {
+    const clock = CLOCK_STEPS.map((s) => ({
       step: s.key,
       label: s.label,
-      opensAt: instantWithin(periodStart, timezone, config[s.open]).toJSDate(),
-      closesAt: instantWithin(periodStart, timezone, config[s.close]).toJSDate(),
+      opensAt: instantWithin(periodStart, timezone, config[s.open]),
+      closesAt: instantWithin(periodStart, timezone, config[s.close]),
     }));
+    const wake = clock[1];
+
+    // A config row written before v3.2 keeps the clock-time confirm it was
+    // judged against. Invariant 5: a period is resolved as its config stood,
+    // and rewriting those nights to the new rule is exactly what that forbids.
+    const retired = retiredConfirm(config);
+    if (retired) {
+      return [
+        ...clock.map(toWindow),
+        toWindow({
+          step: "confirm",
+          label: "Confirm",
+          opensAt: instantWithin(periodStart, timezone, retired.open),
+          closesAt: instantWithin(periodStart, timezone, retired.close),
+        }),
+      ];
+    }
+
+    // The wake press this confirm hangs off. The earliest one inside the wake
+    // window, for the same reason `evaluate` plots the earliest: a second press
+    // cannot move a window somebody may already be inside. There can only be
+    // one anyway, since the step does not repeat, but saying which makes that a
+    // property of this module rather than of the engine's spent-step guard.
+    const pressed = checkins
+      .filter(
+        (c) =>
+          c.step === "wake" &&
+          c.at.getTime() >= wake.opensAt.toMillis() &&
+          c.at.getTime() <= wake.closesAt.toMillis(),
+      )
+      .sort((a, b) => a.at.getTime() - b.at.getTime())[0];
+
+    if (pressed) {
+      const from = DateTime.fromJSDate(pressed.at, { zone: timezone });
+      return [
+        ...clock.map(toWindow),
+        toWindow({
+          step: "confirm",
+          label: "Confirm",
+          opensAt: from.plus({ minutes: CONFIRM_DELAY_MINUTES }),
+          closesAt: from.plus({
+            minutes: CONFIRM_DELAY_MINUTES + CONFIRM_OPEN_MINUTES,
+          }),
+        }),
+      ];
+    }
+
+    // Nothing to anchor to yet. The pair is the widest it could turn out to
+    // be, so anything asking whether the night is over waits until it cannot
+    // still be running, and `waitingOn` stops a press landing in the meantime.
+    return [
+      ...clock.map(toWindow),
+      {
+        step: "confirm",
+        label: "Confirm",
+        opensAt: wake.opensAt.plus({ minutes: CONFIRM_DELAY_MINUTES }).toJSDate(),
+        closesAt: wake.closesAt
+          .plus({ minutes: CONFIRM_DELAY_MINUTES + CONFIRM_OPEN_MINUTES })
+          .toJSDate(),
+        waitingOn: {
+          step: "wake",
+          message: `Opens ${CONFIRM_DELAY_MINUTES} minutes after you press Wake.`,
+        },
+      },
+    ];
   },
 
   evaluate(input) {
-    const wins = this.windows(input.config, input.periodStart, input.timezone);
+    const wins = this.windows(
+      input.config,
+      input.periodStart,
+      input.timezone,
+      input.checkins,
+    );
     const ok = (step: string) => {
       const w = wins.find((x) => x.step === step)!;
+      // A window still waiting on another press has not started, so nothing
+      // can be inside it. Without this the confirm was satisfiable with no
+      // wake press at all: the fallback pair is the widest the window COULD
+      // be, and a press landing in it would have counted against a window that
+      // never opened.
+      if (w.waitingOn) return false;
       const open = w.opensAt.getTime();
       const close = w.closesAt.getTime();
       return input.checkins.some(

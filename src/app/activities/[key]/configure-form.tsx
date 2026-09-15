@@ -318,6 +318,15 @@ interface Panel {
   body: React.ReactNode;
   /** True while this panel's own value will not save. */
   broken: boolean;
+  /**
+   * Set when this is a statement rather than a control: the line under it
+   * saying why it is not yours to set.
+   *
+   * It is a row in the list, in its place, because somebody scanning for the
+   * confirm window looks where the confirm window would be and has to find out
+   * there that it is fixed. It is not a question, so the setup flow skips it.
+   */
+  fixed?: string;
 }
 
 export function ConfigureForm({
@@ -456,14 +465,20 @@ export function ConfigureForm({
   });
 
   for (const field of fields) {
-    const key = field.kind === "timeRange" ? field.label : field.key;
-    const err = field.kind === "timeRange" ? errorFor(field.openKey) : errorFor(field.key);
+    const key = field.kind === "timeRange" || field.kind === "fixed" ? field.label : field.key;
+    const err =
+      field.kind === "timeRange"
+        ? errorFor(field.openKey)
+        : field.kind === "fixed"
+          ? undefined
+          : errorFor(field.key);
     panels.push({
       id: `field:${key}`,
       label: field.label,
       value: fieldValue(field, config),
       question: `${field.label}?`,
       broken: Boolean(err),
+      fixed: field.kind === "fixed" ? field.note : undefined,
       body: <ModuleField field={field} config={config} error={err} onChange={setConfig} />,
     });
   }
@@ -577,11 +592,14 @@ export function ConfigureForm({
   // -------------------------------------------------------------------------
 
   if (!tracked) {
-    const last = at >= panels.length;
-    const panel = panels[at];
+    // Only the panels that ask something. A fixed row states a fact and has no
+    // answer, so a Next over it would be a screen with nothing to do on it.
+    const asked = panels.filter((p) => !p.fixed);
+    const last = at >= asked.length;
+    const panel = asked[at];
     return (
       <div className={shell}>
-        <Progress at={Math.min(at, panels.length)} of={panels.length + 1} />
+        <Progress at={Math.min(at, asked.length)} of={asked.length + 1} />
 
         {last ? (
           <>
@@ -725,20 +743,33 @@ export function ConfigureForm({
         <span className="pb-[9px] text-[11px] tracking-[0.06em] text-muted">
           CHANGE ONE THING
         </span>
-        {panels.map((panel) => (
-          <button
-            key={panel.id}
-            type="button"
-            onClick={() => setOpen(panel.id)}
-            className="flex items-center justify-between gap-3 border-t border-rule py-[13px] text-left"
-          >
-            <span className="text-[13.5px]">{panel.label}</span>
-            <span className="flex min-w-0 items-center gap-[8px]">
-              <span className="truncate text-[12px] text-muted">{panel.value}</span>
-              <Chevron />
-            </span>
-          </button>
-        ))}
+        {panels.map((panel) =>
+          panel.fixed ? (
+            <div
+              key={panel.id}
+              className="flex flex-col gap-[4px] border-t border-rule py-[13px]"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[13.5px] text-muted">{panel.label}</span>
+                <span className="truncate text-[12px] text-muted">{panel.value}</span>
+              </div>
+              <span className="text-[11px] leading-[1.5] text-muted">{panel.fixed}</span>
+            </div>
+          ) : (
+            <button
+              key={panel.id}
+              type="button"
+              onClick={() => setOpen(panel.id)}
+              className="flex items-center justify-between gap-3 border-t border-rule py-[13px] text-left"
+            >
+              <span className="text-[13.5px]">{panel.label}</span>
+              <span className="flex min-w-0 items-center gap-[8px]">
+                <span className="truncate text-[12px] text-muted">{panel.value}</span>
+                <Chevron />
+              </span>
+            </button>
+          ),
+        )}
       </div>
 
       <EvidenceFact rule={type.evidence} />
@@ -820,6 +851,7 @@ function Chevron() {
  * knowing what any particular field means (invariant 6).
  */
 function fieldValue(field: ConfigField, config: unknown): string {
+  if (field.kind === "fixed") return field.value;
   if (field.kind === "timeRange") {
     const open = text(get(config, field.openKey));
     const close = text(get(config, field.closeKey));
@@ -860,6 +892,9 @@ function ModuleField({
   error?: string;
   onChange: (next: unknown) => void;
 }) {
+  // A statement, not a control. It never reaches the setup flow, which asks
+  // questions, and in the list it is drawn as a row rather than opened.
+  if (field.kind === "fixed") return null;
   if (field.kind === "timeRange") {
     return (
       <FieldWrap label={field.label} hint={field.hint} error={error}>

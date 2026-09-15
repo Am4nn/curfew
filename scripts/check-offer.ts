@@ -42,9 +42,13 @@ import {
 import { getActivityType } from "@/domain";
 import type { Schedule } from "@/domain";
 import { CONSENT_VERSION } from "@/server/consent";
-import { performCheckin, getCheckinState } from "@/server/checkin";
+import {
+  performCheckin,
+  getCheckinState,
+  type CheckinStepView,
+} from "@/server/checkin";
 import { todayFor, type TodayRow } from "@/server/today";
-import { now } from "@/lib/clock";
+import { now, setClock } from "@/lib/clock";
 
 if (process.env.LOCAL_MODE !== "1") {
   console.error("check:offer is local only. Run it with dotenv -e .env.local.");
@@ -134,6 +138,24 @@ async function row(typeKey: string): Promise<TodayRow> {
 const shape = (r: TodayRow) =>
   `scheduled=${r.scheduled} done=${r.done} today=${r.countedToday} open=${r.open}` +
   ` recorded=${r.recorded} "${r.status}"`;
+
+/**
+ * One STEP as the check-in screen would draw it.
+ *
+ * Home draws one row an activity, so a type with three steps collapses to one
+ * `open`. Sleep's confirm has to be asked for on its own: the night can be open
+ * while the confirm is waiting on a press that has not happened.
+ */
+async function stepOf(typeKey: string, step: string): Promise<CheckinStepView> {
+  const state = await getCheckinState(id, typeKey);
+  if (!state) throw new Error(`${typeKey} is not tracked`);
+  const found = state.steps.find((s) => s.key === step);
+  if (!found) throw new Error(`${typeKey} has no step ${step}`);
+  return found;
+}
+
+const shape2 = (s: CheckinStepView) =>
+  `open=${s.open} inWindow=${s.inWindow} counts=${s.counts} waitingOn=${s.waitingOn?.message ?? "none"}`;
 
 async function cleanup() {
   await db.delete(reputationDaily).where(inArray(reputationDaily.userId, [id]));
@@ -326,6 +348,76 @@ try {
     !early.ok && early.reason === "unscheduled",
     JSON.stringify(early),
   );
+
+  // ---------------------------------------------------------------------
+  // A window anchored to another press, which is sleep's confirm (item 17).
+  //
+  // Every window in the app until v3.2 was a clock time in config, so "is a
+  // control offered exactly when a press would count" had one answer for every
+  // type: compare the clock to two numbers. This one has no times at all until
+  // Wake is pressed, and the two halves of that question can now disagree in a
+  // way they could not before: a screen showing the widest the window could be
+  // would offer a Confirm at an hour the write path refuses.
+  //
+  // This is the only block that pins the clock. It goes last for that reason.
+  // ---------------------------------------------------------------------
+
+  const night = DateTime.fromISO("2026-03-10", { zone: ZONE });
+  setClock(night.set({ hour: 22 }).toJSDate());
+  await track("sleep"); // the module's own windows: 9:30 PM to 11 PM, 5:30 to 7 AM
+
+  let confirm = await stepOf("sleep", "confirm");
+  check(
+    "the confirm says what it is waiting for rather than showing times",
+    confirm.waitingOn !== null && confirm.opensLabel === "" && confirm.closesLabel === "",
+    `${confirm.waitingOn?.message ?? "no wait"} opens="${confirm.opensLabel}"`,
+  );
+  check("and is not open", !confirm.open && !confirm.inWindow, shape2(confirm));
+
+  const tooEarly = await press("sleep", "confirm", "confirm-before-wake");
+  check(
+    "and the server refuses a confirm before the wake press",
+    !tooEarly.ok && tooEarly.reason === "closed",
+    JSON.stringify(tooEarly),
+  );
+  check(
+    "with the module's own sentence, not a closing time it does not have",
+    !tooEarly.ok && tooEarly.message === confirm.waitingOn?.message,
+    !tooEarly.ok ? tooEarly.message : "",
+  );
+
+  await press("sleep", "night", "night1");
+
+  // Six in the morning, inside the wake window. Still nothing for the confirm.
+  setClock(night.plus({ days: 1 }).set({ hour: 6 }).toJSDate());
+  const wake = await press("sleep", "wake", "wake1");
+  check("the wake press is taken inside its window", wake.ok, JSON.stringify(wake));
+
+  confirm = await stepOf("sleep", "confirm");
+  check(
+    "the confirm now has times, half an hour out",
+    confirm.waitingOn === null && confirm.opensLabel === "6:30 AM",
+    `opens="${confirm.opensLabel}" closes="${confirm.closesLabel}"`,
+  );
+  check("and closes half an hour after that", confirm.closesLabel === "7:00 AM", confirm.closesLabel);
+  check("and is not open yet", !confirm.open, shape2(confirm));
+
+  const stillEarly = await press("sleep", "confirm", "confirm-too-soon");
+  check(
+    "and the server refuses a confirm inside the half hour",
+    !stillEarly.ok && stillEarly.reason === "closed",
+    JSON.stringify(stillEarly),
+  );
+
+  // And half an hour later it is offered, and taken.
+  setClock(night.plus({ days: 1 }).set({ hour: 6, minute: 35 }).toJSDate());
+  confirm = await stepOf("sleep", "confirm");
+  check("half an hour after the press the confirm is offered", confirm.open, shape2(confirm));
+
+  const taken = await press("sleep", "confirm", "confirm-on-time");
+  check("and the press it offers is one the server takes", taken.ok, JSON.stringify(taken));
+
+  setClock(null);
 } finally {
   await cleanup();
 }

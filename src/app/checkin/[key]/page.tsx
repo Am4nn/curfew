@@ -73,6 +73,21 @@ function Closed({
   // saying so. Office arrived at 9 AM read "No window is open" for the rest of
   // the day, which is untrue: the window is open and the arrival is recorded.
   const spent = state.steps.find((s) => s.inWindow && !s.open) ?? null;
+  // A step whose window has not started because it is anchored to a press that
+  // has not happened. It answers the question better than anything else on
+  // this screen can: half past six, wake recorded, confirm at seven, and
+  // without this the screen says the wake is already in and stops there.
+  //
+  // Only once the press it hangs off has actually landed. Before that the wait
+  // is not what is happening, it is just a window later in the night, and at
+  // three in the morning "Opens 30 minutes after you press Wake" would be an
+  // answer to a question nobody asked.
+  const waiting =
+    state.steps.find(
+      (s) =>
+        s.waitingOn &&
+        (state.steps.find((o) => o.key === s.waitingOn!.step)?.count ?? 0) > 0,
+    ) ?? null;
   return (
     <div className="flex flex-1 flex-col gap-[18px] px-5 pb-6 pt-[18px]">
       <span className="text-[16px] leading-[1.5]">
@@ -80,11 +95,13 @@ function Closed({
           ? `${state.name} is not scheduled today.`
           : spent?.waitingUntil
             ? `${spent.label} counts again from ${spent.waitingUntil}.`
-            : spent
-              ? (spent.hint ?? `${spent.label} is already recorded for today.`)
-              : "No window is open."}
+            : waiting
+              ? waiting.waitingOn!.message
+              : spent
+                ? (spent.hint ?? `${spent.label} is already recorded for today.`)
+                : "No window is open."}
       </span>
-      {state.scheduled && !spent && next ? (
+      {state.scheduled && !spent && !waiting && next ? (
         <span className="text-[11.5px] leading-[1.55] text-muted">
           {next.label} runs {next.opensLabel} to {next.closesLabel}. Nothing recorded
           outside it counts.

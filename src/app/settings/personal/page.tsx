@@ -7,13 +7,15 @@ import { ActionForm, InfoHint, SubmitButton } from "../../ui";
 import { TimezoneSelect } from "../timezone-select";
 import { updateTimezoneAction, updateWindowsAction } from "../actions";
 
+// The confirm window left this list with item 17. It opens half an hour after
+// the wake press and stays open half an hour, which is not a time anybody
+// types: a confirm you can place yourself is a confirm you can place at an hour
+// you are already up.
 const WINDOW_FIELDS: [keyof Awaited<ReturnType<typeof getPersonalSettings>>["windows"], string][] = [
   ["night_open", "Night open"],
   ["night_close", "Night close"],
   ["wake_open", "Wake open"],
   ["wake_close", "Wake close"],
-  ["confirm_open", "Confirm open"],
-  ["confirm_close", "Confirm close"],
 ];
 
 export default async function PersonalSettings() {
@@ -32,10 +34,10 @@ export default async function PersonalSettings() {
           <h1 className="flex items-center text-[15px] font-semibold tracking-[0.14em]">
             PERSONAL
             <InfoHint label="How personal windows work">
-              Set the night check-in, wake check-in, and confirm check-in windows.
-              A check-in counts only when you press its button inside that window.
-              These are personal and the same across every group. Changes take effect
-              tomorrow, not today.
+              Set the night and wake windows. A check-in counts only when you press
+              its button inside its window. The confirm opens half an hour after you
+              press Wake and is not a setting. These are personal and the same across
+              every group. Changes take effect tomorrow, not today.
             </InfoHint>
           </h1>
           <Link href="/settings" className="text-[12px] text-muted">‹ settings</Link>

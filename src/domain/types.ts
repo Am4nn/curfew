@@ -38,6 +38,20 @@ export interface CheckinWindow {
   label: string;
   opensAt: Date;
   closesAt: Date;
+  /**
+   * Set while this window is anchored to another press that has not happened.
+   *
+   * Every window in the app until v3.2 was a clock time in config. Sleep's
+   * confirm is not: it opens half an hour after the WAKE press and stays open
+   * half an hour, because a confirm you can place yourself is a confirm you can
+   * place at an hour you are already up.
+   *
+   * While this is set, `opensAt` and `closesAt` are the WIDEST the window could
+   * turn out to be, so anything asking "is this period over yet" waits long
+   * enough whatever happens. Nothing may be recorded against it, and the engine
+   * shows `message` where it would otherwise show the times.
+   */
+  waitingOn?: { step: string; message: string };
 }
 
 // One recorded check-in the engine hands to a module for evaluation. `at` is
@@ -200,6 +214,21 @@ type ConfigFieldShape =
       key: string;
       label: string;
       options: { value: string; label: string }[];
+    }
+  | {
+      /**
+       * A row that states something and offers no control.
+       *
+       * Not a `fact`: those sit at the top and describe the type. This one sits
+       * in the list of settings, in its place, because a person scanning for
+       * the confirm window looks where the confirm window would be and has to
+       * find out there that it is not theirs to set.
+       */
+      kind: "fixed";
+      label: string;
+      value: string;
+      /** Why it is not a setting. */
+      note: string;
     };
 
 // What the engine owns for every activity, whatever its type (decision 79).
@@ -304,8 +333,21 @@ export interface ActivityType<Config, Evidence> {
    * never infers WHY, only whether (invariant 6).
    */
   countsNow?(input: HintInput<Config, Evidence>): boolean;
-  // Resolve every step's window to absolute instants for the given period.
-  windows(config: Config, periodStart: string, timezone: string): CheckinWindow[];
+  /**
+   * Resolve every step's window to absolute instants for the given period.
+   *
+   * `checkins` is what has been recorded in this period so far, and is only
+   * needed by a window anchored to another press: sleep's confirm opens half an
+   * hour after the wake press. Callers that do not have them may omit them, and
+   * an anchored window then comes back marked `waitingOn` at its widest, which
+   * is the safe answer for "has this period finished".
+   */
+  windows(
+    config: Config,
+    periodStart: string,
+    timezone: string,
+    checkins?: Checkin<Evidence>[],
+  ): CheckinWindow[];
   evaluate(input: EvaluateInput<Config, Evidence>): EvaluateResult;
   /**
    * The calendar days in this period that count toward a streak.

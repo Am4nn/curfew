@@ -133,7 +133,7 @@ export async function userDay(userId: string): Promise<string> {
 export async function resolveUserSleepConfigRow(
   userId: string,
   periodStart: string,
-): Promise<{ config: SleepConfig; version: number }> {
+): Promise<{ config: SleepConfig; schedule: unknown; version: number }> {
   const rows = await db
     .select({
       scopeId: userActivityConfig.userId,
@@ -156,5 +156,14 @@ export async function resolveUserSleepConfigRow(
   // This was reading the raw blob directly against sleepConfigSchema, which
   // only matches the seed's legacy flat default row and throws the moment a
   // real per-user save (always wrapped as { schedule, config }) takes over.
-  return { config: sleepConfigSchema.parse(moduleConfigOf(row.config)), version: row.version };
+  //
+  // `schedule` comes back beside it, unparsed, so a caller writing a new row
+  // can put back the engine's half it did not come here to change. Undefined
+  // on a flat legacy row, which is the shape that has no engine half at all.
+  const blob = row.config as Record<string, unknown> | null;
+  return {
+    config: sleepConfigSchema.parse(moduleConfigOf(row.config)),
+    schedule: blob && typeof blob === "object" ? blob.schedule : undefined,
+    version: row.version,
+  };
 }

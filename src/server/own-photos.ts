@@ -4,6 +4,9 @@ import { db } from "@/db";
 import { evidence } from "@/db/schema";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { listOwnPhotos, readUrl } from "./evidence";
+import { tagsFor, type PhotoTag } from "./evidence-tags";
+import { resolveUserTimezone, userDay } from "./config";
+import { now } from "@/lib/clock";
 
 /** One of a person's own photographs, signed and ready to render. */
 export interface SignedPhoto {
@@ -14,6 +17,21 @@ export interface SignedPhoto {
   icon: string;
   /** Formatted server-side, e.g. "3 Sep". Client clocks are not consulted. */
   date: string;
+  /**
+   * When it was sent, in the person's own zone: "Today · 7:12 AM".
+   *
+   * Only on Your Photos, which is the one screen that answers where a
+   * photograph went and so is the one screen where the minute matters. A grid
+   * of squares carries the day and nothing more.
+   */
+  when?: string;
+  /**
+   * The groups it was sent to, and the ones that saw it once.
+   *
+   * Absent means the question was not asked. Empty means it was asked and the
+   * answer is nobody, which is what "Yours only" is drawn from.
+   */
+  tags?: PhotoTag[];
 }
 
 /**
@@ -25,7 +43,7 @@ export interface SignedPhoto {
  */
 export async function ownPhotos(
   userId: string,
-  opts: { typeKey?: string; limit?: number } = {},
+  opts: { typeKey?: string; limit?: number; withTags?: boolean } = {},
 ): Promise<SignedPhoto[]> {
   const rows = await listOwnPhotos(userId);
   const out: SignedPhoto[] = [];
@@ -46,7 +64,33 @@ export async function ownPhotos(
       // Skip it.
     }
   }
-  return out;
+
+  if (!opts.withTags) return out;
+
+  // One query for the page, not one a row, and the same for the zone: both are
+  // the same answer for every photograph here.
+  const zone = await resolveUserTimezone(userId, await userDay(userId));
+  // The app's clock, not the machine's, so a scrubbed preview says Today about
+  // the day it is pretending to be (invariant 8 either way: never the client's).
+  const today = DateTime.fromJSDate(await now(), { zone }).startOf("day");
+  const tags = await tagsFor(out.map((p) => p.id));
+  const byId = new Map(rows.map((r) => [r.id, r.confirmedAt]));
+
+  return out.map((p) => {
+    const at = byId.get(p.id);
+    return {
+      ...p,
+      tags: tags.get(p.id) ?? [],
+      when: at ? sentLabel(DateTime.fromJSDate(at).setZone(zone), today) : undefined,
+    };
+  });
+}
+
+/** "Today · 7:12 AM", "Yesterday · 1:40 PM", "12 Sep · 6:58 AM". */
+function sentLabel(at: DateTime, today: DateTime): string {
+  const days = today.diff(at.startOf("day"), "days").days;
+  const day = days === 0 ? "Today" : days === 1 ? "Yesterday" : at.toFormat("d LLL");
+  return `${day} · ${at.toFormat("h:mm a")}`;
 }
 
 /**

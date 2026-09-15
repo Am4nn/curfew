@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { and, desc, eq, gte, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   groups,
@@ -8,6 +8,7 @@ import {
   activityOutcomes,
   reputationDaily,
   evidence,
+  evidenceGroups,
   ledgerEntries,
 } from "@/db/schema";
 import {
@@ -24,7 +25,7 @@ import { gracesIn, type GracePeriod } from "./grace";
 import { pausesIn, currentPause, pausedDaysIn, type Pause } from "./pause";
 import { cleanRunIn, cleanRunsIn } from "./clean-run";
 import { globalScore } from "./scoring";
-import { userDay, timezoneHistory } from "./config";
+import { userDay } from "./config";
 import { now } from "@/lib/clock";
 
 // Everything the group hub reads. Every query here is behind assertMember
@@ -426,20 +427,16 @@ export async function weekStats(groupId: string, viewerId: string): Promise<Week
   };
 }
 
-/**
- * The instant a member's join DAY began, in that member's own zone.
- *
- * `joined_at` is a date and carries no time, so the cutoff has to be built. It
- * is built in the member's zone rather than UTC because a day belongs to the
- * member (invariant 8's companion, and what `check:timezones` exists to hold):
- * midnight UTC is half past five in the morning in Kolkata, and west of
- * Greenwich it falls in the PREVIOUS local evening, which would leak the very
- * photographs this is here to keep back.
- */
-async function joinedFrom(userId: string, joinedAt: string): Promise<Date> {
-  const zone = (await timezoneHistory(userId)).at(new Date());
-  return DateTime.fromISO(joinedAt, { zone }).startOf("day").toJSDate();
-}
+// There was a `joinedFrom` here: the instant a member's join DAY began, in
+// their own zone, used to keep the evidence feed from opening on a back
+// catalogue. It was the right patch on the wrong model. `joined_at` is a date
+// and carries no time, so a member who joined at two in the afternoon still saw
+// that morning's photographs, and the whole question only existed because
+// visibility was being recomputed on every read.
+//
+// A photograph is tagged with its groups when it is sent (item 15), so the
+// visibility starts at the join INSTANT by construction: a group you were not
+// in at eight this morning was not in the list at eight this morning.
 
 export interface EvidenceItem {
   id: number;
@@ -454,11 +451,20 @@ export interface EvidenceItem {
 }
 
 /**
- * The evidence members chose to share here, newest first.
+ * The evidence sent to this group, newest first.
  *
- * Two filters, and both matter: the sharer must have `share_evidence` on for
- * that type, and the photo must not have been swept. A photo whose sharer has
- * since turned evidence off stops appearing at once.
+ * One filter now, and it is a row rather than a computation: a photograph was
+ * tagged with this group at the check-in that sent it (item 15, migration
+ * 0024), and that tag has not been revoked.
+ *
+ * It used to resolve `sharesFor` per member on every read, which answered
+ * "does this person share Gym with us TODAY" and then showed every Gym
+ * photograph they had ever taken. Turning sharing on handed over the back
+ * catalogue. `joined_at` was patched over the worst of it and is a date, so
+ * somebody who joined at two in the afternoon still saw that morning.
+ *
+ * Both of those questions are gone. A photograph belongs to the groups it was
+ * sent to, and nothing about it is worked out again afterwards.
  */
 export async function groupEvidence(
   groupId: string,
@@ -472,28 +478,6 @@ export async function groupEvidence(
 ): Promise<EvidenceItem[]> {
   await assertMember(groupId, viewerId);
 
-  const members = await db
-    .select({
-      userId: groupMembers.userId,
-      name: users.name,
-      joinedAt: groupMembers.joinedAt,
-    })
-    .from(groupMembers)
-    .innerJoin(users, eq(users.id, groupMembers.userId))
-    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.leftAt)));
-
-  const allowed = new Map<
-    string,
-    { name: string; types: Set<string>; from: Date }
-  >();
-  for (const m of members) {
-    const shares = await sharesFor(groupId, m.userId);
-    const types = new Set(shares.filter((s) => s.shareEvidence).map((s) => s.typeKey));
-    if (types.size === 0) continue;
-    allowed.set(m.userId, { name: m.name, types, from: await joinedFrom(m.userId, m.joinedAt) });
-  }
-  if (allowed.size === 0) return [];
-
   // Every filter belongs in the WHERE, and this is why.
   //
   // The query used to select on the member alone, order by `confirmed_at DESC`
@@ -506,34 +490,22 @@ export async function groupEvidence(
   //
   // Enough abandoned uploads and the feed is empty for good. A limit applied
   // before the filters is a limit on the wrong thing.
-  const scope = [...allowed.entries()].map(([memberId, who]) =>
-    and(
-      eq(evidence.userId, memberId),
-      inArray(evidence.typeKey, [...who.types]),
-      // Nothing from before this member arrived. Turning sharing on is a
-      // decision about what happens next, and it was handing over the whole
-      // back catalogue: join a group on a Tuesday having tracked Gym for a
-      // year, and the feed opened on a year of photographs nobody in it had
-      // ever been entitled to see. The member is bound by their own join date
-      // rather than the group's, so somebody who arrived last week does not
-      // inherit the visibility of a founder.
-      gte(evidence.confirmedAt, who.from),
-    ),
-  );
-
   const rows = await db
     .select({
       id: evidence.id,
       userId: evidence.userId,
+      name: users.name,
       typeKey: evidence.typeKey,
-      periodStart: evidence.periodStart,
       confirmedAt: evidence.confirmedAt,
       objectKey: evidence.objectKey,
     })
-    .from(evidence)
+    .from(evidenceGroups)
+    .innerJoin(evidence, eq(evidence.id, evidenceGroups.evidenceId))
+    .innerJoin(users, eq(users.id, evidence.userId))
     .where(
       and(
-        or(...scope),
+        eq(evidenceGroups.groupId, groupId),
+        isNull(evidenceGroups.revokedAt),
         isNotNull(evidence.confirmedAt),
         isNull(evidence.deletedAt),
         opts.since ? gte(evidence.confirmedAt, opts.since) : sql`true`,
@@ -544,12 +516,11 @@ export async function groupEvidence(
 
   const out: EvidenceItem[] = [];
   for (const r of rows) {
-    const who = allowed.get(r.userId);
-    if (!who || !who.types.has(r.typeKey) || !r.confirmedAt) continue;
+    if (!r.confirmedAt) continue;
     const type = getActivityType(r.typeKey);
     out.push({
       id: r.id,
-      who: who.name,
+      who: r.name,
       mine: r.userId === viewerId,
       typeKey: r.typeKey,
       typeName: type.name,

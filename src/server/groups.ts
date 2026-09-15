@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { groups, groupMembers, groupInvites, balances, users } from "@/db/schema";
 import { assertMember, memberRole } from "./membership";
 import { groupInviteEmail, sendEmailBestEffort } from "./email";
+import { revokeTags } from "./evidence-tags";
 import { userDay } from "./config";
 
 // Joining and leaving are dated in the MEMBER's own zone, not UTC. Both dates
@@ -198,6 +199,16 @@ export async function leaveGroup(groupId: string, userId: string): Promise<void>
         isNull(groupMembers.leftAt),
       ),
     );
+
+  // And the group stops seeing the photographs it was shown (item 15). Written
+  // second: leaving is the thing that has to happen, and a crash between the
+  // two leaves a former member's photographs visible, which the next press of
+  // Leave repairs. The other order would revoke and leave them a member.
+  //
+  // Rejoining does not undo this. The tag is already there, so the insert that
+  // would re-tag it does nothing, and photographs from before you walked out
+  // stay gone. That is what leaving a group means.
+  await revokeTags(userId, groupId, null);
 }
 
 export interface UserGroup {

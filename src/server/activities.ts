@@ -11,6 +11,7 @@ import {
   type ScheduleConfig,
 } from "@/domain";
 import { getAppConfig } from "./app-config";
+import { revokeTags } from "./evidence-tags";
 import { timezoneHistory } from "./config";
 import { now } from "@/lib/clock";
 
@@ -296,4 +297,16 @@ export async function stopTracking(userId: string, typeKey: string): Promise<voi
       changedBy: userId,
     })),
   );
+
+  // And the photographs those groups have seen of it go with the sharing (item
+  // 15). This is the consequence the stop sheet calls permanent: tagging is
+  // insert-only, so tracking the type again and sharing it again does not
+  // bring them back.
+  //
+  // Written third, after the share rows, for the same reason they were written
+  // after the switch: a crash here leaves photographs visible to a group that
+  // can no longer be shown anything new, which the next stop press repairs.
+  for (const groupId of sharing) {
+    await revokeTags(userId, groupId, typeKey, at);
+  }
 }

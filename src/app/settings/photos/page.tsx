@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import { ownPhotos, countOwnPhotos } from "@/server/own-photos";
 import { RETENTION_DAYS } from "@/server/evidence";
-import { PhotoGrid } from "../../photo-tile";
+import { PhotoRows } from "@/app/photo-rows";
 import { BackLink } from "@/app/back-link";
 
 // One page of photographs. The group evidence tab loads twenty and offers the
@@ -31,7 +31,10 @@ export default async function OwnPhotosPage({
     : PAGE;
 
   const [photos, total] = await Promise.all([
-    ownPhotos(user.id, { limit }),
+    // With tags: this is the screen that answers where a photograph went
+    // (item 15). Every other screen showing a person their own photographs is
+    // a grid of squares and asks for none of this.
+    ownPhotos(user.id, { limit, withTags: true }),
     countOwnPhotos(user.id),
   ]);
   const more = total - photos.length;
@@ -50,7 +53,14 @@ export default async function OwnPhotosPage({
           </p>
         ) : (
           <>
-            <PhotoGrid photos={photos} />
+            <PhotoRows photos={photos} />
+
+            {photos.some((p) => p.tags?.some((t) => t.revoked)) ? (
+              <p className="text-[11.5px] leading-[1.55] text-muted">
+                A struck-through group saw this once and no longer can, because
+                sharing stopped or you left. It does not come back.
+              </p>
+            ) : null}
 
             {more > 0 ? (
               <Link

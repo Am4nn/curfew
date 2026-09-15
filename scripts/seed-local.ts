@@ -68,6 +68,8 @@ import {
   type DayBoundary,
 } from "@/domain";
 import { scoreAll } from "@/server/scoring";
+import { groupsSeeingEvidence } from "@/server/sharing";
+import { tagEvidence } from "@/server/evidence-tags";
 import { CONSENT_VERSION } from "@/server/consent";
 import { settingConsequence, typeConsequence, noticeFrom } from "@/app/admin/controls/consequences";
 
@@ -1388,6 +1390,40 @@ async function ensureTypesEnabled(): Promise<void> {
   }
 }
 
+/**
+ * Send the seeded photographs to the groups that were being shown them.
+ *
+ * A real photograph is tagged with its groups by the check-in that sends it
+ * (item 15, migration 0024), and the fixture writes its evidence rows straight
+ * into the table without going through one. Without this pass the group
+ * evidence tab is empty against a fixture built to fill it, which reads as the
+ * leak fix having broken the feature.
+ *
+ * Resolved at each photograph's OWN instant, which is what the press does, so
+ * a fixture that changes somebody's sharing part way through a history gets
+ * the same answer the app would have given at the time.
+ */
+async function tagSeededEvidence(): Promise<number> {
+  const rows = await db
+    .select({
+      id: evidence.id,
+      userId: evidence.userId,
+      typeKey: evidence.typeKey,
+      confirmedAt: evidence.confirmedAt,
+    })
+    .from(evidence);
+
+  let tagged = 0;
+  for (const r of rows) {
+    if (!r.confirmedAt) continue;
+    const groupIds = await groupsSeeingEvidence(r.userId, r.typeKey, r.confirmedAt);
+    if (groupIds.length === 0) continue;
+    await tagEvidence(r.id, groupIds, r.confirmedAt);
+    tagged += 1;
+  }
+  return tagged;
+}
+
 async function main() {
   const fixture = fixtureArg();
   const builder = BUILDERS[fixture];
@@ -1398,6 +1434,8 @@ async function main() {
   console.log(`seeding fixture: ${fixture}`);
   await builder();
   await ensureTypesEnabled();
+  const tagged = await tagSeededEvidence();
+  if (tagged > 0) console.log(`${tagged} photographs sent to their groups`);
   // Leave a note of which world is in the database. The drift harness reads it
   // and refuses to photograph a screen that needs a different one: running
   // shots.ts directly instead of run-all.mjs used to capture those against

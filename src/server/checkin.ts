@@ -24,6 +24,8 @@ import { isPausedToday } from "./pause";
 import { recordEvent } from "./events";
 import { rateLimit } from "./ratelimit";
 import { pendingFor, confirmEvidence } from "./evidence";
+import { tagEvidence } from "./evidence-tags";
+import { groupsSeeingEvidence } from "./sharing";
 import { bumpStreak } from "./streak";
 import { now } from "@/lib/clock";
 
@@ -596,7 +598,20 @@ export async function performCheckin(
 
   // The event is the truth, so it goes first. A failure here leaves the photo
   // unconfirmed and the sweep repairs it from the event.
-  if (photo) await confirmEvidence(photo.id, row.occurredAt);
+  if (photo) {
+    await confirmEvidence(photo.id, row.occurredAt);
+    // And this is the moment a photograph gets its groups, the only moment it
+    // ever does (item 15). Nothing about it is a decision made here: the
+    // sharing toggles were set in Settings and the press only reads them. A
+    // list of group names on the camera screen would read as a decision, which
+    // is why the check-in screen says nothing about groups and Your Photos is
+    // where the question is answered.
+    await tagEvidence(
+      photo.id,
+      await groupsSeeingEvidence(userId, input.typeKey, row.occurredAt),
+      row.occurredAt,
+    );
+  }
 
   // And the streak moves now, because a streak is a count of things you did and
   // this press is one of them. Nothing else in the app moves on a press: the

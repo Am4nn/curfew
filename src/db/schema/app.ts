@@ -412,6 +412,31 @@ export const evidence = pgTable("evidence", {
   purgedAt: timestamp("purged_at", { withTimezone: true }),
 });
 
+// Which groups a photograph was sent to (migration 0024).
+//
+// Written at the check-in that carries it, to the groups sharing that activity
+// AT THAT MOMENT, and never again. Before this, which groups could see a
+// photograph was worked out on every read from the current share state, so
+// turning sharing on handed over the whole back catalogue.
+//
+// Insert-only, on conflict do nothing, which is what makes `revokedAt` final: a
+// re-share cannot add a tag that is already there, so a photograph a group
+// stopped being shown never comes back.
+export const evidenceGroups = pgTable(
+  "evidence_groups",
+  {
+    evidenceId: bigint("evidence_id", { mode: "number" })
+      .notNull()
+      .references(() => evidence.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    taggedAt: timestamp("tagged_at", { withTimezone: true }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.evidenceId, t.groupId] })],
+);
+
 // The streak, stored rather than derived on every read (migration 0019).
 // Derived and replayable (invariant 1): the press moves it, the nightly close
 // repairs it, streakOver rebuilds it from events, and verify diffs the two.

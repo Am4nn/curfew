@@ -188,6 +188,11 @@ export interface OwnPhoto {
   objectKey: string;
   typeKey: string;
   periodStart: string;
+  /**
+   * When the check-in that sent it happened. Never null here: the predicate
+   * below requires it, which is what "actually taken" means.
+   */
+  confirmedAt: Date;
 }
 
 /**
@@ -201,6 +206,7 @@ export async function listOwnPhotos(userId: string): Promise<OwnPhoto[]> {
       objectKey: evidence.objectKey,
       typeKey: evidence.typeKey,
       periodStart: evidence.periodStart,
+      confirmedAt: evidence.confirmedAt,
     })
     .from(evidence)
     .where(
@@ -211,7 +217,9 @@ export async function listOwnPhotos(userId: string): Promise<OwnPhoto[]> {
       ),
     )
     .orderBy(sql`${evidence.periodStart} desc, ${evidence.id} desc`);
-  return rows;
+  // `confirmedAt` is nullable in the schema and cannot be null here, because
+  // the predicate above says so. Narrowed rather than asserted.
+  return rows.flatMap((r) => (r.confirmedAt ? [{ ...r, confirmedAt: r.confirmedAt }] : []));
 }
 
 /**

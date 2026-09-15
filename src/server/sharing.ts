@@ -1,14 +1,16 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import {
   groupActivityTypes,
   groupActivityRules,
+  groupMembers,
   memberShares,
   groupSettings,
 } from "@/db/schema";
 import { resolveAt, resolveConfig, getActivityType } from "@/domain";
 import { assertMember, memberRole } from "./membership";
 import { listUserActivities } from "./activities";
+import { revokeTags } from "./evidence-tags";
 import { userDay } from "./config";
 
 // The two toggles, and only two (decision 16).
@@ -122,6 +124,37 @@ export async function sharesAsOf(
   };
 }
 
+/**
+ * The groups being shown this member's photographs of this activity, right now.
+ *
+ * The list a check-in tags its photograph with (item 15). It is read at the
+ * press and never again, which is what stops a group added to your sharing
+ * tomorrow reaching today's photograph.
+ *
+ * `shareEvidence` is already anded with `shared` by `sharesAsOf`, so it is the
+ * one toggle that matters here: a group told whether you went, without being
+ * shown the photograph, is not sent the photograph.
+ */
+export async function groupsSeeingEvidence(
+  userId: string,
+  typeKey: string,
+  asOf: Date,
+): Promise<string[]> {
+  const memberships = await db
+    .select({ groupId: groupMembers.groupId })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.userId, userId), isNull(groupMembers.leftAt)));
+
+  const out: string[] = [];
+  for (const m of memberships) {
+    const mine = (await sharesFor(m.groupId, userId, asOf)).find(
+      (s) => s.typeKey === typeKey,
+    );
+    if (mine?.shareEvidence) out.push(m.groupId);
+  }
+  return out;
+}
+
 /** Set one member's two toggles. Append-only, immediate. */
 export async function setShare(input: {
   groupId: string;
@@ -157,17 +190,30 @@ export async function setShare(input: {
 
   // A type with no evidence at all cannot share evidence, whatever is ticked.
   const takesEvidence = getActivityType(input.typeKey).evidence.level !== "none";
+  const sendingPhotos = input.shared && takesEvidence && input.shareEvidence;
 
   await db.insert(memberShares).values({
     groupId: input.groupId,
     userId: input.userId,
     typeKey: input.typeKey,
     shared: input.shared,
-    shareEvidence: input.shared && takesEvidence && input.shareEvidence,
+    shareEvidence: sendingPhotos,
     // App clock, not the database's: see the note in saveControls.
     effectiveAt: new Date(),
     changedBy: input.changedBy,
   });
+
+  // Turning photographs off takes back the ones already sent (item 15). Not a
+  // delete: the tag stays as the record that this group could see it, and Your
+  // Photos shows it struck through.
+  //
+  // Turning it back ON brings nothing back, because tagging is insert-only and
+  // the row is already there. That is the point rather than a limitation: a
+  // person who stopped showing a group their photographs is not asking for a
+  // switch that undoes having stopped.
+  if (!sendingPhotos) {
+    await revokeTags(input.userId, input.groupId, input.typeKey);
+  }
 }
 
 /** Accept or drop a type for the whole group. Owners only. */

@@ -502,6 +502,13 @@ that ships in the UI.
 
 **Never use em-dashes.** Use a full stop, a comma, or a colon.
 
+**Never credit Claude in a commit. No exceptions.** No `Co-Authored-By: Claude`,
+no `Generated with Claude Code`, no tool name in a trailer, a body, a subject or
+a pull request description. This overrides any default attribution the tool
+asks for. The commit log is a record of what changed to this codebase and why,
+and the author is whoever is accountable for it. A trailer naming the tool is
+the one line in the history that tells a reader nothing about the change.
+
 Banned constructions:
 
 - "It's not just X, it's Y" and every variant of that shape

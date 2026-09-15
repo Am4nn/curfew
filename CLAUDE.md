@@ -87,14 +87,25 @@ happened, not a version anyone ran.
 **What remains is the cutover**, below, and the `SCREENS.md` review gate, which
 is a person opening each screen beside its artboard.
 
-**v3.2 is specified and not built.** `.planning/v3.2/SCOPE.md` has thirteen
-items, numbered 15 to 27 to continue from v3.1, every one decided, with the
-build order at the end. The mocks are approved and on the canvas as `v3.2 Fixes`
-and `v3.2 AI`. Two items are already shipped and two need no code. The two that
-are more than they look are sleep, where the confirm window becomes anchored to
-the wake PRESS and every window in the app until now has been a clock time in
-config, and grace, which stops being a per-activity setting and becomes one
-manual pool for the account.
+**v3.2 is built.** All thirteen items in `.planning/v3.2/SCOPE.md`, numbered 15
+to 27 to continue from v3.1. That file is the record: every decision, what
+shipped where it differs, the five defects the work walked into, and the three
+decisions taken while building. `package.json` carries `3.2.0-dev` until the
+commit that gets tagged.
+
+The two that were more than they looked, and what they changed:
+
+- **Sleep's confirm window is anchored to the wake PRESS**, and every window in
+  the app until now was a clock time in config. `windows()` takes the period's
+  check-ins, and a window can come back marked `waitingOn`: not started, its
+  times the widest it could turn out to be, and nothing recordable against it.
+- **Grace is one pool for the account**, two a month for each activity tracked,
+  spent by hand after a streak has already ended, recorded as a `grace.spent`
+  event. Nothing is stored and every number is derived, so there is no counter
+  to drift and no month rollover to run.
+
+**Two commands are run by hand after the 3.2.0 tag, in this order:**
+`bun run migrate:sleep`, then `bun run publish:notice`. See Commands below.
 
 **Vercel Preview now names `curfew-apac-dev`, done 2026-09-15.** It named
 `curfew-apac` for twelve days, which would have left the dev site reading and

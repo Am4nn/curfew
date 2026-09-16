@@ -70,36 +70,47 @@ function write(next: Asked): void {
  * The cache also survives client-side navigation, so moving between screens
  * does not re-ask a question already answered this session.
  */
-let decided: boolean | null = null;
+type Mode = "ask" | "install" | "none";
 
-function shouldAsk(): boolean {
+let decided: Mode | null = null;
+
+function promptMode(): Mode {
   if (decided !== null) return decided;
-
-  // Only a device that has never been asked. "granted" is already handled and
-  // PushRefresh re-registers it silently; "denied" cannot be undone from here;
-  // "uninstalled" and "unsupported" would raise a prompt that leads nowhere.
-  if (state() !== "default") {
-    decided = false;
-    return decided;
-  }
-  const asked = read();
-  decided =
-    asked.count < GIVE_UP_AFTER &&
-    Date.now() - asked.at >= ASK_AGAIN_AFTER_DAYS * 86_400_000;
+  decided = decide();
   return decided;
+}
+
+function decide(): Mode {
+  const permission = state();
+
+  // "granted" is already handled and PushRefresh re-registers it silently.
+  // "denied" cannot be undone from here, only in browser settings.
+  // "unsupported" would raise a prompt that leads nowhere.
+  if (permission !== "default" && permission !== "uninstalled") return "none";
+
+  const asked = read();
+  if (asked.count >= GIVE_UP_AFTER) return "none";
+  if (Date.now() - asked.at < ASK_AGAIN_AFTER_DAYS * 86_400_000) return "none";
+
+  // iOS in a Safari TAB. The Push API is hidden until the app is on the home
+  // screen, so there is no permission to ask for yet and the button would do
+  // nothing. Saying so is the whole point: this case used to render nothing at
+  // all, which on an iPhone is most first visits, and it looked exactly like a
+  // feature that had not shipped.
+  return permission === "uninstalled" ? "install" : "ask";
 }
 
 export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: string }) {
   // A settled fact by the time the page is interactive, and one that must not
   // change while it lives. Read in an effect instead, this would render the
   // card and then hide it again on every single launch.
-  const ask = useClientValue(shouldAsk, false);
+  const mode = useClientValue<Mode>(promptMode, "none");
 
   const [gone, setGone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  if (!ask || gone) return null;
+  if (mode === "none" || gone) return null;
 
   function dismiss() {
     write({ count: read().count + 1, at: Date.now() });
@@ -140,11 +151,23 @@ export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: str
       <div className="mx-auto flex max-w-[420px] flex-col gap-3 border border-fg bg-bg p-4">
         <div className="flex flex-col gap-1">
           <span className="text-[13.5px] font-semibold">
-            Want a nudge before a window closes?
+            {mode === "install"
+              ? "Add Curfew to your home screen for reminders"
+              : "Want a nudge before a window closes?"}
           </span>
           <span className="text-[12px] leading-[1.6] text-muted">
-            Curfew can remind you while there is still time, and tell you who
-            else in your group has already logged today. Four a day at most.
+            {mode === "install" ? (
+              <>
+                iPhone only allows notifications for an installed app. Tap Share,
+                then Add to Home Screen, and open Curfew from there. It will ask
+                you then.
+              </>
+            ) : (
+              <>
+                Curfew can remind you while there is still time, and tell you who
+                else in your group has already logged today. Four a day at most.
+              </>
+            )}
           </span>
         </div>
 
@@ -155,21 +178,26 @@ export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: str
         ) : null}
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={busy}
-            aria-busy={busy || undefined}
-            onClick={() => void turnOn()}
-            className="border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg active:opacity-70 disabled:opacity-40"
-          >
-            {busy ? "Turning on" : "Turn on"}
-          </button>
+          {/* No button in the install case. There is nothing to press: the Push
+              API is not there to ask, and a button that raised no prompt would
+              read as broken rather than as unavailable. */}
+          {mode === "ask" ? (
+            <button
+              type="button"
+              disabled={busy}
+              aria-busy={busy || undefined}
+              onClick={() => void turnOn()}
+              className="border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg active:opacity-70 disabled:opacity-40"
+            >
+              {busy ? "Turning on" : "Turn on"}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={dismiss}
             className="px-2 py-[8px] text-[12px] text-muted active:opacity-70"
           >
-            Not now
+            {mode === "install" ? "Got it" : "Not now"}
           </button>
         </div>
       </div>

@@ -555,3 +555,43 @@ export const reports = pgTable("reports", {
   reviewedBy: text("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
 });
+
+// One row per DEVICE, and the row IS the preference: no subscription, no
+// notifications. There is deliberately no enabled flag beside it, because a
+// flag and a browser permission are two records of the same fact and they
+// drift. Turning notifications off deletes the row. See migrations/0027.
+//
+// `endpoint` is the natural key: the push service guarantees it unique and
+// hands back the same string when a device re-subscribes, which makes the
+// upsert free. That matters because iOS expires a subscription without telling
+// anybody, so the client re-subscribes on every launch.
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  endpoint: text("endpoint").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Last delivery the push service accepted. Null means it never has. */
+  lastOkAt: timestamp("last_ok_at", { withTimezone: true }),
+});
+
+// A member's own reminder times for one activity, "HH:mm" wall clock in
+// whatever zone they are in when it fires. Text and not `time`: it is a clock
+// reading and never an instant, so 8:00 PM stays 8:00 PM after a flight.
+//
+// Plain and updatable, NOT the insert-only effective-dated shape every scoring
+// setting uses. Invariant 4 is about settings that decide how a period is
+// judged, and a reminder time judges nothing. See migrations/0027.
+export const activityReminders = pgTable(
+  "activity_reminders",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    typeKey: text("type_key").notNull(),
+    at: text("at").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.typeKey, t.at] })],
+);

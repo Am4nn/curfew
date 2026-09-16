@@ -60,6 +60,23 @@ export interface CheckinStepView {
   opensLabel: string;
   closesLabel: string;
   /**
+   * The same two times as instants, for anything that has to do arithmetic on
+   * them rather than print them.
+   *
+   * The labels above are formatted in the member's zone and are the right thing
+   * for a screen. They are the wrong thing for the reminder job, which needs to
+   * ask how many minutes are left: parsing "7:45 PM" back into a moment means
+   * guessing a date and a zone, and guessing wrong once a year in the half of
+   * it that has a different offset.
+   *
+   * Null while `waitingOn`, for the same reason the labels are empty there:
+   * those times are the widest the window could turn out to be, carried so that
+   * anything asking "is this period over" waits long enough. They are a bound
+   * and not a fact, and nothing may schedule against them.
+   */
+  opensAt: Date | null;
+  closesAt: Date | null;
+  /**
    * Is this step's window open AND would another press count?
    *
    * The two are separate below, because collapsing them here made the check-in
@@ -267,6 +284,11 @@ export async function getCheckinState(
       // could be would read as a window that is open and is not.
       opensLabel: window && !window.waitingOn ? label(window.opensAt, timezone) : "",
       closesLabel: window && !window.waitingOn ? label(window.closesAt, timezone) : "",
+      // The same guard as the labels, and for the same reason. A reminder
+      // scheduled off a window that has not started is a reminder about a time
+      // that may never arrive.
+      opensAt: window && !window.waitingOn ? window.opensAt : null,
+      closesAt: window && !window.waitingOn ? window.closesAt : null,
       waitingOn: window?.waitingOn ?? null,
       // Open means the window is open AND another press would count. Gym's
       // window is the whole week, but only one session a day counts, so a

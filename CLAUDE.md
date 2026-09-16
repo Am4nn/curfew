@@ -22,6 +22,9 @@ Money is optional and can be switched off entirely.
   rollback, and the rule that decides it: an additive migration goes before the
   tag and a hostile one after the promote, because the live version is still
   running between them. Read it before every release, not only the first.
+- `.planning/ROADMAP.md` — the four themes after v3.2, and nothing in it is
+  decided. Each one becomes its own scope file when it starts, and each has to
+  name the settled decision it overturns before it overturns it.
 - `.planning/PRD.md` — v1's what and why. Still the reasoning behind the
   invariants; superseded on scope.
 - `.planning/schema.sql` — the data model, with the immutability rules in

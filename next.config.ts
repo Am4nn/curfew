@@ -10,7 +10,11 @@ const nextConfig: NextConfig = {
   experimental: { reactCompiler: true },
   // pg is only used by the local preview driver. Keep it external so webpack
   // does not try to bundle its optional native bits into the production build.
-  serverExternalPackages: ["pg"],
+  //
+  // web-push for the same reason from the other direction: it is CommonJS and
+  // reaches for node:crypto and node:http directly to do the ECDH and the
+  // signing, none of which survives being bundled for an edge-ish target.
+  serverExternalPackages: ["pg", "web-push"],
 
   // The OG card reads a TTF off disk at runtime. Nothing imports it, so the
   // tracer cannot see it and the file would be absent from the deployment: the

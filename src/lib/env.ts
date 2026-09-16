@@ -44,6 +44,23 @@ const raw = {
   R2_ENDPOINT: opt(process.env.R2_ENDPOINT),
   UPSTASH_REDIS_REST_URL: opt(process.env.UPSTASH_REDIS_REST_URL),
   UPSTASH_REDIS_REST_TOKEN: opt(process.env.UPSTASH_REDIS_REST_TOKEN),
+  QSTASH_URL: opt(process.env.QSTASH_URL),
+  QSTASH_TOKEN: opt(process.env.QSTASH_TOKEN),
+
+  // Web Push. Optional for the same reason as R2: nothing boots that needs
+  // them, and the two modules that do check at first use and throw naming the
+  // key.
+  VAPID_PUBLIC_KEY: opt(process.env.VAPID_PUBLIC_KEY),
+  VAPID_PRIVATE_KEY: opt(process.env.VAPID_PRIVATE_KEY),
+  VAPID_SUBJECT: opt(process.env.VAPID_SUBJECT),
+
+  // The one key in this file whose ABSENCE is a meaningful, safe answer rather
+  // than a misconfiguration. Everything above refuses to work without a value
+  // because guessing gives you a broken page. Guessing here gives somebody a
+  // notification nobody meant to send, so unset means off and only production
+  // sets it. Compared as a string, not coerced: "0", "false" and "" all have to
+  // mean off, and Boolean("0") does not.
+  PUSH_REMINDERS: opt(process.env.PUSH_REMINDERS),
 };
 
 const schema = z.object({
@@ -64,6 +81,14 @@ const schema = z.object({
   R2_ENDPOINT: z.string().url().optional(),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+  QSTASH_URL: z.string().url().optional(),
+  QSTASH_TOKEN: z.string().min(1).optional(),
+
+  VAPID_PUBLIC_KEY: z.string().min(1).optional(),
+  VAPID_PRIVATE_KEY: z.string().min(1).optional(),
+  VAPID_SUBJECT: z.string().min(1).optional(),
+
+  PUSH_REMINDERS: z.string().optional(),
 });
 
 // Read an optional key that a v3 code path requires. Throws naming the key

@@ -198,28 +198,27 @@ and reputation rows wait for `bun run score`. A scheduled GitHub Actions
 workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
 real nightly job, and it is not worth it while dev has three users.
 
-`package.json` carries `3.3.0`, cut as a tag on 2026-09-17. The admin header
+`package.json` carries `3.3.1`, cut as a tag on 2026-09-17. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.
 
-**v3.3.0 is deployed but the reminders are not running yet, on purpose.**
-`PUSH_REMINDERS=1` is set in Vercel Production, migration 0027 is applied to
-both databases, and `/api/cron/remind` answers correctly to `CRON_SECRET`, but
-NOTHING CALLS IT: the QStash schedule has not been created. Two commands remain,
-by hand, in this order, and only after a person has held a phone up to it:
+**v3.3 is fully live and the reminder tick is running.** Nothing is held back.
 
-```
-bun run schedule:reminders:production      # starts the tick
-bun run publish:notice -- --version 3.3.0 --as you@example.com --dry
-```
+- Migration 0027 applied to both databases.
+- `PUSH_REMINDERS=1` in Vercel Production, `0` in Preview. **Dev never sends.**
+  Proved rather than assumed: `/api/cron/remind` on dev answers
+  `{ ok: true, skipped: "disabled" }` to a valid `CRON_SECRET`.
+- QStash schedule `scd_6fChaPXD1rssMQaF1VjebR5XEgTD`, `*/15 * * * *`, pointed at
+  production. Re-running `bun run schedule:reminders:production` says "already
+  scheduled" rather than adding a second, which is the thing that script exists
+  to prevent.
+- The 3.3.0 release note is published to both, 3 accounts on production.
 
-The order is the same rule as 3.2.0's: the change first, the announcement
-second, because a notice telling people to turn notifications on before
-notifications work says something that is not true yet.
-
-Neither is urgent and neither is dangerous while it waits. Nobody is subscribed,
-so the tick would send nothing today even if it ran.
+**There is exactly one QStash schedule and it must stay that way.** Two pointing
+at the same URL looks like nothing at all: the job runs twice a tick, the
+idempotency index absorbs the second, and the only symptom is the bill. Always
+change it through the script, never the dashboard.
 
 **The steps are in `.planning/RELEASE.md`, and the order is not obvious.** Read
 it rather than working from this section.

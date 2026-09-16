@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/session";
 import { listInvitesForEmail } from "@/server/groups";
 import { publicKey, pushConfigured } from "@/server/push";
 import { PushRefresh } from "./push-refresh";
+import { NotificationPrompt } from "./notification-prompt";
 import { NoticeOverlay } from "./notice-overlay";
 import { ConsentGate } from "./consent-gate";
 import { PreviewBar } from "./preview-bar";
@@ -176,6 +177,9 @@ export default async function RootLayout({
             renders nothing and, for anybody who has not granted permission,
             does nothing: `refresh` checks first and returns. */}
         {user && pushConfigured() ? <PushRefresh vapidPublicKey={publicKey()} /> : null}
+        {/* Last in the queue: consent blocks it, then a notice does, then it
+            asks. It renders nothing for a device that has already been asked. */}
+        <NotificationPrompt />
         {previewEnabled() ? <PreviewBar /> : null}
       </body>
     </html>

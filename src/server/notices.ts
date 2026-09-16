@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, isNull, lt, notExists, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, lt, notExists, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { notices, noticeAcks, users } from "@/db/schema";
 
@@ -24,7 +24,14 @@ export interface PendingNotice {
   createdAt: Date;
 }
 
-/** Everything this user still has to acknowledge, oldest first. */
+/**
+ * Everything this user still has to acknowledge, NEWEST FIRST.
+ *
+ * It was oldest first, which is the order things happened and the wrong order
+ * to read them in. Somebody who has been away opens one overlay carrying every
+ * release they missed, and what they want first is the one that changes what
+ * they do today. The oldest is the one they have already lived without knowing.
+ */
 export async function pendingNotices(userId: string): Promise<PendingNotice[]> {
   return db
     .select({
@@ -52,7 +59,7 @@ export async function pendingNotices(userId: string): Promise<PendingNotice[]> {
         ),
       ),
     )
-    .orderBy(notices.createdAt);
+    .orderBy(desc(notices.createdAt));
 }
 
 /**

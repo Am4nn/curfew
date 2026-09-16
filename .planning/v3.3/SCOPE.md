@@ -1,6 +1,7 @@
 # v3.3
 
-Seven items, numbered 28 to 34 to continue from `.planning/v3.2/SCOPE.md`.
+Nine items, numbered 28 to 36 to continue from `.planning/v3.2/SCOPE.md`. Items
+35 and 36 shipped after 3.3.0, once the chain was verified on a real iPhone.
 
 One feature: Curfew can speak first. Reminders before a window closes, a count
 on the icon, and a line saying what the rest of your group has already done.
@@ -177,6 +178,45 @@ The peer half tests the positive case first, because a clause that never fires
 looks exactly like a group where nobody did anything.
 
 ---
+
+## 35. Curfew asks, rather than waiting to be found
+
+Shipped after 3.3.0, once the chain was verified on an iPhone.
+
+Settings is where a feature goes to be discovered by nobody. The app asks
+instead, on Home, as a dismissible card.
+
+**It cannot be the browser's own prompt firing on load.** iOS grants permission
+only from a real tap, so the card is the gesture and its button raises the
+system prompt. That indirection is also the safety: a system prompt refused
+twice is refused FOREVER on that device, with no way back except browser
+settings nobody visits. The card absorbs a "not now" pressed at a bad moment;
+the system prompt cannot. Two dismissals and Curfew stops asking, four days
+apart, and Settings still has the switch.
+
+**Three things can want the screen on one launch, so they have an order:**
+
+1. The consent gate. Blocking, no dismiss.
+2. The notice overlay. Blocking, one press clears all of it.
+3. The ask. Dismissible.
+
+Enforced by each one returning null while an earlier one is up, rather than by
+z-index, because a card behind a modal is still a card somebody can tab into.
+
+**A new account therefore sees consent, then the ask, and nothing else**, since
+notices published before an account existed are never shown to it (decision 80).
+An existing member sees what changed first, then the ask.
+
+## 36. Notices are newest first
+
+`pendingNotices` ordered oldest first, which is the order things happened and
+the wrong order to read them in. Somebody who has been away opens one overlay
+carrying every release they missed, and what they want first is the one that
+changes what they do today.
+
+The overlay's date line read `pending.at(-1)`, which meant "newest" under the
+old order and silently became "oldest" under the new one. Reversing a query is
+never only a query change.
 
 ## Build order, and what it turned up
 

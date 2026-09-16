@@ -16,7 +16,11 @@ export async function NoticeOverlay() {
   const pending = await pendingNotices(user.id);
   if (pending.length === 0) return null;
 
-  const published = pending.at(-1)!.createdAt;
+  // The most recent, which is pending[0] now that the list is newest first. It
+  // was `at(-1)` and meant the same thing under the old ascending order, so
+  // reversing the query silently turned this into the date of the OLDEST thing
+  // in the overlay.
+  const published = pending[0].createdAt;
 
   return (
     <div

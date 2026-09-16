@@ -12,7 +12,7 @@
   "3.3.0": [
     {
       "headline": "Curfew can remind you now.",
-      "detail": "Reminders before a window closes, and a count on the app icon. They are off until you turn them on, in Settings, Notifications, and you turn them on per device: your phone and your laptop are separate."
+      "detail": "Reminders before a window closes, and a count on the app icon. Curfew will ask once you close this, and it asks per device: saying yes on your phone does not cover your laptop. Settings, Notifications has the switch either way."
     },
     {
       "headline": "Your group shows up in them.",

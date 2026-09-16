@@ -361,6 +361,25 @@ export interface ActivityType<Config, Evidence> {
     timezone: string,
     checkins?: Checkin<Evidence>[],
   ): CheckinWindow[];
+  /**
+   * When this type is worth a reminder, as "HH:mm" wall clock in the member's
+   * zone. Omit it and the engine reminds before the window closes instead.
+   *
+   * It exists because eight of the twelve have an all-day window, whose real
+   * close is midnight, and "you have not eaten today" at 11:50 PM is a message
+   * about a day that is already lost. Food wants breakfast, lunch and dinner,
+   * and only Food knows when those are.
+   *
+   * Declared and not computed, like every other fact a module states about
+   * itself, so the engine reads three strings and never learns that one of them
+   * is lunch (invariant 6). A member may override them per activity, and their
+   * rows win.
+   *
+   * These are a DEFAULT and never a judgement. Nothing here decides whether a
+   * period passed, so unlike every window and threshold in this file it is not
+   * resolved as of the period being scored, and changing it rewrites nothing.
+   */
+  reminderCues?: string[];
   evaluate(input: EvaluateInput<Config, Evidence>): EvaluateResult;
   /**
    * The calendar days in this period that count toward a streak.

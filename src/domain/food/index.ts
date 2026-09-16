@@ -157,6 +157,15 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
     return oneWindow(FOOD_STEP, "Meal", periodStart, timezone, ALL_DAY);
   },
 
+  // Breakfast, lunch, dinner. The window above is the whole day, so the
+  // engine's default would remind at 7:30, 8:45 and 9:20 PM, which is three
+  // messages about meals somebody has already not eaten.
+  //
+  // Three meals is also only the default target, and these times are not
+  // derived from it: somebody on two meals gets a reminder they can ignore,
+  // which is a better failure than nine o'clock.
+  reminderCues: ["09:00", "13:30", "20:00"],
+
   evaluate(input) {
     const meals = input.checkins.filter((c) => c.step === FOOD_STEP);
     const count = countPass(meals, { min: input.config.meals });

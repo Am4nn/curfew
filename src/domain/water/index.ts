@@ -85,6 +85,12 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
     return oneWindow(WATER_STEP, "Glass", periodStart, timezone, ALL_DAY);
   },
 
+  // Spread across the day, because the target is eight glasses and nobody
+  // drinks eight at nine o'clock. Reminding before the window closes, which is
+  // what the engine would do without this, is the one time of day the reminder
+  // cannot be acted on.
+  reminderCues: ["11:00", "15:00", "19:00"],
+
   evaluate(input) {
     const glasses = input.checkins.filter((c) => c.step === WATER_STEP);
     const result = countPass(glasses, { min: input.config.glasses });

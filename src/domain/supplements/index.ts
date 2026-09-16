@@ -72,6 +72,11 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
     return oneWindow(SUPPLEMENTS_STEP, "Dose", periodStart, timezone, ALL_DAY);
   },
 
+  // Beside a meal, which is when most people take them and when the bottle is
+  // in reach. Two rather than three: a dose missed at breakfast is usually
+  // taken at dinner, and a third reminder in between says nothing new.
+  reminderCues: ["09:30", "20:30"],
+
   evaluate(input) {
     const doses = input.checkins.filter((c) => c.step === SUPPLEMENTS_STEP);
     const result = countPass(doses, { min: input.config.dosesPerDay });

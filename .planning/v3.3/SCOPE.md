@@ -1,0 +1,198 @@
+# v3.3
+
+Seven items, numbered 28 to 34 to continue from `.planning/v3.2/SCOPE.md`.
+
+One feature: Curfew can speak first. Reminders before a window closes, a count
+on the icon, and a line saying what the rest of your group has already done.
+
+**Two settled decisions are overturned here.** Both were written down as
+permanent and both are named below with the reason they no longer hold, per the
+rule at the end of `.planning/ROADMAP.md`. Nothing in this file is a decision
+taken quietly.
+
+This lands ahead of ROADMAP theme 4, which is the native app. Push is the one
+piece of that theme reachable from a web app, so it comes first and the rest
+waits.
+
+---
+
+## The two reversals
+
+**28. Push notifications are no longer out of scope.**
+
+`CLAUDE.md`'s Not in v3 list carried `Push notifications.` It sat under the same
+reason as the native app and health integrations: *web only until there are real
+users.* There are real users, on three accounts, using Curfew as an installed
+home-screen app daily. The condition the deferral named has been met, so the
+deferral expires rather than being argued with.
+
+What makes it possible without the native app is that Curfew was already built
+as a proper installed web app: `src/app/manifest.ts` has `display: standalone`,
+maskable icons and an explicit `id`, `layout.tsx` sets `appleWebApp` and ten
+`apple-touch-startup-image` sizes. iOS grants Web Push to a home-screen web app
+from 16.4. The install that already exists is the install that qualifies.
+
+**29. Notifications are written in the opposite voice to the rest of the app.**
+
+The Voice section says Curfew is a clerk, not a coach: no congratulation, no
+encouragement, no exclamation marks. A push notification breaks that by
+existing. A clerk answers when spoken to. A notification speaks first,
+unprompted, to a phone lying on a table, and the only reason to send one is to
+change what somebody does next.
+
+So the register changes, deliberately and only here:
+
+> Rahul and Priya already logged Gym. Don't be the last one, 40 minutes left!
+
+Writing that as *"Gym closes 8:00 PM. Nothing recorded. 2 of 4 in Morning Crew
+have logged."* would have been a worse version of the feature shipped to protect
+a rule the feature already broke.
+
+**The exception is the surface, not the sentence.** Every screen is still the
+clerk. Copy lives in exactly one file, `src/server/notification-copy.ts`, so the
+boundary is a path rather than a judgement call, and `CLAUDE.md` carries the
+carve-out so the next person does not read the Voice section and correct it.
+
+ROADMAP theme 3, the Duolingo read, decides whether the rest of the app follows.
+Until then this is one file, not a direction.
+
+---
+
+## What ships
+
+**30. Reminders fire before a window closes, and a module may name its own
+times.**
+
+Three cues by default, at the deadline minus 120, 45 and 10 minutes, where the
+deadline is the window's close or 9:30 PM local, whichever is earlier. The cap
+exists because eight of the twelve types have an all-day window whose real close
+is midnight, and nobody needs to hear at 11:50 PM that today is nearly over.
+Anything landing in the quiet band, 9:30 PM to 8:00 AM, is dropped rather than
+deferred: a deferred reminder arrives announcing a window that already shut.
+
+A type may declare its own sensible times instead, as `reminderCues: string[]`
+on the module. Food's are breakfast, lunch and dinner. This is a declared field
+and not a function, like everything else a module states about itself, and it
+keeps invariant 6: the engine never learns what a meal is, it just reads three
+strings.
+
+A member may override the cues per activity, in `activity_reminders`. Those rows
+are **operational and take effect at once**, so they are plain updatable rows
+and not the insert-only effective-dated shape scoring config uses. Invariant 4
+governs what judges a period. A reminder time judges nothing.
+
+**31. One notification, not one per activity.**
+
+Six tracked activities across three cues would be eighteen notifications a day,
+which is how an app gets its permission revoked in a week. One digest lists
+everything outstanding, sets the badge to that count, and opens Home.
+
+Capped at four a day per account, counted from `push.sent` events, so a
+misconfigured cue set cannot spam.
+
+**32. The digest says what the group has already done.**
+
+For an activity you track and have not logged, the line names members of your
+groups who have. This is the social loop, and it is the reason the feature is
+worth building rather than a garnish on it.
+
+It says nothing the group hub would not already show you. The peer set is read
+through the existing group path, `assertMember` then `sharesFor`, not a new
+query: that path already knows the sharing rules and a second one would not.
+v3.1 shipped two bugs of exactly this shape in opposite directions, a group
+seeing a member's whole back catalogue and shared evidence never reaching the
+group at all, and the second is the one that would hurt here, because a peer
+line that silently never fires is indistinguishable from a quiet group.
+
+**A known inexactness, stated rather than hidden.** `period_start` resolves per
+user from their zone and their activity's day boundary, so sleep's noon-to-noon
+period can carry a different date string for a peer in another timezone. The
+query uses the recipient's. The cost is a sentence counting the wrong day for a
+peer abroad. It judges nothing and charges nobody, so it is a comment and not a
+second resolution pass.
+
+**33. A badge on the icon, from the same payload as the notification.**
+
+The push body is Declarative Web Push JSON. Safari renders it natively and sets
+`app_badge` with no service worker involved, because an immutable payload is
+displayed by the platform. Chrome does not parse the format, so the bytes reach
+the service worker, which parses the same JSON and calls `showNotification` plus
+`navigator.setAppBadge`. One payload, both platforms, and no double notification
+because Safari skips the worker for an immutable payload.
+
+---
+
+## How it runs
+
+**34. The tick is Upstash QStash, not Vercel Cron, and it is off by default
+everywhere except production.**
+
+Vercel Cron cannot do this. On Hobby it is once a day, UTC only, with timing
+guaranteed only to the hour. Reminders need minute precision and a tick every
+fifteen minutes. QStash was already in the stack for rate limiting, its free
+tier covers 96 calls a day many times over, and it retries. It calls
+`/api/cron/remind` with the same `Bearer CRON_SECRET` header the score job
+already checks, so no new auth pattern and no new package.
+
+The schedule is created by `bun run schedule:reminders`, a script in this repo
+with a `--dry` and a `:production` twin, so the tick is a thing under review
+rather than a thing somebody once clicked in a dashboard.
+
+`PUSH_REMINDERS` gates the scheduled route and **unset means off**. Everything
+else in this repo fails loudly when a key is missing. This one fails silent on
+purpose: a notification reaches somebody's phone, so a forgotten variable in a
+new environment should produce nothing rather than a schedule nobody meant to
+start.
+
+It gates the tick, not the send path. Subscribing and Send a test work
+everywhere, because dev is where the whole chain gets verified on a real phone
+and a flag that turned that off would make the feature untestable outside
+production.
+
+The route answers `200 { ok: true, skipped: "disabled" }` when off, not 401 and
+not 500, because QStash retries a failure three times and a refusal has to read
+as "did nothing on purpose".
+
+---
+
+## The check
+
+`bun run check:reminders`, beside `check:offer` in CI, for one claim:
+
+> `check:offer` — a button is there when a press would count.
+> `check:reminders` — a reminder is sent only when a press would count.
+
+Telling somebody to do a thing the write path would refuse is the same class of
+bug as offering them a control that would be refused, and this codebase already
+treats the second as first-class.
+
+The case that will actually break is sleep's `confirm` while `waitingOn`.
+Calling `windows()` without check-ins returns that window at its widest with the
+marker set, and those times are a bound rather than a fact. Sending "Confirm
+closes 7:30 AM" off them would be wrong twice over: the window has not started,
+and it may never open at those times. `src/server/checkin.ts:268` is the
+precedent and the reason it is commented there.
+
+The peer half tests the positive case first, because a clause that never fires
+looks exactly like a group where nobody did anything.
+
+---
+
+## Not in this
+
+- **Time Sensitive on iOS.** A notification that pierces a Focus mode is an
+  APNs `interruption-level`, available to native apps only. Declarative Web
+  Push's payload carries `title`, `body`, `navigate`, `silent`, `app_badge` and
+  `mutable`, and no priority of any kind. This is a real reason to want theme 4
+  and it is recorded there.
+- **Telling somebody their group saw them miss.** The peer line runs one way: it
+  tells you what others did, never broadcasts what you failed to do. The other
+  direction is a real retention mechanic and probably wanted, but the consent
+  gate does not currently cover it. Theme 3.
+- **Rewriting the rest of the app's copy.** Item 29 is one file.
+- **Per-activity mute.** The account switch and an empty cue set already cover
+  it, and a second mechanism would be a second writer of the same intent, which
+  is what caused two production 500s in v3.2.
+- **Quiet hours as a setting.** Hardcoded until somebody asks.
+- **Deriving the quiet band from sleep's configured wake time.** Correct, and it
+  couples notifications to one module's config. Later, if at all.

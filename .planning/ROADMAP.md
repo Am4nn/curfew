@@ -95,6 +95,16 @@ what is there before adding to it.
 what Duolingo actually does, what the evidence says about why it works, and what
 of it survives contact with an app built on photographs and fines.
 
+**One surface is already answering the voice question, ahead of this theme.**
+v3.3 ships push notifications in the coach's register, exclamation marks and
+peer names and all, while every screen stays the clerk. That was decided on
+purpose and written down in `.planning/v3.3/SCOPE.md` item 29: a notification
+speaks first, unprompted, which the clerk has no reason to do, so the register
+had to change or the feature was not worth shipping. It is one file,
+`src/server/notification-copy.ts`, and it is not a direction until this theme
+says so. Read it before the research starts. It is the only evidence Curfew has
+about what the warmer voice actually reads like in its own house.
+
 ---
 
 ## 4. A real app on a real phone
@@ -111,11 +121,27 @@ In scope as described:
   25 could reach
 - And whatever else that list turns out to include
 
-**This is the theme that reopens the most existing decisions.** Four items on the
-Not in v3 list are here: a native app, health integrations, push notifications,
-and Steps and Screen staying manual. All four were deferred for the same stated
-reason, which was "web only until there are real users", so the honest gate is
-whether there are real users yet rather than whether the features are wanted.
+**How it would actually be built is researched in
+`.planning/research/native-app/FINDINGS.md`.** The short of it: Google Play
+takes the site as it stands, Apple will not, and the reason is that Curfew has
+no static version of itself. The API over `src/server/` is the real first
+deliverable and it is needed on every path.
+
+**Push notifications already shipped, ahead of this theme.** v3.3 took them,
+because they are the one item on this list reachable from a web app: iOS grants
+Web Push to a home-screen web app from 16.4, and Curfew was already installed as
+one. See `.planning/v3.3/SCOPE.md`. What it could NOT reach is the part that
+needs a native app, and that is recorded here rather than lost: a web push
+cannot be marked Time Sensitive, so it never pierces a Focus mode. For an app
+whose whole point is "the window closes in fifteen minutes", that is the
+strongest single argument on this page for building the native app at all.
+
+**This is the theme that reopens the most existing decisions.** Three items on
+the Not in v3 list are still here: a native app, health integrations, and Steps
+and Screen staying manual. All were deferred for the same stated reason, which
+was "web only until there are real users", so the honest gate is whether there
+are real users yet rather than whether the features are wanted. Push was the
+fourth, and its deferral expired on exactly that test.
 
 Two things to think about early, because they shape everything after:
 

@@ -99,6 +99,13 @@ to 27 to continue from v3.1. That file is the record: every decision, what
 shipped where it differs, the five defects the work walked into, and the three
 decisions taken while building. **Shipped as v3.2.0 on 2026-09-16.**
 
+**v3.3 is being built**, seven items numbered 28 to 34 in
+`.planning/v3.3/SCOPE.md`. One feature: Curfew can speak first. Push reminders
+before a window closes, a count on the home-screen icon, and a line saying what
+the rest of your group has already logged. It reverses two decisions that were
+written down as permanent, push being out of scope and the clerk voice, and that
+file is where both reversals are argued rather than assumed.
+
 The two that were more than they looked, and what they changed:
 
 - **Sleep's confirm window is anchored to the wake PRESS**, and every window in
@@ -317,7 +324,6 @@ Do not build these even if you're already in the area:
 - Evidence types beyond images, though the model leaves room.
 - Health integrations. Steps and Screen stay manual.
 - Paid tiers.
-- Push notifications.
 - Any payment integration. Money is IOU tracking only (legal constraint,
   PRD §8).
 - An app-wide leaderboard. Reputation is per group and the global score is
@@ -356,6 +362,8 @@ shards     bun run check:shards    — CI still runs every browser suite
 dead       bun run check:dead      — nothing is exported that nothing imports
 notice     bun run publish:notice  — announce a release to the people already here
 sleep      bun run migrate:sleep   — move existing members onto the anchored confirm
+remind     bun run check:reminders — a reminder is sent only when a press would count
+schedule   bun run schedule:reminders — create or update the QStash tick
 ```
 
 **Two things are run by hand after the 3.2.0 tag, in this order:
@@ -537,6 +545,23 @@ In the UI: Curfew is a clerk, not a coach. It states facts and consequences.
 No congratulation, no encouragement, no exclamation marks. "Window closes
 7:45 AM. Miss it and today does not count." is the register. "Great job on
 your streak!" is not. Times are 12-hour with AM or PM.
+
+**Push notifications are the one exception, and it is deliberate (item 28).**
+They are written in the opposite register: encouraging, direct, peer names, the
+streak's stakes made vivid, exclamation marks allowed. "Rahul and Priya already
+logged Gym. Don't be the last one, 40 minutes left!" is correct there and would
+be wrong on every screen.
+
+The reason is that the clerk has no business sending a push at all. A clerk
+answers when spoken to; a notification speaks first, unprompted, to a phone on a
+table. Writing it in the clerk's voice would have been a worse version of the
+feature, shipped to protect a rule the feature already breaks by existing.
+
+So the exception is the surface, not the sentence: **everything except a push
+notification is still the clerk.** Copy lives in one place,
+`src/server/notification-copy.ts`, so the boundary is a file rather than a
+judgement call. ROADMAP theme 3 decides whether the rest of the app follows, and
+until it does, do not carry this register onto a screen.
 
 ## Visual tells to avoid
 

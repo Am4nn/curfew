@@ -16,6 +16,10 @@ export async function screens({ open, check, page }) {
     ["/settings", "SETTINGS"],
     ["/settings/personal", null],
     ["/settings/sharing", null],
+    // Renders its unconfigured branch here, since CI sets no VAPID keys. That
+    // is the half worth proving anyway: the screen a person lands on when push
+    // is not set up must not be a crash.
+    ["/settings/notifications", "NOTIFICATIONS"],
     ["/settings/rules", null],
     ["/settings/stored", null],
     ["/settings/photos", null],

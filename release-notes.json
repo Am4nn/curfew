@@ -8,5 +8,19 @@
       "headline": "Grace is now yours to spend.",
       "detail": "Two a month for each activity you track, used on whichever streak you choose after it breaks. It still only holds a streak: fines and standing are untouched. Settings shows how many you have left."
     }
+  ],
+  "3.3.0": [
+    {
+      "headline": "Curfew can remind you now.",
+      "detail": "Reminders before a window closes, and a count on the app icon. They are off until you turn them on, in Settings, Notifications, and you turn them on per device: your phone and your laptop are separate."
+    },
+    {
+      "headline": "Your group shows up in them.",
+      "detail": "A reminder says who else has already logged the same activity today. It only ever names what that group can already see, so anything you have not shared with a group stays invisible to it here too."
+    },
+    {
+      "headline": "You choose the times.",
+      "detail": "Leave an activity alone and Curfew picks: before the window closes, or the hours the activity suggests. Food asks at breakfast, lunch and dinner. Set your own on the Notifications screen. Never more than four notifications a day."
+    }
   ]
 }

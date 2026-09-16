@@ -56,7 +56,7 @@ const WAKING_TO = 21 * 60 + 30;
 const PEERS_FROM = 10 * 60;
 
 /** Digests per account per day, whatever the cues say. */
-export const DAILY_CAP = 4;
+const DAILY_CAP = 4;
 
 // ---------------------------------------------------------------------------
 // What is still owed
@@ -317,6 +317,15 @@ export interface Digest extends Line {
   /** What the badge should read: how many things are still open. */
   count: number;
   typeKeys: string[];
+  /**
+   * Whether this one mentions somebody else.
+   *
+   * Carried as a flag rather than inferred from the words, because the words
+   * are picked from a bank and change. Reading the copy back to find out what
+   * it said would mean the peer cap breaks the day somebody adds a line that
+   * phrases it differently.
+   */
+  peers: boolean;
 }
 
 /**
@@ -385,7 +394,70 @@ export async function dueNow(
     slot,
     count: outstanding.length,
     typeKeys: outstanding.map((o) => o.typeKey),
+    peers: anyPeers,
   };
+}
+
+/**
+ * What the settings screen shows: every tracked activity, the times it will
+ * remind at, and whether those are the member's own or the module's default.
+ */
+export async function reminderSettings(userId: string): Promise<
+  {
+    typeKey: string;
+    name: string;
+    chosen: string[];
+    suggested: string[];
+  }[]
+> {
+  const activities = (await listUserActivities(userId)).filter((a) => a.enabled);
+  const chosen = await chosenCues(userId);
+  return activities.map((a) => {
+    const type = getActivityType(a.typeKey);
+    return {
+      typeKey: a.typeKey,
+      name: type.name,
+      chosen: (chosen.get(a.typeKey) ?? []).sort(),
+      // The module's own times, or nothing when it has none and the engine
+      // works backwards from the window instead. Shown as placeholders so a
+      // person can see what they are replacing.
+      suggested: type.reminderCues ?? [],
+    };
+  });
+}
+
+/**
+ * Replace this activity's reminder times. An empty list restores the default,
+ * which is why there is no separate reset.
+ *
+ * Delete then insert, rather than a diff. The rows have no identity beyond
+ * their own value and there are at most a handful, so a diff would be more code
+ * to arrive at the same three rows.
+ */
+export async function setReminders(
+  userId: string,
+  typeKey: string,
+  times: string[],
+): Promise<void> {
+  const clean = [...new Set(times.map((t) => t.trim()).filter(Boolean))].sort();
+  for (const t of clean) {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) {
+      throw new Error(`Not a time: ${t}`);
+    }
+  }
+  // No transaction available on the Neon HTTP driver, so the order matters: a
+  // crash between these leaves the activity on its default times, which is a
+  // visible, correct-looking state rather than a half-saved one.
+  await db
+    .delete(activityReminders)
+    .where(
+      and(eq(activityReminders.userId, userId), eq(activityReminders.typeKey, typeKey)),
+    );
+  if (clean.length === 0) return;
+  await db
+    .insert(activityReminders)
+    .values(clean.map((at) => ({ userId, typeKey, at })))
+    .onConflictDoNothing();
 }
 
 /** Every reminder time this member has set, by activity. */

@@ -10,6 +10,7 @@ import { listUserGroups } from "@/server/groups";
 import { RETENTION_DAYS, listOwnPhotos } from "@/server/evidence";
 import { consentOf } from "@/server/consent";
 import { currentPause, lengthOf } from "@/server/pause";
+import { deviceCount } from "@/server/push";
 import { QuorumMark } from "../mark";
 import { ThemeToggle } from "../theme-toggle";
 import { SignOut } from "../sign-out";
@@ -29,7 +30,7 @@ export default async function Settings() {
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const [personal, admin, activities, groups, consent, ownPhotoRows, grace] =
+  const [personal, admin, activities, groups, consent, ownPhotoRows, grace, devices] =
     await Promise.all([
       getPersonalSettings(user.id),
       hasAdminAccess(user.id),
@@ -38,6 +39,7 @@ export default async function Settings() {
       consentOf(user.id),
       listOwnPhotos(user.id),
       graceState(user.id),
+      deviceCount(user.id),
     ]);
   // A pause is global and rare, so it sits with the other things you set once.
   const held = await currentPause(user.id);
@@ -93,6 +95,20 @@ export default async function Settings() {
                     : "Declared"
               }
               href="/settings/pause"
+            />
+            {/* The value counts DEVICES and not a preference, because there is
+                no preference: a subscription row is the whole of it, and a
+                phone that granted permission is a different fact from an
+                account that once turned it on. Permission itself cannot be
+                answered here at all, since it belongs to the browser asking. */}
+            <Row
+              label="Notifications"
+              value={
+                devices === 0
+                  ? "Off"
+                  : `${devices} ${devices === 1 ? "device" : "devices"}`
+              }
+              href="/settings/notifications"
             />
             <Row
               label="What you share"

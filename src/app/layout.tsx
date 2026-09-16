@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { previewEnabled } from "@/lib/preview";
 import { getSessionUser } from "@/lib/session";
 import { listInvitesForEmail } from "@/server/groups";
+import { publicKey, pushConfigured } from "@/server/push";
+import { PushRefresh } from "./push-refresh";
 import { NoticeOverlay } from "./notice-overlay";
 import { ConsentGate } from "./consent-gate";
 import { PreviewBar } from "./preview-bar";
@@ -170,6 +172,10 @@ export default async function RootLayout({
         <TabBar hasPendingInvite={invites.length > 0} />
         <ConsentGate />
         <NoticeOverlay />
+        {/* Only for somebody signed in and only where push is configured. It
+            renders nothing and, for anybody who has not granted permission,
+            does nothing: `refresh` checks first and returns. */}
+        {user && pushConfigured() ? <PushRefresh vapidPublicKey={publicKey()} /> : null}
         {previewEnabled() ? <PreviewBar /> : null}
       </body>
     </html>

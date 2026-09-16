@@ -179,7 +179,10 @@ try {
   // nothing and a broken function returns nothing beautifully.
   // -----------------------------------------------------------------------
 
-  await track(id, "water", { config: { glasses: 8 } });
+  // Water, because it takes no fields: a press is a press. The minimum gap is
+  // set here rather than on a second type so that the same activity proves both
+  // the positive case and the gap case, one after the other.
+  await track(id, "water", { config: { glasses: 8 }, minGap: 120 });
   check("an open, unpressed, scheduled activity is outstanding", await has("water"), await names());
 
   // -----------------------------------------------------------------------
@@ -195,17 +198,17 @@ try {
   await press(id, "supplements", "dose", "dose1");
   check("an activity already done today is not", !(await has("supplements")), await names());
 
-  // 3. A minimum gap still running. Food's second meal cannot be pressed for
-  //    another two hours, so nothing should say it can.
-  await track(id, "food", { config: { meals: 3 }, minGap: 120 });
-  await press(id, "food", "meal", "meal1");
-  check("an activity inside its minimum gap is not", !(await has("food")), await names());
-
-  // 4. Sleep's confirm, before the wake press. `windows()` hands back the
+  // 3. Sleep's confirm, before the wake press. `windows()` hands back the
   //    widest that window could turn out to be, marked waitingOn, and those
   //    times are a BOUND. Scheduling a reminder against them announces a window
   //    that has not started and may never open at those times.
+  //    outstandingFor picks `s.open && s.closesAt !== null`, so the claim to
+  //    prove is about the STEP: it has no instant to schedule against, and it
+  //    is not open. Asserting "sleep is not outstanding" would be wrong as well
+  //    as weak, because at 6:45 AM the WAKE step is legitimately open and sleep
+  //    should be reminded about.
   await track(id, "sleep");
+  setClock(TUESDAY.plus({ days: 1 }).set({ hour: 6, minute: 45 }).toJSDate());
   const sleep = await getCheckinState(id, "sleep");
   const confirm = sleep?.steps.find((s) => s.key === "confirm");
   check(
@@ -219,18 +222,46 @@ try {
     String(confirm?.closesAt),
   );
   check(
-    "so nothing is scheduled against a window that has not started",
-    !(await outstandingFor(id)).some((o) => o.typeKey === "sleep" && o.name === "confirm"),
+    "and is not open, so nothing can schedule against a bound",
+    confirm?.open === false,
+    `open=${confirm?.open}`,
+  );
+  const sleepRow = (await outstandingFor(id)).find((o) => o.typeKey === "sleep");
+  check(
+    "sleep is outstanding on its WAKE window, which is a real one",
+    sleepRow !== undefined && sleepRow.closesAt.getTime() > 0,
+    sleepRow ? sleepRow.closesLabel : "not outstanding",
+  );
+  setClock(TUESDAY.toJSDate());
+
+  // 4. A declared pause is a day with nothing scheduled on it.
+  //
+  //    Declared for TOMORROW and then walked into, because declarePause refuses
+  //    a pause that starts today: backdating one would turn a miss that already
+  //    happened into a day that was never scheduled (decision 15). Inserting
+  //    the row directly would dodge that rule and test a state the app cannot
+  //    actually reach.
+  check("water is outstanding before the pause", await has("water"), await names());
+  await declarePause(id, "2026-03-11", "2026-03-17");
+  check("declaring one for tomorrow changes nothing today", await has("water"), await names());
+
+  setClock(TUESDAY.plus({ days: 1 }).toJSDate());
+  check(
+    "and nothing at all is outstanding once it starts",
+    (await outstandingFor(id)).length === 0,
     await names(),
   );
 
-  // 5. A declared pause is a day with nothing scheduled on it.
-  const before = await has("water");
-  await declarePause(id, "2026-03-09", "2026-03-15");
-  check("water was outstanding before the pause", before);
-  check("and nothing at all is during one", (await outstandingFor(id)).length === 0, await names());
+  setClock(TUESDAY.toJSDate());
   await db.delete(userPauses).where(inArray(userPauses.userId, [id]));
   check("and it comes back when the pause is gone", await has("water"), await names());
+
+  // 5. A minimum gap still running. Water's next glass cannot be pressed for
+  //    another two hours, so nothing may say it can. Last, because it is the
+  //    one check that leaves water unable to be pressed.
+  const landed = await press(id, "water", "glass", "glass-gap");
+  check("the press the test depends on actually landed", landed.ok, JSON.stringify(landed));
+  check("an activity inside its minimum gap is not outstanding", !(await has("water")), await names());
 
   // -----------------------------------------------------------------------
   // Cues
@@ -301,7 +332,8 @@ try {
   const period = (await getCheckinState(id, "water"))!.period;
   check("nobody has logged it yet", (await peersOn(id, "water", period)) === null);
 
-  await press(peer, "water", "glass", "glass1");
+  const peerPress = await press(peer, "water", "glass", "glass1");
+  check("the peer's press landed", peerPress.ok, JSON.stringify(peerPress));
   let seen = await peersOn(id, "water", period);
   check("a peer who shares it and logged it is named", seen?.names[0] === "Peer", JSON.stringify(seen));
   check("and the group is named with them", seen?.groupName === "Morning Crew", seen?.groupName);

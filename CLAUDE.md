@@ -198,10 +198,28 @@ and reputation rows wait for `bun run score`. A scheduled GitHub Actions
 workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
 real nightly job, and it is not worth it while dev has three users.
 
-`package.json` carries `3.2.2`, cut as a tag on 2026-09-16. The admin header
+`package.json` carries `3.3.0`, cut as a tag on 2026-09-17. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.
+
+**v3.3.0 is deployed but the reminders are not running yet, on purpose.**
+`PUSH_REMINDERS=1` is set in Vercel Production, migration 0027 is applied to
+both databases, and `/api/cron/remind` answers correctly to `CRON_SECRET`, but
+NOTHING CALLS IT: the QStash schedule has not been created. Two commands remain,
+by hand, in this order, and only after a person has held a phone up to it:
+
+```
+bun run schedule:reminders:production      # starts the tick
+bun run publish:notice -- --version 3.3.0 --as you@example.com --dry
+```
+
+The order is the same rule as 3.2.0's: the change first, the announcement
+second, because a notice telling people to turn notifications on before
+notifications work says something that is not true yet.
+
+Neither is urgent and neither is dangerous while it waits. Nobody is subscribed,
+so the tick would send nothing today even if it ran.
 
 **The steps are in `.planning/RELEASE.md`, and the order is not obvious.** Read
 it rather than working from this section.

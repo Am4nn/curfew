@@ -178,6 +178,64 @@ looks exactly like a group where nobody did anything.
 
 ---
 
+## Build order, and what it turned up
+
+Step 0 was the two reversals, committed before a line of code, because the whole
+feature was otherwise built against two standing instructions not to.
+
+Then: the window instants, the migration, the copy bank, the decision layer, the
+sender, the routes, the client, the check.
+
+Six things the building walked into.
+
+**The closing time existed and was unreachable.** `getCheckinState` resolved
+every window to real `Date`s at `checkin.ts:225` and then threw them away,
+keeping `"7:45 PM"` for the screen. That is right for a screen and useless for
+arithmetic: parsing a formatted time back into a moment means guessing a date
+and a zone, and guessing wrong once a year in the half of it with a different
+offset. `opensAt` and `closesAt` now sit beside the labels, null while
+`waitingOn` for the same reason the labels are empty there.
+
+**Reading Home writes.** `todayFor` is the obvious way to ask what somebody
+still owes, and it goes through `standingsFor`, which calls `closeOutstanding`
+and `closeStreaks`. Using it here would have written scoring rows every fifteen
+minutes for everybody, forever. `getCheckinState` answers the same question and
+writes nothing. This is why `reminders.ts` opens with a paragraph about it.
+
+**Vercel Cron cannot run this job.** Found before building rather than after:
+Hobby is once a day, UTC, hour-granularity. The whole scheduler moved to QStash
+on that fact.
+
+**The copy tail said nothing.** The first version listed each outstanding
+activity's `hint` verbatim and produced *"So close! 2 of 3 meals today. 5 of 8
+today. 0 of 20 pages."* Every sentence is true and the last two never say what
+they are about, because a module's hint describes its own progress and has no
+reason to name itself. It names the activities now, and the unit test that
+caught it is the reason the tail is not still shipping.
+
+**The peer flag was being read back out of the copy.** The route decided whether
+a notification had mentioned somebody by searching its own text for a phrase.
+The copy is picked from a bank, so the cap would have broken silently the day
+anybody added a line that worded it differently. It is a field on the digest.
+
+**The check tested three things it was not testing.** Worth recording in full,
+because two of the three are the failure mode this file is about:
+
+- The minimum-gap case used food, whose meal step takes a `calories` field the
+  press helper did not send. The press was refused, so no check-in existed, no
+  gap was running, and food was correctly still outstanding. The test read that
+  as the feature being broken. Every press an assertion depends on is now
+  checked for having landed.
+- The pause case declared a pause starting today, which `declarePause` refuses
+  on purpose: backdating one turns a miss that already happened into a day that
+  was never scheduled. It declares for tomorrow and walks the clock into it now.
+  Inserting the row directly would have dodged the rule and tested a state the
+  app cannot reach.
+- The sleep case compared an activity's NAME against a step KEY, so it could
+  never fail. What is worth proving is about the step: while waiting on the wake
+  press it has no closing instant and is not open, which is what `outstandingFor`
+  filters on.
+
 ## Not in this
 
 - **Time Sensitive on iOS.** A notification that pierces a Focus mode is an

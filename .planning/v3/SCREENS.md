@@ -115,6 +115,7 @@ different module spec, which is the point of the declarative model.
 |---|---|---|---|
 | Settings | `/settings` | Appearance, personal, your data, sign out | [ ] |
 | What you share | `/settings/sharing` | Every group, every type, the evidence checkbox | [ ] |
+| Notifications | `/settings/notifications` | **No artboard.** Built to the house pattern rather than to a mock: the switch, the per-activity times, Send a test | [ ] |
 | Your photos | `/settings/photos` | Every photo you have taken, newest first, read-only | [ ] |
 | Delete data | `/settings/data` | Photos, history, account, the money-is-never-deleted note | [ ] |
 

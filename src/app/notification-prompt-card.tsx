@@ -165,7 +165,8 @@ export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: str
             ) : (
               <>
                 Curfew can remind you while there is still time, and tell you who
-                else in your group has already logged today. Four a day at most.
+                else in your group has already logged today. One at a time, and
+                nothing while you are asleep.
               </>
             )}
           </span>

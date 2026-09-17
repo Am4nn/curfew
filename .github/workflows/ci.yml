@@ -342,6 +342,15 @@ jobs:
       - name: A reminder is sent only when a press would count
         run: bun run scripts/check-reminders.ts
 
+      # And the words themselves. This needs no database and no server, so it
+      # could sit in the unit job, but it belongs beside the check above: one
+      # asks whether a notification should be sent, the other asks whether the
+      # sentence it would send makes sense. The first version of this feature
+      # passed every other check in this file and shipped copy that told
+      # somebody with nothing logged that they were almost there.
+      - name: A notification says what to do
+        run: bun run scripts/simulate-push.ts
+
       - name: The ceiling is what you actually do
         run: bun run scripts/check-ceiling.ts
 

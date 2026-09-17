@@ -5,10 +5,12 @@ import {
   activityReminders,
   events,
   groupMembers,
+  notificationSettings,
   userApprovals,
   users,
 } from "@/db/schema";
-import { getActivityType } from "@/domain";
+import { getActivityType, periodUnit } from "@/domain";
+import { now } from "@/lib/clock";
 import { listUserActivities } from "./activities";
 import { getCheckinState } from "./checkin";
 import { timezoneHistory } from "./config";
@@ -17,9 +19,11 @@ import { assertMember } from "./membership";
 import { isPausedToday } from "./pause";
 import { sharesFor } from "./sharing";
 import { allStreaks } from "./streak";
-import { compose, type Line, type Peers, type Situation } from "./notification-copy";
+import type { Peers } from "./notification-copy";
 
-// Who is worth interrupting, and when.
+// What a member still owes, when they are awake to hear about it, and who else
+// has already done it. The triggers that turn these facts into a notification
+// live next door in `notification-kinds.ts`; this file is only the facts.
 //
 // Everything here is READ-ONLY, and that is a constraint rather than an
 // observation. The obvious way to ask "what does this person still owe today"
@@ -35,28 +39,118 @@ import { compose, type Line, type Peers, type Situation } from "./notification-c
 // `bun run check:reminders` is what holds it.
 
 // ---------------------------------------------------------------------------
-// The shape of a day
+// Quiet hours
 // ---------------------------------------------------------------------------
 
 /** Minutes before the deadline that the engine's own cues fire. */
 const OFFSETS = [120, 45, 10];
 
-/** Nothing the engine derives fires outside these, in the member's own zone. */
-const WAKING_FROM = 8 * 60;
-const WAKING_TO = 21 * 60 + 30;
+const DEFAULT_QUIET_FROM = "21:30";
+const DEFAULT_QUIET_TO = "08:00";
+
+export interface Quiet {
+  /** "HH:mm", member's own zone. `from > to` wraps midnight, which is normal. */
+  from: string;
+  to: string;
+  /**
+   * Did they set this, or is it the default?
+   *
+   * The distinction earns its keep in exactly one place. A reminder time the
+   * member TYPED beats the default band, because somebody who asks for 10:30 PM
+   * has told us they are awake then and the app should not know better. It does
+   * not beat a band they set themselves: explicit beats default, and both of
+   * those are theirs.
+   */
+  custom: boolean;
+}
+
+export async function quietFor(userId: string): Promise<Quiet> {
+  const [row] = await db
+    .select()
+    .from(notificationSettings)
+    .where(eq(notificationSettings.userId, userId));
+  if (!row) return { from: DEFAULT_QUIET_FROM, to: DEFAULT_QUIET_TO, custom: false };
+  return { from: row.quietFrom, to: row.quietTo, custom: true };
+}
+
+/** Replace the quiet band. Both times "HH:mm". */
+export async function setQuietHours(
+  userId: string,
+  from: string,
+  to: string,
+): Promise<void> {
+  for (const t of [from, to]) {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) throw new Error(`Not a time: ${t}`);
+  }
+  await db
+    .insert(notificationSettings)
+    .values({ userId, quietFrom: from, quietTo: to })
+    .onConflictDoUpdate({
+      target: notificationSettings.userId,
+      set: { quietFrom: from, quietTo: to },
+    });
+}
+
+function minutesOf(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return (h ?? 0) * 60 + (m ?? 0);
+}
 
 /**
- * Peers are not worth mentioning first thing.
+ * Is this moment inside the member's quiet band?
  *
- * Somebody in another timezone logging their gym at 6:30 AM your time is true
- * and is not news. The time cues are anchored to a deadline and can fire
- * whenever the deadline says; this one has no deadline behind it, so it needs
- * an hour of its own.
+ * The band almost always wraps midnight, so the wrapped case is the normal one
+ * and not the edge: 9:30 PM to 8:00 AM is `from > to`, and "inside" then means
+ * at or after `from` OR before `to`. Writing this the other way round, with the
+ * un-wrapped case first, is how you ship an app that is silent all day and
+ * talkative all night.
  */
-const PEERS_FROM = 10 * 60;
+export function inQuiet(instant: Date, timezone: string, quiet: Quiet): boolean {
+  const local = DateTime.fromJSDate(instant, { zone: timezone });
+  const at = local.hour * 60 + local.minute;
+  const from = minutesOf(quiet.from);
+  const to = minutesOf(quiet.to);
+  return from > to ? at >= from || at < to : at >= from && at < to;
+}
 
-/** Digests per account per day, whatever the cues say. */
-const DAILY_CAP = 4;
+/**
+ * The last moment worth aiming at today.
+ *
+ * The window's own close, or the start of quiet hours, whichever comes first.
+ *
+ * The cap is what makes this work for the eight activity types whose window is
+ * the whole day: their real close is 11:59 PM, and counting backwards from it
+ * produces three messages between 10 PM and midnight about a day already lost,
+ * none of which would be delivered anyway because quiet hours would eat them.
+ * It also does something sensible for gym, whose window is the whole WEEK: the
+ * cap turns "two hours before Sunday ends" into an evening nudge each day the
+ * week is still short.
+ *
+ * ONE function, used by the cue times, by `minutesLeft` and by the last-call
+ * trigger. They used to disagree: the cues were capped at a hardcoded 9:30 PM
+ * and `minutesLeft` was measured to the raw close, so gym was cued on Tuesday
+ * evening and the sentence named Sunday.
+ */
+export function deadlineFor(input: {
+  closesAt: Date;
+  timezone: string;
+  instant: Date;
+  quiet: Quiet;
+}): DateTime {
+  const { timezone, quiet } = input;
+  const local = DateTime.fromJSDate(input.instant, { zone: timezone });
+  const [h, m] = quiet.from.split(":").map(Number);
+  const cap = local.startOf("day").set({ hour: h ?? 21, minute: m ?? 30 });
+  const close = DateTime.fromJSDate(input.closesAt, { zone: timezone });
+
+  // A cap that has already passed is not a deadline, it is history. Capping to
+  // it anyway is how a notification comes to name a time in the past: a member
+  // with a reminder they typed for 10:30 PM was sent "Study closes at 9:30 PM"
+  // at half past ten, because the cap was applied without asking whether it
+  // was still ahead. Found by `bun run sim:push`, persona G.
+  if (cap <= local) return close;
+  return close < cap ? close : cap;
+}
 
 // ---------------------------------------------------------------------------
 // What is still owed
@@ -65,45 +159,106 @@ const DAILY_CAP = 4;
 export interface Outstanding {
   typeKey: string;
   name: string;
-  /** The module's own progress line. Null when the module writes none. */
-  hint: string | null;
-  /** Never null: a row is only outstanding when a window is genuinely open. */
+  /**
+   * The module's `remind()`, or a plain fallback when it writes none.
+   *
+   * Never `hint`. `hint` is written for a card that already shows the name and
+   * counts UP from zero, which on a lock screen was read as progress and
+   * described eight untouched glasses of water as nearly done.
+   */
+  left: string;
+  /** The window's own close. */
   closesAt: Date;
+  /** The close or the start of quiet hours, whichever is sooner. */
+  deadline: Date;
+  /** Formatted from `deadline`, so the sentence and the clock agree. */
   closesLabel: string;
+  minutesLeft: number;
   period: string;
   streak: number;
+  /**
+   * What a unit of `streak` actually is.
+   *
+   * A streak counts PERIODS, and gym's period is a week, so a gym streak of 3
+   * is three weeks. Everywhere else in the app that renders a streak says
+   * "3 day streak" regardless, which is a small inaccuracy on a screen that
+   * also shows the activity and its schedule. In a notification it is not
+   * small: "3 days of Gym on the line" sat directly above "2 more days this
+   * week", two day-counts side by side meaning different things.
+   */
+  streakUnit: "day" | "week";
+}
+
+/** Everything about this member's day that a notification could turn on. */
+export interface DayView {
+  /** Open right now, and a press would count. Sorted most urgent first. */
+  outstanding: Outstanding[];
+  /** Scheduled today at all. Zero on a declared pause. */
+  scheduledCount: number;
+  /** Scheduled today and not yet passing. Zero is what `done` fires on. */
+  unfinishedCount: number;
+  /** Did anything at all get logged today? What `sweep` fires on. */
+  loggedAnythingToday: boolean;
+  timezone: string;
+  /** The member's local date, "yyyy-MM-dd". */
+  day: string;
 }
 
 /**
- * Everything this member could still record right now.
+ * The member's day, read once.
  *
- * The filter is deliberately the same truth table `resolveCheckinTarget`
- * applies to a write, in the same order, because the two disagreeing is the
- * whole failure mode: a notification about a press that would be refused.
+ * The filter on `outstanding` is deliberately the same truth table
+ * `resolveCheckinTarget` applies to a write, in the same order, because the two
+ * disagreeing is the whole failure mode: a notification about a press that
+ * would be refused.
  *
  * `step.open` already carries four of the conditions at once, since it is
  * `inWindow && counts && !spent && !waiting` and every screen in the app gates
  * its controls on exactly that. The two it does NOT carry are the scheduled day
  * and the pause, so those are checked here.
  */
-export async function outstandingFor(userId: string): Promise<Outstanding[]> {
+export async function dayFor(
+  userId: string,
+  instant: Date,
+  quiet: Quiet,
+): Promise<DayView> {
+  const timezone = (await timezoneHistory(userId)).at(instant);
+  const day = DateTime.fromJSDate(instant, { zone: timezone }).toFormat("yyyy-MM-dd");
+  const empty: DayView = {
+    outstanding: [],
+    scheduledCount: 0,
+    unfinishedCount: 0,
+    loggedAnythingToday: false,
+    timezone,
+    day,
+  };
+
   const activities = (await listUserActivities(userId)).filter((a) => a.enabled);
-  if (activities.length === 0) return [];
+  if (activities.length === 0) return empty;
 
   // A declared pause is a day with nothing scheduled on it. Asked once for the
   // member rather than once per activity: it is an account-level fact and this
-  // runs on a tick.
-  if (await isPausedToday(userId)) return [];
+  // runs on a tick. Returning `empty` rather than a day with zero outstanding
+  // matters, because a day with nothing scheduled must not read as a day
+  // completed: `done` would fire every morning of a holiday.
+  if (await isPausedToday(userId)) return empty;
 
   const [states, streaks] = await Promise.all([
     Promise.all(activities.map((a) => getCheckinState(userId, a.typeKey))),
     allStreaks(userId),
   ]);
 
-  const out: Outstanding[] = [];
+  const outstanding: Outstanding[] = [];
+  let scheduledCount = 0;
+  let unfinishedCount = 0;
+  let loggedAnythingToday = false;
+
   for (const state of states) {
     if (!state) continue;
     if (!state.scheduled) continue;
+    scheduledCount++;
+    if (state.countedToday) loggedAnythingToday = true;
+    if (!state.passed) unfinishedCount++;
     if (state.passed) continue;
 
     // The step whose press would actually count. `waitingOn` steps can never be
@@ -113,18 +268,51 @@ export async function outstandingFor(userId: string): Promise<Outstanding[]> {
     const step = state.steps.find((s) => s.open && s.closesAt !== null);
     if (!step || !step.closesAt) continue;
 
-    out.push({
+    const deadline = deadlineFor({
+      closesAt: step.closesAt,
+      timezone,
+      instant,
+      quiet,
+    });
+
+    outstanding.push({
       typeKey: state.typeKey,
       name: state.name,
-      hint: state.steps.find((s) => s.hint)?.hint ?? null,
+      // The module's own words, or the engine's plainest possible fallback.
+      // Never `hint`, and never an invented sentence: a type that says nothing
+      // still deserves a reminder that it exists.
+      left: state.steps.find((s) => s.remind)?.remind ?? "Not logged yet.",
       closesAt: step.closesAt,
-      closesLabel: step.closesLabel,
+      deadline: deadline.toJSDate(),
+      closesLabel: deadline.toFormat("h:mm a"),
+      minutesLeft: Math.round(
+        (deadline.toMillis() - instant.getTime()) / 60_000,
+      ),
       period: state.period,
       streak: streaks.get(state.typeKey)?.current ?? 0,
+      streakUnit: periodUnit(state.schedule),
     });
   }
 
-  return out;
+  // Most urgent first, everywhere. The old code sorted by which copy bank a row
+  // belonged to, which is how Water closing at 11:59 PM led a notification
+  // while the two activities closing that afternoon sat inside "and 5 more".
+  outstanding.sort((a, b) => a.minutesLeft - b.minutesLeft || b.streak - a.streak);
+
+  return {
+    outstanding,
+    scheduledCount,
+    unfinishedCount,
+    loggedAnythingToday,
+    timezone,
+    day,
+  };
+}
+
+/** Everything open right now. Kept for `check:reminders`, which asks only this. */
+export async function outstandingFor(userId: string): Promise<Outstanding[]> {
+  const instant = await now();
+  return (await dayFor(userId, instant, await quietFor(userId))).outstanding;
 }
 
 // ---------------------------------------------------------------------------
@@ -136,51 +324,41 @@ export async function outstandingFor(userId: string): Promise<Outstanding[]> {
  *
  * Three sources, first one that answers wins:
  *
- *  1. What the member set. Honoured as typed, including outside waking hours:
- *     somebody who asks for 10:30 PM has told us something and the app should
- *     not know better.
- *  2. What the module declares. Food's breakfast, lunch and dinner. Clamped to
- *     waking hours, since it is a default nobody chose.
+ *  1. What the member set. Honoured as typed, including inside the DEFAULT
+ *     quiet band: somebody who asks for 10:30 PM has told us something.
+ *  2. What the module declares. Food's breakfast, lunch and dinner. Dropped if
+ *     it lands in quiet hours, since it is a default nobody chose.
  *  3. The engine's own: two hours, forty-five minutes and ten minutes before
  *     the deadline.
- *
- * The DEADLINE is the window's close or 9:30 PM today, whichever comes first.
- * The cap is what makes this work for the eight types whose window is the whole
- * day: their real close is midnight, and counting backwards from it produces
- * three messages between 10 PM and midnight about a day already lost. It also
- * does something sensible for gym, whose window is the whole WEEK: the cap
- * turns "two hours before Sunday ends" into an evening nudge each day the week
- * is still short.
  */
 export function cuesFor(input: {
   closesAt: Date;
   timezone: string;
   instant: Date;
   typeKey: string;
+  quiet: Quiet;
   /** "HH:mm" rows the member set for this activity. */
   chosen: string[];
 }): Date[] {
-  const { timezone, instant } = input;
+  const { timezone, instant, quiet } = input;
   const today = DateTime.fromJSDate(instant, { zone: timezone }).startOf("day");
+  const awake = (d: DateTime) => !inQuiet(d.toJSDate(), timezone, quiet);
 
   if (input.chosen.length > 0) {
-    return input.chosen.map((t) => at(today, t)).map((d) => d.toJSDate());
+    return input.chosen.map((t) => at(today, t).toJSDate());
   }
 
   const declared = getActivityType(input.typeKey).reminderCues;
   if (declared && declared.length > 0) {
     return declared
       .map((t) => at(today, t))
-      .filter(waking)
+      .filter(awake)
       .map((d) => d.toJSDate());
   }
 
-  const cap = today.set({ hour: 21, minute: 30 });
-  const close = DateTime.fromJSDate(input.closesAt, { zone: timezone });
-  const deadline = close < cap ? close : cap;
-
+  const deadline = deadlineFor({ closesAt: input.closesAt, timezone, instant, quiet });
   return OFFSETS.map((m) => deadline.minus({ minutes: m }))
-    .filter(waking)
+    .filter(awake)
     .map((d) => d.toJSDate());
 }
 
@@ -189,9 +367,10 @@ function at(day: DateTime, hhmm: string): DateTime {
   return day.set({ hour: h ?? 0, minute: m ?? 0 });
 }
 
-function waking(d: DateTime): boolean {
-  const minute = d.hour * 60 + d.minute;
-  return minute >= WAKING_FROM && minute < WAKING_TO;
+/** Whether any of this activity's cues landed in the tick ending at `instant`. */
+export function cueFired(cues: Date[], instant: Date, slotMinutes: number): boolean {
+  const since = instant.getTime() - slotMinutes * 60_000;
+  return cues.some((c) => c.getTime() > since && c.getTime() <= instant.getTime());
 }
 
 /**
@@ -199,8 +378,8 @@ function waking(d: DateTime): boolean {
  *
  * This is the idempotency key (`events_one_push_idx`), so it has to be stable
  * for a given moment and coarse enough that two ticks a second apart cannot
- * both send. It is local rather than UTC because the cap is a per-day cap and
- * the day that matters is theirs.
+ * both send. It is local rather than UTC because everything it gates is a
+ * per-day question and the day that matters is theirs.
  */
 export function slotFor(instant: Date, timezone: string, slotMinutes: number): string {
   const local = DateTime.fromJSDate(instant, { zone: timezone });
@@ -308,95 +487,8 @@ function firstName(name: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// The decision
+// The member's own times
 // ---------------------------------------------------------------------------
-
-export interface Digest extends Line {
-  /** The idempotency key for this send. */
-  slot: string;
-  /** What the badge should read: how many things are still open. */
-  count: number;
-  typeKeys: string[];
-  /**
-   * Whether this one mentions somebody else.
-   *
-   * Carried as a flag rather than inferred from the words, because the words
-   * are picked from a bank and change. Reading the copy back to find out what
-   * it said would mean the peer cap breaks the day somebody adds a line that
-   * phrases it differently.
-   */
-  peers: boolean;
-}
-
-/**
- * Whether this member is due a digest at this moment, and what it says.
- *
- * Null is the overwhelmingly common answer and the cheap one: most ticks, for
- * most people, nothing is due.
- */
-export async function dueNow(
-  userId: string,
-  instant: Date,
-  slotMinutes: number,
-): Promise<Digest | null> {
-  const outstanding = await outstandingFor(userId);
-  if (outstanding.length === 0) return null;
-
-  const timezone = (await timezoneHistory(userId)).at(instant);
-  const slot = slotFor(instant, timezone, slotMinutes);
-  const day = slot.slice(0, 10);
-
-  if (await sentToday(userId, day)) return null;
-
-  const chosen = await chosenCues(userId);
-  const since = instant.getTime() - slotMinutes * 60_000;
-
-  // A time cue for any outstanding activity is enough to fire the whole digest.
-  let fired = outstanding.some((o) =>
-    cuesFor({
-      closesAt: o.closesAt,
-      timezone,
-      instant,
-      typeKey: o.typeKey,
-      chosen: chosen.get(o.typeKey) ?? [],
-    }).some((cue) => cue.getTime() > since && cue.getTime() <= instant.getTime()),
-  );
-
-  // Peers are resolved either way, because they are the best line in the
-  // notification when one is going out anyway, and a reason to send one when
-  // nothing else is due.
-  const local = DateTime.fromJSDate(instant, { zone: timezone });
-  const peerHour = local.hour * 60 + local.minute >= PEERS_FROM && waking(local);
-
-  const situations: Situation[] = [];
-  let anyPeers = false;
-  for (const o of outstanding) {
-    const peers = peerHour ? await peersOn(userId, o.typeKey, o.period) : null;
-    if (peers && peers.logged > 0) anyPeers = true;
-    situations.push({
-      name: o.name,
-      hint: o.hint,
-      minutesLeft: Math.round((o.closesAt.getTime() - instant.getTime()) / 60_000),
-      closesLabel: o.closesLabel || null,
-      streak: o.streak,
-      peers,
-    });
-  }
-
-  if (!fired && anyPeers && !(await peerCueSentToday(userId, day))) fired = true;
-  if (!fired) return null;
-
-  const line = compose({ userId, day, slot, situations });
-  if (!line) return null;
-
-  return {
-    ...line,
-    slot,
-    count: outstanding.length,
-    typeKeys: outstanding.map((o) => o.typeKey),
-    peers: anyPeers,
-  };
-}
 
 /**
  * What the settings screen shows: every tracked activity, the times it will
@@ -461,7 +553,7 @@ export async function setReminders(
 }
 
 /** Every reminder time this member has set, by activity. */
-async function chosenCues(userId: string): Promise<Map<string, string[]>> {
+export async function chosenCues(userId: string): Promise<Map<string, string[]>> {
   const rows = await db
     .select()
     .from(activityReminders)
@@ -471,41 +563,4 @@ async function chosenCues(userId: string): Promise<Map<string, string[]>> {
     out.set(row.typeKey, [...(out.get(row.typeKey) ?? []), row.at]);
   }
   return out;
-}
-
-/** The cap, counted from what was actually sent rather than a stored tally. */
-async function sentToday(userId: string, day: string): Promise<boolean> {
-  const rows = await db
-    .select({ slot: sql<string>`${events.payload}->>'slot'` })
-    .from(events)
-    .where(
-      and(
-        eq(events.userId, userId),
-        eq(events.type, "push.sent"),
-        sql`${events.payload}->>'slot' LIKE ${day + "%"}`,
-      ),
-    );
-  return rows.length >= DAILY_CAP;
-}
-
-/**
- * Whether the peer cue has already gone out today.
- *
- * Separate from the cap because it is a different question: the cap stops a
- * runaway tick, this stops one group being active from turning into four
- * notifications about the same fact.
- */
-async function peerCueSentToday(userId: string, day: string): Promise<boolean> {
-  const rows = await db
-    .select({ id: events.id })
-    .from(events)
-    .where(
-      and(
-        eq(events.userId, userId),
-        eq(events.type, "push.sent"),
-        sql`${events.payload}->>'slot' LIKE ${day + "%"}`,
-        sql`(${events.payload}->>'peers')::boolean is true`,
-      ),
-    );
-  return rows.length > 0;
 }

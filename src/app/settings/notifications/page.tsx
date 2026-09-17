@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { reminderSettings } from "@/server/reminders";
+import { quietFor, reminderSettings } from "@/server/reminders";
 import { deviceCount, publicKey, pushConfigured } from "@/server/push";
 import { BackLink } from "@/app/back-link";
 import { InfoHint } from "@/app/ui";
@@ -21,9 +21,10 @@ export default async function Notifications() {
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
   const configured = pushConfigured();
-  const [activities, devices] = await Promise.all([
+  const [activities, devices, quiet] = await Promise.all([
     reminderSettings(user.id),
     deviceCount(user.id),
+    quietFor(user.id),
   ]);
 
   return (
@@ -41,13 +42,18 @@ export default async function Notifications() {
           your group has already logged.
           <InfoHint label="How reminders work">
             Reminders are per device, so turning them on here turns them on for
-            the phone you are holding and not for your other ones. Each activity
-            reminds up to three times while it is still open, and never more
-            than four notifications a day in total.
+            the phone you are holding and not for your other ones. One arrives
+            at a time and each is about one activity: what is left, and by when.
+            <br />
+            <br />
+            Curfew will not say the same thing twice. A reminder only repeats
+            once something has changed, so an activity you have made progress on
+            reads differently the next time it comes up.
             <br />
             <br />
             Nothing is sent about an activity you have already done, one that is
-            not scheduled today, or any day inside a declared pause.
+            not scheduled today, any day inside a declared pause, or at any time
+            inside your quiet hours.
             <br />
             <br />
             A group line only ever names what that group can already see. An
@@ -61,6 +67,7 @@ export default async function Notifications() {
             vapidPublicKey={publicKey()}
             devices={devices}
             activities={activities}
+            quiet={quiet}
           />
         ) : (
           <p className="mt-6 border border-rule p-4 text-[12px] leading-[1.6] text-muted">

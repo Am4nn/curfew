@@ -48,6 +48,9 @@
     "check:logic-version": "dotenv -e .env.local -- bun run scripts/check-logic-version.ts",
     "check:timezones": "dotenv -e .env.local -- bun run scripts/check-timezones.ts",
     "check:reminders": "dotenv -e .env.local -- bun run scripts/check-reminders.ts",
+    "sim:push": "bun run scripts/simulate-push.ts",
+    "check:push": "dotenv -e .env.preview -- bun run scripts/check-push.ts",
+    "check:push:production": "dotenv -e .env.production -- bun run scripts/check-push.ts",
     "browser": "node scripts/browser/run.mjs",
     "check:cors": "dotenv -e .env.preview -- bun run scripts/check-r2-cors.ts",
     "check:cors:production": "dotenv -e .env.production -- bun run scripts/check-r2-cors.ts"

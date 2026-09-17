@@ -153,6 +153,27 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
       : `${calories + pending} of ${limit} once this is sent.`;
   },
 
+  // Null once the limit is blown, and that is not an oversight. Calories only
+  // accumulate, so there is no reading of the rest of the day that passes, and
+  // a notification asking for two more meals on a day already lost is asking
+  // for a press that changes nothing. The check-in screen still says what
+  // happened, because somebody who opens it has asked.
+  remind(input) {
+    const meals = input.checkins.filter((c) => c.step === FOOD_STEP);
+    const limit = input.config.calorieLimit;
+    const calories = sumField(meals, "calories");
+    if (limit !== null && calories > limit) return null;
+
+    const left = input.config.meals - meals.length;
+    if (left <= 0) return null;
+    const ask = `${left} ${left === 1 ? "meal" : "meals"} to go.`;
+    // The calorie budget only once some of it has been spent. "3 meals to go.
+    // 2000 calories left." on an empty day states the limit twice over, and
+    // the second number is the one the eye lands on.
+    if (limit === null || calories === 0) return ask;
+    return `${ask} ${limit - calories} calories left.`;
+  },
+
   windows(_config, periodStart, timezone) {
     return oneWindow(FOOD_STEP, "Meal", periodStart, timezone, ALL_DAY);
   },

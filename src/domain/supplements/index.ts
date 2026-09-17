@@ -68,6 +68,13 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
     return `${doses} of ${input.config.dosesPerDay} today.`;
   },
 
+  remind(input) {
+    const doses = input.checkins.filter((c) => c.step === SUPPLEMENTS_STEP).length;
+    const left = input.config.dosesPerDay - doses;
+    if (left <= 0) return null;
+    return `${left} ${left === 1 ? "dose" : "doses"} to go.`;
+  },
+
   windows(_config, periodStart, timezone) {
     return oneWindow(SUPPLEMENTS_STEP, "Dose", periodStart, timezone, ALL_DAY);
   },

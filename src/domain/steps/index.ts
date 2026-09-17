@@ -125,6 +125,26 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
     return `${latest.toLocaleString("en-US")} recorded so far. The target is ${target}.`;
   },
 
+  remind(input) {
+    const { target } = input.config;
+    const latest = latestField(
+      input.checkins.filter((c) => c.step === STEPS_STEP),
+      "steps",
+    );
+    const pretty = (n: number) => n.toLocaleString("en-US");
+    if (latest === undefined) return `Nothing recorded yet. The target is ${pretty(target)}.`;
+    // A later reading REPLACES the earlier one rather than adding to it, so an
+    // over-target day here is still recoverable and worth saying. Food's is
+    // not, which is why food goes quiet and this does not.
+    if (input.config.direction === "atLeast") {
+      const left = target - latest;
+      return left <= 0 ? null : `${pretty(latest)} so far, ${pretty(left)} to go.`;
+    }
+    return latest <= target
+      ? null
+      : `${pretty(latest)} recorded, over the ${pretty(target)} target.`;
+  },
+
   windows(_config, periodStart, timezone) {
     return oneWindow(STEPS_STEP, "Steps", periodStart, timezone, ALL_DAY);
   },

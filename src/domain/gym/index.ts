@@ -166,6 +166,17 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
     return `${days.size} of ${need} this week.`;
   },
 
+  // No "is today spent" branch, unlike `hint` above, and it needs none: a day
+  // already logged makes `countsNow` false, which closes the step, and nothing
+  // outstanding is ever asked for a reminder. Leaving `DateTime.now()` out also
+  // makes this the same answer every time it is called, which is what lets the
+  // simulator replay a week without the clock moving underneath it.
+  remind(input) {
+    const left = needed(input.schedule) - sessionDays(input.checkins, input.timezone).size;
+    if (left <= 0) return null;
+    return `${left} more ${left === 1 ? "day" : "days"} this week.`;
+  },
+
   // One session a day counts, so once today is logged another press changes
   // nothing and Home stops offering the button. Without this the dashboard
   // invited a press that `evaluate` would throw away.

@@ -116,6 +116,15 @@ export interface CheckinStepView {
   hint: string | null;
   /** `hint` as it would read after one more press of this step. */
   nextHint: string | null;
+  /**
+   * What is still owed, for a notification rather than for this screen.
+   *
+   * Never shown here: the card already has the name, the count and the button.
+   * It is carried on the step because the reminder job reads exactly the same
+   * state this screen does, and a second path that asked the module its own
+   * question would be a second answer to drift out of step with `open`.
+   */
+  remind: string | null;
 }
 
 export interface ActivityCheckinState {
@@ -334,6 +343,20 @@ export async function getCheckinState(
           config: activity.config,
           schedule: activity.schedule.schedule,
           checkins: [...checkins, { step: step.key, at: instant }],
+          step: step.key,
+          pending: null,
+        }) ?? null,
+      // What is still owed, in the module's words, for a notification. Null
+      // both when the module writes none and when there is nothing left to
+      // ask for, and the reminder job cannot tell those apart on purpose:
+      // either way there is nothing to say.
+      remind:
+        type.remind?.({
+          periodStart: period,
+          timezone,
+          config: activity.config,
+          schedule: activity.schedule.schedule,
+          checkins,
           step: step.key,
           pending: null,
         }) ?? null,

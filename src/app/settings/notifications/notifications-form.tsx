@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useClientValue } from "@/app/use-client-value";
 import { Toggle, useServerAction } from "@/app/ui";
 import { clearBadge, disable, enable, state, type PushState } from "@/app/push";
-import { setRemindersAction, sendTestAction } from "./actions";
+import { setQuietHoursAction, setRemindersAction, sendTestAction } from "./actions";
 
 interface Activity {
   typeKey: string;
@@ -13,14 +13,22 @@ interface Activity {
   suggested: string[];
 }
 
+interface Quiet {
+  from: string;
+  to: string;
+  custom: boolean;
+}
+
 export function NotificationsForm({
   vapidPublicKey,
   devices,
   activities,
+  quiet,
 }: {
   vapidPublicKey: string;
   devices: number;
   activities: Activity[];
+  quiet: Quiet;
 }) {
   // The permission as it stands on load: a browser fact the server cannot know,
   // settled before the page is interactive, which is exactly what
@@ -92,11 +100,14 @@ export function NotificationsForm({
         {note ? <p className="text-[11.5px] text-pass">{note}</p> : null}
       </section>
 
+      <QuietHours quiet={quiet} />
+
       <section className="flex flex-col gap-2">
         <span className="text-[10px] tracking-[0.16em] text-muted">WHEN</span>
         <p className="text-[11.5px] leading-[1.6] text-muted">
           Leave an activity blank and Curfew picks the times: before the window
-          closes, or the hours the activity itself suggests.
+          closes, or the hours the activity itself suggests. A time you set here
+          is honoured even inside the default quiet hours, because you set it.
         </p>
         <div className="flex flex-col">
           {activities.map((activity) => (
@@ -105,6 +116,85 @@ export function NotificationsForm({
         </div>
       </section>
     </div>
+  );
+}
+
+/**
+ * The hours nothing arrives in.
+ *
+ * A Save button rather than the save-on-blur the times below use, and the
+ * difference is deliberate: getting an activity's cue wrong costs a reminder at
+ * an odd hour, getting this wrong costs somebody their sleep. A save this one
+ * has to confirm is a save they know happened.
+ *
+ * `<input type="time">` renders 12 or 24 hour according to the device, so this
+ * is one of the three places in the app where a time may not read as "9:30 PM".
+ * That is the platform's control and the same trade the configure screens
+ * already made.
+ */
+function QuietHours({ quiet }: { quiet: Quiet }) {
+  const [from, setFrom] = useState(quiet.from);
+  const [to, setTo] = useState(quiet.to);
+  const [saving, setSaving] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const dirty = from !== quiet.from || to !== quiet.to;
+
+  return (
+    <section className="flex flex-col gap-2">
+      <span className="text-[10px] tracking-[0.16em] text-muted">QUIET HOURS</span>
+      <p className="text-[11.5px] leading-[1.6] text-muted">
+        Nothing arrives between these times, including a window about to close.
+        Curfew would rather miss a reminder than wake you with one.
+      </p>
+      <div className="flex items-center gap-3 border-b border-rule py-[11px]">
+        <span className="w-[92px] flex-none text-[13px]">From</span>
+        <input
+          type="time"
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+          aria-label="Quiet hours start"
+          className="border border-rule bg-transparent px-2 py-[6px] text-[12px]"
+        />
+        <span className="text-[13px]">until</span>
+        <input
+          type="time"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          aria-label="Quiet hours end"
+          className="border border-rule bg-transparent px-2 py-[6px] text-[12px]"
+        />
+      </div>
+      {dirty ? (
+        <div>
+          <button
+            type="button"
+            disabled={saving}
+            aria-busy={saving || undefined}
+            onClick={() => {
+              setSaving(true);
+              setResult(null);
+              const data = new FormData();
+              data.set("quietFrom", from);
+              data.set("quietTo", to);
+              void setQuietHoursAction({}, data)
+                .then((r) =>
+                  setResult({ ok: !r.error, text: r.error ?? r.note ?? "Saved." }),
+                )
+                .finally(() => setSaving(false));
+            }}
+            className="border border-fg px-3 py-[7px] text-[12px] active:opacity-70 disabled:opacity-40"
+          >
+            {saving ? "Saving" : "Save quiet hours"}
+          </button>
+        </div>
+      ) : null}
+      {result ? (
+        <p className={`text-[11.5px] ${result.ok ? "text-pass" : "text-penalty"}`}>
+          {result.text}
+        </p>
+      ) : null}
+    </section>
   );
 }
 

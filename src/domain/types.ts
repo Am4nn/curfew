@@ -333,6 +333,30 @@ export interface ActivityType<Config, Evidence> {
    */
   hint?(input: HintInput<Config, Evidence>): string | null;
   /**
+   * What is LEFT, for a notification. The same sentence `hint` is, written for
+   * a different reader.
+   *
+   * `hint` sits under a step's fields, on a card with the activity's name above
+   * it and the whole configure screen around it, so it describes what has been
+   * recorded and never names its own subject. On a lock screen neither of those
+   * holds: there is no name above it unless the notification supplies one, and
+   * the reader has about three words of patience. `hint`'s own words prove it.
+   * Study returns "Target is 45. Anything at or above counts." before anything
+   * is recorded, which is the right line under a control and useless on a
+   * phone at 8 PM.
+   *
+   * So this one counts DOWN rather than up, because a notification exists to
+   * ask for something: "45 minutes to go", not "0 of 45 today". It is the only
+   * sentence in a notification allowed to describe progress (invariant 6), and
+   * the reason the copy may not: a bank that could write its own progress line
+   * wrote "Almost there" over eight untouched glasses of water, in production.
+   *
+   * Null when there is nothing left to ask for, which is how the engine learns
+   * that a notification about this activity would be pointless. `pending` is
+   * never set here: nothing is half-typed on a lock screen.
+   */
+  remind?(input: HintInput<Config, Evidence>): string | null;
+  /**
    * Whether another press of this step would count for anything right now.
    * Defaults to true, so most types never implement it.
    *

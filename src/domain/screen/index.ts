@@ -133,6 +133,17 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
     return `${latest} min recorded. The limit is ${limit}.`;
   },
 
+  remind(input) {
+    const limit = input.config.limitMinutes;
+    const latest = latestField(
+      input.checkins.filter((c) => c.step === SCREEN_STEP),
+      "minutes",
+    );
+    if (latest === undefined) return `Not recorded yet. The limit is ${limit} min.`;
+    const over = input.config.direction === "atMost" ? latest > limit : latest < limit;
+    return over ? `${latest} min recorded, past the ${limit} limit.` : null;
+  },
+
   windows(_config, periodStart, timezone) {
     return oneWindow(SCREEN_STEP, "Screen time", periodStart, timezone, ALL_DAY);
   },

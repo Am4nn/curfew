@@ -14,37 +14,73 @@
 // ROADMAP theme 3 and it is not decided yet.
 //
 // ---------------------------------------------------------------------------
+// THE RULE THIS FILE EXISTS TO ENFORCE
 //
-// Why a bank rather than a template: Duolingo's notification system picks from
-// a set of pre-written lines rather than filling one in, and that is most of
-// why theirs do not read as machine output by the fourth day. One template, sent
-// daily, becomes wallpaper within a week and then it is ignored for the rest of
-// the app's life, which cannot be undone by writing a better template later.
+// Nothing here may describe progress. Not "almost", not "nearly", not "one
+// more", not a number. The only sentence in a notification that says how far
+// along something is comes from the module, through `remind()`, and arrives
+// here as `Subject.left`, already written.
 //
-// The pick is a stable hash of who, what day and which slot. Deterministic, so
-// a test can assert the exact string and a retried send picks the same line.
+// This was learned the expensive way. The first version picked a whole sentence
+// out of a bank, and it chose the bank by asking whether the module's `hint`
+// was a non-empty string. Water's hint at zero is "0 of 8 today.", which is
+// non-empty, so production sent a member who had logged nothing:
+//
+//     Almost there on Water
+//     0 of 8 today. Closes at 11:59 PM. Food, Supplements and Reading and
+//     5 more are open too.
+//
+// Eight glasses outstanding, described as almost done, twice, thirty minutes
+// apart, with a tail listing seven other activities and a number for none of
+// them. The fix is structural rather than editorial: a writer below receives
+// `left` as an opaque string it may only place, and there is no bank line that
+// could claim otherwise because no bank line has the numbers to claim it with.
+//
+// ---------------------------------------------------------------------------
+// WHY A BANK AT ALL
+//
+// One template, sent daily, becomes wallpaper within a week, and then it is
+// ignored for the rest of the app's life. That cannot be undone by writing a
+// better template later. So each writer has two or three phrasings and the pick
+// is a stable hash of who, what day, which tick and which KIND. Deterministic,
+// so a test asserts an exact string and a retried send picks the same words.
 // Varied, so nobody reads the same sentence three mornings running.
 //
-// What this file may NOT do is describe an activity's progress. "2 of 3 meals"
-// is a sentence only the food module can write (invariant 6), so every line
-// here WRAPS `hint` and none of them replaces it. Nothing in this file knows
-// what a meal, a glass or a session is, and if you find yourself adding a line
-// that does, the line belongs in the module.
+// The variation is in the FRAME, never in the fact. `left` is identical every
+// time, and the deadline is identical every time. What rotates is the sentence
+// they sit in.
+
+export type KindKey = "lastcall" | "streak" | "peer" | "sweep" | "reminder" | "done";
+
+export interface Line {
+  title: string;
+  body: string;
+}
 
 /** One outstanding activity, and everything the copy is allowed to know. */
-export interface Situation {
+export interface Subject {
   /** The activity's display name. "Gym". */
   name: string;
-  /** The module's own progress line, verbatim. "2 of 3 meals today." */
-  hint: string | null;
-  /** Minutes until the window closes. Null for a window with no real close. */
-  minutesLeft: number | null;
+  /**
+   * The module's own `remind()`, verbatim. "3 glasses to go."
+   *
+   * The ONLY progress claim in a notification, and the reason no writer below
+   * takes a count, a target or a fraction: none of them could write this line
+   * and none of them is allowed to try (invariant 6).
+   */
+  left: string;
+  /** Minutes to the EFFECTIVE deadline, which may be the start of quiet hours. */
+  minutesLeft: number;
   /** "8:00 PM", already formatted in the member's zone. */
-  closesLabel: string | null;
-  /** Days running. 0 when there is no streak to lose. */
+  closesLabel: string;
+  /** Periods running. 0 when there is no streak to lose. */
   streak: number;
-  /** Who else, in a group you share this with, has already logged it today. */
-  peers: Peers | null;
+  /**
+   * What a unit of `streak` is. Gym's period is a week, so its streak counts
+   * weeks, and calling those days put "3 days of Gym on the line" above
+   * "2 more days this week" in the same notification.
+   */
+  streakUnit: "day" | "week";
 }
 
 export interface Peers {
@@ -55,137 +91,14 @@ export interface Peers {
   of: number;
 }
 
-export interface Line {
-  title: string;
-  body: string;
-}
-
-// ---------------------------------------------------------------------------
-// The four situations
-// ---------------------------------------------------------------------------
-
-type Writer = (s: Situation) => string;
-
-// Somebody in your group did it and you have not. The strongest of the four,
-// so it wins the title whenever it applies.
-const PEERS: { title: Writer; body: Writer }[] = [
-  {
-    title: () => "Don't be the last one!",
-    body: (s) => `${who(s)} already logged ${s.name}. ${urgency(s)}`,
-  },
-  {
-    title: (s) => `${who(s)} are ahead of you`,
-    body: (s) => `${s.name} is still open. ${urgency(s)}`,
-  },
-  {
-    title: (s) => `Your group is moving on ${s.name}`,
-    body: (s) => `${who(s)} logged it today. ${urgency(s)}`,
-  },
-  {
-    title: () => "Catch up!",
-    body: (s) => `${who(s)} have done ${s.name}. ${urgency(s)}`,
-  },
-];
-
-// A streak worth losing, and not much time left.
-const STREAK: { title: Writer; body: Writer }[] = [
-  {
-    title: (s) => `${s.streak} days on the line`,
-    body: (s) => `Your ${s.name} streak ends ${when(s)}. Don't let it slip now!`,
-  },
-  {
-    title: () => "Don't break it now!",
-    body: (s) => `${s.streak} days of ${s.name}, and ${urgency(s).toLowerCase()}`,
-  },
-  {
-    title: (s) => `Keep the ${s.name} streak alive`,
-    body: (s) => `${s.streak} days so far. ${urgency(s)}`,
-  },
-];
-
-// Something is recorded and it is short of the target. The module's own hint
-// carries the numbers.
-const NEARLY: { title: Writer; body: Writer }[] = [
-  {
-    title: () => "So close!",
-    body: (s) => `${s.hint} One more and today counts.`,
-  },
-  {
-    title: (s) => `Almost there on ${s.name}`,
-    body: (s) => `${s.hint} ${urgency(s)}`,
-  },
-  {
-    title: () => "Nearly done!",
-    body: (s) => `${s.hint} Finish it before the window shuts.`,
-  },
-];
-
-// Nothing logged, nobody ahead of you, no streak to lose.
-const COLD: { title: Writer; body: Writer }[] = [
-  {
-    title: (s) => `${s.name} is waiting`,
-    body: (s) => `Nothing recorded yet. ${urgency(s)}`,
-  },
-  {
-    title: () => "Still time!",
-    body: (s) => `${s.name} has not been logged today. ${urgency(s)}`,
-  },
-  {
-    title: (s) => `Don't forget ${s.name}`,
-    body: (s) => urgency(s),
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Phrases the banks share
-// ---------------------------------------------------------------------------
-
-/** "Rahul", "Rahul and Priya", or "3 of 4 in Morning Crew". */
-function who(s: Situation): string {
-  const p = s.peers;
-  if (!p) return "Someone";
-  if (p.names.length === 1) return p.names[0];
-  if (p.names.length === 2) return `${p.names[0]} and ${p.names[1]}`;
-  return `${p.logged} of ${p.of} in ${p.groupName}`;
-}
-
-/** "40 minutes left!", "Closes at 8:00 PM.", or a nudge when neither applies. */
-function urgency(s: Situation): string {
-  if (s.minutesLeft !== null && s.minutesLeft <= 15) return "Minutes left!";
-  if (s.minutesLeft !== null && s.minutesLeft <= 120) {
-    return `${s.minutesLeft} minutes left!`;
-  }
-  if (s.closesLabel) return `Closes at ${s.closesLabel}.`;
-  return "There is still time today.";
-}
-
-/** "at 8:00 PM" or "when today does". */
-function when(s: Situation): string {
-  return s.closesLabel ? `at ${s.closesLabel}` : "when today does";
-}
-
 // ---------------------------------------------------------------------------
 // Choosing
 // ---------------------------------------------------------------------------
 
 /**
- * Which bank a situation belongs to, most pressing first.
- *
- * Peers beat a streak because somebody else having done it is a fact about the
- * world rather than about the app, and it is the only one of the four that says
- * anything a person could not work out by opening Curfew.
- */
-function bankFor(s: Situation): { title: Writer; body: Writer }[] {
-  if (s.peers && s.peers.logged > 0) return PEERS;
-  if (s.streak >= 3) return STREAK;
-  if (s.hint) return NEARLY;
-  return COLD;
-}
-
-/**
  * FNV-1a, 32-bit. Not for security: this picks a sentence, and what it has to
- * be is the SAME sentence every time for the same person, day and slot, so a
- * retried send is not a second, differently worded notification.
+ * be is the SAME sentence every time for the same person, day, tick and kind,
+ * so a retried send is not a second, differently worded notification.
  */
 function hash(seed: string): number {
   let h = 0x811c9dc5;
@@ -196,63 +109,189 @@ function hash(seed: string): number {
   return h;
 }
 
+/** One of `options`, chosen stably from the seed. */
+function pick<T>(seed: string, options: T[]): T {
+  return options[hash(seed) % options.length];
+}
+
+// ---------------------------------------------------------------------------
+// Phrases the writers share
+// ---------------------------------------------------------------------------
+
+/** "Rahul", "Rahul and Priya", or "3 of 4 in Morning Crew". */
+function who(p: Peers): string {
+  if (p.names.length === 1) return p.names[0];
+  if (p.names.length === 2) return `${p.names[0]} and ${p.names[1]}`;
+  return `${p.logged} of ${p.of} in ${p.groupName}`;
+}
+
+/** Whether a peer line should read as one person or several. */
+function plural(p: Peers): boolean {
+  return p.names.length !== 1;
+}
+
+// ---------------------------------------------------------------------------
+// lastcall
+// ---------------------------------------------------------------------------
+
 /**
- * The whole notification, from everything outstanding right now.
+ * The window is about to shut.
  *
- * The first situation, once sorted by how pressing it is, writes the title and
- * the first line of the body. The rest are listed after it, up to two more,
- * because a notification nobody can read at a glance is a notification nobody
- * reads at all.
+ * The title carries the clock because that is the whole reason this one exists,
+ * and the body carries what to do about it. Neither repeats the other: an
+ * earlier draft put "closes" in both and the notification read as if it were
+ * about two different deadlines.
  */
-export function compose(input: {
-  userId: string;
-  /** The member's local date, "yyyy-MM-dd". */
-  day: string;
-  /** Which tick this is, "19:15". Part of the seed, so three sends in one day
-   *  do not repeat a sentence. */
-  slot: string;
-  situations: Situation[];
-}): Line | null {
-  const ranked = [...input.situations].sort((a, b) => rank(a) - rank(b));
-  const lead = ranked[0];
-  if (!lead) return null;
+export function lastCall(s: Subject, seed: string): Line {
+  const m = s.minutesLeft;
+  const title = pick(`${seed}:t`, [
+    `${s.name} closes in ${m} ${m === 1 ? "minute" : "minutes"}`,
+    `Last call for ${s.name}`,
+    `${m} ${m === 1 ? "minute" : "minutes"} left on ${s.name}`,
+  ]);
+  const push = pick(`${seed}:b`, [
+    "Log it now!",
+    "This is the last window today.",
+    "After this, today does not count.",
+  ]);
+  return { title, body: `${s.left} ${push}` };
+}
 
-  const bank = bankFor(lead);
-  const chosen = bank[hash(`${input.userId}:${input.day}:${input.slot}`) % bank.length];
+// ---------------------------------------------------------------------------
+// streak
+// ---------------------------------------------------------------------------
 
+/** A run worth keeping, and not much day left to keep it in. */
+export function streakAtRisk(s: Subject, seed: string): Line {
+  // Every one of these names the activity, and that is not stylistic. A member
+  // tracking nine things who reads "Don't break a 24 day streak" on a lock
+  // screen has been told the stakes and not the subject, which is the exact
+  // failure this whole rewrite is about. "ends tonight" is out for the same
+  // reason: this fires up to three hours before the deadline, and for an
+  // activity closing at 2:00 PM, tonight is a lie.
+  const run = `${s.streak} ${s.streakUnit}${s.streak === 1 ? "" : "s"}`;
+  const title = pick(`${seed}:t`, [
+    `${run} of ${s.name} on the line`,
+    `Don't break a ${run} ${s.name} streak`,
+    `Your ${s.name} streak is at risk`,
+  ]);
+  const stake = pick(`${seed}:b`, [
+    `The streak ends at ${s.closesLabel}.`,
+    `${run} go if you miss today. Closes at ${s.closesLabel}.`,
+    `Keep it alive before ${s.closesLabel}.`,
+  ]);
+  return { title, body: `${s.left} ${stake}` };
+}
+
+// ---------------------------------------------------------------------------
+// peer
+// ---------------------------------------------------------------------------
+
+/**
+ * Somebody in your group did it and you have not.
+ *
+ * It says nothing the group hub would not, which is why naming people is fine:
+ * the recipient could read the same fact by opening Curfew. See `peersOn`.
+ */
+export function peerAhead(s: Subject, p: Peers, seed: string): Line {
+  const name = who(p);
+  const verb = plural(p) ? "have" : "has";
+  const title = pick(`${seed}:t`, [
+    `${name} logged ${s.name}`,
+    `${name} ${verb} done ${s.name} today`,
+    `Don't be the last one on ${s.name}`,
+  ]);
+  const tail = pick(`${seed}:b`, [
+    `Closes at ${s.closesLabel}.`,
+    `You have until ${s.closesLabel}.`,
+    `Catch up before ${s.closesLabel}!`,
+  ]);
+  return { title, body: `${s.left} ${tail}` };
+}
+
+// ---------------------------------------------------------------------------
+// sweep
+// ---------------------------------------------------------------------------
+
+/**
+ * Evening, and nothing at all has been logged.
+ *
+ * The one writer that names more than one activity, because on a day where
+ * nothing has happened there is no reason to single one out. It names the two
+ * closing soonest, with their times, and counts the rest. `subjects` arrives
+ * sorted by urgency.
+ *
+ * It does NOT list `left` for each, and that is the lesson from the digest this
+ * whole design replaced: a body carrying three modules' progress lines reads as
+ * a pile of numbers attached to nothing, because a module's own sentence has no
+ * reason to name its subject. Times and names here, numbers in the app.
+ */
+export function sweep(subjects: Subject[], seed: string): Line {
+  const title = pick(`${seed}:t`, [
+    "Nothing logged today",
+    "The day is still empty",
+    "Still time to save today",
+  ]);
+
+  // The eight activity types whose window is the whole day all cap at the same
+  // moment, the start of quiet hours, so the two most urgent usually share a
+  // time. Printing it twice reads as a mistake.
+  const [first, second] = subjects;
+  const named = !second
+    ? `${first.name} closes at ${first.closesLabel}.`
+    : second.closesLabel === first.closesLabel
+      ? `${first.name} and ${second.name} close at ${first.closesLabel}.`
+      : `${first.name} closes at ${first.closesLabel}, ${second.name} at ${second.closesLabel}.`;
+
+  const rest = subjects.length - (second ? 2 : 1);
   return {
-    title: chosen.title(lead),
-    body: [chosen.body(lead), alsoOpen(ranked.slice(1))].filter(Boolean).join(" "),
+    title,
+    body: rest > 0 ? `${named} ${rest} more open.` : named,
   };
 }
 
+// ---------------------------------------------------------------------------
+// reminder
+// ---------------------------------------------------------------------------
+
 /**
- * "Water and Reading are open too."
+ * A cue time came round and this is still open. The ordinary one.
  *
- * Only the NAMES. The first attempt listed each one's `hint` instead, and the
- * body came out as "2 of 3 meals today. 40 minutes left! 5 of 8 today. 0 of 20
- * pages." Every one of those sentences is true and the last two do not say what
- * they are about, because a module's hint describes its own progress and has no
- * reason to name itself. A lock screen is the wrong place to work that out.
+ * The title takes the deadline only when it is close enough to be the reason
+ * anybody should care. Outside that it is the bare name, and the body carries
+ * the time, because "Water closes at 11:59 PM" at nine in the morning is a
+ * title about nothing.
  */
-function alsoOpen(rest: Situation[]): string {
-  if (rest.length === 0) return "";
-  const names = rest.slice(0, 3).map((s) => s.name);
-  const more = rest.length - names.length;
-  const listed =
-    names.length === 1
-      ? names[0]
-      : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-  const verb = rest.length === 1 ? "is" : "are";
-  return more > 0
-    ? `${listed} and ${more} more ${verb} open too.`
-    : `${listed} ${verb} open too.`;
+export function reminder(s: Subject, seed: string): Line {
+  const soon = s.minutesLeft <= 180;
+  const title = soon
+    ? pick(`${seed}:t`, [
+        `${s.name} closes at ${s.closesLabel}`,
+        `${s.name}, until ${s.closesLabel}`,
+      ])
+    : pick(`${seed}:t`, [s.name, `${s.name} is still open`]);
+
+  const tail = soon ? "" : ` Closes at ${s.closesLabel}.`;
+  return { title, body: `${s.left}${tail}` };
 }
 
-/** Sort key. Lower is more pressing, matching the order in `bankFor`. */
-function rank(s: Situation): number {
-  if (s.peers && s.peers.logged > 0) return 0;
-  if (s.streak >= 3) return 1;
-  if (s.hint) return 2;
-  return 3;
+// ---------------------------------------------------------------------------
+// done
+// ---------------------------------------------------------------------------
+
+/**
+ * Everything scheduled today is logged.
+ *
+ * The only notification Curfew sends that asks for nothing, and the only reason
+ * it is worth sending: it is the one that makes the others credible. An app
+ * that speaks up exclusively to complain teaches people to dread the sound.
+ */
+export function allClear(count: number, seed: string): Line {
+  const title = pick(`${seed}:t`, ["All clear", "That is the day", "Day complete"]);
+  const body = pick(`${seed}:b`, [
+    `Everything you track today is logged. ${count} for ${count}.`,
+    `${count} of ${count} done. Nothing else is open today.`,
+    `All ${count} logged. See you tomorrow!`,
+  ]);
+  return { title, body };
 }

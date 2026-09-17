@@ -81,6 +81,16 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
     return `${glasses} of ${input.config.glasses} today.`;
   },
 
+  // Counting down, not up. "0 of 8 today." is the right line under the control
+  // and the wrong one on a lock screen, where it was read as progress and the
+  // copy called it "Almost there".
+  remind(input) {
+    const glasses = input.checkins.filter((c) => c.step === WATER_STEP).length;
+    const left = input.config.glasses - glasses;
+    if (left <= 0) return null;
+    return `${left} ${left === 1 ? "glass" : "glasses"} to go.`;
+  },
+
   windows(_config, periodStart, timezone) {
     return oneWindow(WATER_STEP, "Glass", periodStart, timezone, ALL_DAY);
   },

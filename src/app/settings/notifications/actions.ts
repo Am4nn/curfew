@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { setReminders } from "@/server/reminders";
+import { setQuietHours, setReminders } from "@/server/reminders";
 import { deliver, pushConfigured } from "@/server/push";
 import { env } from "@/lib/env";
 import type { FormState } from "../../ui";
@@ -27,6 +27,42 @@ export async function setRemindersAction(
   const user = await approvedUser();
   await setReminders(user.id, typeKey, times);
   revalidatePath("/settings/notifications");
+}
+
+/**
+ * Save the hours nothing may arrive in.
+ *
+ * A form action rather than a fire-and-forget like `setRemindersAction`,
+ * because getting this wrong is the one setting on this screen that can wake
+ * somebody at 3:00 AM, and a save that silently failed would leave them
+ * believing they had fixed it.
+ */
+export async function setQuietHoursAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  try {
+    const user = await approvedUser();
+    const from = trimmed(formData, "quietFrom");
+    const to = trimmed(formData, "quietTo");
+    if (!from || !to) return { error: "Both times are needed." };
+    if (from === to) {
+      // An empty band is almost certainly not what anybody means, and it reads
+      // on screen as "quiet from 10 PM to 10 PM", which looks like a setting
+      // rather than like the absence of one.
+      return { error: "Those are the same time, which would mean no quiet hours." };
+    }
+    await setQuietHours(user.id, from, to);
+    revalidatePath("/settings/notifications");
+    return { ok: true, note: "Saved." };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not save it." };
+  }
+}
+
+function trimmed(formData: FormData, key: string): string {
+  const raw = formData.get(key);
+  return typeof raw === "string" ? raw.trim() : "";
 }
 
 /**

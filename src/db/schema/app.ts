@@ -595,3 +595,18 @@ export const activityReminders = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.typeKey, t.at] })],
 );
+
+// When this member is asleep, as wall clock in their own zone. A gate above
+// every reason Curfew has to send anything, with no exception for urgency:
+// urgency is the argument that would put a notification at 2:00 AM.
+//
+// The band WRAPS midnight in the normal case, so `from > to` is not an error
+// and every reader has to handle it. Defaults live in the columns, so a member
+// with no row needs no special case anywhere. See migrations/0028.
+export const notificationSettings = pgTable("notification_settings", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  quietFrom: text("quiet_from").notNull().default("21:30"),
+  quietTo: text("quiet_to").notNull().default("08:00"),
+});

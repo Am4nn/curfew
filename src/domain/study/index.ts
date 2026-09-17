@@ -103,6 +103,25 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
       : `${minutes + pending} of ${target} once this is sent.`;
   },
 
+  remind(input) {
+    const minutes = sumField(
+      input.checkins.filter((c) => c.step === STUDY_STEP),
+      "minutes",
+    );
+    // No target means one check-in is the whole requirement, so the only thing
+    // left to ask for is the first one.
+    const target = input.config.minutesTarget;
+    if (target === null) return minutes > 0 ? null : "Not logged yet.";
+    const left = target - minutes;
+    if (left <= 0) return null;
+    // "of study" is not padding. A notification titled "Study closes in 15
+    // minutes" over a body reading "60 minutes to go" puts two minute counts
+    // next to each other meaning opposite things, and the bigger one is the
+    // one that looks like time remaining. `bun run sim:push` printed exactly
+    // that pair.
+    return `${left} minutes of study to go.`;
+  },
+
   windows(_config, periodStart, timezone) {
     return oneWindow(STUDY_STEP, "Session", periodStart, timezone, ALL_DAY);
   },

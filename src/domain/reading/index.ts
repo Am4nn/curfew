@@ -120,6 +120,21 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
       : `${amount + pending} of ${target} ${unit} once this is sent.`;
   },
 
+  remind(input) {
+    const amount = sumField(
+      input.checkins.filter((c) => c.step === READING_STEP),
+      "amount",
+    );
+    const { target, unit } = input.config;
+    const left = target - amount;
+    if (left <= 0) return null;
+    // "to read", because the unit may be minutes, and "30 minutes to go" under
+    // a title naming a closing time reads as time left rather than as reading
+    // left. Naming the verb costs two words and removes the ambiguity for
+    // every unit at once.
+    return `${left} ${unit} to read.`;
+  },
+
   windows(_config, periodStart, timezone) {
     return oneWindow(READING_STEP, "Reading", periodStart, timezone, ALL_DAY);
   },

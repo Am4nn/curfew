@@ -294,3 +294,81 @@ because two of the three are the failure mode this file is about:
 - **Quiet hours as a setting.** Hardcoded until somebody asks.
 - **Deriving the quiet band from sleep's configured wake time.** Correct, and it
   couples notifications to one module's config. Later, if at all.
+
+---
+
+## What the first day in production showed
+
+Everything above is the design as built. It reached production on 2026-09-17 and
+was wrong in a way none of the checks above could see. This section is the
+record; the work is items 37 to 42 and it is in `main`.
+
+Eight notifications went to two people on the first day. This is what two of
+them said, to somebody who had logged nothing:
+
+```
+[09:00]  Almost there on Water
+         0 of 8 today. Closes at 11:59 PM. Food, Supplements and Reading and 5 more are open too.
+
+[09:30]  Nearly done!
+         0 of 8 today. Finish it before the window shuts. Food, Supplements and Reading and 5 more are open too.
+```
+
+Six defects, found by pulling the payloads and reproducing the copy by hand:
+
+1. **The bank was chosen on a truthy `hint`.** `if (s.hint) return NEARLY`.
+   Water's hint at zero is `"0 of 8 today."`, a non-empty string, so a day with
+   nothing logged selected the "nearly done" bank. Not vague. False.
+2. **`alsoOpen` emitted a double "and":** "Reading and 5 more".
+3. **The lead was sorted by BANK, not by urgency**, so Water closing at 11:59 PM
+   led while the two activities closing that afternoon sat inside "and 5 more".
+4. **`minutesLeft` and the cue clock disagreed.** Cues capped the deadline at
+   9:30 PM; the sentence measured to the raw close. For gym, whose window is the
+   whole week, it cued on Tuesday and named Sunday.
+5. **The digest had no readable form.** Nine activities cannot be one sentence.
+6. **`hint` was the wrong sentence for a lock screen.** It is written for a card
+   that already shows the name, so it never names its subject, and three modules
+   return pure configuration explanation at zero progress.
+
+### What changed (items 37 to 42)
+
+- **37. One notification, one activity**, replacing the digest. Item 32's
+  "one digest per send" is overturned: it was the right call against a cap of
+  four and the wrong one without it.
+- **38. Six kinds with their own triggers**, in `notification-kinds.ts`:
+  `lastcall`, `streak`, `peer`, `sweep`, `reminder`, `done`. A kind is a kind
+  because of its trigger, not its adjective. `peer` is event-driven now and
+  arrives on the tick after somebody logs. `done` and `sweep` are new.
+- **39. The daily cap is gone**, at the user's direction. Three rules replace
+  it: one send per tick, a repeat rule per kind, and `reminder` deduping on the
+  finished sentence. A day with fifteen things worth saying may say fifteen.
+  There is no upper bound.
+- **40. `remind()` on the module interface**, a lock-screen sibling to `hint`
+  that counts down rather than up. The copy may place it and may not describe
+  progress itself, which is now structural: no writer is given a number.
+- **41. Quiet hours**, migration 0028, per member, defaulting to 9:30 PM to
+  8:00 AM. A gate above the whole registry with **no exception for urgency**,
+  including `lastcall`. This overturns "Quiet hours as a setting: hardcoded
+  until somebody asks" above. Somebody asked, and the reason it could not stay
+  hardcoded is that the old band only filtered engine-derived cues while a last
+  call fires off a deadline, and eight types close at 11:59 PM.
+- **42. `sim:push` and `check:push`.** The first prints a simulated day's
+  notifications with no database; the second prints what really went out, from
+  `title` and `body` now stored on the `push.sent` event.
+
+### The lesson worth keeping
+
+Every individual function in the original was correct, and the sentence was
+wrong. Typecheck, lint, 301 tests, ten copy unit tests and eight browser suites
+were all green over it, because a unit test asserts the string it was told to
+expect and cannot ask whether that string makes sense to somebody glancing at a
+lock screen.
+
+Writing `sim:push` found four further defects in one afternoon that no other
+check in this repo would ever have caught: a notification naming a deadline that
+had already passed, a gym streak counted in days when gym's period is a week,
+"60 minutes to go" sitting under "closes in 15 minutes", and two activities
+whose shared closing time was printed twice in one sentence.
+
+**Copy that can only be reviewed by waiting for a phone to buzz is copy that
+ships unread.** That is the whole reason the first version reached production.

@@ -139,6 +139,14 @@ export function abstinenceActivity(spec: {
         : "You said you slipped. Today does not count.";
     },
 
+    remind(input) {
+      const window = windowInstants(input.periodStart, input.timezone, input.config.window);
+      const answered = input.checkins.some(
+        (c) => c.step === DECLARE_STEP && within(c.at, window),
+      );
+      return answered ? null : "Not answered yet.";
+    },
+
     windows(config, periodStart, timezone) {
       return oneWindow(DECLARE_STEP, spec.label, periodStart, timezone, config.window);
     },

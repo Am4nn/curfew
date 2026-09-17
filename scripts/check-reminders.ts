@@ -47,7 +47,16 @@ import {
 import { getActivityType, type Schedule } from "@/domain";
 import { CONSENT_VERSION } from "@/server/consent";
 import { performCheckin, getCheckinState } from "@/server/checkin";
-import { cuesFor, outstandingFor, peersOn, slotFor } from "@/server/reminders";
+import {
+  cuesFor,
+  outstandingFor,
+  peersOn,
+  slotFor,
+  type Quiet,
+} from "@/server/reminders";
+
+/** The band every member gets until they change it. See migrations/0028. */
+const QUIET: Quiet = { from: "21:30", to: "08:00", custom: false };
 import { declarePause } from "@/server/pause";
 import { now, setClock } from "@/lib/clock";
 
@@ -269,7 +278,14 @@ try {
 
   const closesAt = TUESDAY.set({ hour: 20, minute: 0 }).toJSDate();
   const cue = (chosen: string[], typeKey: string) =>
-    cuesFor({ closesAt, timezone: ZONE, instant: TUESDAY.toJSDate(), typeKey, chosen }).map(
+    cuesFor({
+      closesAt,
+      timezone: ZONE,
+      instant: TUESDAY.toJSDate(),
+      typeKey,
+      chosen,
+      quiet: QUIET,
+    }).map(
       (d) => DateTime.fromJSDate(d, { zone: ZONE }).toFormat("HH:mm"),
     );
 
@@ -289,7 +305,7 @@ try {
     cue(["07:30"], "food").join(","),
   );
   check(
-    "a chosen time outside waking hours is honoured, because they chose it",
+    "a chosen time inside the default quiet band is honoured, because they chose it",
     cue(["23:15"], "food").join(",") === "23:15",
     cue(["23:15"], "food").join(","),
   );
@@ -304,6 +320,7 @@ try {
     instant: TUESDAY.toJSDate(),
     typeKey: "reading",
     chosen: [],
+    quiet: QUIET,
   }).map((d) => DateTime.fromJSDate(d, { zone: ZONE }).toFormat("HH:mm"));
   check("an all-day window is capped to the evening", late.join(",") === "19:30,20:45,21:20", late.join(","));
 
@@ -311,6 +328,64 @@ try {
     "the slot is the member's own local date and tick",
     slotFor(TUESDAY.set({ minute: 22 }).toJSDate(), ZONE, 15) === "2026-03-10T14:15",
     slotFor(TUESDAY.set({ minute: 22 }).toJSDate(), ZONE, 15),
+  );
+
+  // -----------------------------------------------------------------------
+  // What a notification is allowed to say about an untouched activity.
+  //
+  // THE BUG THIS EXISTS FOR. `hint` and `remind` are different sentences and
+  // the notification path must take the second. Water's hint at zero is
+  // "0 of 8 today.", a perfectly good line under a control and, on a lock
+  // screen, a claim of progress: the old copy read it as one, picked its
+  // "nearly done" bank off it, and told somebody with nothing logged that they
+  // were almost there. Twice, in production.
+  // -----------------------------------------------------------------------
+
+  setClock(TUESDAY.toJSDate());
+  await track(id, "study", { config: { minutesTarget: 45 } });
+
+  const fresh = (await outstandingFor(id)).find((o) => o.typeKey === "study");
+  check("an untouched activity is outstanding at all", !!fresh, await names());
+  check(
+    "and what it offers a notification counts DOWN, not up",
+    fresh?.left === "45 minutes of study to go.",
+    fresh?.left,
+  );
+
+  // Study is the starkest case of the two sentences being different, which is
+  // why it is the one used here: its `hint` at zero explains the RULE, which is
+  // the right line under a control on the configure screen and says nothing a
+  // person on a lock screen could act on.
+  const screen = (await getCheckinState(id, "study"))!.steps.find((s) => s.hint);
+  check(
+    "the check-in screen says something else entirely",
+    screen?.hint === "Target is 45. Anything at or above counts.",
+    screen?.hint,
+  );
+  check(
+    "and a notification never carries the screen's sentence",
+    (await outstandingFor(id)).every((o) => o.left !== screen?.hint),
+    (await outstandingFor(id)).map((o) => o.left).join(" | "),
+  );
+
+  // The engine's fallback, for a module that writes no `remind` at all. It must
+  // still be a sentence somebody can act on rather than an empty string.
+  check(
+    "every outstanding row has something to say",
+    (await outstandingFor(id)).every((o) => o.left.length > 0),
+    (await outstandingFor(id)).map((o) => `${o.typeKey}=${o.left}`).join(" | "),
+  );
+
+  // The deadline the sentence quotes and the deadline the cues count back from
+  // are one function now. They used to be two, and for gym, whose window is the
+  // whole WEEK, the cue fired on Tuesday evening while the sentence named
+  // Sunday.
+  check(
+    "the deadline a row reports is never past its own close",
+    (await outstandingFor(id)).every((o) => o.deadline <= o.closesAt),
+    (await outstandingFor(id))
+      .map((o) => `${o.typeKey} ${o.deadline.toISOString()} vs ${o.closesAt.toISOString()}`)
+      .join(" | "),
   );
 
   // -----------------------------------------------------------------------

@@ -380,8 +380,35 @@ dead       bun run check:dead      — nothing is exported that nothing imports
 notice     bun run publish:notice  — announce a release to the people already here
 sleep      bun run migrate:sleep   — move existing members onto the anchored confirm
 remind     bun run check:reminders — a reminder is sent only when a press would count
+sim        bun run sim:push        — a day of notifications, printed, no database
+push       bun run check:push      — what Curfew actually said to people
 schedule   bun run schedule:reminders — create or update the QStash tick
 ```
+
+**`bun run sim:push` is the review gate for notification copy, and reading its
+output is the point of it.** It walks seven fabricated days at the real
+fifteen-minute tick through the real `decide`, the real kinds and the real
+module `remind()` functions, and prints every notification as it would appear on
+a lock screen. It needs nothing running.
+
+It exists because v3.3's notifications passed typecheck, lint, 301 tests and
+their own unit tests, and still shipped this to somebody who had logged nothing:
+*"Almost there on Water. 0 of 8 today. Closes at 11:59 PM. Food, Supplements and
+Reading and 5 more are open too."* No function in that chain was wrong on its
+own. The SENTENCE was, and a unit test cannot notice a sentence: it asserts the
+string it was told to expect. Writing the simulator then found four more defects
+in an afternoon, including a notification naming a deadline already in the past
+and a gym streak counted in days when gym's period is a week.
+
+The assertions it exits non-zero on are the mechanical half: lengths, em-dashes,
+repeats, silence in quiet hours. They cannot tell you a sentence is clear. Read
+the output.
+
+`bun run check:push` is the same question after the fact, against a real
+database: it prints what was delivered, word for word, from the `title` and
+`body` now stored on every `push.sent` event. Run the `:production` twin the
+morning after a release. The first version stored only THAT a send had happened,
+so the words nobody could read were also the words nobody could retrieve.
 
 **Two things are run by hand after the 3.2.0 tag, in this order:
 `migrate:sleep`, then `publish:notice`.** The first is the change and the second
@@ -579,6 +606,33 @@ notification is still the clerk.** Copy lives in one place,
 `src/server/notification-copy.ts`, so the boundary is a file rather than a
 judgement call. ROADMAP theme 3 decides whether the rest of the app follows, and
 until it does, do not carry this register onto a screen.
+
+**Two hard rules inside that file, both bought with a bad release (v3.4).**
+
+**One notification is about one activity, and it names it.** The first version
+sent a digest listing everything still open, which with nine activities was a
+pile of nouns with a number attached to none of them. If a title does not say
+which activity it is about, it is not finished: "Don't break a 24 day streak"
+was caught by a test for exactly this.
+
+**No line in that file may describe progress.** Not "almost", not "nearly", not
+"one more", not a count. The only sentence in a notification that says how far
+along something is comes from the activity module, through `remind()`, and the
+copy may place it and nothing else. This is enforced structurally, by not giving
+any writer the numbers, and by tests over every seed in
+`notification-copy.test.ts`.
+
+The reason is what happens when it is not. The bank used to be chosen by asking
+whether the module's `hint` was a non-empty string, and water's hint at zero is
+`"0 of 8 today."`, which is non-empty. So production told somebody with eight
+glasses outstanding that they were almost there, twice, half an hour apart. The
+words were not vague, they were false, and no test in the repo could have said
+so because every function involved was doing its job.
+
+`hint` and `remind` are different sentences for different readers and must never
+be substituted for each other. `hint` sits under a control on a screen that
+already shows the name and counts UP; `remind` is for a lock screen, counts
+DOWN, and is what the notification path reads.
 
 ## Visual tells to avoid
 

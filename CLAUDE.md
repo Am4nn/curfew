@@ -198,7 +198,7 @@ and reputation rows wait for `bun run score`. A scheduled GitHub Actions
 workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
 real nightly job, and it is not worth it while dev has three users.
 
-`package.json` carries `3.3.1`, cut as a tag on 2026-09-17. The admin header
+`package.json` carries `3.4.0`, cut as a tag on 2026-09-17. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.
@@ -214,6 +214,19 @@ the commit that gets tagged.
   scheduled" rather than adding a second, which is the thing that script exists
   to prevent.
 - The 3.3.0 release note is published to both, 3 accounts on production.
+
+**v3.4.0 rewrote what those notifications SAY**, after the first day in
+production sent copy that told somebody with nothing logged that they were
+almost there. `.planning/v3.3/SCOPE.md` ends with the six defects and the six
+changes; the short version is that a digest became one notification per
+activity, the daily cap became three rules that are not counts, and quiet hours
+became a real setting that nothing overrides.
+
+- Migration 0028 (`notification_settings`) applied to both databases.
+- No new environment variables, no schedule change, no release note.
+- **`bun run sim:push` is the review gate for this copy.** It prints a simulated
+  day with no database. Read its output before changing a word of
+  `notification-copy.ts`.
 
 **There is exactly one QStash schedule and it must stay that way.** Two pointing
 at the same URL looks like nothing at all: the job runs twice a tick, the

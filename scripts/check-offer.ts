@@ -39,7 +39,7 @@ import {
   events,
   evidence,
 } from "@/db/schema";
-import { getActivityType } from "@/domain";
+import { getActivityType, EVERY_DAY } from "@/domain";
 import type { Schedule } from "@/domain";
 import { CONSENT_VERSION } from "@/server/consent";
 import {
@@ -262,7 +262,13 @@ try {
 
   // Office arrives once a day. The write path refuses the second, so the row
   // must not invite it.
-  await track("office", { config: { window: allDay } });
+  //
+  // Scheduled every day here, because office is Monday to Friday by default and
+  // this check is about a SECOND press being refused, not about which weekday
+  // it runs on. Left as the default it answered "not scheduled today" every
+  // Saturday and Sunday and took three checks down with it, which nobody saw
+  // until CI first ran on a weekend.
+  await track("office", { config: { window: allDay }, schedule: EVERY_DAY });
   await press("office", "arrive", "arrive1");
 
   const office = await row("office");

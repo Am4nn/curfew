@@ -52,7 +52,7 @@ function check(what: string, ok: boolean, got: unknown = "") {
 
 const id = `streakc-${randomUUID().slice(0, 6)}`;
 
-async function track(typeKey: string, config?: unknown) {
+async function track(typeKey: string, config?: unknown, schedule?: unknown) {
   const type = getActivityType(typeKey);
   await db.insert(userActivityConfig).values({
     userId: id,
@@ -60,7 +60,7 @@ async function track(typeKey: string, config?: unknown) {
     effectiveFrom: "2026-01-01",
     config: {
       schedule: {
-        schedule: type.defaults.schedule,
+        schedule: schedule ?? type.defaults.schedule,
         dayBoundary: type.defaults.dayBoundary,
       },
       config: config ?? type.defaults.config,
@@ -165,7 +165,16 @@ try {
   // A DAILY type, whose first day is the same case one period shorter. Its
   // window is widened to the whole day because office arrives between 10 AM and
   // 2 PM by default, and this check is not about the hour it runs at.
-  await track("office", { window: { open: "00:00", close: "23:59" } });
+  //
+  // Its SCHEDULE is widened for the same reason: office is Monday to Friday, so
+  // on a weekend the press came back "not scheduled today" and the four checks
+  // behind it all failed. This check is not about the day of the week it runs
+  // on either, and CI runs on Sundays.
+  await track(
+    "office",
+    { window: { open: "00:00", close: "23:59" } },
+    { kind: "days", days: [1, 2, 3, 4, 5, 6, 7] },
+  );
   const office = await press("office", "arrive", "office");
   check("the first office arrival is recorded", office.ok, JSON.stringify(office));
   check(

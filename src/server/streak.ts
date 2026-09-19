@@ -71,6 +71,24 @@ function dayList(from: string, to: string): string[] {
   return out;
 }
 
+/**
+ * What `streakOver` should treat as closed, from what `activityDays` found.
+ *
+ * Null there means NOTHING has closed, and it has to survive the call. Passing
+ * `undefined` lets the parameter default to the last day supplied, which for a
+ * member whose first period is still running is TODAY, so the week in flight
+ * gets judged as if it had ended.
+ *
+ * That is invisible six days a week and wrong on the seventh. A first gym
+ * session on a Sunday is one session against a minimum of three, and the walk
+ * read the week as closed and short, so the number went to 0 the moment it was
+ * earned. `check:streak` exists for exactly this and had never run on a Sunday.
+ *
+ * The empty string is a day before every real day, so every week is still in
+ * flight, which is what "nothing has closed" means.
+ */
+const asOf = (closedThrough: string | null): string => closedThrough ?? "";
+
 /** The stored row, or null when this type has never been counted. */
 export async function readStreak(
   userId: string,
@@ -373,11 +391,7 @@ export async function offerFor(
 ): Promise<RestoreOffer | null> {
   const walk = await walkFor(userId, typeKey);
   if (!walk) return null;
-  return restoreOffer(
-    walk.days,
-    walk.activity.schedule.schedule,
-    walk.closedThrough ?? undefined,
-  );
+  return restoreOffer(walk.days, walk.activity.schedule.schedule, asOf(walk.closedThrough));
 }
 
 export async function rebuildStreak(
@@ -389,12 +403,7 @@ export async function rebuildStreak(
   if (!walk) return null;
   const { activity, days, closedThrough, timezone, instant, unit } = walk;
 
-  const result = streakOver(
-    days,
-    activity.schedule.schedule,
-    EMPTY_STREAK,
-    closedThrough ?? undefined,
-  );
+  const result = streakOver(days, activity.schedule.schedule, EMPTY_STREAK, asOf(closedThrough));
 
   // The week in flight, so a press can add to it without re-reading history.
   const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));

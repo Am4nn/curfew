@@ -162,6 +162,15 @@ describe("frequency activities", () => {
     expect(r.current).toBe(6);
   });
 
+  it("does not judge a week that has not closed, even on its Sunday", () => {
+    // One session, on the Sunday of the week it belongs to. An empty asOf is
+    // how a caller says nothing has closed yet, and it has to beat the default,
+    // which is the last day supplied and would be this very Sunday.
+    const r = streakOver(days("2026-09-13", "x"), ANY3, EMPTY, "");
+    expect(r.current).toBe(1);
+    expect(r.steps.map((s) => s.current)).toEqual([1]);
+  });
+
   it("counts up live during the week", () => {
     const r = streakOver(days("2026-09-07", "xx"), ANY3);
     // Two sessions so far. The week has not closed, so nothing is taken back.

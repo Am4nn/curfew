@@ -1,8 +1,9 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useClientValue } from "./use-client-value";
+import { canGoBack, subscribeNavDepth } from "./nav-depth";
 
 /**
  * The `‹` in a screen header. Goes back to where you actually came from.
@@ -18,6 +19,12 @@ import { useClientValue } from "./use-client-value";
  * would leave the person on whatever was in the tab before, or do nothing at
  * all. So the parent screen is still named, and used whenever there is no
  * in-app history to return to.
+ *
+ * "No in-app history" used to be `window.history.length > 1`, which is not that
+ * question. It counts the whole tab, including pages from before Curfew was
+ * opened, and it never comes back down, so after one navigation it was true
+ * forever and Back could walk straight out of the app. `nav-depth` counts the
+ * pushes the router itself made, which is the question.
  */
 export function BackLink({
   fallback,
@@ -33,12 +40,13 @@ export function BackLink({
 }) {
   const router = useRouter();
 
-  // history.length counts entries in this tab, and a fresh tab lands on 1. The
-  // server has no history to read, so it renders the link and the browser takes
-  // over in one pass.
-  const canGoBack = useClientValue(() => window.history.length > 1, false);
+  // The server has no history to read, so it renders the link and the browser
+  // takes over in one pass. Unlike the other browser-only values in this app
+  // this one CHANGES while the page lives, on every push and every popstate,
+  // so it subscribes rather than going through `useClientValue`.
+  const deep = useSyncExternalStore(subscribeNavDepth, canGoBack, () => false);
 
-  if (!canGoBack) {
+  if (!deep) {
     return (
       <Link href={fallback} className={className} aria-label={label}>
         {children ?? "‹"}

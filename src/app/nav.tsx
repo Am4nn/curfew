@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { watchNavDepth } from "./nav-depth";
+
+// Present on every member-facing screen and mounted once, so this is where the
+// history watch is started. See nav-depth.ts.
+watchNavDepth();
 
 // The one navigation, present on every member-facing screen. Admin is not a tab
 // (it is a header link for admins); the check-in has no screen of its own any
@@ -86,6 +91,11 @@ export function TabBar({ hasPendingInvite = false }: { hasPendingInvite?: boolea
             <Link
               key={t.href}
               href={t.href}
+              // A root tab is lateral, not a step down, so it replaces rather
+              // than stacking. Without this, four tab presses are four entries
+              // and the back control walks the tabs backwards instead of
+              // leaving the screen it is on.
+              replace
               aria-current={active ? "page" : undefined}
               className={
                 "relative flex flex-1 flex-col items-center gap-[5px] px-0 pb-[11px] pt-[9px] text-[10px] " +

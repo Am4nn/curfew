@@ -27,6 +27,12 @@ export function GroupTabs({ groupId }: { groupId: string }) {
           <Link
             key={tab.slug}
             href={href}
+            // The four tabs are one screen, so the hub occupies one history
+            // entry and the back control leaves the group. Pushing meant
+            // Overview, Evidence, Standing and Settings each stacked, and
+            // getting out of a group took as many presses as tabs you had
+            // looked at.
+            replace
             className={
               "mr-[22px] pb-[10px] text-[11px] tracking-[0.12em] " +
               (active ? "text-fg shadow-[inset_0_-2px_0_var(--fg)]" : "text-muted")

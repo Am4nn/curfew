@@ -763,8 +763,12 @@ export async function runRebuild(
 
 export interface DriftRow {
   userName: string;
-  typeName: string; // an activity type's display name, or "Reputation"
-  date: string; // yyyy-mm-dd
+  /** An activity type's display name, or what the row is about: "Reputation",
+   *  "Streak", "Group outcome", "Ledger". */
+  typeName: string;
+  /** yyyy-mm-dd, or null when the row is not about one day. A streak is a
+   *  running total and has no date, and printing one produced "Invalid Date". */
+  date: string | null;
   detail: string; // "stored X, recomputed Y"
 }
 
@@ -786,17 +790,56 @@ export async function getDriftReport(
 
   const rows = drift.slice(0, 20).map((d): DriftRow => {
     const userName = nameOf.get(d.userId) ?? "unknown";
-    if (d.kind === "score") {
-      const [typeKey, periodStart] = d.key.split("|");
-      return {
-        userName,
-        typeName: activityTypeName(typeKey),
-        date: periodStart,
-        detail: describeScoreDrift(d),
-      };
+    // Every kind, and each one's key is shaped differently. This used to read
+    // `if score { ... }` and call everything else Reputation, splitting its key
+    // on "|" and taking part two as the date. That is the date for a
+    // reputation row and it is the TYPE KEY for an outcome or a ledger row, and
+    // a streak key has no "|" in it at all. So three of the five kinds were
+    // labelled Reputation, two of them printed "Invalid Date", and the page
+    // that exists to say what is wrong could not say what was wrong.
+    switch (d.kind) {
+      case "score": {
+        const [typeKey, periodStart] = d.key.split("|");
+        return {
+          userName,
+          typeName: activityTypeName(typeKey),
+          date: periodStart ?? null,
+          detail: describeScoreDrift(d),
+        };
+      }
+      case "reputation": {
+        // `${groupId ?? "global"}|${day}`.
+        const [scope, day] = d.key.split("|");
+        return {
+          userName,
+          typeName: scope === "global" ? "Reputation" : "Reputation, in a group",
+          date: day ?? null,
+          detail: describeReputationDrift(d),
+        };
+      }
+      case "outcome":
+      case "ledger": {
+        // `${groupId}|${typeKey}|${periodStart}`.
+        const [, typeKey, periodStart] = d.key.split("|");
+        return {
+          userName,
+          typeName: `${activityTypeName(typeKey)}, ${d.kind === "ledger" ? "ledger" : "group outcome"}`,
+          date: periodStart ?? null,
+          detail:
+            d.kind === "ledger" ? describeLedgerDrift(d) : describeOutcomeDrift(d),
+        };
+      }
+      case "streak": {
+        // A bare type key. A streak is a running total over every day the
+        // activity has ever had, so there is no one day to date it to.
+        return {
+          userName,
+          typeName: `${activityTypeName(d.key)}, streak`,
+          date: null,
+          detail: describeStreakDrift(d),
+        };
+      }
     }
-    const [, day] = d.key.split("|");
-    return { userName, typeName: "Reputation", date: day, detail: describeReputationDrift(d) };
   });
 
   return { rows, total: drift.length };
@@ -819,6 +862,32 @@ function describeScoreDrift(d: Drift): string {
     return `stored settling=${String(d.stored)}, recomputed settling=${String(d.computed)}`;
   }
   return `${d.field}: stored ${String(d.stored)}, recomputed ${String(d.computed)}`;
+}
+
+function describeOutcomeDrift(d: Drift): string {
+  if (d.field === "*") {
+    return `no stored outcome for the group, recomputed ${d.computed ? "pass" : "fail"}`;
+  }
+  if (d.field === "passed") {
+    return `stored ${d.stored ? "pass" : "fail"}, recomputed ${d.computed ? "pass" : "fail"}`;
+  }
+  return `${d.field}: stored ${String(d.stored)}, recomputed ${String(d.computed)}`;
+}
+
+function describeLedgerDrift(d: Drift): string {
+  if (d.field === "fineAmount") {
+    return `charged ${String(d.stored)}, owes ${String(d.computed)}`;
+  }
+  if (d.field === "shares") return `charged ${String(d.computed)} and split to nobody`;
+  if (d.field === "sharesSum") {
+    return `shares total ${String(d.stored)}, charge was ${String(d.computed)}`;
+  }
+  return `${d.field}: stored ${String(d.stored)}, recomputed ${String(d.computed)}`;
+}
+
+function describeStreakDrift(d: Drift): string {
+  if (d.field === "*") return `no stored counter, rebuild says ${String(d.computed)}`;
+  return `${d.field}: stored ${String(d.stored)}, rebuild says ${String(d.computed)}`;
 }
 
 function describeReputationDrift(d: Drift): string {

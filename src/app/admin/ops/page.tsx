@@ -15,6 +15,15 @@ function shortDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+// A drift row does not always have a date: a streak is a running total over
+// every day an activity has ever had. Printing one anyway is where the
+// "Invalid Date" on this page came from.
+function driftDate(iso: string | null): string | null {
+  if (!iso) return null;
+  const at = new Date(iso);
+  return Number.isNaN(at.getTime()) ? null : shortDate(iso);
+}
+
 export default async function AdminOps({
   searchParams,
 }: {
@@ -90,7 +99,9 @@ export default async function AdminOps({
                 >
                   <div className="flex min-w-0 flex-col gap-[3px]">
                     <span className="text-[13px]">
-                      {shortDate(d.date)} · {d.userName} · {d.typeName}
+                      {[driftDate(d.date), d.userName, d.typeName]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                     <span className="text-[10.5px] text-muted">{d.detail}</span>
                   </div>

@@ -93,12 +93,18 @@ export const EMPTY: StreakState = { current: 0, best: 0 };
  * old looks like a week that missed its minimum, and the streak would collapse
  * every Tuesday. Defaults to the last day supplied, which is what the nightly
  * job passes anyway.
+ *
+ * `today` is the member's current local date, and it is what lets a week fail
+ * EARLY. See the unreachable rule below. Omit it and a week is only ever judged
+ * at its end, which is what every caller did before and what the tests that do
+ * not pass it still assert.
  */
 export function streakOver(
   days: StreakDay[],
   schedule: Schedule,
   from: StreakState = EMPTY,
   asOf?: string,
+  today?: string,
 ): StreakResult {
   const state: StreakState = { current: from.current, best: from.best };
   const steps: StreakStep[] = [];
@@ -150,6 +156,15 @@ export function streakOver(
     else weeks.set(monday, [day]);
   }
 
+  // The week in progress, even when it is empty.
+  //
+  // A caller supplies the days it knows about, and for the week in flight that
+  // is only the days already DONE. So a week in which nothing has happened
+  // contributes no days, produces no bucket, and would never be looked at,
+  // which is exactly the week the unreachable rule exists for: nothing logged
+  // by Saturday is the case where three a week has already failed.
+  if (today && !weeks.has(mondayOf(today))) weeks.set(mondayOf(today), []);
+
   const minimum = schedule.kind === "minimum" ? schedule.perWeek : 0;
   const closedThrough = asOf ?? sorted.at(-1)?.date ?? "";
 
@@ -178,7 +193,20 @@ export function streakOver(
 
     // Still in flight. Its days have counted up, and it is not judged until it
     // ends, so a good week shows progress and a bad one has time to recover.
-    if (sundayOf(monday) > closedThrough) continue;
+    //
+    // Unless there is nothing left to recover with. A three-a-week with nothing
+    // logged has already failed by Saturday morning: two days remain and two is
+    // not three, so no sequence of presses reaches the minimum. Waiting until
+    // Sunday night to say so leaves the app telling somebody their streak is
+    // alive when the arithmetic says it is not, and the whole value of the
+    // number is that it is true.
+    //
+    // Counted as the days from today to Sunday that are not ALREADY done, so a
+    // day logged this morning is not counted twice: once as a session and again
+    // as a day still available.
+    if (sundayOf(monday) > closedThrough && !unreachable(week, monday, minimum, sessions, today)) {
+      continue;
+    }
 
     // The week failed. Without grace the run ends. With it the run HOLDS where
     // it is, keeping the days this week did add.
@@ -229,8 +257,9 @@ export function restoreOffer(
   days: StreakDay[],
   schedule: Schedule,
   asOf?: string,
+  today?: string,
 ): RestoreOffer | null {
-  const walk = streakOver(days, schedule, EMPTY, asOf);
+  const walk = streakOver(days, schedule, EMPTY, asOf, today);
   if (walk.current > 0) return null;
 
   // The tail: every judged period after the last one the run was alive on.
@@ -258,6 +287,7 @@ export function restoreOffer(
     schedule,
     EMPTY,
     asOf,
+    today,
   );
 
   return { brokeOn: covering.at(-1)!, cost, restoresTo: after.current, covering };
@@ -280,9 +310,40 @@ export function coveredDays(
   return days.filter((d) => wanted.has(mondayOf(d.date))).map((d) => d.date);
 }
 
+/**
+ * Can this week still reach its minimum?
+ *
+ * False, meaning it CAN, whenever the answer is not certain: no `today`, a week
+ * that is not the one `today` is in, or a schedule with no minimum. A streak is
+ * only ever ended here by arithmetic that cannot come out the other way.
+ */
+function unreachable(
+  week: StreakDay[],
+  monday: string,
+  minimum: number,
+  sessions: number,
+  today?: string,
+): boolean {
+  if (!today || minimum <= 0) return false;
+  const sunday = sundayOf(monday);
+  // Only the week in progress. A future week has every day left, and a past one
+  // is judged by the ordinary end-of-week rule above.
+  if (today < monday || today > sunday) return false;
+
+  const done = new Set(week.filter((d) => d.done).map((d) => d.date));
+  let left = 0;
+  for (let d = today; d <= sunday; d = addDay(d)) if (!done.has(d)) left += 1;
+  return sessions + left < minimum;
+}
+
 // Local to this module: the streak walks days, and only weekly activities need
 // to group them. periodStart() is for resolving an instant, which is a
 // different question.
+function addDay(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+}
+
 function sundayOf(monday: string): string {
   const [y, m, d] = monday.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + 6)).toISOString().slice(0, 10);

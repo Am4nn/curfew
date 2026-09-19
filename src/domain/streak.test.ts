@@ -169,6 +169,68 @@ describe("frequency activities", () => {
     expect(r.current).toBe(2);
   });
 
+  // A week ends the moment its minimum stops being reachable, rather than on
+  // the Sunday after. The week of 2026-09-07 runs Monday to Sunday the 13th.
+  describe("a week that can no longer be reached", () => {
+    const start = { current: 20, best: 20 };
+    // Monday closed, nothing since. Every test below is mid-week, so the
+    // ordinary end-of-week rule has nothing to say and only `today` decides.
+    const asOf = "2026-09-07";
+
+    it("ends on the Saturday when nothing has been done", () => {
+      // Saturday and Sunday are two days and the minimum is three.
+      const r = streakOver(days("2026-09-07", ""), ANY3, start, asOf, "2026-09-12");
+      expect(r.current).toBe(0);
+      expect(r.steps.at(-1)).toMatchObject({ at: "2026-09-07", short: 3 });
+    });
+
+    it("does not end on the Friday, when three days are still left", () => {
+      const r = streakOver(days("2026-09-07", ""), ANY3, start, asOf, "2026-09-11");
+      expect(r.current).toBe(20);
+      expect(r.steps).toHaveLength(0);
+    });
+
+    it("counts a day already done today as a session, not as a day left", () => {
+      // Friday done. Two sessions needed, two days left after today: reachable.
+      const r = streakOver(days("2026-09-11", "x"), ANY3, start, asOf, "2026-09-11");
+      expect(r.current).toBe(21);
+    });
+
+    it("ends on the Sunday when one session is short by two", () => {
+      // Monday done, then nothing. Sunday alone cannot supply the other two.
+      const r = streakOver(days("2026-09-07", "x"), ANY3, start, asOf, "2026-09-13");
+      expect(r.current).toBe(0);
+      expect(r.steps.at(-1)).toMatchObject({ short: 2 });
+    });
+
+    it("grace still holds a week that failed early", () => {
+      const week = days("2026-09-07", "......x");
+      week[6] = { ...week[6], done: false, graced: true };
+      const r = streakOver(week, ANY3, start, asOf, "2026-09-12");
+      expect(r.current).toBe(20);
+      expect(r.steps.at(-1)?.graceUsed).toBe(true);
+    });
+
+    it("says nothing without a today, which is what every old caller did", () => {
+      const r = streakOver(days("2026-09-07", ""), ANY3, start, asOf);
+      expect(r.current).toBe(20);
+    });
+
+    it("does not re-judge a week that has already closed", () => {
+      // The week of the 7th passed with three sessions and is closed through
+      // its Sunday. `today` sitting in the next week must not reopen it, and
+      // the empty week it IS in is judged on its own days.
+      const r = streakOver(
+        days("2026-09-07", "xxx...."),
+        ANY3,
+        start,
+        "2026-09-13",
+        "2026-09-14",
+      );
+      expect(r.current).toBe(23);
+    });
+  });
+
   it("the worked example from ACTIVITIES.md", () => {
     // Starting streak 12. Week 1 six sessions, week 2 three, week 3 two.
     const start = { current: 12, best: 12 };

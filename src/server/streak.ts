@@ -324,6 +324,9 @@ async function walkFor(
   closedThrough: string | null;
   timezone: string;
   instant: Date;
+  /** The member's local date right now: what makes a week fail as soon as its
+   *  minimum stops being reachable, rather than on the Sunday after. */
+  today: string;
   unit: "day" | "week";
 } | null> {
   const activity = await getUserActivity(userId, typeKey);
@@ -356,6 +359,7 @@ async function walkFor(
     closedThrough,
     timezone,
     instant,
+    today: iso(DateTime.fromJSDate(instant, { zone: timezone })),
     unit,
   };
 }
@@ -377,6 +381,7 @@ export async function offerFor(
     walk.days,
     walk.activity.schedule.schedule,
     walk.closedThrough ?? undefined,
+    walk.today,
   );
 }
 
@@ -387,17 +392,17 @@ export async function rebuildStreak(
 ): Promise<StoredStreak | null> {
   const walk = await walkFor(userId, typeKey);
   if (!walk) return null;
-  const { activity, days, closedThrough, timezone, instant, unit } = walk;
+  const { activity, days, closedThrough, today, unit } = walk;
 
   const result = streakOver(
     days,
     activity.schedule.schedule,
     EMPTY_STREAK,
     closedThrough ?? undefined,
+    today,
   );
 
   // The week in flight, so a press can add to it without re-reading history.
-  const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));
   const weekStart = unit === "week" ? mondayOf(today) : null;
   const weekSessions =
     weekStart === null
@@ -506,8 +511,22 @@ export async function bumpStreak(
  *
  * `closedThrough` is what makes the close idempotent: nothing new means nothing
  * to do, and the counter keeps whatever the press added.
+ *
+ * A WEEKLY type is exempt and always rebuilds. Its week can now fail in the
+ * MIDDLE, the moment the minimum stops being reachable, and nothing has closed
+ * when that happens: no period ended, no score was written, so the gate above
+ * would skip the one rebuild that would notice. The alternative is to
+ * re-derive reachability here from the stored week, which needs to know whether
+ * TODAY is one of the sessions already counted, and the stored row does not
+ * say. One extra rebuild for one activity is the cheaper wrong thing to worry
+ * about; a streak that reads alive when the arithmetic says it is dead is not.
  */
-function needsClosing(stored: StoredStreak | null, scoredThrough: string | null): boolean {
+function needsClosing(
+  stored: StoredStreak | null,
+  scoredThrough: string | null,
+  unit: "day" | "week",
+): boolean {
+  if (unit === "week") return true;
   if (!stored?.closedThrough) return true;
   if (scoredThrough === null) return false;
   return scoredThrough > stored.closedThrough;
@@ -576,9 +595,12 @@ export async function closeStreaks(userId: string): Promise<void> {
   // disabled ones left a type with scores and no row, and `verify` reported
   // that as drift, correctly. What the number stops doing is moving.
   for (const a of activities) {
-    if (!needsClosing(stored.get(a.typeKey) ?? null, scoredThrough.get(a.typeKey) ?? null)) {
-      continue;
-    }
+    const needed = needsClosing(
+      stored.get(a.typeKey) ?? null,
+      scoredThrough.get(a.typeKey) ?? null,
+      periodUnit(a.schedule.schedule),
+    );
+    if (!needed) continue;
     await rebuildStreak(userId, a.typeKey);
   }
 }

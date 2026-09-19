@@ -1,8 +1,12 @@
 import { and, eq, isNull, desc, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { ledgerEntries, finePostings, groups, groupMembers, users } from "@/db/schema";
+import { ledgerEntries, finePostings, groups, groupMembers, users, events } from "@/db/schema";
+import { recordEvent } from "./events";
 import { splitFine } from "@/domain";
 import { assertMember } from "./membership";
+
+/** A fine that was owed to nobody. Namespaced and stable, like every event. */
+const UNCHARGED = "ledger.fine.uncharged";
 
 // One member's outcome for one period in one group.
 export interface OutcomeRow {
@@ -42,6 +46,10 @@ async function nameLookup(userIds: string[]): Promise<(id: string) => string> {
  * creditor and nothing is written (decision 107). That keeps invariant 7 exact:
  * every fine sums to its shares, because there are always shares.
  *
+ * That period still leaves a `ledger.fine.uncharged` event, because "no fine
+ * was owed" and "a fine was owed and went missing" looked identical from
+ * outside and only one of them is fine. See `noteUncharged`.
+ *
  * THE POSTING IS WRITTEN FIRST, and that order is the whole guard.
  *
  * `ledger_one_fine_idx` makes each SHARE idempotent, which is not the same as
@@ -69,6 +77,7 @@ export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
 
   const names = await nameLookup(outcomes.map((o) => o.userId));
   let written = 0;
+  const uncharged: OutcomeRow[] = [];
 
   for (const o of failed) {
     // Only members who passed the same period, sharing the same type. Someone
@@ -84,7 +93,16 @@ export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
       )
       .map((p) => p.userId);
 
-    if (recipients.length === 0) continue;
+    // Nobody passed, so there is no creditor and no fine (decision 107).
+    // Collected rather than dropped: the rule is right and its SILENCE was
+    // not. `activity_outcomes` keeps saying the period attracted a fine,
+    // the ledger stays empty because nothing was owed to anybody, and until
+    // now not one row anywhere reconciled the two. On the live database that
+    // was five fines, INR 250, that existed on an outcome and nowhere else.
+    if (recipients.length === 0) {
+      uncharged.push(o);
+      continue;
+    }
 
     // Claim it. Nothing back means someone already did, so this fine is
     // charged and the shares below are not ours to write.
@@ -123,7 +141,56 @@ export async function writeFines(outcomes: OutcomeRow[]): Promise<number> {
     written += inserted.length;
   }
 
+  await noteUncharged(uncharged);
   return written;
+}
+
+/**
+ * Leave a record of a fine that nobody owed.
+ *
+ * Not a ledger row. A ledger row is money moving between two people and this is
+ * the opposite of that, so writing one would be a lie that invariant 7 would
+ * then have to be bent around. It is an EVENT, which is where this codebase
+ * keeps things that happened (invariant 1), and nothing reads it back into a
+ * balance.
+ *
+ * Deduplicated by reading first, because `settleFines` re-reads every failed
+ * outcome on every pass and would otherwise write the same row nightly for as
+ * long as the group exists. A partial unique index would be tidier and costs a
+ * migration; these are rare enough that a read is cheaper than a column.
+ */
+async function noteUncharged(uncharged: OutcomeRow[]): Promise<void> {
+  if (uncharged.length === 0) return;
+
+  const already = new Set(
+    (
+      await db
+        .select({ userId: events.userId, payload: events.payload })
+        .from(events)
+        .where(eq(events.type, UNCHARGED))
+    ).map((r) => {
+      const p = (r.payload ?? {}) as Record<string, unknown>;
+      return `${r.userId}|${String(p.group_id)}|${String(p.type_key)}|${String(p.period_start)}`;
+    }),
+  );
+
+  for (const o of uncharged) {
+    const key = `${o.userId}|${o.groupId}|${o.typeKey}|${o.periodStart}`;
+    if (already.has(key)) continue;
+    already.add(key);
+    await recordEvent({
+      userId: o.userId,
+      type: UNCHARGED,
+      payload: {
+        group_id: o.groupId,
+        type_key: o.typeKey,
+        period_start: o.periodStart,
+        amount: o.fineAmount,
+        currency: o.currency,
+        reason: "nobody passed this period, so there was no one to pay",
+      },
+    });
+  }
 }
 
 // Record a settlement the payer made: one append-only row, never a mutation.

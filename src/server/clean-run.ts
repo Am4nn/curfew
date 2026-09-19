@@ -15,10 +15,27 @@ import { db } from "@/db";
 // otherwise never accumulate a run at all. A day with something due and not
 // done ends it.
 //
-// `reputation_daily` already stores exactly this, one row a day per scope, with
-// `completion` null for a day that had nothing due. So the run is a read, not a
-// second thing to keep in step: counted in SQL rather than by shipping a year
-// of rows to node to walk backwards.
+// WHAT ENDS A RUN IS READ FROM THE PERIODS, NOT FROM `completion`, and that is
+// the whole point of this file being longer than one query.
+//
+// `reputation_daily.completion` is null for two different days: one where
+// nothing was scheduled, and one where everything scheduled is inside its
+// activity's seven-day SETTLING window (decision 54) and so cannot move
+// reputation yet. This counted both as clean, which meant a member who added
+// their activities on Monday and did almost none of them was told on Friday
+// that they had five clean days. Every one of those days had something due and
+// not done. The bug is not that the number was too high, it is that the number
+// was measuring reputation movement while claiming to measure a record.
+//
+// So the BREAK comes from where a period's verdict actually lives:
+// `activity_scores` for the global run, and `activity_outcomes` for a group's,
+// which is already narrowed to the types that member shares with it. Settling
+// has no say in either. A paused period is not a miss, and `activity_outcomes`
+// has already dropped those, so only the global arm says so.
+//
+// The COUNT still comes from `reputation_daily`, one row a day per scope, which
+// is what makes a quiet day count inside the run instead of being missing from
+// it.
 
 interface Row {
   key: string;
@@ -43,11 +60,24 @@ const cleanRunFor = cache(
   async (userId: string): Promise<Map<string, number>> => {
     const result = await db.execute(sql`
       WITH missed AS (
-        SELECT group_id, max(day) AS day
-          FROM reputation_daily
-         WHERE user_id = ${userId}
-           AND completion IS NOT NULL AND completion < 1
-         GROUP BY group_id
+        -- The global run: every activity, settling included, pauses excluded.
+        SELECT NULL::uuid AS group_id, max(s.period_end - 1) AS day
+          FROM activity_scores s
+         WHERE s.user_id = ${userId}
+           AND NOT s.passed
+           AND NOT s.paused
+        UNION ALL
+        -- One group's run: only what this member shares with it, which is what
+        -- an outcome row already means. Paused periods never produce one.
+        SELECT o.group_id, max(s.period_end - 1) AS day
+          FROM activity_outcomes o
+          JOIN activity_scores s
+            ON s.user_id = o.user_id
+           AND s.type_key = o.type_key
+           AND s.period_start = o.period_start
+         WHERE o.user_id = ${userId}
+           AND NOT o.passed
+         GROUP BY o.group_id
       )
       SELECT COALESCE(r.group_id::text, 'global') AS key,
              count(*)::int AS clean
@@ -79,11 +109,15 @@ export const cleanRunsIn = cache(
   async (groupId: string): Promise<Map<string, number>> => {
     const result = await db.execute(sql`
       WITH missed AS (
-        SELECT user_id, max(day) AS day
-          FROM reputation_daily
-         WHERE group_id = ${groupId}
-           AND completion IS NOT NULL AND completion < 1
-         GROUP BY user_id
+        SELECT o.user_id, max(s.period_end - 1) AS day
+          FROM activity_outcomes o
+          JOIN activity_scores s
+            ON s.user_id = o.user_id
+           AND s.type_key = o.type_key
+           AND s.period_start = o.period_start
+         WHERE o.group_id = ${groupId}
+           AND NOT o.passed
+         GROUP BY o.user_id
       )
       SELECT r.user_id AS key, count(*)::int AS clean
         FROM reputation_daily r

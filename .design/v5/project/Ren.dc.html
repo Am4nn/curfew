@@ -116,6 +116,23 @@
     .t-peek  { animation: peek 2.9s ease-in-out infinite; transform-origin: 58px 56px; }
     .p-turn  { animation: turnSpec 8.4s ease-in-out infinite; }
 
+    /*
+      THE CROWN ROCKS, and it rocks on its own clock. 6.8s against the body's
+      5.2s share no short multiple, so the two drift in and out of step and it
+      never settles into a beat you can count. A crown pinned dead still to a
+      breathing head reads as pasted on.
+
+      Small numbers: five degrees of travel and half a pixel of lift. It is
+      sitting on him, not balancing.
+    */
+    @keyframes crownRock {
+      0%, 100% { transform: rotate(-8deg)   translateY(0); }
+      38%      { transform: rotate(-4.6deg) translateY(-0.7px); }
+      71%      { transform: rotate(-9.6deg) translateY(0.45px); }
+    }
+    .k-rock { transform-box: view-box; transform-origin: 58px 19px; animation: crownRock 6800ms ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) { .k-rock { animation: none; transform: rotate(-8deg); } }
+
     @keyframes breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.022); } }
     @keyframes breathSlow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.038); } }
     .b-breath { animation: breath 5.2s ease-in-out infinite; }
@@ -215,9 +232,28 @@
           <!-- the highlight slides opposite the turn: the light does not rotate -->
           <div class="{{m.specA}}" style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 31% 23%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.30) 17%, transparent 34%);"></div>
 
-          <svg viewBox="0 0 116 116" style="position: absolute; inset: 0;" aria-label="{{m.label}}" role="img">
+          <svg viewBox="0 0 116 116" style="position: absolute; inset: 0; overflow: visible;" aria-label="{{m.label}}" role="img">
+            <defs>
+              <filter id="crownGlow" x="-70%" y="-70%" width="240%" height="240%">
+                <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#ffd23f" flood-opacity="0.55"/>
+              </filter>
+            </defs>
             <!-- one group turns, everything inside it acts -->
             <g class="{{m.turnA}}">
+              <!--
+                Inside the turn group on purpose. When he looks left the crown
+                goes with him and squashes the same way the face does, because
+                it is on the same sphere. Outside the group it would slide.
+              -->
+              <sc-if value="{{m.crown}}" hint-placeholder-val="{{false}}">
+                <g class="k-rock" filter="url(#crownGlow)">
+                  <rect x="36" y="2.5" width="10" height="11" fill="#ffd23f"/>
+                  <rect x="53" y="0.5" width="10" height="13" fill="#ffd23f"/>
+                  <rect x="70" y="2.5" width="10" height="11" fill="#ffd23f"/>
+                  <rect x="36" y="13" width="44" height="6" fill="#ffd23f"/>
+                  <rect x="36" y="17.4" width="44" height="1.6" fill="#c08c10"/>
+                </g>
+              </sc-if>
               <g class="{{m.browA}}" style="transform-origin: 58px 42px;">
                 <path d="{{m.brow}}" fill="none" stroke="{{m.ink}}" stroke-width="3.4" stroke-linecap="round"/>
               </g>
@@ -340,6 +376,10 @@ class Component extends DCLogic {
           mouth: 'M50 67q8 7 16 0', mouthFill: 'none', mw: 3.6,
           body: 'b-slow', turnA: 't-turn', specA: 'p-turn',
           browA: '', eyeA: 'e-blink', mouthA: '',
+          // Three square teeth, zero radius: the mark's rhythm rather than a
+          // clip-art crown. It is not the mark and must never be read as one,
+          // so it is a row of three on a band and never a grid with a hole.
+          crown: true,
         },
       ],
     };

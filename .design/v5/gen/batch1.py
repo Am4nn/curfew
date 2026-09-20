@@ -13,7 +13,7 @@ from chrome import *
 # 1.15. Deterministic, unskippable, three screens. Every line below is written
 # rather than generated: not one model call runs on the screen where somebody
 # decides whether this app is worth keeping.
-H = 844
+H = 872
 first = [HEAD, root(H)]
 first.append("""
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 6px;">
@@ -41,22 +41,32 @@ REN_SPHERE = """      <div style="position: relative; width: {size}px; height: {
       </div>
 """
 
+MARK = ('<svg viewBox="0 0 32 32" width="{size}" height="{size}" shape-rendering="crispEdges" aria-hidden="true" '
+        'style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/>'
+        '<rect x="17" y="2" width="13" height="13" fill="#ffffff"/>'
+        '<rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg>')
+
 first.append("""
-  <!-- 1. He arrives. -->
+  <!-- 1. He arrives, and the refusal is on the same screen. -->
   <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
-    <div style="padding: 44px 26px 0; display: flex; flex-direction: column; align-items: center;">
-""" + REN_SPHERE.replace('{size}', '134') + """
-      <h1 style="margin: 30px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
+    <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
+""" + REN_SPHERE.replace('{size}', '130') + """
+      <h1 style="margin: 28px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
       <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He reads what you log, your photographs and whatever your groups share with you, and he tells you what he notices.</p>
-      <p style="margin: 18px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He never decides whether a day counted. That is arithmetic, and it stays arithmetic.</p>
+      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He never decides whether a day counted. That is arithmetic, and it stays arithmetic.</p>
     </div>
   </sc-if>
 
-  <!-- 2. He asks for something, rather than explaining himself further. -->
+  <!-- 2. Something is asked for, rather than more explaining. -->
   <sc-if value="{{isPick}}" hint-placeholder-val="{{false}}">
     <div style="padding: 20px 20px 0; display: flex; flex-direction: column;">
       <div style="display: flex; align-items: flex-start; gap: 13px;">
-""" % (GREY, GREY) + REN_SPHERE.replace('{size}', '44').replace('      <div style="position: relative; width: 44px', '        <div style="flex: none; position: relative; width: 44px') + """        <p style="margin: 0; font-size: 19px; line-height: 1.42; font-weight: 500;">Pick two or three to start. You can change all of it tomorrow.</p>
+        <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
+""" % (GREY, GREY) + REN_SPHERE.replace('{size}', '44').replace('      <div style="position: relative; width: 44px', '        <div style="flex: none; position: relative; width: 44px') + """        </sc-if>
+        <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
+          <span style="flex: none; margin-top: 4px;">""" + MARK.replace('{size}', '26') + """</span>
+        </sc-if>
+        <p style="margin: 0; flex-grow: 1; font-size: 19px; line-height: 1.42; font-weight: 500;">{{pickLine}}</p>
       </div>
 
       <div style="margin-top: 22px; border-radius: 14px; background: %s; overflow: hidden;">
@@ -81,14 +91,19 @@ first.append("""
     </div>
   </sc-if>
 
-  <!-- 3. He has already helped with something, which is the point of 1.15. -->
+  <!-- 3. Something has already been helped with, which is the point of 1.15. -->
   <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
-    <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
-""" % (CARD, GREY, GREY) + REN_SPHERE.replace('{size}', '104') + """
-      <h1 style="margin: 26px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
-      <p style="margin: 11px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">Your first windows open tomorrow morning. I will be on Today when they do.</p>
+    <div style="padding: 38px 26px 0; display: flex; flex-direction: column; align-items: center;">
+      <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
+""" % (CARD, GREY, GREY) + REN_SPHERE.replace('{size}', '100') + """      </sc-if>
+      <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
+        <span style="margin-top: 14px;">""" + MARK.replace('{size}', '62') + """</span>
+      </sc-if>
 
-      <div style="margin-top: 26px; width: 100%%; border-radius: 14px; background: %s; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <h1 style="margin: 26px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
+      <p style="margin: 11px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">{{doneLine}}</p>
+
+      <div style="margin-top: 24px; width: 100%%; border-radius: 14px; background: %s; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
         <sc-for list="{{chosen}}" as="c" hint-placeholder-count="3">
           <div style="display: flex; align-items: center; gap: 10px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="20 6 9 17 4 12"/></svg>
@@ -97,30 +112,46 @@ first.append("""
           </div>
         </sc-for>
       </div>
+
+      <!-- Said once, and only to somebody who said no. Nagging a person about
+           a thing they declined is how a switch stops being a real switch. -->
+      <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
+        <div style="margin-top: 16px; width: 100%%; border-radius: 14px; background: %s; padding: 14px 16px; display: flex; gap: 12px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
+          <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: %s;">Ren is off. Nothing of yours goes to a model, and there is no coach tab. Switch him on any time in Settings.</span>
+        </div>
+      </sc-if>
     </div>
   </sc-if>
-""" % (GREY, CARD, GREEN, MONO, GREY))
+""" % (GREY, CARD, GREEN, MONO, GREY, CARD, GREY, GREY))
 
 first.append(grow())
-first.append("""  <div style="flex: none; padding: 0 20px 34px;">
+
+# THE REFUSAL SITS UNDER THE PRIMARY, not beside it. Side by side makes two
+# equal choices out of one obvious one and one honest escape.
+first.append("""  <div style="flex: none; padding: 0 20px 30px;">
     <sc-if value="{{notLast}}" hint-placeholder-val="{{true}}">
       <button type="button" onClick="{{next}}" style="width: 100%%; height: 54px; border: 0; border-radius: 15px; background: {{nextBg}}; color: {{nextFg}}; font-family: inherit; font-size: 17px; font-weight: 600;">{{nextLabel}}</button>
+    </sc-if>
+    <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
+      <button type="button" onClick="{{decline}}" style="margin-top: 6px; width: 100%%; height: 44px; border: 0; background: transparent; color: %s; font-family: inherit; font-size: 15px;">I do not want a coach</button>
+      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: %s;">Nothing of yours is sent to a model, and you can switch him on later in Settings.</p>
     </sc-if>
     <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
       <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%%; height: 54px; border-radius: 15px; background: %s; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Go to Today</a>
     </sc-if>
   </div>
-""" % PINK)
+""" % (GREY, DIM, PINK))
 
 first.append(logic(H, """  constructor(props) {
     super(props);
     // Water and Sleep are pre-ticked, which is the only nudge in the tutorial.
     // Leaving with nothing is not an outcome this screen offers.
-    this.state = { step: 0, on: { water: true, sleep: true, gym: false, read: false, food: false } };
+    this.state = { step: 0, ren: true, on: { water: true, sleep: true, gym: false, read: false, food: false } };
   }
   renderVals() {
     const ON = '""" + PINK + """', OFF = '""" + CARD2 + """', SEP = '""" + SEP + """';
-    const step = this.state.step, on = this.state.on;
+    const step = this.state.step, on = this.state.on, ren = this.state.ren;
     const defs = [
       { key: 'water', name: 'Water', rule: '8 glasses, any time', when: 'all day',
         path: 'M12 3s6 6.4 6 10.2A6 6 0 0 1 6 13.2C6 9.4 12 3 12 3z' },
@@ -138,10 +169,22 @@ first.append(logic(H, """  constructor(props) {
       pips: [0, 1, 2].map((i) => ({ fill: i <= step ? ON : OFF })),
       stepLabel: `STEP ${step + 1} OF 3`,
       isMeet: step === 0, isPick: step === 1, isDone: step === 2, notLast: step < 2,
-      nextLabel: step === 0 ? 'Hello, Ren' : (count === 0 ? 'Pick at least one' : `Set up ${count}`),
+      ren, noRen: !ren,
+      // He asks on the picking screen only if he is still here. Otherwise the
+      // app asks, in its own voice, and he is not mentioned.
+      pickLine: ren
+        ? 'Pick two or three to start. You can change all of it tomorrow.'
+        : 'Pick two or three to start. Nothing here begins until tomorrow.',
+      doneLine: ren
+        ? 'Your first windows open tomorrow morning. I will be on Today when they do.'
+        : 'Your first windows open tomorrow morning.',
+      nextLabel: step === 0
+        ? (ren ? 'Hello, Ren' : 'Carry on')
+        : (count === 0 ? 'Pick at least one' : `Set up ${count}`),
       nextBg: step === 0 || count > 0 ? ON : OFF,
       nextFg: step === 0 || count > 0 ? '#ffffff' : '""" + DIM + """',
       next: () => { if (step === 1 && count === 0) return; this.setState({ step: step + 1 }); },
+      decline: () => this.setState({ ren: false, step: 1 }),
       count,
       chosen: defs.filter((d) => on[d.key]).map((d) => ({ name: d.name, when: d.when })),
       picks: defs.map((d, i) => ({

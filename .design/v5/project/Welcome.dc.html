@@ -68,7 +68,7 @@
   </style>
 </helmet>
 
-<div class="stage" style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+<div class="stage" style="width: 390px; height: 872px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
 
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 6px;">
     <sc-for list="{{pips}}" as="p" hint-placeholder-count="3">
@@ -79,10 +79,10 @@
     <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #48484a;">{{stepLabel}}</span>
   </div>
 
-  <!-- 1. He arrives. -->
+  <!-- 1. He arrives, and the refusal is on the same screen. -->
   <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
-    <div style="padding: 44px 26px 0; display: flex; flex-direction: column; align-items: center;">
-      <div style="position: relative; width: 134px; height: 134px;">
+    <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
+      <div style="position: relative; width: 130px; height: 130px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 73% 87%, rgba(255,255,255,0.26), transparent 30%);"></div>
@@ -96,16 +96,17 @@
         </svg>
       </div>
 
-      <h1 style="margin: 30px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
+      <h1 style="margin: 28px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
       <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He reads what you log, your photographs and whatever your groups share with you, and he tells you what he notices.</p>
-      <p style="margin: 18px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He never decides whether a day counted. That is arithmetic, and it stays arithmetic.</p>
+      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He never decides whether a day counted. That is arithmetic, and it stays arithmetic.</p>
     </div>
   </sc-if>
 
-  <!-- 2. He asks for something, rather than explaining himself further. -->
+  <!-- 2. Something is asked for, rather than more explaining. -->
   <sc-if value="{{isPick}}" hint-placeholder-val="{{false}}">
     <div style="padding: 20px 20px 0; display: flex; flex-direction: column;">
       <div style="display: flex; align-items: flex-start; gap: 13px;">
+        <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
         <div style="flex: none; position: relative; width: 44px; height: 44px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
@@ -119,7 +120,11 @@
           <path d="M41 68 Q50.5 75 60 68" stroke="#3a0512" stroke-width="3.4" fill="none" stroke-linecap="round" opacity="0.88"/>
         </svg>
       </div>
-        <p style="margin: 0; font-size: 19px; line-height: 1.42; font-weight: 500;">Pick two or three to start. You can change all of it tomorrow.</p>
+        </sc-if>
+        <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
+          <span style="flex: none; margin-top: 4px;"><svg viewBox="0 0 32 32" width="26" height="26" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg></span>
+        </sc-if>
+        <p style="margin: 0; flex-grow: 1; font-size: 19px; line-height: 1.42; font-weight: 500;">{{pickLine}}</p>
       </div>
 
       <div style="margin-top: 22px; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
@@ -144,10 +149,11 @@
     </div>
   </sc-if>
 
-  <!-- 3. He has already helped with something, which is the point of 1.15. -->
+  <!-- 3. Something has already been helped with, which is the point of 1.15. -->
   <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
-    <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
-      <div style="position: relative; width: 104px; height: 104px;">
+    <div style="padding: 38px 26px 0; display: flex; flex-direction: column; align-items: center;">
+      <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
+      <div style="position: relative; width: 100px; height: 100px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 73% 87%, rgba(255,255,255,0.26), transparent 30%);"></div>
@@ -160,11 +166,15 @@
           <path d="M41 68 Q50.5 75 60 68" stroke="#3a0512" stroke-width="3.4" fill="none" stroke-linecap="round" opacity="0.88"/>
         </svg>
       </div>
+      </sc-if>
+      <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
+        <span style="margin-top: 14px;"><svg viewBox="0 0 32 32" width="62" height="62" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg></span>
+      </sc-if>
 
       <h1 style="margin: 26px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
-      <p style="margin: 11px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">Your first windows open tomorrow morning. I will be on Today when they do.</p>
+      <p style="margin: 11px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">{{doneLine}}</p>
 
-      <div style="margin-top: 26px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="margin-top: 24px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
         <sc-for list="{{chosen}}" as="c" hint-placeholder-count="3">
           <div style="display: flex; align-items: center; gap: 10px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="20 6 9 17 4 12"/></svg>
@@ -173,12 +183,25 @@
           </div>
         </sc-for>
       </div>
+
+      <!-- Said once, and only to somebody who said no. Nagging a person about
+           a thing they declined is how a switch stops being a real switch. -->
+      <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
+        <div style="margin-top: 16px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 14px 16px; display: flex; gap: 12px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
+          <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: #8e8e93;">Ren is off. Nothing of yours goes to a model, and there is no coach tab. Switch him on any time in Settings.</span>
+        </div>
+      </sc-if>
     </div>
   </sc-if>
   <div style="flex-grow: 1;"></div>
-  <div style="flex: none; padding: 0 20px 34px;">
+  <div style="flex: none; padding: 0 20px 30px;">
     <sc-if value="{{notLast}}" hint-placeholder-val="{{true}}">
       <button type="button" onClick="{{next}}" style="width: 100%; height: 54px; border: 0; border-radius: 15px; background: {{nextBg}}; color: {{nextFg}}; font-family: inherit; font-size: 17px; font-weight: 600;">{{nextLabel}}</button>
+    </sc-if>
+    <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
+      <button type="button" onClick="{{decline}}" style="margin-top: 6px; width: 100%; height: 44px; border: 0; background: transparent; color: #8e8e93; font-family: inherit; font-size: 15px;">I do not want a coach</button>
+      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: #48484a;">Nothing of yours is sent to a model, and you can switch him on later in Settings.</p>
     </sc-if>
     <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
       <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 54px; border-radius: 15px; background: #ff375f; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Go to Today</a>
@@ -188,17 +211,17 @@
 </div>
 </x-dc>
 
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":872}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     // Water and Sleep are pre-ticked, which is the only nudge in the tutorial.
     // Leaving with nothing is not an outcome this screen offers.
-    this.state = { step: 0, on: { water: true, sleep: true, gym: false, read: false, food: false } };
+    this.state = { step: 0, ren: true, on: { water: true, sleep: true, gym: false, read: false, food: false } };
   }
   renderVals() {
     const ON = '#ff375f', OFF = '#2c2c2e', SEP = 'rgba(255,255,255,0.08)';
-    const step = this.state.step, on = this.state.on;
+    const step = this.state.step, on = this.state.on, ren = this.state.ren;
     const defs = [
       { key: 'water', name: 'Water', rule: '8 glasses, any time', when: 'all day',
         path: 'M12 3s6 6.4 6 10.2A6 6 0 0 1 6 13.2C6 9.4 12 3 12 3z' },
@@ -216,10 +239,22 @@ class Component extends DCLogic {
       pips: [0, 1, 2].map((i) => ({ fill: i <= step ? ON : OFF })),
       stepLabel: `STEP ${step + 1} OF 3`,
       isMeet: step === 0, isPick: step === 1, isDone: step === 2, notLast: step < 2,
-      nextLabel: step === 0 ? 'Hello, Ren' : (count === 0 ? 'Pick at least one' : `Set up ${count}`),
+      ren, noRen: !ren,
+      // He asks on the picking screen only if he is still here. Otherwise the
+      // app asks, in its own voice, and he is not mentioned.
+      pickLine: ren
+        ? 'Pick two or three to start. You can change all of it tomorrow.'
+        : 'Pick two or three to start. Nothing here begins until tomorrow.',
+      doneLine: ren
+        ? 'Your first windows open tomorrow morning. I will be on Today when they do.'
+        : 'Your first windows open tomorrow morning.',
+      nextLabel: step === 0
+        ? (ren ? 'Hello, Ren' : 'Carry on')
+        : (count === 0 ? 'Pick at least one' : `Set up ${count}`),
       nextBg: step === 0 || count > 0 ? ON : OFF,
       nextFg: step === 0 || count > 0 ? '#ffffff' : '#48484a',
       next: () => { if (step === 1 && count === 0) return; this.setState({ step: step + 1 }); },
+      decline: () => this.setState({ ren: false, step: 1 }),
       count,
       chosen: defs.filter((d) => on[d.key]).map((d) => ({ name: d.name, when: d.when })),
       picks: defs.map((d, i) => ({

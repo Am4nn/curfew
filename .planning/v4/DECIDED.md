@@ -758,6 +758,44 @@ three screens, or the thing people want to escape becomes the tutorial.
 It is also where Ren stops being a tab nobody was introduced to. He arrives
 having already helped with something.
 
+**AND THE FIRST SCREEN CARRIES THE REFUSAL.** Added 2026-09-21. Under "Hello,
+Ren" sits **"I do not want a coach"**, with one line: nothing of yours is sent
+to a model, and you can switch him on later in Settings.
+
+1.14 already says off is a real off. Offering it only in Settings would mean
+the one person who does not want a coach has to accept one, go looking for the
+switch, and turn it off, which is a worse version of the same answer.
+
+**The whole tutorial branches on it.** No sphere on the picking screen, no
+sphere at the end, the app's own voice instead of his, and the mark where his
+face would have been. He is named exactly once more, on the last screen, to say
+where the switch is. Nagging somebody about a thing they declined is how a
+switch stops being a real switch.
+
+The refusal sits UNDER the primary button rather than beside it. Side by side
+makes two equal choices out of one obvious one and one honest escape.
+
+### 1.4b IMMACULATE wears a crown, and it is made of three squares
+
+Settled 2026-09-21. Three square teeth on a band, zero radius, gold, with the
+only glow in the app on it.
+
+**It is the mark's rhythm and not the mark.** Three solid blocks with a gap
+between them is Curfew's vocabulary, so the crown belongs to this app rather
+than to a clip-art library. It is a row of three on a band and **never** a 2x2
+grid with a seat missing, because the mark never changes and its fourth seat is
+never filled (1.8a).
+
+It rocks on its own clock, 6.8 seconds against the body's 5.2, which share no
+short multiple, so the two drift and it never settles into a beat you can count.
+Five degrees of travel and half a pixel of lift: it is sitting on him, not
+balancing.
+
+It also finishes the job 1.4's mood pass started. DONE and IMMACULATE used to be
+one drawing in two colours, so the rarest state in the app said exactly what an
+ordinary good day said. Now DONE is pleased and looks at you, IMMACULATE is
+composed, and only one of them is wearing anything.
+
 ### 1.16 Monk mode is an aggregate, not an activity
 
 Settled 2026-09-21, and it replaces a worse design of the same thing.

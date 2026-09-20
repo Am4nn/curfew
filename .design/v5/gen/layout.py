@@ -23,7 +23,7 @@ ROWS = [
     ('The moments', ['Capture', 'Declare', 'Stamp', 'Restore']),
     ('Helping each other', ['Nudge', 'Nudged']),
     ('You', ['Settings', 'Sharing', 'Notifs', 'Photos', 'Away', 'Data', 'Switches']),
-    ('Ren, every mood', ['Ren']),
+    ('The mark, and Ren', ['Mark', 'Ren']),
     ('Behind the glass', ['Admin']),
 ]
 
@@ -43,9 +43,11 @@ TITLES = {
     'Settings': 'Settings', 'Sharing': 'What you share', 'Notifs': 'Notifications',
     'Photos': 'Your photographs', 'Away': 'Away days', 'Data': 'Your data',
     'Switches': 'Ren and nudges, off', 'Ren': 'Ren, every mood', 'Admin': 'Ops',
+    'Mark': 'The mark',
 }
 
-STATIC = {'Stamp', 'Nudged', 'Ren', 'Signin', 'Notice', 'Evidence', 'Photos', 'Ledger'}
+STATIC = {'Stamp', 'Nudged', 'Ren', 'Signin', 'Notice', 'Evidence', 'Photos',
+          'Ledger', 'Mark'}
 
 ROOT_RE = re.compile(r'width:\s*390px;\s*height:\s*(\d+)px')
 PREVIEW_RE = re.compile(r'"\$preview"\s*:\s*\{\s*"width"\s*:\s*390\s*,\s*"height"\s*:\s*(\d+)\s*\}')

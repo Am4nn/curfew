@@ -309,6 +309,64 @@ what the console is actually read for. The twelve configure boards are still one
 board, Sleep, because that was always the point of the declarative model. The
 per-activity stats variants stay inside `Stats`.
 
+### 1.8a The mark, and motion
+
+Settled 2026-09-21, from a menu.
+
+**THE MARK IS `src/app/mark.tsx` AND IT DOES NOT CHANGE.** Three 13-unit squares
+on a 32 grid, 2 of margin, 2 of gutter, zero radius, crispEdges, and the fourth
+seat empty. It is white, everywhere, always, and it fills with the theme
+foreground token rather than a hex so it follows light and dark without a second
+asset.
+
+**THE FOURTH SEAT IS NEVER FILLED.** Not on a perfect day, not on anything. The
+gap is the identity, and a mark that closes it on a good day is a different logo
+for a different company. Filling seats as the day fills was offered and refused
+for the same reason: at 1 of 4 it is not a logo, it is a progress meter wearing
+the logo's clothes, and Home already has a segmented bar for that.
+
+**`Mark.dc.html` explores a streak-coloured mark AND SAYS IT IS NOT BUILT.** Six
+states, streak health: white at rest, pink alive, amber in grace, hollow after a
+break, three depths of pink for a long run, gold with the one glow for
+IMMACULATE. The board carries an amber note at the top of that section saying
+the shipped mark is white, because a sheet of variants left unlabelled is how a
+variant ends up shipped.
+
+The alternatives offered were a live mark in the Home header, and a live mark
+everywhere. Both were refused: a logo that is never the same twice has stopped
+being one.
+
+### 1.8b Reveal motion, on every screen
+
+Aman: *"I love animations like reveal animations and more across pages and
+interactions."*
+
+**One motion, not one per screen.** The sections of a screen rise 14px and fade
+in on a stagger that DECELERATES: 0, 73, 129, 173, 208, 235ms and then bunching,
+so the last few land almost together and the whole thing reads as one gesture
+arriving rather than a queue being served. Expo-out, 620ms.
+
+**It runs ONCE.** Nothing on a page of content loops. A loop is for a character,
+and Ren is the only character in this app. That rule is what keeps the earlier
+verdict, *"animations are very very AI sloppy"*, from coming back: the sloppy
+ones were symmetric ease-in-out with no pause, which is a metronome.
+
+Three more, and no more. Bars draw themselves from where they start, after the
+section carrying them has landed. Columns grow from their baseline. A press
+scales to 0.972 in 140ms and releases on the same curve, because a button that
+springs back is a button that argues with you.
+
+**The chrome does not arrive.** The tab bar is exempt from the cascade and only
+fades, since a navigation bar that slides in is a navigation bar you cannot hit
+yet.
+
+**`prefers-reduced-motion` turns all of it off**, including the press.
+
+It lives in one place, the `<helmet><style>` block every board carries, written
+by `.design/v5/gen/motion.py`. Four boards are exempt from the stagger because
+their root children are full-bleed absolute layers and rising them one at a time
+would pull a photograph off its own viewfinder: Capture, Stamp, Notice and Ren.
+
 ### 1.9 The v5 copy is not being rewritten yet
 
 Aman: *"We will make it coach soon. Currently I was focused on theme but soon on

@@ -31,16 +31,100 @@ HEAD = """<!doctype html>
   <style>
     html, body { margin: 0; background: #000000; overflow: hidden; }
     ::-webkit-scrollbar { width: 0; height: 0; }
+
+    /*
+      REVEAL. The sections of a screen rise together on a stagger that
+      DECELERATES: the last few land almost at once, so the whole thing reads
+      as one gesture arriving rather than a queue being served.
+
+      Expo-out, 620ms, and it runs ONCE. Nothing on a page of content loops. A
+      loop is for a character, and Ren is the only character here.
+
+      The travel is 14px. More is a slide, less and the eye misses it.
+    */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+
+    .stage > * { animation: rise 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .stage > *:nth-child(1)  { animation-delay:   0ms; }
+    .stage > *:nth-child(2)  { animation-delay:  73ms; }
+    .stage > *:nth-child(3)  { animation-delay: 129ms; }
+    .stage > *:nth-child(4)  { animation-delay: 173ms; }
+    .stage > *:nth-child(5)  { animation-delay: 208ms; }
+    .stage > *:nth-child(6)  { animation-delay: 235ms; }
+    .stage > *:nth-child(7)  { animation-delay: 256ms; }
+    .stage > *:nth-child(8)  { animation-delay: 272ms; }
+    .stage > *:nth-child(9)  { animation-delay: 285ms; }
+    .stage > *:nth-child(10) { animation-delay: 295ms; }
+    .stage > *:nth-child(n+11) { animation-delay: 302ms; }
+
+    /* Chrome does not arrive. It is simply there, and only fades up. */
+    .stage > .tabbar { animation: appear 300ms ease-out both; }
+
+    /* A bar draws itself, after the section carrying it has landed. */
+    @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    .fill { transform-origin: left center;   animation: fill 900ms 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .grow { transform-origin: bottom center; animation: grow 760ms 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    /*
+      PRESS. 140ms down, and the release rides the same curve rather than
+      bouncing: a button that springs back is a button that argues with you.
+    */
+    button, a { transition: transform 140ms cubic-bezier(0.2, 0, 0, 1); }
+    button:active, a:active { transform: scale(0.972); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stage > *, .stage > .tabbar, .fill, .grow { animation: none; }
+      button, a { transition: none; }
+      button:active, a:active { transform: none; }
+    }
+
   </style>
 </helmet>
 """
 
 
-def root(h, extra=''):
-    return ('\n<div style="width: 390px; height: %dpx; box-sizing: border-box; background: #000000; '
+def root(h, extra='', stage=True):
+    cls = ' class="stage"' if stage else ''
+    return ('\n<div' + cls + ' style="width: 390px; height: %dpx; box-sizing: border-box; background: #000000; '
             "font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; "
             '-webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; '
             'overflow: hidden;%s">\n' % (h, extra))
+
+
+# The mark. Three 13-unit squares on a 32 grid, 2 of margin and 2 of gutter, and
+# the fourth seat stays empty: DECIDED, 2026-09-21. Zero radius and crispEdges
+# are the whole character of it, so neither is a parameter.
+GOLD = '#ffd23f'
+
+
+def mark(size, fill='#ffffff', hollow=False, radius=0, tint=None, glow=False):
+    """tint takes three colours, one per square, for the exploration sheet only.
+    The shipped mark is one colour."""
+    fills = tint or (fill, fill, fill)
+    seats = ((2, 2), (17, 2), (2, 17))
+    body = ''
+    for (x, y), colour in zip(seats, fills):
+        if hollow:
+            body += ('<rect x="%s" y="%s" width="12" height="12" rx="%d" fill="none" stroke="%s" stroke-width="1.6"/>'
+                     % (x + 0.8, y + 0.8, radius, colour))
+        else:
+            body += '<rect x="%d" y="%d" width="13" height="13" rx="%d" fill="%s"/>' % (x, y, radius, colour)
+    shadow = (' filter="drop-shadow(0 0 %dpx rgba(255,210,63,0.55))"' % max(3, size // 6)) if glow else ''
+    return ('<svg viewBox="0 0 32 32" width="%d" height="%d" shape-rendering="crispEdges" '
+            'aria-hidden="true" style="flex: none; display: block;"%s>%s</svg>'
+            % (size, size, shadow, body))
+
+
+def wordmark(size=13, colour=None, gap=10, mark_size=None):
+    return ('<span style="display: flex; align-items: center; gap: %dpx;">%s'
+            '<span style="font-family: %s; font-size: %dpx; font-weight: 700; letter-spacing: 0.34em; '
+            'color: %s;">CURFEW</span></span>'
+            % (gap, mark(mark_size or (size + 5), colour or '#ffffff'), MONO, size, colour or '#ffffff'))
 
 
 def nav(href, label, right=''):
@@ -115,7 +199,7 @@ def tabbar(active=None):
     """iOS reserves 83pt here: 49 of content over the home-indicator area, which
     these artboards do not draw. The active tab is FILLED as well as tinted, so
     the state is never carried by colour alone."""
-    out = ('  <div style="flex: none; display: flex; background: rgba(18,18,20,0.96); '
+    out = ('  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); '
            'border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">\n')
     for href, label, filled, stroked in _TABS:
         on = (href == active)

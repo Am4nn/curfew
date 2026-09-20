@@ -12,29 +12,119 @@
   <style>
     html, body { margin: 0; background: #000000; overflow: hidden; }
     ::-webkit-scrollbar { width: 0; height: 0; }
+
+    /*
+      REVEAL. The sections of a screen rise together on a stagger that
+      DECELERATES: the last few land almost at once, so the whole thing reads
+      as one gesture arriving rather than a queue being served.
+
+      Expo-out, 620ms, and it runs ONCE. Nothing on a page of content loops. A
+      loop is for a character, and Ren is the only character here.
+
+      The travel is 14px. More is a slide, less and the eye misses it.
+    */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+
+    .stage > * { animation: rise 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .stage > *:nth-child(1)  { animation-delay:   0ms; }
+    .stage > *:nth-child(2)  { animation-delay:  73ms; }
+    .stage > *:nth-child(3)  { animation-delay: 129ms; }
+    .stage > *:nth-child(4)  { animation-delay: 173ms; }
+    .stage > *:nth-child(5)  { animation-delay: 208ms; }
+    .stage > *:nth-child(6)  { animation-delay: 235ms; }
+    .stage > *:nth-child(7)  { animation-delay: 256ms; }
+    .stage > *:nth-child(8)  { animation-delay: 272ms; }
+    .stage > *:nth-child(9)  { animation-delay: 285ms; }
+    .stage > *:nth-child(10) { animation-delay: 295ms; }
+    .stage > *:nth-child(n+11) { animation-delay: 302ms; }
+
+    /* Chrome does not arrive. It is simply there, and only fades up. */
+    .stage > .tabbar { animation: appear 300ms ease-out both; }
+
+    /* A bar draws itself, after the section carrying it has landed. */
+    @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    .fill { transform-origin: left center;   animation: fill 900ms 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .grow { transform-origin: bottom center; animation: grow 760ms 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    /*
+      PRESS. 140ms down, and the release rides the same curve rather than
+      bouncing: a button that springs back is a button that argues with you.
+    */
+    button, a { transition: transform 140ms cubic-bezier(0.2, 0, 0, 1); }
+    button:active, a:active { transform: scale(0.972); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stage > *, .stage > .tabbar, .fill, .grow { animation: none; }
+      button, a { transition: none; }
+      button:active, a:active { transform: none; }
+    }
+
   </style>
 </helmet>
 
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
-
-  <!--
-    The collage is three GENERATED photographs, and that is not a shortcut. A
-    stranger can open this page, so no member's evidence may be on it, which is
-    why these images were made rather than borrowed.
-  -->
-  <div style="flex: none; height: 300px; position: relative; overflow: hidden;">
-    <img src="/_blob/18def49919a492fde87296b6ab9320cb" alt="" style="position: absolute; left: -30px; top: 0; width: 210px; height: 236px; object-fit: cover; border-radius: 0 18px 18px 0;">
-    <img src="/_blob/29a69da1d644f97a416d32616c586889" alt="" style="position: absolute; right: -18px; top: 26px; width: 196px; height: 148px; object-fit: cover; border-radius: 18px 0 0 18px;">
-    <img src="/_blob/4d06b38a5688b46932db3a0f6f241639" alt="" style="position: absolute; right: 22px; top: 186px; width: 168px; height: 126px; object-fit: cover; border-radius: 18px;">
-    <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.92) 92%, #000000 100%);"></div>
+<div class="stage" style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+  <div style="flex: none; height: 336px; position: relative; overflow: hidden;">
+    <div style="position: absolute; inset: 0; display: flex; gap: 1px;">
+      <span style="flex-grow: 1; flex-basis: 0; position: relative; overflow: hidden; background: #111;">
+        <img src="/_blob/18def49919a492fde87296b6ab9320cb" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+        <span style="position: absolute; left: 0; right: 0; bottom: 92px; display: flex; flex-direction: column; gap: 2px; padding: 0 10px;">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: #ffffff;">SLEEP</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; color: rgba(255,255,255,0.62);">10:22 PM</span>
+        </span>
+      </span>
+      <span style="flex-grow: 1; flex-basis: 0; position: relative; overflow: hidden; background: #111;">
+        <img src="/_blob/29a69da1d644f97a416d32616c586889" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+        <span style="position: absolute; left: 0; right: 0; bottom: 92px; display: flex; flex-direction: column; gap: 2px; padding: 0 10px;">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: #ffffff;">GYM</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; color: rgba(255,255,255,0.62);">6:12 PM</span>
+        </span>
+      </span>
+      <span style="flex-grow: 1; flex-basis: 0; position: relative; overflow: hidden; background: #111;">
+        <img src="/_blob/4d06b38a5688b46932db3a0f6f241639" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+        <span style="position: absolute; left: 0; right: 0; bottom: 92px; display: flex; flex-direction: column; gap: 2px; padding: 0 10px;">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: #ffffff;">FOOD</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; color: rgba(255,255,255,0.62);">7:04 PM</span>
+        </span>
+      </span>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; top: 0; height: 104px; background: linear-gradient(to bottom, rgba(0,0,0,0.78), rgba(0,0,0,0));"></div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 196px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.70) 44%, #000000 100%);"></div>
+    <div style="position: absolute; left: 22px; top: 24px;"><span style="display: flex; align-items: center; gap: 11px;"><svg viewBox="0 0 32 32" width="22" height="22" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" rx="0" fill="#ffffff"/></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.34em; color: #ffffff;">CURFEW</span></span></div>
   </div>
-  <div style="flex: none; margin-top: -18px; padding: 0 24px;">
-    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.34em; color: #ff375f;">CURFEW</span>
-    <h1 style="margin: 12px 0 0; font-size: 36px; font-weight: 700; line-height: 1.12; letter-spacing: -0.025em;">Say what you did.<br>Show it if it matters.</h1>
-    <p style="margin: 14px 0 0; font-size: 16px; line-height: 1.45; color: #8e8e93;">A tracker with three friends watching. Windows you set, a photograph when you say so, and a fine when you miss.</p>
+  <div style="flex: none; margin-top: -26px; padding: 0 22px;">
+    <h1 style="margin: 0; font-size: 36px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em;">Say what you did.<br>Show it if it matters.</h1>
+    <p style="margin: 13px 0 0; font-size: 15.5px; line-height: 1.45; color: #8e8e93;">A tracker with your friends watching. You pick the windows. Miss one and it costs you.</p>
+  </div>
+  <div style="flex: none; margin: 24px 22px 0; display: flex; flex-direction: column;">
+    <div style="display: flex; gap: 13px; padding: 13px 0; border-top: 0.5px solid transparent;">
+      <span style="flex: none; margin-top: 2px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #ff375f;">01</span>
+      <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+        <span style="font-size: 15px; font-weight: 600;">You set the window</span>
+        <span style="font-size: 12.5px; line-height: 1.42; color: #8e8e93;">Nobody imposes a time on you. That is the part other apps get wrong.</span>
+      </span>
+    </div>
+    <div style="display: flex; gap: 13px; padding: 13px 0; border-top: 0.5px solid rgba(255,255,255,0.08);">
+      <span style="flex: none; margin-top: 2px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #ff375f;">02</span>
+      <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+        <span style="font-size: 15px; font-weight: 600;">A photograph proves it</span>
+        <span style="font-size: 12.5px; line-height: 1.42; color: #8e8e93;">Live camera, never the gallery, and only where you asked for one.</span>
+      </span>
+    </div>
+    <div style="display: flex; gap: 13px; padding: 13px 0; border-top: 0.5px solid rgba(255,255,255,0.08);">
+      <span style="flex: none; margin-top: 2px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #ff375f;">03</span>
+      <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+        <span style="font-size: 15px; font-weight: 600;">Your friends see it</span>
+        <span style="font-size: 12.5px; line-height: 1.42; color: #8e8e93;">Whatever you chose to share, and the fine when you do not turn up.</span>
+      </span>
+    </div>
   </div>
   <div style="flex-grow: 1;"></div>
-  <div style="flex: none; padding: 0 24px 34px; display: flex; flex-direction: column; gap: 14px;">
+  <div style="flex: none; padding: 0 22px 32px; display: flex; flex-direction: column; gap: 13px;">
     <button type="button" style="width: 100%; height: 54px; border: 0; border-radius: 15px; background: #ffffff; color: #000000; font-family: inherit; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
       <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285f4" d="M21.6 12.2c0-.7-.06-1.4-.18-2.06H12v3.9h5.4a4.6 4.6 0 0 1-2 3.02v2.5h3.23c1.89-1.74 2.97-4.3 2.97-7.36z"/><path fill="#34a853" d="M12 22c2.7 0 4.96-.9 6.62-2.44l-3.23-2.5c-.9.6-2.05.95-3.39.95-2.6 0-4.8-1.76-5.6-4.12H3.08v2.59A10 10 0 0 0 12 22z"/><path fill="#fbbc05" d="M6.4 13.89a6 6 0 0 1 0-3.78V7.52H3.08a10 10 0 0 0 0 8.96z"/><path fill="#ea4335" d="M12 5.98c1.47 0 2.79.5 3.83 1.5l2.86-2.86C16.95 2.99 14.7 2 12 2a10 10 0 0 0-8.92 5.52L6.4 10.1C7.2 7.74 9.4 5.98 12 5.98z"/></svg>
       Continue with Google

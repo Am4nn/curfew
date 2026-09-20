@@ -1,8 +1,46 @@
 # Next session
 
-Last updated 2026-09-15, tagging v3.1.1.
+Last updated 2026-09-21, on v3.4.8.
 
 ## Still open
+
+### v4 DESIGN, picked up tomorrow
+
+The canvas is https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, 18 boards in
+five titled rows. Decisions are in `.planning/v4/DECIDED.md`, 1.1 to 1.18, and
+that file is the one to read first.
+
+**Not drawn yet, in the order they matter:**
+
+1. **Monk mode.** 1.16 settles the whole design and there is no mock of any of
+   it. Needs: the Home row (a percentage, no flame, no "closes at"), the
+   configure screen (compulsory activities, required categories, the stricter
+   monk bar, and the pass-at number), and the not-yet state where it does not
+   appear because you are missing a required activity.
+2. **The consent gate.** The only screen v4 cannot ship without. New terms
+   covering a model reading your photographs, plus 1.18: sharing a photo with a
+   group consents to that group's coaches reading it. All three members
+   re-accept through the blocking overlay Phase 9 already built.
+3. **First run.** 1.15: you meet Ren and he walks you through setting up your
+   first activities. Deterministic, not a single model call, and it cannot be
+   skipped. Two or three screens at most.
+
+**The one open decision:** which new activity types v4 adds. Monk mode
+aggregates activities, so cold shower and no junk food have to exist as types
+before they can be counted. Steps and Screen already do.
+
+**Known cost, accepted, not solved:** the stricter monk bar means one activity
+carries two verdicts for one day, and `activity_scores` holds one row per user,
+type and period. That needs a second scope, a second pass, and `verify`
+diffing both. See 1.16.
+
+### Android push is VERIFIED, 2026-09-21. Closed.
+
+3.4.6 fixed a `.strict()` zod schema that accepted every iPhone and refused
+every Android, because Chrome sends `expirationTime` and Safari omits it. The
+unit tests proved the schema and only a real subscription could prove the path.
+Aman resubscribed on Android and it took. Nothing further is owed here.
+
 
 ### A streak goes GREY, it does not drop, shipped 3.4.3 and 3.4.4
 

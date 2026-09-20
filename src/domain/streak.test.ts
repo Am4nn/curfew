@@ -22,6 +22,14 @@ describe("every-day activities", () => {
     expect(r.best).toBe(5);
   });
 
+  it("does not grey a run that never started", () => {
+    // Nothing done, ever. Grey holds a number and there is no number to hold,
+    // so the row stays blank rather than showing a dead flame beside a nought.
+    const r = streakOver(days("2026-09-07", "...."), EVERY_DAY);
+    expect(r.current).toBe(0);
+    expect(r.grey).toBe(false);
+  });
+
   it("a missed day greys the run rather than erasing it", () => {
     // Three days, then a miss, and nothing after. The run is over and the
     // number holds at 3: a long streak that vanishes to nothing is worse to

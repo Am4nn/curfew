@@ -192,7 +192,12 @@ export function streakOver(
       // and the days happened either way.
       //
       // Grace holds it without the grey, because a forgiven day is not a break.
-      if (!day.graced) state.grey = true;
+      //
+      // And only a run that EXISTS can end. Grey on a zero is a dead flame
+      // beside a nought on every activity somebody has never managed, which is
+      // noise where there was previously nothing: there is no number being
+      // held, so there is nothing for the grey to say.
+      if (!day.graced) state.grey = state.current > 0;
       steps.push({
         at: day.date,
         current: state.current,
@@ -289,9 +294,11 @@ export function streakOver(
     // Grey, from here. Either the minimum can no longer be reached or the week
     // has ended short. Grace forgives it and the run carries on; otherwise the
     // number holds where it is, marked, until the next session in a later week.
+    // Only a run that EXISTS can end: grey holds a number, and there is
+    // nothing to hold at zero. Same reason as the daily branch above.
     const graceUsed = week.some((d) => d.graced === true);
-    state.grey = !graceUsed;
-    greySince = graceUsed ? null : monday;
+    state.grey = !graceUsed && state.current > 0;
+    greySince = state.grey ? monday : null;
 
     // Only a week that has ENDED carries a price. While it is still running the
     // shortfall is not final: nothing logged by Saturday is three short, and

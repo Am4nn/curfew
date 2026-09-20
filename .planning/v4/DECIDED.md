@@ -341,13 +341,23 @@ being one.
 slowly."*
 
 The three squares become apertures cut into black, and behind all of them sits
-ONE body of molten material that rises. Not three fills: one, so the level
-crosses the lower seat first and the two upper ones together, and the geometry
-does the choreography rather than a stagger written by hand.
+ONE field, never three.
 
-It fills once, on arrival, over 4.6 seconds, and stops a sliver short of the
-top. A solid block is not a window onto anything. What keeps moving afterwards
-is the surface drift and the churn beneath it, which is what stops it being a
+**The first attempt was rejected and the reason is worth keeping.** Aman: *"No
+lava animation is very very bad and AI slop."* It was a water LEVEL with a wave
+on it, rising up the seats: a tank filling, which is not what molten anything
+does. The reference he sent back was a field of soft bodies drifting, merging
+and parting.
+
+So it is a metaball field. Five bodies, blurred and then run through an alpha
+ramp, which is what makes two of them become one thing and then two things
+again. **Nothing in it is synchronised**: periods of 13, 17.4, 21.2, 26 and 30.6
+seconds, sharing no common multiple, and every path asymmetric with its
+keyframes off the halves. That is the whole difference from the version that was
+thrown out, which had one clock and a wave on a string.
+
+The field BLOOMS on arrival, up from 0.55 over 2.2 seconds, decelerating, and
+then it simply lives. It does not fill and empty: a logo that does that is a
 loading spinner.
 
 **Two places only: sign in, and the splash.** Everywhere inside the app the mark
@@ -361,6 +371,30 @@ gold anywhere near it, because gold is IMMACULATE's and nothing else's.
 
 It is drawn at multiples of 32 wherever it is used, so one grid unit lands on a
 whole pixel and the apertures stay as crisp as the flat mark.
+
+Its CSS is opt-in, `HEAD_EMBER` rather than `HEAD`. Two boards show it and
+thirty-six do not, and dead rules in thirty-six helmets is how a stylesheet
+stops being readable.
+
+### 1.8c The top-right control has one shape
+
+Settled 2026-09-21. Aman: *"any btn up there in top right corner should always
+follow this pattern icon and text and btn filled with our theme red color and
+rounded."*
+
+**Icon, then a word, filled #ff375f, fully rounded, 34 high.** Every board that
+had a top-right control had a different one: Activities and Groups had a bare
+white plus with no label, Configure had a deeper red pill with a word and no
+icon, Monk had a grey pill. A bare glyph in a corner is a control people do not
+read, and four spellings of the same thing is four things to learn.
+
+`top_action()` in `.design/v5/gen/chrome.py` is the only way one gets drawn now.
+Five boards carry it: Activities (Add), Groups (New group), Configure (Save),
+Monk (Set up), Monk set-up (Save).
+
+The red is **#ff375f**, the accent, not Configure's old #d81e46. Two reds for
+one job was the actual problem and the brighter one is the one the rest of the
+app already uses for a primary press.
 
 ### 1.8b Reveal motion, on every screen
 

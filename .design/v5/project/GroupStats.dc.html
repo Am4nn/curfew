@@ -58,6 +58,7 @@
     button, a { transition: transform 140ms cubic-bezier(0.2, 0, 0, 1); }
     button:active, a:active { transform: scale(0.972); }
 
+
     @media (prefers-reduced-motion: reduce) {
       .stage > *, .stage > .tabbar, .fill, .grow { animation: none; }
       button, a { transition: none; }
@@ -92,7 +93,7 @@
       <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
         <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
           <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; color: {{d.tone}};">{{d.count}}</span>
-          <span class="grow" style="width: 100%; height: {{d.h}}px; border-radius: 4px 4px 0 0; background: {{d.fill}};"></span>
+          <span style="width: 100%; height: {{d.h}}px; border-radius: 4px 4px 0 0; background: {{d.fill}};"></span>
         </div>
       </sc-for>
     </div>
@@ -114,7 +115,7 @@
           <span style="font-size: 12.5px; color: #8e8e93;">{{m.of}}</span>
         </div>
         <span style="height: 6px; border-radius: 999px; background: #2c2c2e; position: relative; overflow: hidden;">
-          <span class="fill" style="position: absolute; left: 0; top: 0; bottom: 0; width: {{m.pct}}; background: {{m.fill}}; border-radius: 999px;"></span>
+          <span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{m.pct}}; background: {{m.fill}}; border-radius: 999px;"></span>
         </span>
       </div>
     </sc-for>

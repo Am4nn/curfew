@@ -7,10 +7,8 @@ from chrome import *
 # ------------------------------------------------------------- Monk, read ---
 H = 1240
 mk = [HEAD, root(H)]
-mk.append(nav('Main.dc.html', 'Back to Today', right=(
-    '    <a href="MonkSetup.dc.html" style="flex: none; height: 34px; padding: 0 14px; border-radius: 999px; '
-    'background: %s; display: flex; align-items: center; text-decoration: none; color: #ffffff; font-size: 15px; '
-    'font-weight: 600;">Set up</a>\n' % CARD2)))
+mk.append(nav('Main.dc.html', 'Back to Today',
+               right=top_action('Set up', TUNE_ICON, href='MonkSetup.dc.html')))
 
 # The number, and nothing that turns it into a verdict. No flame, no bar to
 # clear, no "closes at", because the activity whose subject is compulsive
@@ -132,9 +130,8 @@ write('Monk.dc.html', mk)
 # ------------------------------------------------------------ Monk, set up ---
 H = 1400
 ms = [HEAD, root(H)]
-ms.append(nav('Monk.dc.html', 'Back to Monk mode', right=(
-    '    <button type="button" style="flex: none; height: 34px; margin-right: -2px; padding: 0 16px; border-radius: 999px; '
-    'border: 0; background: %s; font-family: inherit; font-size: 15px; font-weight: 600; color: #ffffff;">Save</button>\n' % DEEP)))
+ms.append(nav('Monk.dc.html', 'Back to Monk mode',
+               right=top_action('Save', SAVE_ICON)))
 ms.append(title('Set up Monk mode', 'Which of your activities count toward the day, and how hard each one has to be to count.'))
 
 # Compulsory activities. Free, because it still only reads `passed`.
@@ -316,7 +313,8 @@ anchor = """  <div style="flex: none; margin: 24px 20px 0; display: flex; align-
     <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Running out of time</span>
   </div>
 """
-assert anchor in s, 'Main at-risk heading'
+if anchor not in s or 'Monk.dc.html"' in s:
+    raise SystemExit('  Main.dc.html already carries the Monk row')
 monk_row = """  <!--
     MONK MODE, 1.16. A reading of the activities above rather than a thing to
     press, so it carries a percentage and none of the furniture of an activity:

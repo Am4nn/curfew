@@ -13,7 +13,7 @@ AMBER = '#ff9f0a'
 # A stranger opens this page, so the photographs on it are the generated ones.
 # That is the same rule that put them on the landing page.
 H = 844
-si = [HEAD, root(H)]
+si = [HEAD_EMBER, root(H)]
 
 STRIP = [(SLEEP, 'SLEEP', '10:22 PM'), (GYM, 'GYM', '6:12 PM'), (FOOD, 'FOOD', '7:04 PM')]
 band = ['  <div style="flex: none; height: 320px; position: relative; overflow: hidden;">\n'
@@ -76,7 +76,7 @@ write('Signin.dc.html', si)
 # ------------------------------------------------------------- The mark ---
 # A reference sheet, so it runs long on purpose. Over-tall beats clipped.
 H = 2860
-mk = [HEAD, root(H)]
+mk = [HEAD_EMBER, root(H)]
 mk.append(nav('Signin.dc.html', 'Back to sign in'))
 mk.append(title('The mark', 'Three squares on a four-square grid. The fourth seat is the identity, so nothing ever fills it.'))
 

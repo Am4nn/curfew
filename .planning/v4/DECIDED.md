@@ -423,6 +423,38 @@ toward IMMACULATE, the second is a rank.
 produces it closes with this design. Passed over scheduled. Ren reads the number
 and says something about the week, which is 1.3 exactly as written.
 
+**MONK MODE HAS ITS OWN REQUIREMENTS**, added 2026-09-21 after the aggregate
+was settled. It is not "score whatever you happen to track", or the number means
+something different for every person and comparing it is meaningless. All three
+of the options offered were taken, so all three apply.
+
+- **Compulsory activities.** A named few that must be in the set. Free: it still
+  only reads `passed`.
+- **Required categories.** It must cover a body, a food, a mind and a sleep, so
+  somebody who runs and somebody who lifts both have a real monk day. Costs a
+  category field on each activity module.
+- **Stricter limits on a monk day.** Water is 8 normally and 10 for monk
+  purposes. **This is the expensive one and it was chosen knowingly.**
+
+**What the third one costs, written down before anybody starts.** One activity
+would carry two verdicts for the same day: passed against your own target,
+failed against the monk bar. `activity_scores` holds ONE row per user, type and
+period, so a second verdict needs a second scope on that table, a second pass to
+compute it, and `verify` has to diff both or half the work goes unchecked.
+
+It also changes what Monk mode IS. Reading `passed` makes it a lens. Applying
+its own thresholds makes it a second opinion, and the aggregate stops being
+free. The cheap version of the same intent, which is not what was chosen, is to
+let the member set a harder target on the activity itself.
+
+**IF YOU DO NOT TRACK SOMETHING IT REQUIRES, MONK MODE DOES NOT APPEAR.** Not a
+score capped by absent rules, and not a percentage over two easy things. A line
+saying what is missing and a button that adds it. Scoring somebody on an
+activity they never agreed to do is something no other part of this app does,
+and 100% on two easy things is a number comparable to nobody. This also gives
+the first-run tutorial (1.15) somewhere to point.
+
+
 **What this creates:** the conditions Aman named that Curfew does not track yet,
 cold shower and no junk food among them, have to become activity types of their
 own before they can be aggregated. That is a feature rather than a cost. They

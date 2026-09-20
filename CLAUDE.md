@@ -213,10 +213,29 @@ QStash points at one environment at a time, whichever `BETTER_AUTH_URL` the
 loaded env file names, so dev is scheduled by `bun run schedule` and production
 by `bun run schedule:production`.
 
-`package.json` carries `3.4.0`, cut as a tag on 2026-09-17. The admin header
+`package.json` carries `3.4.2`, cut as a tag on 2026-09-20. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.
+
+**3.4.1 and 3.4.2 were both bug fixes found by using production**, and between
+them they are a lesson about what the checks were asking.
+
+3.4.1: a settling day counted as a clean day, so somebody who had missed
+everything was told they had five clean days; the Ops drift report labelled
+three of its five kinds "Reputation" and printed "Invalid Date" for two of them;
+the group tabs stacked history so leaving a group took as many presses as tabs
+you had opened; and a fine owed to nobody vanished with no record. Two more
+turned up while shipping it, because CI ran on a Sunday for the first time: a
+first session on a Sunday read 0, and two check scripts could not pass at the
+weekend at all.
+
+3.4.2: scoring moved to an hourly QStash job. See the schedule section above.
+
+The through line is that every one of these passed CI for days. `check:cron`
+asked whether the daily firing was late **for Kolkata**; `check:streak` and
+`check:offer` only ever ran on weekdays. A check that cannot fail is not a
+check, and the cheapest way to find out is to run it somewhere it might.
 
 **v3.3 is fully live and the reminder tick is running.** Nothing is held back.
 

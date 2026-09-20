@@ -350,6 +350,40 @@ in it. That is accepted rather than overlooked, the same way 1.7 is.
 
 **ROADMAP theme 1 is therefore closed as a separate theme.**
 
+### 1.13 Nudges are refused with one switch, or not at all
+
+Settled 2026-09-21, from a menu. One setting: nudges from friends, on or off.
+No per-person mute.
+
+Off means the Nudge button disappears for everybody who can see you, **and they
+are not told why**. Nothing announces that you muted anything.
+
+Per-person muting was offered and refused, and the reason is the size of the
+group. In a group of three, turning one person off is a thing they will work
+out, and the app would have built them a quiet blocklist to work it out with.
+One switch has no such shape: either you take nudges or you do not.
+
+There is still no rate limit (1.5) and quiet hours still win.
+
+### 1.14 Ren can be turned off, and off means gone
+
+Settled 2026-09-21. One switch. Off removes the tab, removes his lines from
+Home, After a miss, Your record and the day is done, and **no photograph or
+check-in of yours is ever sent to a model**.
+
+This is `DIRECTION.md` §5's fourth hard rule honoured rather than softened:
+*it is opt-in and switchable off, per account, and off is a real off.* A
+half-off that keeps reading your pictures while hiding the tab would make that
+sentence a lie.
+
+What is left when he is off is the v3 tracker wearing the v5 design, and that
+is a complete app. Nothing in the engine depends on him, which is 1.3 doing its
+job: he never scores, so removing him cannot change a single number.
+
+The alternative offered was two switches, Ren and your photographs separately,
+so somebody could keep the pattern reader and refuse the camera. It is a
+reasonable product and it was not taken.
+
 ---
 
 ## 2. Confirmed unchanged
@@ -376,8 +410,10 @@ Carried from `DIRECTION.md` §8. None of it was reopened on 2026-09-20.
 Not blockers. Things a scope file will have to answer, written down so that they
 are not answered by accident instead.
 
-Two items left this list on 2026-09-20: the record's register, now 1.11, and
-whether theme 1 comes first, now 1.12.
+Items that have left this list: the record's register (1.11), whether theme 1
+comes first (1.12), what a nudge can be refused with (1.13) and Ren's off
+switch (1.14). The three canvas review items were fixed on 2026-09-21 rather
+than decided, so they are gone too.
 
 ### 3.1 What happens to the clerk copy shipped this week
 
@@ -391,22 +427,13 @@ be surprised by it.
 Not chosen. Vercel Hobby allows 300s per function, so duration is not the
 constraint. Cost is, and there is no mechanism in the product to recover it.
 
-### 3.3 What the person being nudged can refuse
-
-The rate limit question is answered in 1.5: there is not one. What is still open
-is the other side of it. Can a member turn nudges off entirely, or off from one
-specific person, and does the recipient see who sent it? The set-message
-decision makes the last one nearly settled by itself, since a canned line with
-no name attached would be worse than no nudge, but none of the three has been
-decided.
-
-### 3.4 The dopamine detox activity
+### 3.3 The dopamine detox activity
 
 `DIRECTION.md` §6 has it fully argued: a reduction target rather than an
 abstinence vow, on a 619-person trial where cutting an hour a day worked about
 as well as giving it up. Nothing has been said about whether it is in v4.
 
-### 3.5 The three review items the canvas notes still carry
+### 3.4 The three review items the canvas notes still carry
 
 From the v5 canvas notes, unresolved there: the heatmap on Your record is eight
 weeks under a headline about one month and nothing says so; the ceiling tick on

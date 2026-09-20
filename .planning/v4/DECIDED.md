@@ -390,9 +390,25 @@ word fading in; a word that lands is a name.
 One line under it, "The day is still open", and no spinner. A spinner on a
 splash is an apology printed in advance.
 
-**The wordmark stopped being airy.** 20px at 0.3em tracking was a tech-startup
-lockup and it fought the mark, which is three solid blocks with a 2-unit gutter.
-26px at weight 600 and 0.07em matches it.
+**The logotype gets its own face, and it is the only thing that does.** IBM Plex
+Mono was doing a logotype's job. A mono gives every character the same width,
+which beside three solid blocks reads airy where the mark reads dense; tracking
+it tighter helped and did not fix it, because the problem was the face.
+
+**Archivo at 900, tracked IN at -0.03em.** It has the mark's density. It loads
+only on the boards that carry a logotype, through `HEAD_EMBER`, and **every
+number, time, money amount and upper-case label in the app is still IBM Plex
+Mono.** Nothing about `CLAUDE.md`'s typography rule changes: one display face
+over the body face is the shape that rule already describes, and a logotype is
+the one place it applies.
+
+**The splash is two candidates, and Aman picks.** `Splash` is the mark, the word
+and a line under it: *"Nothing counts until you say so"*, which is invariant 9
+said out loud. `Splash2` drops the word, the footer and the version string
+entirely and says one thing at the size of a statement: **Windows close. Be
+there.** The argument for B is that the mark is already the name to anybody who
+has the app installed, and a splash is shown to nobody else, so the only thing
+left worth saying is what the app is for.
 
 **THE STAMP LANDS.** It used to be simply present, which makes it a badge, and a
 badge is a participation trophy. It descends from 2.35x, hits at 42% of the

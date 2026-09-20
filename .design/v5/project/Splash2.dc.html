@@ -175,47 +175,33 @@
 <div style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
 
   <!--
-    A splash is the only screen with nothing to do on it, so the mark gets the
-    room it never gets anywhere else. The glow behind is NOT a bloom effect: it
-    is the field's own light spilling past the apertures, which is the one
-    reading under which a glow is honest in this app.
+    No word, no footer, no version string. The mark is already the name for
+    anybody who has the app installed, and a splash is shown to nobody else.
+
+    So the only thing left to say is what the app is FOR, and it gets said at
+    the size of a statement rather than a caption. Two lines, because the
+    second one is the instruction and it earns its own line.
   -->
   <div style="flex-grow: 1;"></div>
-  <div style="flex: none; display: flex; flex-direction: column; align-items: center; padding: 0 30px;">
-    <div style="position: relative; width: 176px; height: 176px; margin-top: 0px; display: flex; align-items: center; justify-content: center;">
-      <div class="sp-halo" style="position: absolute; width: 211px; height: 211px; border-radius: 999px; background: radial-gradient(circle, rgba(255,55,95,0.3) 0%, rgba(255,55,95,0.09) 42%, rgba(255,55,95,0) 70%);"></div>
-      <div style="position: relative;"><svg viewBox="0 0 32 32" width="176" height="176" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvspa-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><filter id="lvspa-goo" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="soft"/><feColorMatrix in="soft" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 17 -6.4" result="goo"/><feGaussianBlur in="goo" stdDeviation="0.75"/></filter><radialGradient id="lvspa-warm" cx="38%" cy="74%" r="76%"><stop offset="0" stop-color="#ff5c7f" stop-opacity="0.34"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvspa-seats)"><rect x="0" y="0" width="32" height="32" fill="#160207"/><rect x="0" y="0" width="32" height="32" fill="url(#lvspa-warm)"/><g class="em-field" filter="url(#lvspa-goo)"><circle class="em-4" cx="4"  cy="6"  r="9.6" fill="#7d0c26"/><circle class="em-2" cx="24" cy="9"  r="7.4" fill="#c11a3e"/><circle class="em-1" cx="9"  cy="21" r="8.8" fill="#ff375f"/><circle class="em-3" cx="20" cy="27" r="6.2" fill="#ff6b57"/><circle class="em-5" cx="28" cy="19" r="5.0" fill="#e0234b"/></g></g></svg></div>
+  <div style="flex: none; display: flex; flex-direction: column; align-items: center; padding: 0 34px;">
+    <div style="position: relative; width: 152px; height: 152px; margin-top: 0px; display: flex; align-items: center; justify-content: center;">
+      <div class="sp-halo" style="position: absolute; width: 182px; height: 182px; border-radius: 999px; background: radial-gradient(circle, rgba(255,55,95,0.3) 0%, rgba(255,55,95,0.09) 42%, rgba(255,55,95,0) 70%);"></div>
+      <div style="position: relative;"><svg viewBox="0 0 32 32" width="152" height="152" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvspb-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><filter id="lvspb-goo" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="soft"/><feColorMatrix in="soft" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 17 -6.4" result="goo"/><feGaussianBlur in="goo" stdDeviation="0.75"/></filter><radialGradient id="lvspb-warm" cx="38%" cy="74%" r="76%"><stop offset="0" stop-color="#ff5c7f" stop-opacity="0.34"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvspb-seats)"><rect x="0" y="0" width="32" height="32" fill="#160207"/><rect x="0" y="0" width="32" height="32" fill="url(#lvspb-warm)"/><g class="em-field" filter="url(#lvspb-goo)"><circle class="em-4" cx="4"  cy="6"  r="9.6" fill="#7d0c26"/><circle class="em-2" cx="24" cy="9"  r="7.4" fill="#c11a3e"/><circle class="em-1" cx="9"  cy="21" r="8.8" fill="#ff375f"/><circle class="em-3" cx="20" cy="27" r="6.2" fill="#ff6b57"/><circle class="em-5" cx="28" cy="19" r="5.0" fill="#e0234b"/></g></g></svg></div>
     </div>
 
-    <!--
-      THE WORD IS A LOGOTYPE, so it is not in the body face. Archivo at 900,
-      tracked in rather than out, because the mark it sits under is three solid
-      blocks with a 2-unit gutter and the word has to have the same density.
-
-      It arrives a letter at a time on a 52ms step, each one dropping the last
-      6px. A word that fades in is a word fading in. A word that lands is a
-      name.
-    -->
-    <div style="margin-top: 38px; display: flex;">
-      <sc-for list="{{letters}}" as="l" hint-placeholder-count="6">
-        <span class="sp-letter" style="animation-delay: {{l.delay}}; font-family: 'Archivo', 'IBM Plex Mono', ui-monospace, monospace; font-size: 42px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; color: #ffffff;">{{l.ch}}</span>
-      </sc-for>
+    <div style="margin-top: 44px; display: flex; flex-direction: column; align-items: center; gap: 2px;">
+      <span class="sp-l1" style="font-size: 33px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.16; color: #ffffff;">Windows close.</span>
+      <span class="sp-l2" style="font-size: 33px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.16; color: #ff375f;">Be there.</span>
     </div>
-
-    <p class="sp-line" style="margin: 18px 0 0; font-size: 15.5px; line-height: 1.45; color: #8e8e93; text-align: center;">Nothing counts until you say so.</p>
   </div>
-  <div style="flex-grow: 1.25;"></div>
+  <div style="flex-grow: 1.3;"></div>
 
 </div>
 </x-dc>
 
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  renderVals() {
-    return {
-      letters: 'CURFEW'.split('').map((ch, i) => ({ ch, delay: `${660 + i * 52}ms` })),
-    };
-  }
+  renderVals() { return {}; }
 }
 </script>
 </body>

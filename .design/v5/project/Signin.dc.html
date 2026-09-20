@@ -9,6 +9,7 @@
 <helmet>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&display=swap">
   <style>
     html, body { margin: 0; background: #000000; overflow: hidden; }
     ::-webkit-scrollbar { width: 0; height: 0; }
@@ -155,10 +156,14 @@
     .sp-halo   { animation: spHalo 2600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
     .sp-letter { animation: spLetter 480ms cubic-bezier(0.16, 1, 0.3, 1) both; }
     .sp-line   { animation: spSoft 620ms 1080ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    /* Candidate B has no word to wait for, so its lines come earlier and the
+       instruction lands a beat after the observation. */
+    .sp-l1     { animation: spSoft 640ms  560ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-l2     { animation: spSoft 640ms  760ms cubic-bezier(0.16, 1, 0.3, 1) both; }
     .sp-foot   { animation: spSoft 620ms 1400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 
     @media (prefers-reduced-motion: reduce) {
-      .sp-halo, .sp-letter, .sp-line, .sp-foot { animation: none; }
+      .sp-halo, .sp-letter, .sp-line, .sp-foot, .sp-l1, .sp-l2 { animation: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       .em-field { animation: none; }
@@ -194,7 +199,7 @@
     </div>
     <div style="position: absolute; left: 0; right: 0; top: 0; height: 152px; background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.34) 58%, rgba(0,0,0,0));"></div>
     <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 196px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.70) 44%, #000000 100%);"></div>
-    <div style="position: absolute; left: 22px; top: 28px;"><span style="display: flex; align-items: center; gap: 14px;"><svg viewBox="0 0 32 32" width="64" height="64" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvsi-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><filter id="lvsi-goo" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="soft"/><feColorMatrix in="soft" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 17 -6.4" result="goo"/><feGaussianBlur in="goo" stdDeviation="0.75"/></filter><radialGradient id="lvsi-warm" cx="38%" cy="74%" r="76%"><stop offset="0" stop-color="#ff5c7f" stop-opacity="0.34"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvsi-seats)"><rect x="0" y="0" width="32" height="32" fill="#160207"/><rect x="0" y="0" width="32" height="32" fill="url(#lvsi-warm)"/><g class="em-field" filter="url(#lvsi-goo)"><circle class="em-4" cx="4"  cy="6"  r="9.6" fill="#7d0c26"/><circle class="em-2" cx="24" cy="9"  r="7.4" fill="#c11a3e"/><circle class="em-1" cx="9"  cy="21" r="8.8" fill="#ff375f"/><circle class="em-3" cx="20" cy="27" r="6.2" fill="#ff6b57"/><circle class="em-5" cx="28" cy="19" r="5.0" fill="#e0234b"/></g></g></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; letter-spacing: 0.07em; color: #ffffff;">CURFEW</span></span></div>
+    <div style="position: absolute; left: 22px; top: 28px;"><span style="display: flex; align-items: center; gap: 15px;"><svg viewBox="0 0 32 32" width="64" height="64" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvsi-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><filter id="lvsi-goo" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="soft"/><feColorMatrix in="soft" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 17 -6.4" result="goo"/><feGaussianBlur in="goo" stdDeviation="0.75"/></filter><radialGradient id="lvsi-warm" cx="38%" cy="74%" r="76%"><stop offset="0" stop-color="#ff5c7f" stop-opacity="0.34"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvsi-seats)"><rect x="0" y="0" width="32" height="32" fill="#160207"/><rect x="0" y="0" width="32" height="32" fill="url(#lvsi-warm)"/><g class="em-field" filter="url(#lvsi-goo)"><circle class="em-4" cx="4"  cy="6"  r="9.6" fill="#7d0c26"/><circle class="em-2" cx="24" cy="9"  r="7.4" fill="#c11a3e"/><circle class="em-1" cx="9"  cy="21" r="8.8" fill="#ff375f"/><circle class="em-3" cx="20" cy="27" r="6.2" fill="#ff6b57"/><circle class="em-5" cx="28" cy="19" r="5.0" fill="#e0234b"/></g></g></svg><span style="font-family: 'Archivo', 'IBM Plex Mono', ui-monospace, monospace; font-size: 34px; font-weight: 900; letter-spacing: -0.03em; color: #ffffff;">CURFEW</span></span></div>
   </div>
   <div style="flex: none; margin-top: -26px; padding: 0 22px;">
     <h1 style="margin: 0; font-size: 36px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em;">Say what you did.<br>Show it if it matters.</h1>

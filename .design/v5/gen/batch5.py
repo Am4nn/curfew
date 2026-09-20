@@ -32,7 +32,7 @@ si.append(
     '    </div>\n'
     '    <div style="position: absolute; left: 0; right: 0; top: 0; height: 152px; background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.34) 58%, rgba(0,0,0,0));"></div>\n'
     '    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 196px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.70) 44%, #000000 100%);"></div>\n'
-    '    <div style="position: absolute; left: 22px; top: 28px;">' + lava_wordmark(20, 64, 14, pfx='lvsi') + '</div>\n'
+    '    <div style="position: absolute; left: 22px; top: 28px;">' + lava_wordmark(34, 64, 15, pfx='lvsi') + '</div>\n'
     '  </div>\n')
 
 si.append(
@@ -166,7 +166,7 @@ mk.append(tile('<span style="width: 74px; height: 74px; border-radius: 17px; bac
                + mark(40) + '</span>', 'APP ICON', 'The tile has the radius. The mark never does.', bg='#151517', h=104))
 mk.append(tile('<span style="width: 58px; height: 100px; border-radius: 9px; background: #000000; border: 1px solid rgba(255,255,255,0.09); display: flex; align-items: center; justify-content: center;">'
                + lava_mark(32, 'lvD') + '</span>', 'SPLASH', 'Centred on true black, nothing else on it.', bg='#151517', h=104))
-mk.append(tile(wordmark(11, mark_size=20, gap=9), 'LOCKUP', 'Mark, then the word, at 0.34em. Never stacked.', bg='#0d0d0f', h=104))
+mk.append(tile(wordmark(17, mark_size=22, gap=9), 'LOCKUP', 'Archivo 900, tracked in, never out. Never stacked.', bg='#0d0d0f', h=104))
 mk.append('  </div>\n')
 
 # The don'ts, drawn wrong on purpose.

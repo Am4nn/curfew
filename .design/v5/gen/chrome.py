@@ -13,6 +13,10 @@ GYM   = "/_blob/29a69da1d644f97a416d32616c586889"
 SLEEP = "/_blob/18def49919a492fde87296b6ab9320cb"
 
 MONO = "'IBM Plex Mono', ui-monospace, monospace"
+# The logotype face, and ONLY the logotype. A mono gives every character the
+# same width, which beside three solid blocks reads airy where the mark reads
+# dense. Archivo at 900 has the mark's density.
+DISPLAY = "'Archivo', 'IBM Plex Mono', ui-monospace, monospace"
 PINK, DEEP, GREY, DIM = '#ff375f', '#d81e46', '#8e8e93', '#48484a'
 CARD, CARD2, SEP = '#1c1c1e', '#2c2c2e', 'rgba(255,255,255,0.08)'
 GREEN, ORANGE, RED = '#30d158', '#ff9f0a', '#ff453a'
@@ -179,10 +183,14 @@ EMBER_CSS = """    /*
     .sp-halo   { animation: spHalo 2600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
     .sp-letter { animation: spLetter 480ms cubic-bezier(0.16, 1, 0.3, 1) both; }
     .sp-line   { animation: spSoft 620ms 1080ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    /* Candidate B has no word to wait for, so its lines come earlier and the
+       instruction lands a beat after the observation. */
+    .sp-l1     { animation: spSoft 640ms  560ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-l2     { animation: spSoft 640ms  760ms cubic-bezier(0.16, 1, 0.3, 1) both; }
     .sp-foot   { animation: spSoft 620ms 1400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 
     @media (prefers-reduced-motion: reduce) {
-      .sp-halo, .sp-letter, .sp-line, .sp-foot { animation: none; }
+      .sp-halo, .sp-letter, .sp-line, .sp-foot, .sp-l1, .sp-l2 { animation: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       .em-field { animation: none; }
@@ -192,7 +200,10 @@ EMBER_CSS = """    /*
 
 # The two boards that show the mark alive take this head instead. Every
 # other board would be carrying rules for an element it does not contain.
-HEAD_EMBER = HEAD.replace("  </style>", EMBER_CSS + "  </style>", 1)
+_ARCHIVO = ('  <link rel="stylesheet" '
+            'href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&display=swap">\n')
+HEAD_EMBER = (HEAD.replace("  </style>", EMBER_CSS + "  </style>", 1)
+              .replace("  <style>", _ARCHIVO + "  <style>", 1))
 
 
 def root(h, extra='', stage=True):
@@ -259,9 +270,9 @@ def lava_mark(size, pfx='lv'):
 
 def lava_wordmark(word_size=20, mark_size=64, gap=14, colour='#ffffff', pfx='lv'):
     return ('<span style="display: flex; align-items: center; gap: {g}px;">{m}'
-            '<span style="font-family: {f}; font-size: {w}px; font-weight: 600; letter-spacing: 0.07em; '
+            '<span style="font-family: {f}; font-size: {w}px; font-weight: 900; letter-spacing: -0.03em; '
             'color: {c};">CURFEW</span></span>').format(
-        g=gap, m=lava_mark(mark_size, pfx), f=MONO, w=word_size, c=colour)
+        g=gap, m=lava_mark(mark_size, pfx), f=DISPLAY, w=word_size, c=colour)
 
 
 ADD_ICON = 'M12 5v14M5 12h14'
@@ -288,9 +299,9 @@ def top_action(label, icon=ADD_ICON, href=None, aria=None, indent='    '):
 
 def wordmark(size=13, colour=None, gap=10, mark_size=None):
     return ('<span style="display: flex; align-items: center; gap: %dpx;">%s'
-            '<span style="font-family: %s; font-size: %dpx; font-weight: 700; letter-spacing: 0.34em; '
+            '<span style="font-family: %s; font-size: %dpx; font-weight: 900; letter-spacing: -0.03em; '
             'color: %s;">CURFEW</span></span>'
-            % (gap, mark(mark_size or (size + 5), colour or '#ffffff'), MONO, size, colour or '#ffffff'))
+            % (gap, mark(mark_size or (size + 5), colour or '#ffffff'), DISPLAY, size, colour or '#ffffff'))
 
 
 def nav(href, label, right=''):

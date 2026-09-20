@@ -38,7 +38,7 @@
       "is_interactive": true,
       "title": "Add an activity",
       "w": 390,
-      "x": 1880,
+      "x": 2350,
       "y": 2050
     },
     "Coach.dc.html": {
@@ -54,7 +54,7 @@
       "is_interactive": true,
       "title": "Configure · Sleep",
       "w": 390,
-      "x": 2350,
+      "x": 2820,
       "y": 2050
     },
     "Consent.dc.html": {
@@ -62,7 +62,7 @@
       "is_interactive": true,
       "title": "The consent gate",
       "w": 390,
-      "x": 1410,
+      "x": 1880,
       "y": 2050
     },
     "Data.dc.html": {
@@ -178,7 +178,7 @@
       "h": 844,
       "title": "A release notice",
       "w": 390,
-      "x": 2820,
+      "x": 3290,
       "y": 2050
     },
     "Notifs.dc.html": {
@@ -254,14 +254,21 @@
       "h": 844,
       "title": "Sign in",
       "w": 390,
-      "x": 470,
+      "x": 940,
       "y": 2050
     },
     "Splash.dc.html": {
       "h": 844,
-      "title": "Opening Curfew",
+      "title": "Opening · A, with the word",
       "w": 390,
       "x": 0,
+      "y": 2050
+    },
+    "Splash2.dc.html": {
+      "h": 844,
+      "title": "Opening · B, just the mark",
+      "w": 390,
+      "x": 470,
       "y": 2050
     },
     "Stamp.dc.html": {
@@ -300,7 +307,7 @@
       "is_interactive": true,
       "title": "First run",
       "w": 390,
-      "x": 940,
+      "x": 1410,
       "y": 2050
     }
   },
@@ -333,7 +340,7 @@
     "t-1": {
       "color": "pink",
       "kind": "title1",
-      "maxW": 3210,
+      "maxW": 3680,
       "text": "Getting in",
       "w": 640,
       "x": 0,
@@ -410,6 +417,7 @@
     "Groups.dc.html",
     "Activities.dc.html",
     "Splash.dc.html",
+    "Splash2.dc.html",
     "Signin.dc.html",
     "Welcome.dc.html",
     "Consent.dc.html",

@@ -4,46 +4,9 @@ the blocking notice. None of these existed on the v5 canvas."""
 from chrome import *
 
 # ---------------------------------------------------------------- Sign in ---
-# The three photographs are the generated landing images, which is the whole
-# reason they exist: a real member's evidence must never appear on a page a
-# stranger can open, and this page is the one a stranger opens.
-H = 844
-signin = [HEAD, root(H)]
-signin.append("""
-  <!--
-    The collage is three GENERATED photographs, and that is not a shortcut. A
-    stranger can open this page, so no member's evidence may be on it, which is
-    why these images were made rather than borrowed.
-  -->
-  <div style="flex: none; height: 300px; position: relative; overflow: hidden;">
-    <img src="%s" alt="" style="position: absolute; left: -30px; top: 0; width: 210px; height: 236px; object-fit: cover; border-radius: 0 18px 18px 0;">
-    <img src="%s" alt="" style="position: absolute; right: -18px; top: 26px; width: 196px; height: 148px; object-fit: cover; border-radius: 18px 0 0 18px;">
-    <img src="%s" alt="" style="position: absolute; right: 22px; top: 186px; width: 168px; height: 126px; object-fit: cover; border-radius: 18px;">
-    <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%%, rgba(0,0,0,0.1) 40%%, rgba(0,0,0,0.92) 92%%, #000000 100%%);"></div>
-  </div>
-""" % (SLEEP, GYM, FOOD))
+# Moved to batch5.py when it was rebuilt around the mark. Two files writing one
+# board is a file-order bug waiting to happen, and it happened once.
 
-signin.append("""  <div style="flex: none; margin-top: -18px; padding: 0 24px;">
-    <span style="font-family: %s; font-size: 13px; font-weight: 700; letter-spacing: 0.34em; color: %s;">CURFEW</span>
-    <h1 style="margin: 12px 0 0; font-size: 36px; font-weight: 700; line-height: 1.12; letter-spacing: -0.025em;">Say what you did.<br>Show it if it matters.</h1>
-    <p style="margin: 14px 0 0; font-size: 16px; line-height: 1.45; color: %s;">A tracker with three friends watching. Windows you set, a photograph when you say so, and a fine when you miss.</p>
-  </div>
-""" % (MONO, PINK, GREY))
-
-signin.append(grow())
-signin.append("""  <div style="flex: none; padding: 0 24px 34px; display: flex; flex-direction: column; gap: 14px;">
-    <button type="button" style="width: 100%%; height: 54px; border: 0; border-radius: 15px; background: #ffffff; color: #000000; font-family: inherit; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px;">
-      <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285f4" d="M21.6 12.2c0-.7-.06-1.4-.18-2.06H12v3.9h5.4a4.6 4.6 0 0 1-2 3.02v2.5h3.23c1.89-1.74 2.97-4.3 2.97-7.36z"/><path fill="#34a853" d="M12 22c2.7 0 4.96-.9 6.62-2.44l-3.23-2.5c-.9.6-2.05.95-3.39.95-2.6 0-4.8-1.76-5.6-4.12H3.08v2.59A10 10 0 0 0 12 22z"/><path fill="#fbbc05" d="M6.4 13.89a6 6 0 0 1 0-3.78V7.52H3.08a10 10 0 0 0 0 8.96z"/><path fill="#ea4335" d="M12 5.98c1.47 0 2.79.5 3.83 1.5l2.86-2.86C16.95 2.99 14.7 2 12 2a10 10 0 0 0-8.92 5.52L6.4 10.1C7.2 7.74 9.4 5.98 12 5.98z"/></svg>
-      Continue with Google
-    </button>
-    <div style="display: flex; align-items: center; gap: 9px; justify-content: center;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-      <span style="font-size: 13px; color: %s;">Invite only. There is no sign-up on this page.</span>
-    </div>
-  </div>
-""" % (DIM, DIM))
-signin.append(logic(H))
-write('Signin.dc.html', signin)
 
 
 # --------------------------------------------------------------- First run ---
@@ -197,68 +160,10 @@ write('Welcome.dc.html', first)
 
 
 # ------------------------------------------------------------ Consent gate ---
-# The one screen v4 cannot ship without. It carries what Curfew stores, what a
-# model is now allowed to read, and 1.18: sharing a photograph with a group
-# consents to that group's coaches reading it too.
-H = 1004
-consent = [HEAD, root(H)]
-consent.append("""
-  <!--
-    Phase 9's blocking overlay, reused. No tab bar, no back control and no way
-    around it: the whole app is behind this until it is answered. Curfew has
-    exactly one screen with no escape and this is it.
-  -->
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
-    <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: %s;">NEW TERMS</span>
-  </div>
-""" % (MONO, PINK))
-consent.append(title('Before you carry on',
-                     'Curfew has a coach in it now. He reads things, so this needs saying plainly before you carry on.'))
+# Moved to consent.py. It is nineteen sections of real policy copy lifted from
+# src/server/consent.ts and src/server/policy.ts, and it does not belong in a
+# file with four other boards in it.
 
-ROWS = [
-    (PINK, 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 21a7.5 7.5 0 0 1 15 0',
-     'Ren reads everything you log',
-     'Every check-in, every time, every number, and <b style="color:#ffffff;font-weight:600;">every photograph you have taken</b>. That is new. Until now nothing read your pictures, and a model does now.'),
-    (ORANGE, 'M3 8h3l2-3h8l2 3h3v12H3zM12 13m-3.4 0a3.4 3.4 0 1 0 6.8 0 3.4 3.4 0 1 0-6.8 0',
-     'A photograph you share with a group is read for them too',
-     'If you share Food with Wing, Wing&#39;s members see your meals, and their coaches read them the same way yours reads yours. Sharing a picture is sharing it with the coach behind the person.'),
-    (GREEN, 'M20 6L9 17l-5-5',
-     'He never decides whether a day counted',
-     'Not one number in this app comes from a model. Passes, misses, streaks, standing and money are arithmetic over your check-ins and they stay that way.'),
-    (GREY, 'M4 12h16M12 4v16',
-     'Turn him off and off is real',
-     'One switch in Settings. The tab goes, his lines go, and nothing of yours is sent to a model again. What is left is the tracker, which is a whole app on its own.'),
-]
-consent.append('  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; overflow: hidden;">\n' % CARD)
-for i, (colour, path, head, body) in enumerate(ROWS):
-    sep = 'transparent' if i == 0 else SEP
-    consent.append("""    <div style="display: flex; gap: 13px; padding: 16px; border-top: 0.5px solid %s;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="%s"/></svg>
-      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
-        <span style="font-size: 15.5px; font-weight: 600; line-height: 1.3;">%s</span>
-        <span style="font-size: 13.5px; line-height: 1.48; color: %s;">%s</span>
-      </div>
-    </div>
-""" % (sep, colour, path, head, GREY, body))
-consent.append('  </div>\n')
-
-consent.append("""  <div style="flex: none; margin: 18px 20px 0; display: flex; gap: 11px;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
-    <span style="font-size: 13px; line-height: 1.48; color: %s;">The money you owe is not deleted by anything on this screen, and never has been. A balance is a record of what two people agreed, so it survives you leaving.</span>
-  </div>
-""" % (DIM, GREY))
-
-consent.append(grow())
-consent.append("""  <div style="flex: none; padding: 0 20px 30px; display: flex; flex-direction: column; gap: 12px;">
-    <div style="display: flex; gap: 14px;">
-      <a href="Data.dc.html" style="flex-grow: 1; height: 52px; border-radius: 15px; border: 1px solid #3a3a3c; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff; font-size: 16px; font-weight: 500;">Read the terms</a>
-      <button type="button" style="flex-grow: 1; height: 52px; border: 0; border-radius: 15px; background: %s; color: #ffffff; font-family: inherit; font-size: 17px; font-weight: 600;">I accept</button>
-    </div>
-    <span style="text-align: center; font-size: 12.5px; color: %s;">Every member accepts this once. Nobody is carried over silently.</span>
-  </div>
-""" % (PINK, DIM))
-consent.append(logic(H))
-write('Consent.dc.html', consent)
 
 
 # ---------------------------------------------------------------- Catalog ---

@@ -507,6 +507,39 @@ the app: the board existed and nothing pointed at it. One row, shown only to an
 account that has it, with the scheduler's state as its value so a glance
 answers the question the screen exists for.
 
+### 1.8h The consent gate is the real document, at its real length
+
+Settled 2026-09-21. Aman: *"the consent gate is missing a lot, our current one
+makes users agree on a lot of things, sharing policies etc, where did that all
+go?"* It went nowhere: the mock never had it. Four bullets stood in for
+nineteen sections, which made a legal document look like a welcome card.
+
+**The copy is lifted from the code, section for section.** `CONSENT` in
+`src/server/consent.ts` is ten sections and `TERMS` in `src/server/policy.ts` is
+nine. All nineteen are on the board, plus one v4 section, **REN, THE COACH**,
+placed first because he is the change and nobody re-reads the other ten for
+fun. One line was added inside WHAT A GROUP SEES, which is 1.18.
+
+It is the tallest board on the canvas by a distance, in its own row, and that IS
+the design. This is a long thing to read with no way around it, and a mock that
+hides the length hides the only hard part of the screen.
+
+**"NEW TERMS" was wrong and the reason is worth keeping.** Aman: *"for first
+time users its first time, not a new term. It's a gate."* Both readings are real
+at the 4.0 release: three existing members meet it as a re-accept and everybody
+after them meets it as a gate. It is **one screen with two framings**, switched
+by a `returning` tweak in `data-props` rather than by a control, because the
+difference between them is two sentences and a `data-props` lever is what this
+canvas has for exactly that.
+
+- Default: **BEFORE YOU START**, and *"there is no way past this page and no
+  dismiss on it."*
+- Returning: **THE RULES HAVE CHANGED**, and what is new is named.
+
+**The timezone is collected here**, as the real gate does, because every window,
+streak and fine is judged in it and a wrong one is wrong from the first day. The
+button says what it is agreeing to: *"I am 18 or older, and I agree."*
+
 ### 1.8f No version number where a member can see it
 
 Settled 2026-09-21. Aman, on the consent gate's `CURFEW 4.0`: *"never have a

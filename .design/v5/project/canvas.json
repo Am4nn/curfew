@@ -38,7 +38,7 @@
       "is_interactive": true,
       "title": "Add an activity",
       "w": 390,
-      "x": 1880,
+      "x": 1410,
       "y": 2050
     },
     "Coach.dc.html": {
@@ -54,16 +54,16 @@
       "is_interactive": true,
       "title": "Configure · Sleep",
       "w": 390,
-      "x": 2350,
+      "x": 1880,
       "y": 2050
     },
     "Consent.dc.html": {
-      "h": 1004,
+      "h": 6375,
       "is_interactive": true,
       "title": "The consent gate",
       "w": 390,
-      "x": 1410,
-      "y": 2050
+      "x": 0,
+      "y": 16468
     },
     "Data.dc.html": {
       "h": 1080,
@@ -178,7 +178,7 @@
       "h": 844,
       "title": "A release notice",
       "w": 390,
-      "x": 2820,
+      "x": 2350,
       "y": 2050
     },
     "Notifs.dc.html": {
@@ -333,7 +333,7 @@
     "t-1": {
       "color": "pink",
       "kind": "title1",
-      "maxW": 3210,
+      "maxW": 2740,
       "text": "Getting in",
       "w": 640,
       "x": 0,
@@ -401,6 +401,15 @@
       "w": 640,
       "x": 0,
       "y": 14618
+    },
+    "t-9": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 640,
+      "text": "The gate",
+      "w": 640,
+      "x": 0,
+      "y": 16218
     }
   },
   "order": [
@@ -412,7 +421,6 @@
     "Splash.dc.html",
     "Signin.dc.html",
     "Welcome.dc.html",
-    "Consent.dc.html",
     "Catalog.dc.html",
     "Configure.dc.html",
     "Notice.dc.html",
@@ -442,7 +450,8 @@
     "Switches.dc.html",
     "Mark.dc.html",
     "Ren.dc.html",
-    "Admin.dc.html"
+    "Admin.dc.html",
+    "Consent.dc.html"
   ],
   "pages": [],
   "title": "Curfew v5",

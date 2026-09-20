@@ -16,7 +16,7 @@ OUT = os.environ.get('CURFEW_V5_PROJECT') or os.path.join(
 
 ROWS = [
     ('Five tabs', ['Main', 'Coach', 'Stats', 'Groups', 'Activities']),
-    ('Getting in', ['Splash', 'Signin', 'Welcome', 'Consent', 'Catalog', 'Configure', 'Notice']),
+    ('Getting in', ['Splash', 'Signin', 'Welcome', 'Catalog', 'Configure', 'Notice']),
     ('In a group', ['Group', 'GroupStats', 'Evidence', 'Standing', 'Ranks', 'Ledger',
                     'GroupSettings', 'Invite']),
     ('Monk mode', ['Monk', 'MonkSetup', 'MonkLocked']),
@@ -25,6 +25,9 @@ ROWS = [
     ('You, and everything under it', ['Settings', 'Sharing', 'Notifs', 'Photos', 'Away', 'Data', 'Switches']),
     ('The mark, and Ren', ['Mark', 'Ren']),
     ('Behind the glass', ['Admin']),
+    # Its own row. It is six thousand pixels of policy and it would otherwise
+    # leave every board beside it floating in empty canvas.
+    ('The gate', ['Consent']),
 ]
 
 TITLES = {

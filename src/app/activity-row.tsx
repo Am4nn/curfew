@@ -93,16 +93,25 @@ export function ActivityRow({
               carries its count. The whole row is at 0.42, so the flame dims
               with it rather than needing a duller treatment of its own. */}
           {row.grey ? (
-            // GREY. The run is over on the arithmetic and the number has NOT
-            // fallen: a weekly week that came short holds what it earned, and
-            // the flame going out is what says the run ended. Asked BEFORE
-            // `streak > 0`, because a grey run still has a positive count and
-            // would otherwise draw a live flame over a dead run.
+            // GREY: the run that just ended, in the same place, gone out (item
+            // 19). The number has NOT fallen. A week that came short and a day
+            // that was missed both hold what they earned, and the flame going
+            // out is what says the run is over.
+            //
+            // Asked BEFORE `streak > 0`, because a grey run still has a
+            // positive count and would otherwise draw a live flame over a dead
+            // one. This branch used to key off `restore` instead, which drew
+            // nothing at all once an offer expired: a forty day run simply
+            // disappeared from the row. Grey outlives the offer, so it does not.
             //
             // There may be nothing to press yet. A week goes grey the moment
             // its minimum is unreachable, and the price of forgiving it is not
             // final until the week ends, so the control below waits for
             // `restore` while this does not.
+            //
+            // The status line is left alone: it still says what the period is
+            // doing, because that is still true, and a row that rewrites itself
+            // to talk about grace has stopped being a row about the activity.
             <span className="flex items-center gap-1">
               <DeadFlame size={13} />
               <span className="text-[12px] leading-none text-muted tabular-nums">
@@ -114,18 +123,6 @@ export function ActivityRow({
               <Flame size={13} />
               <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">
                 {row.streak}
-              </span>
-            </span>
-          ) : row.restore ? (
-            // The run that just ended, in the same place, gone out (item 19).
-            // The status line is left alone: it still says what the week is
-            // doing, because that is still true, and a row that rewrites itself
-            // to talk about grace has stopped being a row about the activity.
-            // Exactly two things differ from an ordinary row, and this is one.
-            <span className="flex items-center gap-1">
-              <DeadFlame size={13} />
-              <span className="text-[12px] leading-none text-muted tabular-nums">
-                {row.restore.restoresTo}
               </span>
             </span>
           ) : null}

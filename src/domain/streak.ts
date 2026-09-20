@@ -163,21 +163,36 @@ export function streakOver(
       // Declared away. Not a miss to be forgiven, a gap in a run of
       // consecutive days, so grace is never even consulted.
       if (day.paused) {
+        // Not grey. A pause is a gap the member declared, not a day they
+        // missed, so there is nothing to forgive and nothing to decide. It is
+        // the one thing that still takes a daily run straight to zero.
         state.current = 0;
+        state.grey = false;
         steps.push({ at: day.date, current: 0, graceUsed: false, failed: true });
         continue;
       }
 
       if (day.done) {
+        // The first day after a grey run is day one of a new one. Turning up is
+        // what answers the offer, and it is the only place a run returns to
+        // zero. Same rule as a session in a week after a grey week.
+        if (state.grey) {
+          state.current = 0;
+          state.grey = false;
+        }
         state.current += 1;
         if (state.current > state.best) state.best = state.current;
         steps.push({ at: day.date, current: state.current, graceUsed: false });
         continue;
       }
 
-      // A missed day. Grace holds the run where it is: a missed day is not a
-      // completed day, so it does not add, but it does not reset either.
-      if (!day.graced) state.current = 0;
+      // A missed day. The run is over, and the number does NOT fall: it goes
+      // GREY and holds, the same as a weekly week that came short. A forty day
+      // run that vanishes to nothing is worse to look at than one that dims,
+      // and the days happened either way.
+      //
+      // Grace holds it without the grey, because a forgiven day is not a break.
+      if (!day.graced) state.grey = true;
       steps.push({
         at: day.date,
         current: state.current,

@@ -22,6 +22,42 @@ describe("every-day activities", () => {
     expect(r.best).toBe(5);
   });
 
+  it("a missed day greys the run rather than erasing it", () => {
+    // Three days, then a miss, and nothing after. The run is over and the
+    // number holds at 3: a long streak that vanishes to nothing is worse to
+    // look at than one that dims, and those days still happened.
+    const r = streakOver(days("2026-09-07", "xxx."), EVERY_DAY);
+    expect(r.current).toBe(3);
+    expect(r.grey).toBe(true);
+    expect(r.best).toBe(3);
+  });
+
+  it("and the next day logged is day one of a new run", () => {
+    const r = streakOver(days("2026-09-07", "xxx.x"), EVERY_DAY);
+    expect(r.current).toBe(1);
+    expect(r.grey).toBe(false);
+    expect(r.best).toBe(3);
+  });
+
+  it("grace holds a missed day without greying it", () => {
+    const r = streakOver(days("2026-09-07", "xxxg"), EVERY_DAY);
+    expect(r.current).toBe(3);
+    expect(r.grey).toBe(false);
+  });
+
+  it("a pause still takes a daily run straight to zero", () => {
+    // Declared away is not a miss. There is nothing to forgive, so there is
+    // nothing to hold the number for.
+    const paused: StreakDay[] = [
+      { date: "2026-09-07", done: true },
+      { date: "2026-09-08", done: true },
+      { date: "2026-09-09", done: false, paused: true },
+    ];
+    const r = streakOver(paused, EVERY_DAY);
+    expect(r.current).toBe(0);
+    expect(r.grey).toBe(false);
+  });
+
   it("a missed day resets to zero", () => {
     const r = streakOver(days("2026-09-07", "xxx.xx"), EVERY_DAY);
     expect(r.current).toBe(2);

@@ -4,9 +4,10 @@ Last updated 2026-09-15, tagging v3.1.1.
 
 ## Still open
 
-### A weekly streak goes GREY, it does not drop, decided 2026-09-20
+### A streak goes GREY, it does not drop, shipped 3.4.3 and 3.4.4
 
-Ready to build. The rule is settled; nothing below is an open question.
+Built. Weekly in 3.4.3, daily in 3.4.4, one rule for both. Kept here because
+the reasoning is the record and ACTIVITIES.md still describes the old rule.
 
 **Today** a weekly streak is judged only at the Sunday. A three-a-week with
 nothing logged reads alive all Saturday, when two days remain and two is not
@@ -39,11 +40,22 @@ three-a-week costs 3 against a pool of 2 a month and the offer can never be
 afforded. `streak-gym-short-week` went from a 1 grace offer to a 4 grace one.
 Grey solves that by not making the week forgivable until its price is final.
 
-**Where it lands.** `streakOver` in `src/domain/streak.ts` grows a third state
-beside alive and ended. `StreakStep` needs to carry it, `restoreOffer` must not
-offer on a week still running, and `activity_streaks` needs somewhere to hold
-"grey since". The reverted commit has the unreachable arithmetic and its tests,
-which are still right; it is only the consequence that changes.
+**Where it landed.** `StreakState.grey`, `StreakStep.failed` and `.open`,
+`activity_streaks.grey` (migration 0030), and a `grey` on `Standing`, `TodayRow`
+and the stats row. Four places had been using `current > 0` to mean "the run is
+alive", and grey makes that false: `restoreOffer`'s tail scan, `openOffers`'s
+fast path, the reminder path, and three flame branches. The simulation caught
+the second one; the first and third were caught by reading for the pattern after
+the second.
+
+**Daily followed in 3.4.4**, same rule. A missed day greys and holds instead of
+erasing, the next day logged is day one of a new run, grace holds without
+greying, and a declared pause is still the one thing that goes straight to zero.
+It also removed a row branch that keyed off the grace offer rather than the run:
+once an offer expired, a forty day run vanished from the row entirely.
+
+**Still on the old rule:** `ACTIVITIES.md`'s worked example says week 3 ends at
+zero. `streak.test.ts` says where they part company and why.
 
 ### A full review of all twelve activities, asked for 2026-09-15
 

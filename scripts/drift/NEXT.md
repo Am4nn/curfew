@@ -4,6 +4,47 @@ Last updated 2026-09-15, tagging v3.1.1.
 
 ## Still open
 
+### A weekly streak goes GREY, it does not drop, decided 2026-09-20
+
+Ready to build. The rule is settled; nothing below is an open question.
+
+**Today** a weekly streak is judged only at the Sunday. A three-a-week with
+nothing logged reads alive all Saturday, when two days remain and two is not
+three. The number is a lie for two days and the whole value of it is that it
+is true.
+
+**The rule.**
+
+1. A streak only ever goes UP. +1 per day the activity is done. It never falls
+   mid-week and it is never rolled back.
+2. The moment the week's minimum becomes unreachable, the streak turns GREY and
+   says why. It keeps its value. Sessions logged after that still add, and still
+   count against the shortfall.
+3. When the week ends, grey offers two doors: spend grace, or start fresh.
+4. Ignoring it and logging next week starts a new run from 1 and the offer
+   closes, which is what `restoreOffer` already does on the next check-in.
+
+**Why the choice waits for the week to end.** The price is not knowable before
+then. Saturday at 0 of 3 the shortfall is 3, but if they go Saturday and Sunday
+it is 1. Pricing it early either shows a wrong number or freezes it at 3 and
+charges somebody for turning up. Grey on Saturday, priced on Monday, is the only
+arrangement where the number is honest the whole time and the price is final
+when it appears.
+
+**What was tried and reverted, 2026-09-20, commit `2b8c429`.** Breaking the
+streak to 0 the moment the week became unreachable. It works arithmetically and
+`bun run simulate` caught what it does to grace: an unreachable week is short by
+up to its whole minimum, `restoreOffer` charges the shortfall, so a dead
+three-a-week costs 3 against a pool of 2 a month and the offer can never be
+afforded. `streak-gym-short-week` went from a 1 grace offer to a 4 grace one.
+Grey solves that by not making the week forgivable until its price is final.
+
+**Where it lands.** `streakOver` in `src/domain/streak.ts` grows a third state
+beside alive and ended. `StreakStep` needs to carry it, `restoreOffer` must not
+offer on a week still running, and `activity_streaks` needs somewhere to hold
+"grey since". The reverted commit has the unreachable arithmetic and its tests,
+which are still right; it is only the consequence that changes.
+
 ### A full review of all twelve activities, asked for 2026-09-15
 
 One type at a time, end to end, and written down per type rather than as a

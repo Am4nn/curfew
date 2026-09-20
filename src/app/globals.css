@@ -94,8 +94,12 @@
   --dash: #4a4740;
   --penalty: #e4574b;
   --gold: #ffd23f;
-  /* The five rank bands. Every value but gold already exists in the palette. */
-  --rank-doubt: #8a4f49;
+  /* The five rank bands. Every value but gold already exists in the palette.
+     DOUBT is the one that was measured rather than picked: #8a4f49 came out at
+     3.10 on the ground and 2.86 on a surface, so the only band a struggling
+     member ever sees was the only one that failed AA. Same hue, lifted until it
+     clears: 5.49 and 5.06. */
+  --rank-doubt: #bd736a;
   --rank-intent: #8c8c8c;
   --rank-practice: #7fa8ff;
   --rank-discipline: #6ba17f;

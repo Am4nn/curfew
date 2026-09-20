@@ -287,13 +287,21 @@ class Component extends DCLogic {
           browA: 'w-pulse', eyeA: 'e-widen', mouthA: 'o-talk',
         },
         {
+          // He LOOKS at you. Closed crescent eyes over a wide mouth is the
+          // stock uncanny face: with the eyes shut nothing says where the
+          // feeling is aimed, so the mouth reads as a mask. Open eyes and a
+          // smaller smile is the same pleasure with somebody behind it.
+          //
+          // The brows lift a little, which is the real tell for warmth and the
+          // thing the old drawing had nowhere to put.
           label: 'DONE', when: 'Everything scheduled, logged',
           skin: skin('#dbf7e3', '#8ae5a6', '#2ba553', '#0c3a1e'),
           bounce: 'rgba(255,255,255,0.22)', ink: '#08301a', tone: '#30d158',
-          brow: '', eyeFill: '', eyeLine: eyesArc,
-          mouth: 'M42 64q16 17 32 0', mouthFill: 'none', mw: 4.2,
-          body: 'b-breath', turnA: '', specA: '',
-          browA: '', eyeA: 'e-squint', mouthA: 'o-grin',
+          brow: 'M35 39q7.5 -4 15 -1 M81 39q-7.5 -4 -15 -1',
+          eyeFill: eyesOpen(6.2), eyeLine: '',
+          mouth: 'M46 66q12 11 24 0', mouthFill: 'none', mw: 3.9,
+          body: 'b-breath', turnA: 't-turn', specA: 'p-turn',
+          browA: '', eyeA: 'e-blink', mouthA: 'o-grin',
         },
         {
           // The face shakes no. Brows press in and down, eyes narrow to a
@@ -318,13 +326,20 @@ class Component extends DCLogic {
           browA: '', eyeA: '', mouthA: '',
         },
         {
+          // COMPOSED, not delighted, and that is the whole difference from
+          // DONE. It used to be the same drawing in a different colour, so the
+          // rarest state in the app said what an ordinary good day says.
+          //
+          // Level eyes, a small closed smile, no brow. Sixty days with nothing
+          // missed is not a grin, it is certainty, and the gold is already
+          // doing the celebrating: this is the only glow in the app.
           label: 'IMMACULATE', when: 'Sixty days, nothing missed',
           skin: skin('#fff2cc', '#ffd873', '#cf9718', '#40300a'),
           bounce: 'rgba(255,255,255,0.26)', ink: '#3a2a05', tone: '#ffc14a',
-          brow: '', eyeFill: '', eyeLine: eyesArc,
-          mouth: 'M42 64q16 17 32 0', mouthFill: 'none', mw: 4.2,
-          body: 'b-breath', turnA: 't-turn', specA: 'p-turn',
-          browA: '', eyeA: '', mouthA: 'o-grin',
+          brow: '', eyeFill: eyesOpen(5.6), eyeLine: '',
+          mouth: 'M50 67q8 7 16 0', mouthFill: 'none', mw: 3.6,
+          body: 'b-slow', turnA: 't-turn', specA: 'p-turn',
+          browA: '', eyeA: 'e-blink', mouthA: '',
         },
       ],
     };

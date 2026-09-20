@@ -350,6 +350,98 @@ in it. That is accepted rather than overlooked, the same way 1.7 is.
 
 **ROADMAP theme 1 is therefore closed as a separate theme.**
 
+### 1.15 First run is a tutorial, and it is deterministic
+
+Settled 2026-09-21. The first time somebody signs in they meet Ren, and he
+walks them through setting up their first activities.
+
+**Not a single model call in it.** Every line is written, every branch is a
+branch, and it behaves the same way for the third member as it did for the
+first. An onboarding that depends on inference can be slow, can be wrong, and
+can be down, on the one screen where a person decides whether this app is worth
+keeping.
+
+**It cannot be skipped.** You leave it with at least one activity set up, which
+is the whole difference between an app you use and an app you opened. Nobody
+reaches Home with nothing tracked. The cost is that it must stay to two or
+three screens, or the thing people want to escape becomes the tutorial.
+
+It is also where Ren stops being a tab nobody was introduced to. He arrives
+having already helped with something.
+
+### 1.16 Monk mode: the first activity with no pass and no fail
+
+Settled 2026-09-21. A new activity type, and the shape of it diverges from
+`DIRECTION.md` section 6 rather than adopting it.
+
+**What section 6 proposed:** a phone-reduction target, a threshold type like
+Screen, argued on a 619-person trial.
+
+**What Aman wants:** *"dopamine detox is a different composite or complex
+activity, this will consist of minimum steps + no junk food + no screen + cold
+water and many more things."* Phone and screen time stay separate.
+
+**It is called MONK MODE**, which is what people already call this exact
+composite. Two better-sounding names were unavailable: "clean day" is how
+reputation counts toward IMMACULATE, and DISCIPLINE is a rank.
+
+**The conditions are ours, the selection is yours.** A fixed menu lives in the
+module and each member switches on the rules they want, through the normal
+insert-only, future-dated config path. Free-text rules were offered and
+refused: a module that cannot know what its own conditions mean cannot say
+anything about them, and neither can Ren.
+
+**IT IS SCORED, NOT PASSED**, and this is the part that costs something.
+
+Every other activity answers `{ passed, detail }`, and `passed` is read by
+scoring, streaks, reputation, outcomes and fines. A type with no pass has
+nothing for any of them to read. So Monk mode becomes the first **unscored**
+type: recorded, shown as a percentage, and deliberately outside the machinery.
+
+  - no pass, so no miss
+  - no miss, so no fine and no streak
+  - and it must not move reputation either, or merely switching it on would
+    pay you for nothing
+
+That last one is the trap. Marking it permanently passed would have been the
+cheap way to make the engine accept it, and it would have inflated everybody's
+standing for free. One module flag, and the scoring pass skips it.
+
+**What this buys:** the activity whose entire subject is compulsive behaviour is
+the one activity that cannot punish you. `DIRECTION.md` section 6 asked for
+exactly that and got further than it asked.
+
+**What it costs:** Monk mode cannot be group accountability in the way
+everything else is. There is no fine to split and no streak to break. The group
+can see the number and that is all the pressure there is.
+
+**ONE READING I HAD TO PICK.** Aman: *"score + some ai, tells how detox you are
+every day."* Taken as: **the score is arithmetic and Ren describes it.** Five of
+six rules is 83% whether or not a model is awake, and Ren reads that number and
+says something about the week.
+
+The other reading, a model producing the score itself, is refused unless Aman
+says otherwise. It would break 1.3 and invariant 1 in one move: a model's output
+is not replayable, so the number could not be rebuilt from `events`, and the
+app's whole claim that every figure can be recomputed would stop being true.
+
+### 1.17 Aman pays for the model
+
+Settled 2026-09-21. Personally, out of pocket, for three members.
+
+This closes the money half of what was 3.2. It does not make the cost
+disappear, it makes it somebody's rather than nobody's, which is what was
+actually missing: a feature with no funding route is a feature that stops
+working the month it gets used.
+
+Paid tiers and payment integration both stay in Not in v3. Nothing in the
+product recovers this.
+
+**Which model is now an implementation choice, not a decision**, and it belongs
+in the build plan rather than here. What it must satisfy is already written:
+the coach never scores (1.3), never invents a number (`DIRECTION.md` section 5),
+and everything it says is recorded as an event.
+
 ### 1.13 Nudges are refused with one switch, or not at all
 
 Settled 2026-09-21, from a menu. One setting: nudges from friends, on or off.
@@ -407,35 +499,14 @@ Carried from `DIRECTION.md` §8. None of it was reopened on 2026-09-20.
 
 ## 3. Open
 
-Not blockers. Things a scope file will have to answer, written down so that they
-are not answered by accident instead.
+### 3.1 Monk mode's conditions
 
-Items that have left this list: the record's register (1.11), whether theme 1
-comes first (1.12), what a nudge can be refused with (1.13) and Ren's off
-switch (1.14). The three canvas review items were fixed on 2026-09-21 rather
-than decided, so they are gone too.
+1.16 settles that the menu is ours and the selection is the member's. It does
+not settle what is on the menu. Named so far: minimum steps, no junk food, no
+screen, cold water, and "many more things".
 
-### 3.1 What happens to the clerk copy shipped this week
+### 3.2 Whether the score is arithmetic or a model's opinion
 
-3.4.3 and 3.4.4 shipped grey-streak strings in pure clerk. *"This week can no
-longer be made."* Under 1.11 that sentence is a status line rather than a
-number, so it is warm-register work and gets rewritten. Fine, but nobody should
-be surprised by it.
-
-### 3.2 Which model, where it runs, and who pays
-
-Not chosen. Vercel Hobby allows 300s per function, so duration is not the
-constraint. Cost is, and there is no mechanism in the product to recover it.
-
-### 3.3 The dopamine detox activity
-
-`DIRECTION.md` §6 has it fully argued: a reduction target rather than an
-abstinence vow, on a 619-person trial where cutting an hour a day worked about
-as well as giving it up. Nothing has been said about whether it is in v4.
-
-### 3.4 The three review items the canvas notes still carry
-
-From the v5 canvas notes, unresolved there: the heatmap on Your record is eight
-weeks under a headline about one month and nothing says so; the ceiling tick on
-Standing is a single pixel and reads as dust; and the group subtitle needs to
-say it lists what YOU share, since no query returns a group's activities.
+1.16 reads it as arithmetic, with Ren narrating. Recorded as an assumption
+rather than a decision, because the other reading breaks two invariants and
+should be chosen deliberately if it is chosen at all.

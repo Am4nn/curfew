@@ -48,6 +48,7 @@ export {
   type StreakDay,
   type StreakState,
   type RestoreOffer,
+  STREAK_LOGIC_VERSION,
 } from "./streak";
 export { graceBalance, offerOpen, resetsOn, type GraceBalance } from "./grace";
 export { resolveConfig, resolveAt, resolveMoney } from "./config";

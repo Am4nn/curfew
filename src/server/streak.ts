@@ -11,6 +11,7 @@ import {
   daysDoneIn,
   getActivityType,
   EMPTY_STREAK,
+  STREAK_LOGIC_VERSION,
   type StreakDay,
   type StreakState,
   type RestoreOffer,
@@ -51,6 +52,8 @@ export interface StoredStreak {
   closedThrough: string | null;
   weekStart: string | null;
   weekSessions: number;
+  /** Which rules wrote this. A row from older ones is rebuilt, not trusted. */
+  logicVersion: number;
 }
 
 const iso = (d: DateTime) => d.toFormat("yyyy-MM-dd");
@@ -108,6 +111,7 @@ export async function readStreak(
     closedThrough: row.closedThrough,
     weekStart: row.weekStart,
     weekSessions: row.weekSessions,
+    logicVersion: row.logicVersion,
   };
 }
 
@@ -436,6 +440,7 @@ export async function rebuildStreak(
     closedThrough,
     weekStart,
     weekSessions,
+    logicVersion: STREAK_LOGIC_VERSION,
   };
 
   if (opts.write !== false) await writeStreak(userId, typeKey, stored, days.at(-1)?.date ?? null);
@@ -460,6 +465,7 @@ async function writeStreak(
       weekStart: s.weekStart,
       weekSessions: s.weekSessions,
       closedThrough: s.closedThrough,
+      logicVersion: s.logicVersion,
     })
     .onConflictDoUpdate({
       target: [activityStreaks.userId, activityStreaks.typeKey],
@@ -471,6 +477,7 @@ async function writeStreak(
         weekStart: sql`excluded.week_start`,
         weekSessions: sql`excluded.week_sessions`,
         closedThrough: sql`excluded.closed_through`,
+        logicVersion: sql`excluded.logic_version`,
         updatedAt: sql`now()`,
       },
     });
@@ -536,6 +543,12 @@ export async function bumpStreak(
       // A new week starts its own count; the same week continues.
       weekSessions:
         week === null ? 0 : (week === stored.weekStart ? stored.weekSessions : 0) + days.length,
+      // The CURRENT version, not the one the row arrived with. This function is
+      // part of the logic that version names: it mirrors the grey and restart
+      // rules above by hand, because a press cannot afford a replay. Carrying
+      // the old version forward would mark a row this code just wrote as
+      // something this code does not recognise, and rebuild it on every close.
+      logicVersion: STREAK_LOGIC_VERSION,
     },
     latest,
   );
@@ -552,6 +565,16 @@ function needsClosing(
   scoredThrough: string | null,
   unit: "day" | "week",
 ): boolean {
+  // THE RULES MOVED. Everything below this asks whether anything NEW has
+  // happened, which is the wrong question after a rule change: nothing has
+  // happened and the stored answer is still wrong. Reputation's resume refuses
+  // a row from an older `LOGIC_VERSION` for the same reason, and this is the
+  // streak half of it (migration 0032).
+  //
+  // A row written before the column existed reads 0 and rebuilds once, which is
+  // the point: those rows were written by logic nothing can name.
+  if (stored && stored.logicVersion !== STREAK_LOGIC_VERSION) return true;
+
   // A WEEKLY type always rebuilds. Its run can now go grey in the MIDDLE of a
   // week, the moment the minimum stops being reachable, and nothing has closed
   // when that happens: no period ended, no score was written, so the gate below
@@ -609,6 +632,7 @@ export async function allStreaks(userId: string): Promise<Map<string, StoredStre
         closedThrough: row.closedThrough,
         weekStart: row.weekStart,
         weekSessions: row.weekSessions,
+        logicVersion: row.logicVersion,
       },
     ]),
   );

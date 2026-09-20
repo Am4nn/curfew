@@ -118,6 +118,33 @@ export interface StreakResult extends StreakState {
 export const EMPTY: StreakState = { current: 0, best: 0, grey: false };
 
 /**
+ * Bump this whenever the rules in this file change what a counter should read.
+ *
+ * The same mechanism reputation has had since migration 0011, and for the same
+ * reason: a stored counter is only trustworthy while the rules that produced it
+ * are the rules in force. `activity_streaks.logic_version` records the version
+ * that wrote each row, `needsClosing` refuses a row it does not recognise, and
+ * `scoreAll` closes every user's streaks every hour, so a bump repairs itself
+ * without anybody opening the app.
+ *
+ * WHAT COUNTS AS A CHANGE, and it is wider than this file. `streakOver` decides
+ * what a counter should be from history. `bumpStreak` in `src/server/streak.ts`
+ * does the same arithmetic incrementally when a press lands, because a press
+ * cannot afford a replay, and it MIRRORS the grey and restart rules by hand.
+ * The two have to agree. Change either and bump this.
+ *
+ * FORGETTING DOES NOT FAIL LOUDLY, which is the weakness this shares with
+ * `LOGIC_VERSION`. The counters simply keep their old answers until something
+ * else happens to close them, and `bun run check:logic-version` is what proves
+ * the mechanism works rather than that it was remembered.
+ *
+ * It fixes STALE, not WRONG. A rebuild under mistaken rules reproduces the
+ * mistake, stored and recomputed agree, and `verify` reports nothing. See
+ * migration 0032.
+ */
+export const STREAK_LOGIC_VERSION = 1;
+
+/**
  * Walk a chronological run of activity-days and return the streak.
  *
  * `days` must be every day in range, not only the ones the user did, because a

@@ -1,0 +1,39 @@
+-- A streak rule change repairs itself, the way a curve change already does.
+--
+-- Reputation has had `LOGIC_VERSION` since 0011. Every stored day records the
+-- version of the maths that made it, and the incremental close refuses to build
+-- on a version it does not recognise, replaying that user from the beginning
+-- instead. Streaks had no equivalent, and the gap is not theoretical: it cost
+-- two hand-run rebuilds in one week.
+--
+-- WHAT HAPPENED, 3.4.4. The daily branch of `streakOver` changed so that a miss
+-- greys a run instead of zeroing it. Every stored counter had been written under
+-- the old rule, and `needsClosing` will not rebuild a DAILY type until something
+-- new is scored for it, so sixteen counters sat wrong for as long as nobody
+-- pressed anything. Nothing reported it. `verify` recomputes and diffs, which
+-- catches a stored row that disagrees with the rules AS THEY ARE, and these rows
+-- disagreed with rules that had only just arrived, in the window before any
+-- close had run. It took reading the table by hand.
+--
+-- So: one column, stamped on write, checked in `needsClosing`. A bump makes
+-- every counter stale and the next close rebuilds it, and `scoreAll` calls
+-- `closeStreaks` for every user every hour, so the repair reaches somebody who
+-- never opens the app.
+--
+-- DEFAULT 0, NOT 1, and that is the whole point of shipping it this way. Every
+-- row that exists right now was written by logic this column cannot name, so
+-- every row has to be considered stale exactly once. Defaulting to the current
+-- version would declare the existing rows correct, which is the bug, on the one
+-- day the mechanism is supposed to prove itself.
+ALTER TABLE activity_streaks
+    ADD COLUMN IF NOT EXISTS logic_version integer NOT NULL DEFAULT 0;
+
+-- What this does NOT do, recorded so nobody expects it to.
+--
+-- It fixes STALE, not WRONG. A counter written under superseded rules is stale
+-- and this rebuilds it. A counter written under rules that are themselves
+-- mistaken is wrong, and a rebuild reproduces the mistake faithfully: stored and
+-- recomputed agree, `verify` reports zero drift, and both are wrong the same
+-- way. That happened too, in 3.4.5, when a daily miss set grey on a run that did
+-- not exist and production came out with sixteen rows reading grey with a count
+-- of zero. Nothing here would have caught it. Reading the rows did.

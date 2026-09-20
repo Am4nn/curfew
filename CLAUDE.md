@@ -213,7 +213,7 @@ QStash points at one environment at a time, whichever `BETTER_AUTH_URL` the
 loaded env file names, so dev is scheduled by `bun run schedule` and production
 by `bun run schedule:production`.
 
-`package.json` carries `3.4.7`, cut as a tag on 2026-09-20. The admin header
+`package.json` carries `3.4.8`, cut as a tag on 2026-09-20. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.
@@ -299,6 +299,36 @@ callback. So `bun run schedule` cannot see that a live schedule is missing one,
 and will say "all scheduled". `bun run schedule -- --rewrite` recreates every
 declared job, and is the only way to change that field. `check:cron` asserts the
 header is declared in the source, which is the only place that still knows.
+
+**A streak rule change repairs itself too, since 3.4.8 (migration 0032).**
+`activity_streaks.logic_version` is the streak half of reputation's
+`LOGIC_VERSION`, which had no equivalent for four months.
+
+The gap was not theoretical. `needsClosing` will not rebuild a DAILY counter
+until something new is scored for its type, so when 3.4.4 changed the daily rule
+sixteen counters sat wrong for as long as nobody pressed anything, and `verify`
+could not see it: it diffs stored against a recompute, and no close had run to
+make them disagree yet. It took reading the table by hand, twice in one week.
+
+Now `needsClosing` returns true for a row whose version it does not recognise,
+before it asks whether anything new has happened, which is the wrong question
+after a rule change. `scoreAll` closes every user's streaks every hour, so the
+repair reaches somebody who never opens the app. The column defaults to **0**
+rather than to the current version, so every row written before it existed is
+stale exactly once.
+
+**Bumping it covers two files, not one.** `streakOver` in `src/domain/streak.ts`
+decides what a counter should be from history, and `bumpStreak` in
+`src/server/streak.ts` does the same arithmetic incrementally when a press lands
+and mirrors the grey and restart rules by hand. Change either and bump
+`STREAK_LOGIC_VERSION`.
+
+**It fixes STALE, not WRONG,** and the difference already cost a release. A
+rebuild under mistaken rules reproduces the mistake: stored and recomputed
+agree, `verify` reports nothing, and both are wrong the same way. That is 3.4.5,
+where a daily miss set grey on a run that did not exist and production came out
+with sixteen rows reading grey with a count of zero. Nothing here would have
+caught it.
 
 **The steps are in `.planning/RELEASE.md`, and the order is not obvious.** Read
 it rather than working from this section.
@@ -438,7 +468,8 @@ test       bun run test            — Vitest, domain core, no database
 lint       bun run lint            — ESLint, type-aware, --max-warnings=0
 deps       bun run check:deps      — fails on a deprecated dependency
 actions    bun run check:actions   — fails on an archived or out-of-date GitHub Action
-version    bun run check:logic-version — a curve change repairs itself
+version    bun run check:logic-version — a curve change and a streak rule
+                                     change both repair themselves
 zones      bun run check:timezones — a day belongs to the member, not to UTC
 streak     bun run check:streak    — the first thing you ever do counts
 offer      bun run check:offer     — a button is there when a press would count

@@ -2,18 +2,26 @@
 //
 //   bun run check:logic-version
 //
-// `LOGIC_VERSION` exists so a score computed under older maths is never carried
-// forward. This proves the mechanism end to end rather than by reading it:
-// stamp the stored rows with an older version and a wrong number, run the same
-// pass the nightly job runs, and see whether the rows come back correct.
+// TWO counters, two versions, one question. `LOGIC_VERSION` exists so a score
+// computed under older maths is never carried forward, and `STREAK_LOGIC_VERSION`
+// does the same for a streak since migration 0032. This proves both mechanisms
+// end to end rather than by reading them: stamp the stored rows with an older
+// version and a wrong number, run the same pass the hourly job runs, and see
+// whether the rows come back correct.
 //
-// Local only. It rewrites reputation_daily for one user and puts it back by
-// recomputing, which is the thing being tested.
+// The streak half is here because the gap was real rather than theoretical. A
+// daily counter is not rebuilt until something new is scored for its type, so
+// after 3.4.4 changed the daily rule, sixteen counters sat wrong for as long as
+// nobody pressed anything, and `verify` could not see it: it diffs stored
+// against a recompute, and no close had run to make them disagree yet.
+//
+// Local only. It rewrites reputation_daily and activity_streaks for one user
+// and puts them back by recomputing, which is the thing being tested.
 import { and, eq, isNull, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { reputationDaily } from "@/db/schema";
+import { activityStreaks, reputationDaily } from "@/db/schema";
 import { scoreAll } from "@/server/scoring";
-import { LOGIC_VERSION } from "@/domain";
+import { LOGIC_VERSION, STREAK_LOGIC_VERSION } from "@/domain";
 
 if (process.env.LOCAL_MODE !== "1") {
   console.error("Refusing to run: LOCAL_MODE is not 1. This rewrites stored scores.");
@@ -105,5 +113,67 @@ const after = await db
 check("one ordinary scoring pass restored the score", after[0].score === before[0].score, `${after[0].score} was ${before[0].score}`);
 check("and stamped it with the current version", after[0].version === LOGIC_VERSION, `${after[0].version}`);
 
-console.log(failed === 0 ? "\nA curve change repairs itself. No migration, no button." : `\n${failed} FAILED`);
+// ---------------------------------------------------------------------------
+// The same question, for streaks
+// ---------------------------------------------------------------------------
+
+console.log("");
+
+const [counter] = await db
+  .select({ userId: activityStreaks.userId, typeKey: activityStreaks.typeKey })
+  .from(activityStreaks)
+  .where(sql`${activityStreaks.current} > 0`)
+  .limit(1);
+
+if (!counter) {
+  console.error("No streak counter above zero. Run bun run local:seed first.");
+  process.exit(1);
+}
+
+const whose = and(
+  eq(activityStreaks.userId, counter.userId),
+  eq(activityStreaks.typeKey, counter.typeKey),
+);
+
+const read = () =>
+  db
+    .select({ current: activityStreaks.current, version: activityStreaks.logicVersion })
+    .from(activityStreaks)
+    .where(whose);
+
+const streakBefore = await read();
+check(
+  "the stored counter carries the current streak version",
+  streakBefore[0].version === STREAK_LOGIC_VERSION,
+  String(streakBefore[0].version),
+);
+
+// An old version AND a wrong number, which is what a streak rule change leaves
+// behind. `closedThrough` is left ALONE on purpose, and that is what makes this
+// a real test rather than a tautology: it is the gate an ordinary close
+// consults, so with it current and the version check absent, `needsClosing`
+// would say there is nothing to do and 999 would survive the pass below.
+await db.update(activityStreaks).set({ logicVersion: 0, current: 999 }).where(whose);
+
+const streakStamped = await read();
+check(
+  "the counter is now wrong and stamped with an older version",
+  streakStamped[0].current === 999 && streakStamped[0].version === 0,
+);
+
+await scoreAll();
+
+const streakAfter = await read();
+check(
+  "one ordinary scoring pass restored the counter",
+  streakAfter[0].current === streakBefore[0].current,
+  streakAfter[0].current + " was " + streakBefore[0].current,
+);
+check(
+  "and stamped it with the current version",
+  streakAfter[0].version === STREAK_LOGIC_VERSION,
+  String(streakAfter[0].version),
+);
+
+console.log(failed === 0 ? "\nA curve change and a streak rule change both repair themselves." : `\n${failed} FAILED`);
 process.exit(failed === 0 ? 0 : 1);

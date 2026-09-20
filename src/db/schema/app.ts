@@ -460,6 +460,11 @@ export const activityStreaks = pgTable(
     // than dropping to zero, so a positive `current` no longer means alive and
     // this is what says which it is.
     grey: boolean("grey").notNull().default(false),
+    // Which rules produced this counter (migration 0032). The streak half of
+    // reputation's LOGIC_VERSION: `needsClosing` rebuilds a row it does not
+    // recognise rather than trusting it. Defaults to 0, so every row that
+    // predates the column is stale exactly once.
+    logicVersion: integer("logic_version").notNull().default(0),
     closedThrough: date("closed_through", { mode: "string" }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

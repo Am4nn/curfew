@@ -59,6 +59,13 @@ decision written down first and probably a new invariant.
 
 ## 3. Retention, and the redesign that comes with it
 
+**TAKEN, 2026-09-20. This theme is v4.** The argument and the evidence are in
+`.planning/v4/DIRECTION.md` and `.planning/v4/RESEARCH.md`; what is actually
+decided is in `.planning/v4/DECIDED.md`, which is the file to read first. The
+headline: Curfew becomes a coach, AI reads everything a member has plus what
+their group shares, seeing who is slipping and nudging them is a second pillar
+rather than a feature, fines survive per group, and it all ships on one tag.
+
 **The biggest of the four, and the one most likely to be a new major version.**
 
 The brief: a deep dive, using good AI tools for the research, into how Duolingo

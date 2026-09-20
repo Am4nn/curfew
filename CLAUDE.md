@@ -689,6 +689,13 @@ notification is still the clerk.** Copy lives in one place,
 judgement call. ROADMAP theme 3 decides whether the rest of the app follows, and
 until it does, do not carry this register onto a screen.
 
+**Theme 3 has now answered, and the answer is yes (2026-09-20).** v4 makes the
+app a coach. Nothing above changes YET: v4 is not being built, the v5 canvas
+still carries clerk copy on purpose, and whether the RECORD stays flat is still
+open. So this section still governs every line written today. When v4 starts,
+`.planning/v4/DECIDED.md` is what replaces it, and 3.1 in that file is the part
+that is not settled.
+
 **Two hard rules inside that file, both bought with a bad release (v3.4).**
 
 **One notification is about one activity, and it names it.** The first version

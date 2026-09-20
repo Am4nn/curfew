@@ -5,6 +5,12 @@ ROADMAP theme 3, the proposal. Written 2026-09-19, from the evidence in
 what it overturns, because ROADMAP's closing rule requires a theme to name the
 settled decision it replaces before it replaces it.
 
+**Decisions now live in `DECIDED.md` beside this file, from 2026-09-20.** This
+document is still the argument and the evidence, and it is still worth reading
+in full. It is no longer the record of what is true. Where the two disagree,
+`DECIDED.md` wins: section 9's build order is superseded, section 10's mock link
+is stale, and section 2's three registers are proposed rather than settled.
+
 ---
 
 ## 1. The thesis, in one paragraph
@@ -416,3 +422,8 @@ https://claude.ai/artifact/Xchf88QXEYFxugjzYbhdQ9
 **Ember is the system.** Not a new one. Its retirement in
 `.planning/redesign/SYSTEM.md` was made on the strength of a direction that has
 since been rejected, and that file is now superseded.
+
+**The mock link above is stale.** The spec is the Curfew v5 canvas, twelve
+artboards, at https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP. See
+`DECIDED.md` 1.8, which also names the other two canvases so nobody edits the
+wrong one.

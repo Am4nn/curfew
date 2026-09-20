@@ -978,24 +978,74 @@ Carried from `DIRECTION.md` §8. None of it was reopened on 2026-09-20.
 
 ## 3. Open
 
-### 3.1 Which new activity types v4 adds
+### 1.19 The yes/no activities are separate types, collapsed into one Home row
 
-Monk mode aggregates activities, so the conditions have to exist first. Named
-so far: cold shower and no junk food. Steps and Screen already exist. The rest
-of "many more things" is unwritten.
+Settled 2026-09-21. Aman: *"we can have morning sunlight, no alcohol, no social
+media, no junk food, cold shower, etc etc, but we don't need to make them all
+individual activity as it will just overload user with activities in home page,
+we need a way to combine them all which are just yes/no."*
 
-Each one is a declarative module and adding a type never edits the engine, so
-this is a list to agree rather than a problem to solve.
+**The overload is real and it is a HOME problem, so it is fixed on Home.** Each
+condition stays a real activity type with its own window, its own streak, its
+own sharing toggle and its own `passed`. Home draws them as ONE expandable row,
+`Simple ones, 3 of 5`, which taps open.
 
-**What the mocks assume, pending the rest of the list.** Cold shower and No junk
-food are drawn in the catalog, marked NEW, and both are a held-or-slipped answer
-with no photograph, which is the Sugar-free module's shape and needs nothing new
-from the engine. Cold shower is a BODY category and No junk food is a FOOD one,
-which is what lets Monk mode's four kinds be covered at all. If the list grows,
-the catalog board grows with it and nothing else changes.
+Two alternatives were offered and refused. A single "Daily list" type with one
+streak is cheapest, and it throws away per-item streaks and makes one slip fail
+the lot. A composite that reports per item keeps the streaks and breaks
+invariant 6, because the engine would have to read inside a module's `detail` to
+know what an item means, which is the thing v3 spent a phase preventing.
 
-**One contradiction, resolved in favour of this file.** `NEXT.md` asked the Monk
-mode configure screen for "the pass-at number". 1.16 says NO PASS, in those
-words, and gives the reason: a bar is a pass, a pass is a miss, and a miss is a
-thing to dread. There is no pass-at number on `MonkSetup`, and `NEXT.md` was
-wrong rather than ahead.
+**Each one stands alone.** Cold shower breaking has nothing to do with No
+alcohol. Five verdicts, five streaks, five possible fines. That falls straight
+out of them being five types, and it is the reason the grouping had to be
+presentational.
+
+**The list is ours plus yours.** Our conditions carry a category, so Monk mode
+can require a body, a food, a mind and a sleep (1.16). A condition somebody
+writes themselves has no category and counts toward nothing: nothing can know
+whether "no doomscroll" is a MIND thing, and 1.16's requirements exist so the
+number means the same for everybody. Two code paths, and the difference is said
+out loud on the screen rather than hidden.
+
+### 1.20 Ren thinks nightly, and again when asked
+
+Settled 2026-09-21. **The nightly job writes his lines for the next day**, so
+every screen that carries one is instant and there is never a spinner where a
+sentence should be. **The Ask Ren box and the suggestion chips make a live
+call.**
+
+Three calls a day of fixed cost, plus whatever people actually ask, which is the
+only part that scales with use. It also means a slow or dead provider degrades
+to "you cannot ask him a question today" rather than "Home does not load", and
+1.3 already guarantees no number depends on him.
+
+The cost of it: his Home line can be up to a day stale. That is acceptable
+because the line is about a pattern rather than about this morning, and anything
+that has to be current is arithmetic and is not his.
+
+---
+
+## 3. Open
+
+### 3.1 Which new activity types v4 adds. SETTLED 2026-09-21
+
+Five, all of them held-or-slipped with no photograph, which is the Sugar-free
+module's shape and needs nothing new from the engine:
+
+| Type | Category |
+|---|---|
+| Cold shower | BODY |
+| Morning sunlight | BODY |
+| No junk food | FOOD |
+| No alcohol | FOOD |
+| No social media | MIND |
+
+**No social media is not Screen.** Screen is total device time, and somebody can
+be under two hours and have spent all of it scrolling. They are different
+conditions and they were kept apart deliberately.
+
+All five arrive under 1.19's single Home row, so adding five types adds one row.
+The list can grow later without Home growing with it, which is the whole point
+of that decision.
+

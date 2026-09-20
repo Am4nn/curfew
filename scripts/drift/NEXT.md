@@ -12,10 +12,15 @@ Decisions are `.planning/v4/DECIDED.md`, 1.1 to 1.18. Nothing is owed here.
 
 ## v4 BUILD, not yet started
 
-**One decision first, and it blocks Monk mode:** which activity types v4 adds.
-Cold shower and No junk food are drawn and priced in DECIDED 3.1. Whatever else
-"many more things" meant is unwritten. Each is a declarative module, so it is a
-list to agree rather than a problem to solve.
+**Decisions are still being made and the plan waits for them.** Settled on
+2026-09-21: the five new activity types (3.1), that the yes/no ones collapse
+into one Home row rather than five (1.19), and that Ren thinks nightly plus on
+demand (1.20).
+
+**Still to decide before any plan is written**, and Aman is driving the order:
+how the model is actually called and by what, what Ren is allowed to be wrong
+about, what happens to his lines when a provider is down, and whatever else
+comes up. Nothing is coded until that list is empty.
 
 **Then the two files that do not exist:** `.planning/v4/PLAN.md` (phases, each
 with a done condition, the way v3's did) and `.planning/v4/SCHEMA.md` (tables

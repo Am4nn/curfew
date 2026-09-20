@@ -524,6 +524,28 @@ It is the tallest board on the canvas by a distance, in its own row, and that IS
 the design. This is a long thing to read with no way around it, and a mock that
 hides the length hides the only hard part of the screen.
 
+**The first attempt at it was accurate and ugly**, which Aman said plainly:
+*"the consent gate doesn't look good like the preview one looked in v5."* It
+was nineteen headings of naked bullets on black, which is a wall rather than a
+screen, and the v5 board it replaced had looked good precisely because it used
+the house idiom.
+
+So every section is a CARD now, with its icon in a tinted chip and its heading
+in mono, exactly the way every other board on this canvas presents a group of
+facts. The tint separates the two documents at a glance, pink for what Curfew
+stores and amber for the rules, and the part label says which is which so the
+colour is never the only thing carrying it.
+
+**The four sentences that matter most sit at the top**, in the shape the old v5
+board had: Ren reads everything, a photo you share is read for them too, he
+never scores, off is real. Somebody who reads nothing else has to hit those
+four, and burying them at position seven of nineteen was the real failure of
+the accurate version.
+
+**Nothing is behind a disclosure.** An accordion would have halved the height
+and it was refused: a consent gate that folds its terms away behind taps is the
+exact dark pattern this app is careful not to be.
+
 **"NEW TERMS" was wrong and the reason is worth keeping.** Aman: *"for first
 time users its first time, not a new term. It's a gate."* Both readings are real
 at the 4.0 release: three existing members meet it as a re-accept and everybody

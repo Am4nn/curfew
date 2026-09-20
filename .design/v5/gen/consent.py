@@ -137,69 +137,156 @@ RULES = [
 ]
 
 # ---------------------------------------------------------------------------
-# Height, estimated from the copy rather than guessed, then given slack. The
-# board has to be taller than its content or overflow:hidden eats the end of a
-# legal document, which is the worst possible thing to clip.
+# HOW IT IS DRAWN. The first version of this was accurate and ugly: nineteen
+# sections of naked bullets on black, which is a wall rather than a screen.
+#
+# The fix is the house idiom it should have used from the start. Every section
+# is a CARD with an icon in a tinted chip and its heading in mono, which is how
+# every other board on this canvas presents a group of facts. Cards give the
+# document rhythm, and rhythm is the only thing that makes six thousand pixels
+# of policy readable.
+#
+# Nothing is hidden behind a disclosure. A consent gate that folds its terms
+# away behind taps is the exact dark pattern this app is careful not to be.
 
-CHARS_PER_LINE = 50.0
+ICONS = {
+    'REN, THE COACH': 'M12 3.2a8.8 8.8 0 1 0 0 17.6 8.8 8.8 0 0 0 0-17.6M9.2 10.6v1.3M14.8 10.6v1.3M9.3 15.2a3.8 3.8 0 0 0 5.4 0',
+    'BEFORE ANYTHING ELSE': 'M12 3.2a8.8 8.8 0 1 0 0 17.6 8.8 8.8 0 0 0 0-17.6M12 11.2v5M12 7.7v.01',
+    'WHAT IS RECORDED': 'M4 6h16M4 12h16M4 18h10',
+    'PHOTOS': 'M3 8h3l2-3h8l2 3h3v12H3zM12 13m-3.4 0a3.4 3.4 0 1 0 6.8 0 3.4 3.4 0 1 0-6.8 0',
+    'REPUTATION': 'M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z',
+    'A SCORE ONLY YOU SEE': 'M4 4l16 16M10.6 10.7a2 2 0 0 0 2.8 2.8M6.7 6.9C4.6 8.2 3 10 2.5 12c1.2 3.5 5 6 9.5 6 1.5 0 2.9-.3 4.2-.8M17.6 15.1c1.4-.9 2.5-2 3-3.1-1.2-3.5-5-6-9.5-6-.7 0-1.4.1-2 .2',
+    'WHAT A GROUP SEES': 'M9 11.4a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8M2.5 20a6.5 6.5 0 0 1 13 0M17 9a3 3 0 0 1 0 5M19.5 20a6.5 6.5 0 0 0-3.2-5.2',
+    'LEAVING A GROUP': 'M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10',
+    'MONEY': 'M6 4.5h11M6 9h11M15 4.5c0 3.4-2.6 4.8-6 4.8l7 9.7',
+    'DELETING': 'M4 7h16M9 7V5h6v2M6.5 7l1 13h9l1-13',
+    'WHAT ADMINS SEE': 'M2.5 12c1.2-3.5 5-6 9.5-6s8.3 2.5 9.5 6c-1.2 3.5-5 6-9.5 6s-8.3-2.5-9.5-6M12 9.4a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2',
+    'WHO CAN USE IT': 'M11 11.5a3.8 3.8 0 1 0 0-7.6 3.8 3.8 0 0 0 0 7.6M3.5 20.5a7.5 7.5 0 0 1 11.3-6.5M16 18.5l1.8 1.8 3.7-4',
+    'WHAT YOU MAY NOT POST': 'M12 3.2a8.8 8.8 0 1 0 0 17.6 8.8 8.8 0 0 0 0-17.6M5.8 5.8l12.4 12.4',
+    'WHAT TO KEEP OUT OF A PHOTO': 'M3 8h3l1.6-2.4M11 5h5l2 3h3v10M3 12v8h13M4 4l16 16M14.4 14.6a3.4 3.4 0 0 1-4.9-4.9',
+    'REPORTING AND REMOVAL': 'M5 21V3.5M5 3.5h12l-2.2 4.3L17 12H5',
+    'MONEY IS BETWEEN YOU': 'M3 9h18M7 5 3 9l4 4M17 19l4-4-4-4M21 15H3',
+    'WHAT CURFEW DOES NOT PROMISE': 'M12 3.5 21.2 19.5H2.8zM12 10v4.2M12 16.8v.01',
+    'YOUR CONTENT': 'M6 3h8l4 4v14H6zM14 3v4.2h4',
+    'ENDING IT': 'M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0',
+    'THE LAW THAT APPLIES': 'M12 4.2v15.6M7 19.8h10M12 6.4 5 9.2M12 6.4l7 2.8M5 9.2 2.9 13.6a3 3 0 0 0 4.2 0zM19 9.2l-2.1 4.4a3 3 0 0 0 4.2 0z',
+}
+
+# The four sentences that matter most, at the top, in the shape the v5 board
+# already had. Somebody who reads nothing else has to hit these.
+SUMMARY = [
+    (PINK, 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M4.5 21a7.5 7.5 0 0 1 15 0',
+     'Ren reads everything you log',
+     'Every check-in, every number, and <b style="color:#ffffff;font-weight:600;">every photograph you have taken</b>. That part is new.'),
+    (ORANGE, 'M3 8h3l2-3h8l2 3h3v12H3zM12 13m-3.4 0a3.4 3.4 0 1 0 6.8 0 3.4 3.4 0 1 0-6.8 0',
+     'A photo you share is read for them too',
+     'Share Food with Wing and Wing&#39;s coaches read your meals the way yours reads them.'),
+    (GREEN, 'M20 6L9 17l-5-5',
+     'He never decides whether a day counted',
+     'Passes, misses, streaks, standing and money are arithmetic over your check-ins.'),
+    (GREY, 'M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0',
+     'Turn him off and off is real',
+     'The tab goes, his lines go, and nothing of yours is sent to a model again.'),
+]
+
+# ---------------------------------------------------------------------------
+# Height, estimated from the copy rather than guessed, then given slack. The
+# board has to be taller than its content, and the end of a legal document is
+# the worst thing on the canvas to clip.
+
+CHARS_PER_LINE = 49.0
 LINE_PX = 20.0
+CARD_CHROME = 30 + 13 + 32 + 12          # icon row, gap, padding, gap to the next
 
 
 def bullet_px(text):
     plain = text.replace('<b>', '').replace('</b>', '')
-    return math.ceil(len(plain) / CHARS_PER_LINE) * LINE_PX + 11
+    return math.ceil(len(plain) / CHARS_PER_LINE) * LINE_PX + 12
 
 
 def block_px(sections):
-    total = 0
-    for heading, lines in sections:
-        total += 15 + 11 + sum(bullet_px(t) for t in lines) + 22
-    return total
+    return sum(CARD_CHROME + sum(bullet_px(t) for t in lines) for _, lines in sections)
 
 
-H = int((56 + 30 + 108 + 44 + block_px(STORES) + 44 + block_px(RULES) + 190) * 1.06)
+SUMMARY_PX = 22 + sum(20 + math.ceil(len(b) / 44.0) * 19 + 28 for _, _, _, b in SUMMARY)
+H = int((60 + 96 + 116 + SUMMARY_PX + 54 + block_px(STORES) + 54 + block_px(RULES) + 210) * 1.04)
 
 c = [HEAD, root(H)]
 
-# The bar. It is the one screen in the app with no back control, no tab bar and
-# no way around it, so the bar carries the state of the gate and nothing else.
+# The bar. The one screen in the app with no back control, no tab bar and no way
+# around it, so it carries the state of the gate and nothing else.
 c.append("""
-  <div style="flex: none; padding: 20px 20px 13px; border-bottom: 0.5px solid %s; display: flex; align-items: center; gap: 10px;">
+  <div style="flex: none; padding: 20px 20px 14px; border-bottom: 0.5px solid %s; display: flex; align-items: center; gap: 10px;">
     <svg viewBox="0 0 32 32" width="15" height="15" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg>
-    <span style="font-family: %s; font-size: 13px; font-weight: 700; letter-spacing: 0.16em;">{{bar}}</span>
+    <span style="font-family: %s; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: %s;">{{bar}}</span>
   </div>
 
-  <p style="flex: none; margin: 20px 20px 0; font-size: 13.5px; line-height: 1.6; color: #c7c7cc;">{{intro}}</p>
-""" % (SEP, MONO))
+  <div style="flex: none; padding: 22px 20px 0;">
+    <h1 style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.14;">{{title}}</h1>
+    <p style="margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: %s;">{{intro}}</p>
+  </div>
+""" % (SEP, MONO, PINK, GREY))
+
+# The summary card.
+c.append('  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; overflow: hidden;">\n' % CARD)
+for i, (colour, path, head, body) in enumerate(SUMMARY):
+    sep = 'transparent' if i == 0 else SEP
+    c.append("""    <div style="display: flex; gap: 13px; padding: 15px 16px; border-top: 0.5px solid %s;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="%s"/></svg>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 15px; font-weight: 600; line-height: 1.3;">%s</span>
+        <span style="font-size: 13px; line-height: 1.45; color: %s;">%s</span>
+      </div>
+    </div>
+""" % (sep, colour, path, head, GREY, body))
+c.append('  </div>\n')
 
 
-def render(label, sections, top):
-    out = ('  <div style="flex: none; margin: %dpx 20px 0;"><span style="font-family: %s; font-size: 11.5px; '
-           'font-weight: 700; letter-spacing: 0.16em; color: #ffffff;">%s</span></div>\n' % (top, MONO, label))
+def part(label, note, sections, tint, top):
+    """A labelled part, then one card per section. The tint separates the two
+    documents at a glance; the label says which is which, so the colour is
+    never the only thing carrying it."""
+    out = ('  <div style="flex: none; margin: %dpx 20px 0; display: flex; align-items: center; gap: 11px;">\n'
+           '    <span style="font-family: %s; font-size: 11.5px; font-weight: 700; letter-spacing: 0.16em; '
+           'color: #ffffff;">%s</span>\n'
+           '    <span style="flex-grow: 1; height: 1px; background: %s;"></span>\n'
+           '    <span style="font-family: %s; font-size: 10.5px; font-weight: 600; color: %s;">%s</span>\n'
+           '  </div>\n' % (top, MONO, label, SEP, MONO, DIM, note))
     for heading, lines in sections:
-        out += ('  <div style="flex: none; margin: 22px 20px 0; display: flex; flex-direction: column; gap: 11px;">\n'
-                '    <span style="font-family: %s; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; '
-                'color: %s;">%s</span>\n' % (MONO, GREY, heading))
+        out += ('  <div style="flex: none; margin: 12px 20px 0; border-radius: 16px; background: %s; '
+                'padding: 16px;">\n'
+                '    <div style="display: flex; align-items: center; gap: 11px;">\n'
+                '      <span style="flex: none; width: 30px; height: 30px; border-radius: 9px; background: %s; '
+                'display: flex; align-items: center; justify-content: center;">\n'
+                '        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" '
+                'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg>\n'
+                '      </span>\n'
+                '      <span style="flex-grow: 1; font-family: %s; font-size: 10.5px; font-weight: 700; '
+                'letter-spacing: 0.13em; color: #ffffff;">%s</span>\n'
+                '    </div>\n'
+                '    <div style="margin-top: 13px; display: flex; flex-direction: column; gap: 12px;">\n'
+                % (CARD, tint[0], tint[1], ICONS[heading], MONO, heading))
         for text in lines:
-            out += ('    <div style="display: flex; gap: 10px;">\n'
-                    '      <span style="flex: none; font-size: 11px; line-height: 1.7; color: %s;">&bull;</span>\n'
-                    '      <span style="flex-grow: 1; font-size: 12.5px; line-height: 1.6; color: %s;">%s</span>\n'
-                    '    </div>\n' % (DIM, GREY, text))
-        out += '  </div>\n'
+            out += ('      <div style="display: flex; gap: 10px;">\n'
+                    '        <span style="flex: none; margin-top: 7px; width: 3px; height: 3px; border-radius: 999px; '
+                    'background: %s;"></span>\n'
+                    '        <span style="flex-grow: 1; font-size: 12.5px; line-height: 1.6; color: %s;">%s</span>\n'
+                    '      </div>\n' % (tint[1], GREY, text))
+        out += '    </div>\n  </div>\n'
     return out
 
 
-c.append(render('WHAT CURFEW STORES', STORES, 30))
-c.append(render('THE RULES', RULES, 36))
+c.append(part('WHAT CURFEW STORES', '11 SECTIONS', STORES, ('rgba(255,55,95,0.14)', PINK), 30))
+c.append(part('THE RULES', '9 SECTIONS', RULES, ('rgba(255,159,10,0.13)', ORANGE), 34))
 
 c.append(grow())
 
 # The timezone is collected HERE and nowhere else, because every window, streak
 # and fine is judged in it and a wrong one is wrong from the first day.
-c.append("""  <div style="flex: none; margin-top: 26px; padding: 18px 20px 30px; border-top: 0.5px solid %s; display: flex; flex-direction: column; gap: 14px;">
-    <div style="display: flex; flex-direction: column; gap: 7px;">
+c.append("""  <div style="flex: none; margin-top: 28px; padding: 20px 20px 30px; border-top: 0.5px solid %s; display: flex; flex-direction: column; gap: 15px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
       <label for="zone" style="font-family: %s; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: %s;">YOUR TIME ZONE</label>
-      <div style="display: flex; align-items: center; gap: 11px; height: 48px; padding: 0 15px; border-radius: 13px; background: %s;">
+      <div style="display: flex; align-items: center; gap: 11px; height: 50px; padding: 0 15px; border-radius: 14px; background: %s;">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>
         <input id="zone" type="text" value="Asia/Kolkata" readonly style="flex-grow: 1; min-width: 0; border: 0; background: transparent; color: #ffffff; font-family: inherit; font-size: 16px; padding: 0;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="6 9.5 12 15.5 18 9.5"/></svg>
@@ -213,18 +300,19 @@ c.append("""  <div style="flex: none; margin-top: 26px; padding: 18px 20px 30px;
 """ % (SEP, MONO, GREY, CARD, GREY, DIM, GREY, PINK, DIM))
 
 # A tweak rather than a control, because the two states are one screen and the
-# difference between them is two sentences.
+# difference between them is three sentences.
 c.append(logic(H, """  renderVals() {
     // At the 4.0 release every existing member meets this as a re-accept, and
     // every member after them meets it as a gate. Same document, two framings.
     const returning = this.props.returning ?? false;
     return {
       bar: returning ? 'THE RULES HAVE CHANGED' : 'BEFORE YOU START',
+      title: returning ? 'Three things changed' : 'Before you carry on',
       intro: returning
-        ? 'Curfew has a coach in it now, and he reads your photographs. That is a material change, so this needs accepting again before you carry on. What is new is at the top; the rest is unchanged.'
-        : 'Curfew keeps a record of what you say you did, and shows some of it to people you choose. Two things to read: what it stores, and the rules you are agreeing to. There is no way past this page and no dismiss on it.',
+        ? 'Curfew has a coach in it now and he reads your photographs. That is a material change, so this needs accepting again. What is new is at the top and the rest is word for word what you accepted before.'
+        : 'Curfew keeps a record of what you say you did, and shows some of it to people you choose. Two things to read: what it stores, and the rules. There is no way past this page and no dismiss on it.',
     };
   }""", '"returning":{"editor":"boolean","default":false}'))
 
 write('Consent.dc.html', c)
-print('    estimated %dpx' % H)
+print('    %dpx, %d sections' % (H, len(STORES) + len(RULES)))

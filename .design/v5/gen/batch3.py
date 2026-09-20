@@ -30,7 +30,9 @@ def rows_card(rows, margin=14):
 
 
 # --------------------------------------------------------------- Settings ---
-H = 1240
+# Checked row for row against src/app/settings/page.tsx, plus what v4 adds.
+# Nothing the real screen has is missing from this one.
+H = 1660
 st = [HEAD, root(H)]
 st.append(nav('Main.dc.html', 'Back to Today'))
 
@@ -53,6 +55,19 @@ st.append("""  <div style="flex: none; padding: 4px 20px 0; display: flex; align
   </div>
 """ % (MONO, PINK, GREY))
 
+# APPEARANCE. Three states and not two: somebody who wants the phone to decide
+# is not choosing dark, and a two-way switch makes them choose anyway.
+st.append(eyebrow('APPEARANCE', GREY, top=26))
+st.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 12px; background: %s; padding: 4px; display: flex; gap: 4px;">
+    <sc-for list="{{themes}}" as="t" hint-placeholder-count="3">
+      <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.onStr}}" style="flex-grow: 1; flex-basis: 0; height: 38px; border: 0; border-radius: 9px; background: {{t.bg}}; color: {{t.fg}}; font-family: inherit; font-size: 14.5px; font-weight: {{t.weight}}; display: flex; align-items: center; justify-content: center; gap: 7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{t.fg}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.path}}"/></svg>
+        {{t.name}}
+      </button>
+    </sc-for>
+  </div>
+""" % CARD)
+
 st.append(eyebrow('YOUR DETAILS', GREY, top=26))
 st.append(rows_card([
     ('Name', 'Aman Arya', '#ffffff', None),
@@ -66,20 +81,38 @@ st.append(eyebrow('REN AND YOUR FRIENDS', GREY, top=26))
 st.append(rows_card([
     ('Ren', 'ON', PINK, 'Switches.dc.html'),
     ('Nudges from friends', 'ON', PINK, 'Switches.dc.html'),
-    ('Notifications', None, None, 'Notifs.dc.html'),
+    ('Notifications', '2 devices', '#ffffff', 'Notifs.dc.html'),
+], margin=12))
+
+# HOW YOU ARE JUDGED. Grace and away days sit here rather than on a configure
+# screen, because they are rules the app applies to you and not numbers you set.
+st.append(eyebrow('HOW YOU ARE JUDGED', GREY, top=26))
+st.append(rows_card([
+    ('Activities', '7 tracked', '#ffffff', 'Activities.dc.html'),
+    ('Monk mode', '71% today', '#ffffff', 'MonkSetup.dc.html'),
+    ('Grace', '2 of 14 left', '#ffffff', 'Restore.dc.html'),
+    ('Away days', '2 left this month', '#ffffff', 'Away.dc.html'),
+    ('How standing works', None, None, 'Ranks.dc.html'),
 ], margin=12))
 
 st.append(eyebrow('WHAT OTHERS SEE', GREY, top=26))
 st.append(rows_card([
     ('What you share', '3 groups', '#ffffff', 'Sharing.dc.html'),
-    ('Your photographs', '148', '#ffffff', 'Photos.dc.html'),
-    ('Away days', '2 left this month', '#ffffff', 'Away.dc.html'),
+    ('Your photographs', '148 stored', '#ffffff', 'Photos.dc.html'),
+    ('Photo retention', '90 days', GREY, None),
 ], margin=12))
 
-st.append(eyebrow('THE APP', GREY, top=26))
+st.append(eyebrow('YOUR DATA', GREY, top=26))
 st.append(rows_card([
-    ('How standing works', None, None, 'Ranks.dc.html'),
-    ('Your data', None, None, 'Data.dc.html'),
+    ('Terms, and what Curfew stores', 'accepted 21 Sep', '#ffffff', 'Consent.dc.html'),
+    ('Download everything', None, None, 'Data.dc.html'),
+    ('Delete data', None, RED, 'Data.dc.html'),
+], margin=12))
+
+# The only route into Ops, and it is only here for an account that has one.
+st.append(eyebrow('ADMIN', ORANGE, top=26))
+st.append(rows_card([
+    ('Ops', 'all green', GREEN, 'Admin.dc.html'),
 ], margin=12))
 
 st.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
@@ -88,7 +121,28 @@ st.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px;
 """ % (CARD, RED))
 st.append(grow())
 st.append(tabbar('Main.dc.html'))
-st.append(logic(H))
+st.append(logic(H, """  constructor(props) {
+    super(props);
+    this.state = { theme: 'dark' };
+  }
+  renderVals() {
+    const on = this.state.theme;
+    const defs = [
+      { key: 'dark',   name: 'Dark',   path: 'M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z' },
+      { key: 'light',  name: 'Light',  path: 'M12 4.2v2M12 17.8v2M4.2 12h2M17.8 12h2M6.7 6.7l1.4 1.4M15.9 15.9l1.4 1.4M17.3 6.7l-1.4 1.4M8.1 15.9l-1.4 1.4M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6z' },
+      { key: 'system', name: 'System', path: 'M3 5h18v11H3zM8.5 20h7' },
+    ];
+    return {
+      themes: defs.map((d) => ({
+        name: d.name, path: d.path,
+        onStr: on === d.key ? 'true' : 'false',
+        bg: on === d.key ? '""" + CARD2 + """' : 'transparent',
+        fg: on === d.key ? '#ffffff' : '""" + GREY + """',
+        weight: on === d.key ? '600' : '400',
+        pick: () => this.setState({ theme: d.key }),
+      })),
+    };
+  }"""))
 write('Settings.dc.html', st)
 
 

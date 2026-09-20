@@ -486,6 +486,27 @@ fourteen with no bar are the moments and the gates: Splash, Signin, Welcome,
 Consent, Notice, Invite, Capture, Declare, Stamp, Restore, Nudge, Mark, Ren,
 Admin.
 
+**Checked row for row against the real screen.** The first draft of You carried
+eleven rows and `src/app/settings/page.tsx` carries thirteen, so half of it was
+missing: appearance, grace, pause, photo retention, what Curfew stores, the
+rules and delete data, plus the three v4 adds. Seven groups now.
+
+Two things moved rather than being copied:
+
+- **Grace and away days sit under HOW YOU ARE JUDGED**, beside Activities, Monk
+  mode and how standing works. They are rules the app applies to you, not
+  numbers you set, which is v3.2 item 19's reasoning carried across.
+- **"What Curfew stores" and "The rules" are one row**, pointed at the consent
+  gate, because in v4 that gate carries both.
+
+**Appearance is three states and not two.** Somebody who wants the phone to
+decide is not choosing dark, and a two-way switch makes them choose anyway.
+
+**ADMIN IS HERE, AND IT IS THE ONLY WAY IN.** Ops had no route from anywhere in
+the app: the board existed and nothing pointed at it. One row, shown only to an
+account that has it, with the scheduler's state as its value so a glance
+answers the question the screen exists for.
+
 ### 1.8f No version number where a member can see it
 
 Settled 2026-09-21. Aman, on the consent gate's `CURFEW 4.0`: *"never have a

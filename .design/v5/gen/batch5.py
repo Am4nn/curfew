@@ -16,7 +16,7 @@ H = 844
 si = [HEAD, root(H)]
 
 STRIP = [(SLEEP, 'SLEEP', '10:22 PM'), (GYM, 'GYM', '6:12 PM'), (FOOD, 'FOOD', '7:04 PM')]
-band = ['  <div style="flex: none; height: 336px; position: relative; overflow: hidden;">\n'
+band = ['  <div style="flex: none; height: 320px; position: relative; overflow: hidden;">\n'
         '    <div style="position: absolute; inset: 0; display: flex; gap: 1px;">\n']
 for src, what, when in STRIP:
     band.append(
@@ -30,9 +30,9 @@ for src, what, when in STRIP:
 si.append(''.join(band))
 si.append(
     '    </div>\n'
-    '    <div style="position: absolute; left: 0; right: 0; top: 0; height: 104px; background: linear-gradient(to bottom, rgba(0,0,0,0.78), rgba(0,0,0,0));"></div>\n'
+    '    <div style="position: absolute; left: 0; right: 0; top: 0; height: 152px; background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.34) 58%, rgba(0,0,0,0));"></div>\n'
     '    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 196px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.70) 44%, #000000 100%);"></div>\n'
-    '    <div style="position: absolute; left: 22px; top: 24px;">' + wordmark(12, mark_size=22, gap=11) + '</div>\n'
+    '    <div style="position: absolute; left: 22px; top: 28px;">' + lava_wordmark(20, 64, 14, pfx='lvsi') + '</div>\n'
     '  </div>\n')
 
 si.append(
@@ -75,7 +75,7 @@ write('Signin.dc.html', si)
 
 # ------------------------------------------------------------- The mark ---
 # A reference sheet, so it runs long on purpose. Over-tall beats clipped.
-H = 2460
+H = 2860
 mk = [HEAD, root(H)]
 mk.append(nav('Signin.dc.html', 'Back to sign in'))
 mk.append(title('The mark', 'Three squares on a four-square grid. The fourth seat is the identity, so nothing ever fills it.'))
@@ -125,6 +125,19 @@ mk.append('  </div>\n')
 mk.append('  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: ' + GREY
           + ';">16 is the floor. Below it the 2-unit gutter closes up and the three squares read as one block.</p>\n')
 
+# The lava. This one ships, unlike the six states below it, so it comes
+# first, and its scope is stated rather than implied.
+mk.append(section('With something moving in it', top=28))
+mk.append('  <div style="flex: none; margin: 14px 20px 0; border-radius: 16px; background: #0d0d0f; padding: 24px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 22px;">\n'
+          '    <div>' + lava_mark(96, 'lvA') + '</div>\n'
+          '    <div style="width: 100%; display: flex; gap: 16px; align-items: flex-end; justify-content: center;">\n'
+          '      <div style="display: flex; flex-direction: column; align-items: center; gap: 9px;">' + lava_mark(64, 'lvB') + '<span style="font-family: ' + MONO + '; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: ' + GREY + ';">SIGN IN</span></div>\n'
+          '      <div style="display: flex; flex-direction: column; align-items: center; gap: 9px;">' + lava_mark(32, 'lvC') + '<span style="font-family: ' + MONO + '; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: ' + GREY + ';">SPLASH</span></div>\n'
+          '    </div>\n'
+          '  </div>\n')
+mk.append('  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: ' + GREY + ';">It fills once, on arrival, and stops a sliver short of the top: a solid block is not a window onto anything. What keeps moving after that is the surface and the churn beneath it, because a logo that empties and refills is a loading spinner.</p>\n')
+mk.append('  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: ' + GREY + ';"><b style="color:#ffffff;font-weight:600;">Two places only: sign in and the splash.</b> Everywhere inside the app the mark is flat and white. This is the moment somebody first meets Curfew, and a brand gets one of those.</p>\n')
+
 # The exploration the answer asked for, labelled as exploration.
 mk.append(section('If it carried your streak', top=28))
 mk.append('  <div style="flex: none; margin: 10px 20px 0; border-radius: 12px; background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.32); padding: 12px 14px; display: flex; gap: 11px;">\n'
@@ -152,7 +165,7 @@ mk.append('  <div style="flex: none; margin: 14px 20px 0; display: flex; gap: 12
 mk.append(tile('<span style="width: 74px; height: 74px; border-radius: 17px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center;">'
                + mark(40) + '</span>', 'APP ICON', 'The tile has the radius. The mark never does.', bg='#151517', h=104))
 mk.append(tile('<span style="width: 58px; height: 100px; border-radius: 9px; background: #000000; border: 1px solid rgba(255,255,255,0.09); display: flex; align-items: center; justify-content: center;">'
-               + mark(26) + '</span>', 'SPLASH', 'Centred on true black, nothing else on it.', bg='#151517', h=104))
+               + lava_mark(32, 'lvD') + '</span>', 'SPLASH', 'Centred on true black, nothing else on it.', bg='#151517', h=104))
 mk.append(tile(wordmark(11, mark_size=20, gap=9), 'LOCKUP', 'Mark, then the word, at 0.34em. Never stacked.', bg='#0d0d0f', h=104))
 mk.append('  </div>\n')
 

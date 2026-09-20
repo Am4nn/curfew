@@ -58,6 +58,47 @@
     button, a { transition: transform 140ms cubic-bezier(0.2, 0, 0, 1); }
     button:active, a:active { transform: scale(0.972); }
 
+
+    /*
+      THE MARK WITH SOMETHING MOVING IN IT.
+
+      The three squares are apertures cut into black and the lava is ONE body
+      behind all of them, never three fills. So the level crosses the lower seat
+      first and the two upper ones together, and the geometry does the
+      choreography rather than a stagger written by hand.
+
+      IT FILLS ONCE, on arrival, and stops just short: a sliver of dark is left
+      crowning the upper seats, because a solid block is not a window onto
+      anything. What loops afterwards is the surface and the churn under it. A
+      logo that empties and refills is a loading spinner.
+
+      Sizes are multiples of 32 wherever this is used, so a unit lands on a
+      whole pixel and the apertures stay as crisp as the flat mark.
+    */
+    @keyframes lvRise {
+      0%   { transform: translateY(34px); }
+      9%   { transform: translateY(33.1px); }
+      48%  { transform: translateY(9.4px); }
+      70%  { transform: translateY(3.4px); }
+      79%  { transform: translateY(3.0px); }
+      88%  { transform: translateY(4.3px); }
+      100% { transform: translateY(3.7px); }
+    }
+    /* One full wave period, so the drift is seamless rather than a swing. */
+    @keyframes lvWave  { from { transform: translateX(0); } to { transform: translateX(-22px); } }
+    @keyframes lvChurn {
+      0%, 100% { transform: translate(0, 0) scale(1);          opacity: 0.86; }
+      38%      { transform: translate(2.4px, -1.7px) scale(1.15); opacity: 1; }
+      64%      { transform: translate(-1.8px, 0.9px) scale(0.93); opacity: 0.76; }
+    }
+    .lv-rise  { transform-box: view-box; transform-origin: 0 0; animation: lvRise 4600ms cubic-bezier(0.22, 0.61, 0.16, 1) both; }
+    .lv-wave  { transform-box: view-box; transform-origin: 0 0; animation: lvWave 7200ms linear infinite; }
+    .lv-churn { transform-box: view-box; transform-origin: 11px 26px; animation: lvChurn 9400ms ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lv-rise { animation: none; transform: translateY(3.7px); }
+      .lv-wave, .lv-churn { animation: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .stage > *, .stage > .tabbar, .fill, .grow { animation: none; }
       button, a { transition: none; }
@@ -68,7 +109,7 @@
 </helmet>
 
 <div class="stage" style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
-  <div style="flex: none; height: 336px; position: relative; overflow: hidden;">
+  <div style="flex: none; height: 320px; position: relative; overflow: hidden;">
     <div style="position: absolute; inset: 0; display: flex; gap: 1px;">
       <span style="flex-grow: 1; flex-basis: 0; position: relative; overflow: hidden; background: #111;">
         <img src="/_blob/18def49919a492fde87296b6ab9320cb" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
@@ -92,9 +133,9 @@
         </span>
       </span>
     </div>
-    <div style="position: absolute; left: 0; right: 0; top: 0; height: 104px; background: linear-gradient(to bottom, rgba(0,0,0,0.78), rgba(0,0,0,0));"></div>
+    <div style="position: absolute; left: 0; right: 0; top: 0; height: 152px; background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.34) 58%, rgba(0,0,0,0));"></div>
     <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 196px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.70) 44%, #000000 100%);"></div>
-    <div style="position: absolute; left: 22px; top: 24px;"><span style="display: flex; align-items: center; gap: 11px;"><svg viewBox="0 0 32 32" width="22" height="22" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" rx="0" fill="#ffffff"/></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.34em; color: #ffffff;">CURFEW</span></span></div>
+    <div style="position: absolute; left: 22px; top: 28px;"><span style="display: flex; align-items: center; gap: 14px;"><svg viewBox="0 0 32 32" width="64" height="64" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvsi-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><linearGradient id="lvsi-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b57"/><stop offset="0.18" stop-color="#ff375f"/><stop offset="0.45" stop-color="#c11a3e"/><stop offset="0.8" stop-color="#6d0c22"/><stop offset="1" stop-color="#33040f"/></linearGradient><linearGradient id="lvsi-crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc49c" stop-opacity="0.95"/><stop offset="1" stop-color="#ff5c7f" stop-opacity="0"/></linearGradient><radialGradient id="lvsi-core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd0b0" stop-opacity="0.82"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvsi-seats)"><rect x="0" y="0" width="32" height="32" fill="#220308"/><rect x="0" y="0" width="32" height="32" fill="url(#lvsi-core)" opacity="0.2"/><g class="lv-rise"><rect x="-28" y="0" width="66" height="48" fill="url(#lvsi-body)"/><ellipse class="lv-churn" cx="11" cy="26" rx="15" ry="11" fill="url(#lvsi-core)"/><path class="lv-wave" d="M-28 0 q5.5 -2.5 11 0 t11 0 t11 0 t11 0 t11 0 t11 0 L38 8 L-28 8 Z" fill="url(#lvsi-crest)"/></g></g></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 20px; font-weight: 700; letter-spacing: 0.3em; color: #ffffff;">CURFEW</span></span></div>
   </div>
   <div style="flex: none; margin-top: -26px; padding: 0 22px;">
     <h1 style="margin: 0; font-size: 36px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em;">Say what you did.<br>Show it if it matters.</h1>

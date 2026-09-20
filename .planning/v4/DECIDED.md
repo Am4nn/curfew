@@ -336,6 +336,32 @@ The alternatives offered were a live mark in the Home header, and a live mark
 everywhere. Both were refused: a logo that is never the same twice has stopped
 being one.
 
+**ONE EXCEPTION, AND IT IS SCOPED: THE LAVA MARK.** Aman, after the above:
+*"how about our icon have a lava inside it we can see from the 3 squares filling
+slowly."*
+
+The three squares become apertures cut into black, and behind all of them sits
+ONE body of molten material that rises. Not three fills: one, so the level
+crosses the lower seat first and the two upper ones together, and the geometry
+does the choreography rather than a stagger written by hand.
+
+It fills once, on arrival, over 4.6 seconds, and stops a sliver short of the
+top. A solid block is not a window onto anything. What keeps moving afterwards
+is the surface drift and the churn beneath it, which is what stops it being a
+loading spinner.
+
+**Two places only: sign in, and the splash.** Everywhere inside the app the mark
+is flat and white. That is the line that keeps 1.8a true: the moment somebody
+first meets Curfew is a brand moment and gets one treatment, and a tab bar icon
+is not.
+
+The shape does not change, the fourth seat is still empty, and the palette is
+the app's own: deep #33040f through #c11a3e to #ff375f, with a coral crest. No
+gold anywhere near it, because gold is IMMACULATE's and nothing else's.
+
+It is drawn at multiples of 32 wherever it is used, so one grid unit lands on a
+whole pixel and the apertures stay as crisp as the flat mark.
+
 ### 1.8b Reveal motion, on every screen
 
 Aman: *"I love animations like reveal animations and more across pages and

@@ -58,6 +58,47 @@
     button, a { transition: transform 140ms cubic-bezier(0.2, 0, 0, 1); }
     button:active, a:active { transform: scale(0.972); }
 
+
+    /*
+      THE MARK WITH SOMETHING MOVING IN IT.
+
+      The three squares are apertures cut into black and the lava is ONE body
+      behind all of them, never three fills. So the level crosses the lower seat
+      first and the two upper ones together, and the geometry does the
+      choreography rather than a stagger written by hand.
+
+      IT FILLS ONCE, on arrival, and stops just short: a sliver of dark is left
+      crowning the upper seats, because a solid block is not a window onto
+      anything. What loops afterwards is the surface and the churn under it. A
+      logo that empties and refills is a loading spinner.
+
+      Sizes are multiples of 32 wherever this is used, so a unit lands on a
+      whole pixel and the apertures stay as crisp as the flat mark.
+    */
+    @keyframes lvRise {
+      0%   { transform: translateY(34px); }
+      9%   { transform: translateY(33.1px); }
+      48%  { transform: translateY(9.4px); }
+      70%  { transform: translateY(3.4px); }
+      79%  { transform: translateY(3.0px); }
+      88%  { transform: translateY(4.3px); }
+      100% { transform: translateY(3.7px); }
+    }
+    /* One full wave period, so the drift is seamless rather than a swing. */
+    @keyframes lvWave  { from { transform: translateX(0); } to { transform: translateX(-22px); } }
+    @keyframes lvChurn {
+      0%, 100% { transform: translate(0, 0) scale(1);          opacity: 0.86; }
+      38%      { transform: translate(2.4px, -1.7px) scale(1.15); opacity: 1; }
+      64%      { transform: translate(-1.8px, 0.9px) scale(0.93); opacity: 0.76; }
+    }
+    .lv-rise  { transform-box: view-box; transform-origin: 0 0; animation: lvRise 4600ms cubic-bezier(0.22, 0.61, 0.16, 1) both; }
+    .lv-wave  { transform-box: view-box; transform-origin: 0 0; animation: lvWave 7200ms linear infinite; }
+    .lv-churn { transform-box: view-box; transform-origin: 11px 26px; animation: lvChurn 9400ms ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lv-rise { animation: none; transform: translateY(3.7px); }
+      .lv-wave, .lv-churn { animation: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .stage > *, .stage > .tabbar, .fill, .grow { animation: none; }
       button, a { transition: none; }
@@ -67,7 +108,7 @@
   </style>
 </helmet>
 
-<div class="stage" style="width: 390px; height: 2460px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+<div class="stage" style="width: 390px; height: 2860px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
     <a href="Signin.dc.html" aria-label="Back to sign in" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
@@ -109,6 +150,16 @@
     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;"><svg viewBox="0 0 32 32" width="64" height="64" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" rx="0" fill="#ffffff"/></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 600; color: #48484a;">64</span></div>
   </div>
   <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">16 is the floor. Below it the 2-unit gutter closes up and the three squares read as one block.</p>
+  <div style="flex: none; margin: 28px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">With something moving in it</span></div>
+  <div style="flex: none; margin: 14px 20px 0; border-radius: 16px; background: #0d0d0f; padding: 24px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 22px;">
+    <div><svg viewBox="0 0 32 32" width="96" height="96" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvA-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><linearGradient id="lvA-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b57"/><stop offset="0.18" stop-color="#ff375f"/><stop offset="0.45" stop-color="#c11a3e"/><stop offset="0.8" stop-color="#6d0c22"/><stop offset="1" stop-color="#33040f"/></linearGradient><linearGradient id="lvA-crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc49c" stop-opacity="0.95"/><stop offset="1" stop-color="#ff5c7f" stop-opacity="0"/></linearGradient><radialGradient id="lvA-core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd0b0" stop-opacity="0.82"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvA-seats)"><rect x="0" y="0" width="32" height="32" fill="#220308"/><rect x="0" y="0" width="32" height="32" fill="url(#lvA-core)" opacity="0.2"/><g class="lv-rise"><rect x="-28" y="0" width="66" height="48" fill="url(#lvA-body)"/><ellipse class="lv-churn" cx="11" cy="26" rx="15" ry="11" fill="url(#lvA-core)"/><path class="lv-wave" d="M-28 0 q5.5 -2.5 11 0 t11 0 t11 0 t11 0 t11 0 t11 0 L38 8 L-28 8 Z" fill="url(#lvA-crest)"/></g></g></svg></div>
+    <div style="width: 100%; display: flex; gap: 16px; align-items: flex-end; justify-content: center;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 9px;"><svg viewBox="0 0 32 32" width="64" height="64" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvB-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><linearGradient id="lvB-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b57"/><stop offset="0.18" stop-color="#ff375f"/><stop offset="0.45" stop-color="#c11a3e"/><stop offset="0.8" stop-color="#6d0c22"/><stop offset="1" stop-color="#33040f"/></linearGradient><linearGradient id="lvB-crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc49c" stop-opacity="0.95"/><stop offset="1" stop-color="#ff5c7f" stop-opacity="0"/></linearGradient><radialGradient id="lvB-core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd0b0" stop-opacity="0.82"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvB-seats)"><rect x="0" y="0" width="32" height="32" fill="#220308"/><rect x="0" y="0" width="32" height="32" fill="url(#lvB-core)" opacity="0.2"/><g class="lv-rise"><rect x="-28" y="0" width="66" height="48" fill="url(#lvB-body)"/><ellipse class="lv-churn" cx="11" cy="26" rx="15" ry="11" fill="url(#lvB-core)"/><path class="lv-wave" d="M-28 0 q5.5 -2.5 11 0 t11 0 t11 0 t11 0 t11 0 t11 0 L38 8 L-28 8 Z" fill="url(#lvB-crest)"/></g></g></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">SIGN IN</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 9px;"><svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvC-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><linearGradient id="lvC-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b57"/><stop offset="0.18" stop-color="#ff375f"/><stop offset="0.45" stop-color="#c11a3e"/><stop offset="0.8" stop-color="#6d0c22"/><stop offset="1" stop-color="#33040f"/></linearGradient><linearGradient id="lvC-crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc49c" stop-opacity="0.95"/><stop offset="1" stop-color="#ff5c7f" stop-opacity="0"/></linearGradient><radialGradient id="lvC-core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd0b0" stop-opacity="0.82"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvC-seats)"><rect x="0" y="0" width="32" height="32" fill="#220308"/><rect x="0" y="0" width="32" height="32" fill="url(#lvC-core)" opacity="0.2"/><g class="lv-rise"><rect x="-28" y="0" width="66" height="48" fill="url(#lvC-body)"/><ellipse class="lv-churn" cx="11" cy="26" rx="15" ry="11" fill="url(#lvC-core)"/><path class="lv-wave" d="M-28 0 q5.5 -2.5 11 0 t11 0 t11 0 t11 0 t11 0 t11 0 L38 8 L-28 8 Z" fill="url(#lvC-crest)"/></g></g></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">SPLASH</span></div>
+    </div>
+  </div>
+  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">It fills once, on arrival, and stops a sliver short of the top: a solid block is not a window onto anything. What keeps moving after that is the surface and the churn beneath it, because a logo that empties and refills is a loading spinner.</p>
+  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;"><b style="color:#ffffff;font-weight:600;">Two places only: sign in and the splash.</b> Everywhere inside the app the mark is flat and white. This is the moment somebody first meets Curfew, and a brand gets one of those.</p>
   <div style="flex: none; margin: 28px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">If it carried your streak</span></div>
   <div style="flex: none; margin: 10px 20px 0; border-radius: 12px; background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.32); padding: 12px 14px; display: flex; gap: 11px;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
@@ -172,7 +223,7 @@
         </div>
       </div>
       <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; gap: 8px;">
-        <div style="height: 104px; border-radius: 12px; background: #151517; border: 1px solid transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 58px; height: 100px; border-radius: 9px; background: #000000; border: 1px solid rgba(255,255,255,0.09); display: flex; align-items: center; justify-content: center;"><svg viewBox="0 0 32 32" width="26" height="26" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" rx="0" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" rx="0" fill="#ffffff"/></svg></span></div>
+        <div style="height: 104px; border-radius: 12px; background: #151517; border: 1px solid transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 58px; height: 100px; border-radius: 9px; background: #000000; border: 1px solid rgba(255,255,255,0.09); display: flex; align-items: center; justify-content: center;"><svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true" style="flex: none; display: block;"><defs><clipPath id="lvD-seats"><rect x="2" y="2" width="13" height="13"/><rect x="17" y="2" width="13" height="13"/><rect x="2" y="17" width="13" height="13"/></clipPath><linearGradient id="lvD-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b57"/><stop offset="0.18" stop-color="#ff375f"/><stop offset="0.45" stop-color="#c11a3e"/><stop offset="0.8" stop-color="#6d0c22"/><stop offset="1" stop-color="#33040f"/></linearGradient><linearGradient id="lvD-crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc49c" stop-opacity="0.95"/><stop offset="1" stop-color="#ff5c7f" stop-opacity="0"/></linearGradient><radialGradient id="lvD-core" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd0b0" stop-opacity="0.82"/><stop offset="1" stop-color="#ff375f" stop-opacity="0"/></radialGradient></defs><g clip-path="url(#lvD-seats)"><rect x="0" y="0" width="32" height="32" fill="#220308"/><rect x="0" y="0" width="32" height="32" fill="url(#lvD-core)" opacity="0.2"/><g class="lv-rise"><rect x="-28" y="0" width="66" height="48" fill="url(#lvD-body)"/><ellipse class="lv-churn" cx="11" cy="26" rx="15" ry="11" fill="url(#lvD-core)"/><path class="lv-wave" d="M-28 0 q5.5 -2.5 11 0 t11 0 t11 0 t11 0 t11 0 t11 0 L38 8 L-28 8 Z" fill="url(#lvD-crest)"/></g></g></svg></span></div>
         <div style="display: flex; flex-direction: column; gap: 2px;">
           <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: #ffffff;">SPLASH</span>
           <span style="font-size: 11px; line-height: 1.35; color: #8e8e93;">Centred on true black, nothing else on it.</span>
@@ -225,7 +276,7 @@
 </div>
 </x-dc>
 
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2460}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2860}}'>
 class Component extends DCLogic {
   renderVals() { return {}; }
 }

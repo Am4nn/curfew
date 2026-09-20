@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { getApprovalStatus } from "@/lib/session";
 import { previewEnabled, PREVIEW_USER } from "@/lib/preview";
 import { forget, remember } from "@/server/push";
+import { pushSubscription } from "@/lib/push-subscription";
 
 // Remembering and forgetting a device.
 //
@@ -15,15 +16,7 @@ import { forget, remember } from "@/server/push";
 // checked anything by the time this runs. Every route under `/api` repeats this
 // for the same reason.
 
-const subscription = z
-  .object({
-    endpoint: z.string().url().max(600),
-    keys: z.object({
-      p256dh: z.string().min(1).max(200),
-      auth: z.string().min(1).max(200),
-    }),
-  })
-  .strict();
+const subscription = pushSubscription;
 
 const input = z.union([
   z.object({ action: z.literal("subscribe"), subscription }).strict(),

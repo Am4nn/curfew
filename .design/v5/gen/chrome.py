@@ -16,11 +16,11 @@ MONO = "'IBM Plex Mono', ui-monospace, monospace"
 # The logotype face, and ONLY the logotype. A mono gives every character the
 # same width, which beside three solid blocks reads airy where the mark reads
 # dense. Archivo at 900 has the mark's density.
-DISPLAY = "'Archivo', 'IBM Plex Mono', ui-monospace, monospace"
+DISPLAY = "'Space Grotesk', 'Archivo', 'IBM Plex Mono', ui-monospace, monospace"
 # Archivo has a WIDTH axis and the default width is a text width. The mark is
 # three wide blocks, so the word is set expanded: 125 at weight 900, tracked
 # in. Flat 900 at the default width was the thing that read plain.
-LOGOTYPE = "font-weight: 900; font-stretch: 125%; letter-spacing: -0.015em;"
+LOGOTYPE = "font-weight: 500; letter-spacing: 0.02em;"
 PINK, DEEP, GREY, DIM = '#ff375f', '#d81e46', '#8e8e93', '#48484a'
 CARD, CARD2, SEP = '#1c1c1e', '#2c2c2e', 'rgba(255,255,255,0.08)'
 GREEN, ORANGE, RED = '#30d158', '#ff9f0a', '#ff453a'
@@ -205,7 +205,7 @@ EMBER_CSS = """    /*
 # The two boards that show the mark alive take this head instead. Every
 # other board would be carrying rules for an element it does not contain.
 _ARCHIVO = ('  <link rel="stylesheet" '
-            'href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&display=swap">\n')
+            'href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=Space+Grotesk:wght@400;500;600;700&display=swap">\n')
 HEAD_EMBER = (HEAD.replace("  </style>", EMBER_CSS + "  </style>", 1)
               .replace("  <style>", _ARCHIVO + "  <style>", 1))
 

@@ -30,7 +30,7 @@ def rows_card(rows, margin=14):
 
 
 # --------------------------------------------------------------- Settings ---
-H = 1330
+H = 1240
 st = [HEAD, root(H)]
 st.append(nav('Main.dc.html', 'Back to Today'))
 
@@ -49,13 +49,9 @@ st.append("""  <div style="flex: none; padding: 4px 20px 0; display: flex; align
     <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
       <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Aman Arya</h1>
       <span style="font-size: 13.5px; color: %s;">Joined 2 July &middot; 3 groups</span>
-      <span style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-        <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: %s;">INVITED BY MIRA</span>
-      </span>
     </div>
   </div>
-""" % (MONO, PINK, GREY, GREEN, MONO, GREY))
+""" % (MONO, PINK, GREY))
 
 st.append(eyebrow('YOUR DETAILS', GREY, top=26))
 st.append(rows_card([
@@ -89,10 +85,7 @@ st.append(rows_card([
 st.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <button type="button" style="width: 100%%; border: 0; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: %s;">Sign out</button>
   </div>
-  <div style="flex: none; margin: 18px 20px 0; display: flex; justify-content: center;">
-    <span style="font-family: %s; font-size: 11px; letter-spacing: 0.08em; color: %s;">CURFEW 4.0.0</span>
-  </div>
-""" % (CARD, RED, MONO, DIM))
+""" % (CARD, RED))
 st.append(grow())
 st.append(tabbar('Main.dc.html'))
 st.append(logic(H))

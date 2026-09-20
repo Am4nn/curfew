@@ -9,7 +9,7 @@
 <helmet>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=Space+Grotesk:wght@400;500;600;700&display=swap">
   <style>
     html, body { margin: 0; background: #000000; overflow: hidden; }
     ::-webkit-scrollbar { width: 0; height: 0; }
@@ -198,7 +198,7 @@
     -->
     <div style="margin-top: 38px; display: flex;">
       <sc-for list="{{letters}}" as="l" hint-placeholder-count="6">
-        <span class="sp-letter" style="animation-delay: {{l.delay}}; font-family: 'Archivo', 'IBM Plex Mono', ui-monospace, monospace; font-size: 40px; font-weight: 900; font-stretch: 125%; letter-spacing: -0.015em; line-height: 1; color: #ffffff;">{{l.ch}}</span>
+        <span class="sp-letter" style="animation-delay: {{l.delay}}; font-family: 'Space Grotesk', 'Archivo', 'IBM Plex Mono', ui-monospace, monospace; font-size: 46px; font-weight: 500; letter-spacing: 0.02em; line-height: 1; color: #ffffff;">{{l.ch}}</span>
       </sc-for>
     </div>
 

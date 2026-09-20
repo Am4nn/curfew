@@ -84,23 +84,23 @@
       A stamp that bounces past its size and settles back is a balloon.
     */
     @keyframes stFall {
-      0%   { opacity: 0; transform: scale(2.35) rotate(-11deg); }
-      28%  { opacity: 1; transform: scale(1.5)  rotate(-7deg); }
-      42%  { opacity: 1; transform: scale(0.93) rotate(-4deg); }
-      55%  { opacity: 1; transform: scale(1.03) rotate(-4.4deg); }
-      72%  { opacity: 1; transform: scale(0.99) rotate(-3.9deg); }
-      100% { opacity: 1; transform: scale(1)    rotate(-4deg); }
+      0%     { opacity: 0; transform: scale(2.35) rotate(-11deg); }
+      4.2%   { opacity: 1; transform: scale(1.5)  rotate(-7deg); }
+      6.4%   { opacity: 1; transform: scale(0.93) rotate(-4deg); }
+      8.3%   { opacity: 1; transform: scale(1.03) rotate(-4.4deg); }
+      10.9%  { opacity: 1; transform: scale(0.99) rotate(-3.9deg); }
+      15.1%, 100% { opacity: 1; transform: scale(1) rotate(-4deg); }
     }
     @keyframes stRing {
-      0%, 34% { opacity: 0; transform: scale(0.72) rotate(-4deg); }
-      44%     { opacity: 0.85; }
-      100%    { opacity: 0; transform: scale(1.85) rotate(-4deg); }
+      0%, 5.1%  { opacity: 0;    transform: scale(0.72) rotate(-4deg); }
+      6.6%      { opacity: 0.85; }
+      15.1%, 100% { opacity: 0;  transform: scale(1.85) rotate(-4deg); }
     }
     @keyframes stFlinch {
-      0%, 34% { transform: translateY(0); }
-      43%     { transform: translateY(2.5px); }
-      52%     { transform: translateY(-1px); }
-      100%    { transform: translateY(0); }
+      0%, 5.1%  { transform: translateY(0); }
+      6.5%      { transform: translateY(2.5px); }
+      7.8%      { transform: translateY(-1px); }
+      15.1%, 100% { transform: translateY(0); }
     }
     @keyframes stInk {
       from { opacity: 0; letter-spacing: 0.5em; }
@@ -108,15 +108,38 @@
     }
     @keyframes stAfter { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
 
-    .st-fall   { animation: stFall 1150ms cubic-bezier(0.3, 0, 0.2, 1) both; }
-    .st-ring   { animation: stRing 1150ms cubic-bezier(0.2, 0.6, 0.2, 1) both; }
-    .st-flinch { animation: stFlinch 1150ms cubic-bezier(0.3, 0, 0.2, 1) both; }
-    .st-ink    { animation: stInk 620ms 560ms ease-out both; }
-    .st-icons  { animation: stAfter 620ms 760ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .st-ren    { animation: stAfter 680ms 1000ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    /*
+      THIS BOARD REPEATS AND THE SCREEN DOES NOT. A landing that runs once has
+      already happened by the time anybody scrolls to the artboard, so there is
+      nothing to review. Every duration, curve and offset below is the real
+      one; the 7.6s cycle is a property of the board.
+
+      The whole overlay fades out at the end of the cycle and comes back, which
+      is also the only honest way to show it: the stamp does not re-stamp, the
+      screen re-opens.
+    */
+    @keyframes stCycle {
+      0%, 88% { opacity: 1; }
+      96%     { opacity: 0; }
+      100%    { opacity: 0; }
+    }
+    @keyframes stInkC   { 0%, 7.4%  { opacity: 0; letter-spacing: 0.5em; }
+                          15.5%, 100% { opacity: 1; letter-spacing: 0.22em; } }
+    @keyframes stIconsC { 0%, 10%   { opacity: 0; transform: translateY(9px); }
+                          18.2%, 100% { opacity: 1; transform: none; } }
+    @keyframes stRenC   { 0%, 13.2% { opacity: 0; transform: translateY(9px); }
+                          22.1%, 100% { opacity: 1; transform: none; } }
+
+    .st-cycle  { animation: stCycle 7600ms linear infinite; }
+    .st-fall   { animation: stFall 7600ms cubic-bezier(0.3, 0, 0.2, 1) infinite; }
+    .st-ring   { animation: stRing 7600ms cubic-bezier(0.2, 0.6, 0.2, 1) infinite; }
+    .st-flinch { animation: stFlinch 7600ms cubic-bezier(0.3, 0, 0.2, 1) infinite; }
+    .st-ink    { animation: stInkC 7600ms ease-out infinite; }
+    .st-icons  { animation: stIconsC 7600ms cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+    .st-ren    { animation: stRenC 7600ms cubic-bezier(0.16, 1, 0.3, 1) infinite; }
 
     @media (prefers-reduced-motion: reduce) {
-      .st-fall, .st-ring, .st-flinch, .st-ink, .st-icons, .st-ren { animation: none; }
+      .st-fall, .st-ring, .st-flinch, .st-ink, .st-icons, .st-ren, .st-cycle { animation: none; }
       .st-ring { opacity: 0; }
     }
     @media (prefers-reduced-motion: reduce) { .b-breath, .o-grin { animation: none; } }
@@ -149,7 +172,7 @@
 
   <!-- The stamp lands on the DATE, not on a line item: a clerk stamps the form.
        The day's activities compress to one row of icons beneath it. -->
-  <div class="st-flinch" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 0 30px;">
+  <div class="st-flinch st-cycle" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 0 30px;">
 
     <div style="position: relative; display: flex; align-items: center; justify-content: center;">
       <!-- The ring leaves on the same frame the stamp hits. It is a square,

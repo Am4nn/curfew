@@ -32,7 +32,7 @@ si.append(
     '    </div>\n'
     '    <div style="position: absolute; left: 0; right: 0; top: 0; height: 152px; background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.34) 58%, rgba(0,0,0,0));"></div>\n'
     '    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 196px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.70) 44%, #000000 100%);"></div>\n'
-    '    <div style="position: absolute; left: 22px; top: 28px;">' + lava_wordmark(34, 64, 15, pfx='lvsi') + '</div>\n'
+    '    <div style="position: absolute; left: 22px; top: 28px;">' + lava_wordmark(30, 64, 16, pfx='lvsi') + '</div>\n'
     '  </div>\n')
 
 si.append(
@@ -75,7 +75,7 @@ write('Signin.dc.html', si)
 
 # ------------------------------------------------------------- The mark ---
 # A reference sheet, so it runs long on purpose. Over-tall beats clipped.
-H = 2860
+H = 3320
 mk = [HEAD_EMBER, root(H)]
 mk.append(nav('Signin.dc.html', 'Back to sign in'))
 mk.append(title('The mark', 'Three squares on a four-square grid. The fourth seat is the identity, so nothing ever fills it.'))
@@ -124,6 +124,30 @@ for size in (16, 20, 24, 32, 48, 64):
 mk.append('  </div>\n')
 mk.append('  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: ' + GREY
           + ';">16 is the floor. Below it the 2-unit gutter closes up and the three squares read as one block.</p>\n')
+
+# The word itself. Three settings, one live, so the choice can be pointed at
+# rather than described.
+mk.append(section('The word', top=28))
+mk.append('  <p style="flex: none; margin: 8px 20px 0; font-size: 12.5px; line-height: 1.48; color: ' + GREY
+          + ';">The mark is three solid blocks, so it carries the mass. A heavy word beside it is two heavy things competing. The word carries the name and nothing else.</p>\n')
+WORDS = [
+    ("'Space Grotesk', sans-serif", '500', '0.02em', 'SPACE GROTESK 500', 'Live. Characterful letterforms at a medium weight, so it is not plain and not heavy.', True),
+    ("'Archivo', sans-serif", '600', '0em', 'ARCHIVO 600', 'Neutral and sturdy. Safer, and it says less.', False),
+    ("'IBM Plex Mono', monospace", '500', '0.24em', 'PLEX MONO 500, TRACKED OUT', 'The body face, made deliberate. Wide and thin against a dense mark.', False),
+]
+for fam, wt, tr, label, note, live in WORDS:
+    mk.append('  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #0d0d0f; border: 1px solid '
+              + ('rgba(255,55,95,0.4)' if live else 'transparent')
+              + '; padding: 18px 16px 15px; display: flex; flex-direction: column; gap: 12px;">\n'
+              '    <div style="display: flex; align-items: center; gap: 12px;">' + mark(30)
+              + '<span style="font-family: ' + fam + '; font-size: 30px; font-weight: ' + wt
+              + '; letter-spacing: ' + tr + '; color: #ffffff;">CURFEW</span></div>\n'
+              '    <div style="display: flex; align-items: baseline; gap: 8px;">\n'
+              '      <span style="font-family: ' + MONO + '; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: '
+              + (PINK if live else GREY) + ';">' + label + '</span>\n'
+              '      <span style="flex-grow: 1; font-size: 11.5px; line-height: 1.4; color: ' + GREY + ';">' + note + '</span>\n'
+              '    </div>\n'
+              '  </div>\n')
 
 # The lava. This one ships, unlike the six states below it, so it comes
 # first, and its scope is stated rather than implied.

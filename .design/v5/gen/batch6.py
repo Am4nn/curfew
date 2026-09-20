@@ -43,7 +43,7 @@ a.append("""
     -->
     <div style="margin-top: 38px; display: flex;">
       <sc-for list="{{letters}}" as="l" hint-placeholder-count="6">
-        <span class="sp-letter" style="animation-delay: {{l.delay}}; font-family: %s; font-size: 40px; %s line-height: 1; color: #ffffff;">{{l.ch}}</span>
+        <span class="sp-letter" style="animation-delay: {{l.delay}}; font-family: %s; font-size: 46px; %s line-height: 1; color: #ffffff;">{{l.ch}}</span>
       </sc-for>
     </div>
 

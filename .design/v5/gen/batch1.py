@@ -209,10 +209,10 @@ consent.append("""
     exactly one screen with no escape and this is it.
   -->
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
-    <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: %s;">CURFEW 4.0</span>
+    <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: %s;">NEW TERMS</span>
   </div>
 """ % (MONO, PINK))
-consent.append(title('What changes, and what you are agreeing to',
+consent.append(title('Before you carry on',
                      'Curfew has a coach in it now. He reads things, so this needs saying plainly before you carry on.'))
 
 ROWS = [
@@ -355,7 +355,7 @@ notice.append("""
 
 notice.append("""
   <div style="position: absolute; left: 16px; right: 16px; top: 132px; border-radius: 22px; background: #161618; border: 0.5px solid rgba(255,255,255,0.1); padding: 26px 22px 22px; display: flex; flex-direction: column;">
-    <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: %s;">CURFEW 4.0</span>
+    <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: %s;">WHAT&#39;S NEW</span>
     <h2 style="margin: 12px 0 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;">Ren, nudges, and Monk mode</h2>
 
     <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">

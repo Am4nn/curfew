@@ -402,12 +402,25 @@ Mono.** Nothing about `CLAUDE.md`'s typography rule changes: one display face
 over the body face is the shape that rule already describes, and a logotype is
 the one place it applies.
 
-**IT IS SET EXPANDED, AND THAT WAS THE WHOLE FIX.** Archivo at its default
-width is a TEXT width, and flat 900 at a text width reads plain no matter how
-big it is. It has a `wdth` axis; the mark is three wide blocks; the word is set
-at 125. The family was never the problem. Typewolf and the 2026 roundups both
-put Archivo in the bold-wordmark slot for exactly this reason, and what was
-missing was the axis.
+**IT IS SPACE GROTESK AT 500, AND IT TOOK THREE WRONG ANSWERS TO GET THERE.**
+Worth writing down, because the reasoning was backwards the whole time.
+
+- IBM Plex Mono at 0.07em: *plain*. A mono gives every glyph the same width.
+- Archivo 900, default width: *plain*. That width is a TEXT width.
+- Archivo 900, expanded to 125: *bulky*.
+
+Each attempt added weight, and weight was the wrong axis. **The mark is three
+solid blocks: it already carries all the mass a lockup needs.** A heavy word
+beside it is two heavy things competing, which is what bulky means. What the
+word has to carry is the NAME, and it needs character rather than weight to
+avoid reading plain at 500.
+
+Space Grotesk has that character in its letterforms, so it is neither. It loads
+beside Archivo through `HEAD_EMBER`, and every number, time, money amount and
+upper-case label in the app is still IBM Plex Mono.
+
+`Mark.dc.html` draws all three settings side by side with the live one ringed,
+so the next round of this is a pointing exercise rather than a description.
 
 **One splash, and it kept the rejected candidate's line.** B was dropped, but
 *"Windows close. Be there."* was the better sentence and it moved onto A. It is
@@ -472,6 +485,44 @@ in the You stack says Today, because that is the tab it was pushed from. The
 fourteen with no bar are the moments and the gates: Splash, Signin, Welcome,
 Consent, Notice, Invite, Capture, Declare, Stamp, Restore, Nudge, Mark, Ren,
 Admin.
+
+### 1.8f No version number where a member can see it
+
+Settled 2026-09-21. Aman, on the consent gate's `CURFEW 4.0`: *"never have a
+version because it is never a thing people will know unless they are devs, hence
+it is only in Admin."*
+
+Removed from the consent gate (the eyebrow is `NEW TERMS`), from the release
+notice (`WHAT'S NEW`) and from the foot of You. **Admin keeps
+`PRODUCTION · 4.0.0`**, because that screen is read by somebody deciding whether
+a build shipped, and there the number is the whole point.
+
+The consent gate's title went with it: *"What changes, and what you are agreeing
+to"* ran to three lines at 34px. It is **"Before you carry on"**.
+
+**"Invited by Mira" came off the profile** in the same pass. A profile says who
+you are, and who brought you in is a fact about the group rather than about you.
+
+### 1.8g A one-shot animation cannot be reviewed on a canvas
+
+Settled 2026-09-21, from *"what happened to day is done stamp, any changes?"*
+The landing HAD been built the day before. It runs once, on load, so by the time
+anybody scrolls to that artboard it has already happened and the board looks
+exactly as it did before the work.
+
+**So `Stamp.dc.html` repeats on a 7.6 second cycle, and the screen does not.**
+Every duration, curve and offset is the real one, expressed as a percentage of
+the cycle instead of a delay; the repeat is a property of the BOARD. The overlay
+fades out at 96% and returns, which is also the only honest way to loop it: the
+stamp does not re-stamp, the screen re-opens.
+
+There is precedent in the repo. `.design/` already carried
+`V3DayCompleteMotion` and `V3RecordedMotion`, artboards whose whole job was to
+loop a motion spec. This folds that idea back in rather than inventing it.
+
+**The general rule this sets:** any board whose point is a one-shot animation
+loops on the canvas and says so in a comment. Otherwise the work is invisible to
+the only person reviewing it.
 
 ### 1.8c The top-right control has one shape
 

@@ -777,14 +777,19 @@ makes two equal choices out of one obvious one and one honest escape.
 
 ### 1.4b IMMACULATE wears a crown, and it is made of three squares
 
-Settled 2026-09-21. Three square teeth on a band, zero radius, gold, with the
-only glow in the app on it.
+Settled 2026-09-21. **It is the crown Curfew already had**, from
+`src/app/rank-icon.tsx`, path for path.
 
-**It is the mark's rhythm and not the mark.** Three solid blocks with a gap
-between them is Curfew's vocabulary, so the crown belongs to this app rather
-than to a clip-art library. It is a row of three on a band and **never** a 2x2
-grid with a seat missing, because the mark never changes and its fourth seat is
-never filled (1.8a).
+The first attempt invented one out of three square teeth, on the theory that it
+should echo the mark. Aman: *"WTF is that crown, use the crown we have for
+IMMACULATE."* He was right twice over: there was a crown, `Ranks.dc.html` has
+been drawing the rank with it since v3, and the invented one was a shape nobody
+recognised solving a problem that was already solved.
+
+**The path is unchanged. Only the painting is.** The emblem is a gold OUTLINE
+because it sits inside a dark ring; on a gold head a gold outline is invisible.
+So on Ren it is filled gold with his own ink around it, the way his eyes and his
+mouth are drawn. Square caps and miter joins, as the emblem has.
 
 It rocks on its own clock, 6.8 seconds against the body's 5.2, which share no
 short multiple, so the two drift and it never settles into a beat you can count.

@@ -79,7 +79,7 @@ export default async function AdminOps({
               value={
                 j.ranAt === null
                   ? "never run"
-                  : `last ran ${ago(j.ranAt, instant)}, expected every ${every(j.staleAfterMinutes)}`
+                  : `last ran ${ago(j.ranAt)}, expected every ${every(j.staleAfterMinutes)}`
               }
               right={j.ranAt === null ? "" : j.stale ? "late" : "ok"}
             />
@@ -173,9 +173,18 @@ export default async function AdminOps({
   );
 }
 
-/** How long ago, against the app's clock so the preview clock moves it too. */
-function ago(at: Date, instant: Date): string {
-  const minutes = Math.max(0, Math.round((instant.getTime() - at.getTime()) / 60_000));
+/**
+ * How long ago, against the REAL clock and not the app's.
+ *
+ * Every other date on this page goes through `now()` so the preview clock moves
+ * it (invariant 8). This one must not. The question here is whether a machine
+ * somewhere else called us recently, and scrubbing the preview clock a month
+ * forward would answer it by reporting the scheduler as a month dead. The
+ * staleness flag in `schedulerHealth()` uses `Date.now()` for the same reason,
+ * and the two have to agree or the page says "ok" beside "40 days ago".
+ */
+function ago(at: Date): string {
+  const minutes = Math.max(0, Math.round((Date.now() - at.getTime()) / 60_000));
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes} min ago`;
   const hours = Math.round(minutes / 60);

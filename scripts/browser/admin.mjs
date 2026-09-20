@@ -93,6 +93,21 @@ export async function admin({ open, check, page, body, until }) {
     (/DRIFT[\s\S]{0,120}/.exec(text)?.[0] ?? text.slice(0, 120)),
   );
 
+  // SCHEDULER, above drift. A seeded database has never run a job, so every
+  // row reads "never run", which is the case worth pinning: it must not report
+  // a fresh install as an outage. "late" is the word that means something is
+  // wrong, and it must not be on this page.
+  const scheduler = /SCHEDULER([\s\S]*?)EVIDENCE/.exec(text)?.[1] ?? "";
+  check(
+    "the scheduler section is there and a seeded database is not an outage",
+    scheduler.includes("Scoring") &&
+      scheduler.includes("Reminders") &&
+      scheduler.includes("Nightly") &&
+      scheduler.includes("never run") &&
+      !scheduler.includes("late"),
+    scheduler.slice(0, 220) || "no SCHEDULER section",
+  );
+
   // -- Verify recomputes without reloading the page ---------------------------
   // It was a `<button form="recompute-range">` on a `<form method="get">`, so
   // pressing it was a native form submit: a full document navigation that tore

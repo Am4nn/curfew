@@ -238,14 +238,18 @@ async function sweepAsNobody(w: World, base: string): Promise<void> {
 async function apiRoutes(w: World, base: string, shape: "local" | "auth"): Promise<void> {
   section("HTTP: the API routes");
 
-  // The cron endpoint is a public URL that scores everybody. Its only guard is
-  // the bearer token.
-  const noSecret = await get(`${base}/api/cron/score`);
-  check("the cron endpoint refuses no token", noSecret.status === 401, `${noSecret.status}`);
-  const wrongSecret = await get(`${base}/api/cron/score`, {
-    authorization: "Bearer not-the-secret",
-  });
-  check("and refuses the wrong one", wrongSecret.status === 401, `${wrongSecret.status}`);
+  // Every scheduled job is a public URL that does something to everybody, and
+  // the only guard on any of them is the bearer token. All three, not just the
+  // one that existed when this was written: a new job is a new open door, and
+  // the reason to sweep them by name is that forgetting one looks like nothing.
+  for (const job of ["score", "nightly", "remind"]) {
+    const noSecret = await get(`${base}/api/cron/${job}`);
+    check(`${job} refuses no token`, noSecret.status === 401, `${noSecret.status}`);
+    const wrongSecret = await get(`${base}/api/cron/${job}`, {
+      authorization: "Bearer not-the-secret",
+    });
+    check(`${job} refuses the wrong one`, wrongSecret.status === 401, `${wrongSecret.status}`);
+  }
 
   // A check-in is a POST. A GET must not record one (invariant 9).
   const getCheckin = await get(`${base}/api/checkin`);

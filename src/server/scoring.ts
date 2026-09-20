@@ -985,9 +985,33 @@ async function peersFor(mine: OutcomeWrite[]): Promise<OutcomeRow[]> {
   return out;
 }
 
-/** Score every approved user who tracks anything. Used by the cron and the CLI. */
+/**
+ * Score every approved user who tracks anything. Used by the jobs and the CLI.
+ *
+ * `resume` picks which of the two paths this takes, and they are deliberately
+ * different computations.
+ *
+ * WITHOUT it, every user is replayed from the first day they tracked anything:
+ * a full check-in scan and every score, outcome and reputation row recomputed.
+ * That is the expensive path, it is what the DAILY job runs, and it is what
+ * `verify` then diffs the stored rows against.
+ *
+ * WITH it, each user carries forward from their last stored day, which is the
+ * same thing a page read does through `closeOutstanding`. That is the HOURLY
+ * job. `resumePointFor` declines and falls back to the full replay whenever
+ * carrying forward would be unsafe, and `recomputeUser` still scans from seven
+ * days before the resume day, which is what picks up a period that closed after
+ * the last run. Both of those matter: the second is why an hourly pass catches a
+ * member whose windows shut at an awkward hour, and the first is why it cannot
+ * quietly inherit a wrong number for ever.
+ *
+ * Running the cheap path hourly and the expensive one nightly is what makes the
+ * nightly `verify` mean anything. Two paths computed differently, diffed once a
+ * day. While both were the full replay, that check was comparing a thing to
+ * itself.
+ */
 export async function scoreAll(
-  opts: { from?: string } = {},
+  opts: { from?: string; resume?: boolean } = {},
 ): Promise<{ users: number; fines: number }> {
   const users = await db
     .selectDistinct({ userId: userActivities.userId })
@@ -999,9 +1023,13 @@ export async function scoreAll(
   // so it cannot be written until their outcomes exist. Scoring everyone first
   // means a fine lands the night it is due rather than the night after.
   for (const u of users) {
-    await scoreUser(u.userId, { from: opts.from, fines: false });
+    await scoreUser(u.userId, {
+      from: opts.from,
+      fines: false,
+      resume: opts.resume ? await resumePointFor(u.userId) : undefined,
+    });
     // The streak counter is moved by a press and repaired here. The press
-    // cannot be transactional with the event that caused it, so a night that
+    // cannot be transactional with the event that caused it, so a pass that
     // rebuilds is what keeps the number honest.
     await closeStreaks(u.userId);
   }

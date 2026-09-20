@@ -78,16 +78,49 @@ score, `events` stops replaying cleanly into `activity_scores`.
 `DIRECTION.md` §5's four hard rules stand: it never scores, everything it says
 is recorded as an event, it never invents a number, and off is a real off.
 
-### 1.4 The coach lives in two places
+### 1.4 The coach is called Bell, and it is a someone
 
 Chosen over "a tab only" and "woven into the screens only".
 
 - **Lines** on screens that already exist. Home, After a miss, Your record.
-- **A tab** for the longer conversation, where you can ask it something and it
-  answers. The v5 tab bar goes from four to five.
+- **A tab** for the longer conversation. The v5 tab bar goes from four to five,
+  which is exactly Apple's maximum, so nothing else can ever have one.
 
-`DIRECTION.md` §9 puts coach tier 1 at position seven in its build order and has
-no tab at all. That order is superseded by 1.7.
+`DIRECTION.md` §9 puts coach tier 1 at position seven and has no tab at all.
+That order is superseded by 1.7.
+
+**THE FIRST VERSION OF THE TAB WAS WRONG AND THE REASON IS WORTH KEEPING.** It
+was two report cards, A PATTERN and A SUGGESTION, with a text box underneath.
+Aman: *"this coach is really not good at all, no coach figure either."* He was
+right. Nobody was there. It did not speak first, did not greet you, did not ask
+you anything, and the one part that was actually a coach was the smallest thing
+on the screen, below two cards you passively read. A coach is a someone. That
+was a report with a chat box stapled to it.
+
+**Its name is Bell**, and the name is not decoration. A curfew bell is the
+object the app is named after: it rang at dusk to tell a town to cover its fire
+for the night, and couvre-feu means cover fire. A bell also rings BEFORE the
+thing happens, which is the whole job. Chosen over Pip and Nine.
+
+**It has a figure**, drawn in the rank-icon language: 1.6 stroke, square caps,
+miter joins, hard edges, no glow and no gradient. It carries state rather than
+decorating: upright and grey when there is time, tilted and accent-coloured
+with two strokes beside it when there is not. Colour is never the only carrier,
+which is the same rule the tab bar follows by filling the active icon.
+
+**The tab says Bell, not Coach.** A named coach introduced by job title is the
+opposite of the point.
+
+**It talks like a friend in your corner.** Warm, short, on your side, never
+scolds, celebrates without gushing. Chosen over blunt and over dry-and-funny.
+The failure mode both of those carry is the same: on the week somebody is
+genuinely struggling, the app that is hard on them or makes a joke is the app
+they delete.
+
+**The tab is a conversation and Bell speaks first.** You open it and it has
+already read your day. The pattern and the suggestion are things it SAYS, with
+their figures flat and mono inside the message, rather than cards filed under
+headings. 1.11 holds inside a speech bubble exactly as it holds anywhere else.
 
 ### 1.5 Seeing who is slipping, and nudging them, is a core pillar
 

@@ -974,78 +974,153 @@ Carried from `DIRECTION.md` §8. None of it was reopened on 2026-09-20.
   that killed BeReal, whose imposed window became dread. Never take it.
 - **IMMACULATE keeps the only glow in the app.**
 
+### 1.21 The model is swappable, and the seam is the point
+
+Settled 2026-09-21. Aman: *"I want to use Gemini or DeepSeek, cheaper models,
+easily switchable from code if I need. I want to keep my budget for AI tight."*
+
+**One interface, `src/server/coach/provider.ts`, and the provider comes from the
+environment.** `COACH_PROVIDER` and `COACH_MODEL`. Swapping is an env change and
+a redeploy, never a code edit.
+
+**Gemini Flash first, because the nightly pass has to see photographs.**
+DeepSeek sits behind the same seam for Ask Ren, where the input is text over a
+digest and the cheapest thing wins. That split is a consequence of 1.22 rather
+than a preference: DeepSeek is text-only and the photo insight cannot run on it.
+
+### 1.22 He is handed a digest, plus only the photographs the insight needs
+
+Settled 2026-09-21. The server computes the facts, streaks, windows, misses, and
+what the group shared, and hands him a small structured summary. Nothing leaks
+that the digest did not include, and the digest is testable with no model in the
+loop.
+
+**Photographs go with it, and the digest names which ones.** This week's
+dinners, not everything from the last seven days. Photographs are the most
+expensive and the most invasive thing in v4, and a fixed cap would spend the
+whole budget on ten pictures of water.
+
+### 1.23 The coach is its own job, and its failure is visible
+
+Settled 2026-09-21. **A fourth QStash schedule, `/api/cron/coach`**, not folded
+into nightly. A slow provider must not be able to make the full replay, the
+sweeps and `verify` run long.
+
+It retries like everything else. **When the retries are exhausted and it lands
+in the DLQ, Home shows no line at all** and offers a recompute. That button
+exists only when a failure is recorded: `ops.job.failed`, or a missing line for
+today. No failure, no button. The server decides and the client cannot ask.
+
+A written fallback sentence was refused. It would be the same sentence every
+time, which is worse than silence.
+
+### 1.24 One hard rule on what he may say, and the rest is deliberately open
+
+Settled 2026-09-21. **Every number in his lines comes from the digest,
+verbatim.** He may place a number and never derive one. That is testable: a
+digit in his output that is not in his input is a bug.
+
+Health advice, predictions and remarks about other members were offered as
+further bans and were kept open: *"for now less limits as its invite only so
+its fine we can see how it evolves in future."* Three friends, and an admin who
+can read what was sent. **This is a dated position, not a permanent one**, and
+it is the first thing to revisit before anybody outside the three uses Curfew.
+
+### 1.25 He keeps a rolling summary, and you can read, edit and clear it
+
+Settled 2026-09-21. One paragraph per person, rewritten nightly, rather than the
+turns kept verbatim. Cheap to send and it never grows.
+
+**And it is yours to see.** One row in You: what Ren remembers, the paragraph as
+plain text, with edit and clear. A model writing a description of you that you
+are not allowed to read would be the indefensible part of this whole feature.
+
+The cost, written down: an edited summary is something you wrote that he will
+later treat as his own observation. That is accepted.
+
+It is a new table, so it goes in the consent gate and in Delete data.
+
+### 1.26 Ask Ren is capped per person per day, and the bill has a hard stop
+
+Settled 2026-09-21. A daily cap per person on questions.
+
+**And a spend ceiling.** Every model call writes an event, Ops shows calls and
+estimated spend for the month, and above a number Aman sets **Ask Ren switches
+itself off while the nightly lines carry on**. That kills the uncapped half and
+keeps the half whose cost is three calls a day and already known. Admins are
+told when it fires.
+
+### 1.27 A nudge is only possible while the window is open, and that is the limit
+
+Settled 2026-09-21, and it closes 1.5's open question without adding a rule.
+At-risk is the only state a nudge can move, so the window itself is the rate
+limit. No counter and no claim row.
+
+**Delivered by push AND the card on Home.** Push is best-effort and permission
+can be off; the card always lands. A badge on the tab was refused: a count for
+something that is not your own day is the first step toward an inbox, and
+`Nudged` was drawn specifically to avoid one.
+
+### 1.28 Ren sees nudges and may mention them. THIS REVERSES PART OF 1.4a
+
+Settled 2026-09-21, and it is a reversal, so it is written as one.
+
+**1.4a says:** *"AND HE STANDS DOWN WHEN A PERSON SPEAKS. If Mira nudges you
+about Water, Ren says nothing about Water. A human beat him to it, and two
+voices about one thing is worse than either alone."*
+
+**What was chosen instead:** he sees the nudge in his digest and may refer to
+it. *"Mira noticed too."*
+
+The argument against, from 1.4a, still stands and should be read before this
+ships: it makes him a commentator on your friendships, which is a different
+product from a coach who reads your record. The argument for is that a coach who
+pretends not to have noticed the thing everybody noticed is a worse one.
+
+**The half of 1.4a that survives is the one-line rule.** Whatever he says about
+a nudge is his ONE line for that screen, never a second one on top of what he
+was already going to say. If that is not held, this reversal becomes exactly the
+two voices 1.4a warned about.
+
+### 1.29 Monk mode is shareable, and the second verdict lives only inside it
+
+Settled 2026-09-21, and it changes two things.
+
+**The percentage has a share toggle, like any activity.** It is comparable
+between members precisely because 1.16's requirements make it mean the same
+thing for everybody, which was the point of them. Keeping it private like the
+global score was offered and refused.
+
+**The stricter monk bar IS built in v4**, at the price 1.16 wrote down: a second
+scope on `activity_scores`, a second pass, and `verify` diffing both. Deferring
+it to a later release was offered and refused.
+
+**And the second verdict appears nowhere but Monk mode's own screen.** Home, the
+streak and the fine use your own target and never mention the monk bar. Two
+contradictory verdicts on a Home row would break the one screen that has to be
+readable in six seconds.
+
+### 1.30 One tag, everything at once
+
+Confirmed 2026-09-21, which is 1.7 unchanged after two easier routes were
+offered. Not phased over two tags, and not with the coach dark behind the admin
+switch. The three of them hit the consent gate, accept, and the whole of v4 is
+there.
+
 ---
 
 ## 3. Open
 
-### 1.19 The yes/no activities are separate types, collapsed into one Home row
+### 3.2 What gets built first
 
-Settled 2026-09-21. Aman: *"we can have morning sunlight, no alcohol, no social
-media, no junk food, cold shower, etc etc, but we don't need to make them all
-individual activity as it will just overload user with activities in home page,
-we need a way to combine them all which are just yes/no."*
+Left open on purpose. Aman: *"you will decide while planning and writing
+docs."* The candidates and their arguments: the five new types and the grouped
+Home row (pure engine work, unblocks Monk mode, no model and no bill), the v5
+design screen by screen (most visible, touches every route), or Ren end to end
+at his thinnest (answers the riskiest unknown first, which is whether he is any
+good).
 
-**The overload is real and it is a HOME problem, so it is fixed on Home.** Each
-condition stays a real activity type with its own window, its own streak, its
-own sharing toggle and its own `passed`. Home draws them as ONE expandable row,
-`Simple ones, 3 of 5`, which taps open.
+### 3.3 The limits on what Ren may say
 
-Two alternatives were offered and refused. A single "Daily list" type with one
-streak is cheapest, and it throws away per-item streaks and makes one slip fail
-the lot. A composite that reports per item keeps the streaks and breaks
-invariant 6, because the engine would have to read inside a module's `detail` to
-know what an item means, which is the thing v3 spent a phase preventing.
-
-**Each one stands alone.** Cold shower breaking has nothing to do with No
-alcohol. Five verdicts, five streaks, five possible fines. That falls straight
-out of them being five types, and it is the reason the grouping had to be
-presentational.
-
-**The list is ours plus yours.** Our conditions carry a category, so Monk mode
-can require a body, a food, a mind and a sleep (1.16). A condition somebody
-writes themselves has no category and counts toward nothing: nothing can know
-whether "no doomscroll" is a MIND thing, and 1.16's requirements exist so the
-number means the same for everybody. Two code paths, and the difference is said
-out loud on the screen rather than hidden.
-
-### 1.20 Ren thinks nightly, and again when asked
-
-Settled 2026-09-21. **The nightly job writes his lines for the next day**, so
-every screen that carries one is instant and there is never a spinner where a
-sentence should be. **The Ask Ren box and the suggestion chips make a live
-call.**
-
-Three calls a day of fixed cost, plus whatever people actually ask, which is the
-only part that scales with use. It also means a slow or dead provider degrades
-to "you cannot ask him a question today" rather than "Home does not load", and
-1.3 already guarantees no number depends on him.
-
-The cost of it: his Home line can be up to a day stale. That is acceptable
-because the line is about a pattern rather than about this morning, and anything
-that has to be current is arithmetic and is not his.
-
----
-
-## 3. Open
-
-### 3.1 Which new activity types v4 adds. SETTLED 2026-09-21
-
-Five, all of them held-or-slipped with no photograph, which is the Sugar-free
-module's shape and needs nothing new from the engine:
-
-| Type | Category |
-|---|---|
-| Cold shower | BODY |
-| Morning sunlight | BODY |
-| No junk food | FOOD |
-| No alcohol | FOOD |
-| No social media | MIND |
-
-**No social media is not Screen.** Screen is total device time, and somebody can
-be under two hours and have spent all of it scrolling. They are different
-conditions and they were kept apart deliberately.
-
-All five arrive under 1.19's single Home row, so adding five types adds one row.
-The list can grow later without Home growing with it, which is the whole point
-of that decision.
-
+1.24 banned one thing and dated the rest. Revisit before anybody outside the
+three uses Curfew.

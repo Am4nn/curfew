@@ -141,7 +141,8 @@ const mine = schedules.filter((s) => s.destination.startsWith(`${root}/`));
 
 const forDestination = (d: string) => mine.filter((s) => s.destination === d);
 
-console.log(`Origin  ${root}\n`);
+console.log(`Origin  ${root}`);
+console.log(`Failed  ${FAILURE_CALLBACK}  (QStash never reports this back)\n`);
 for (const job of wanted) {
   const existing = forDestination(job.destination);
   const state =

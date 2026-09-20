@@ -157,8 +157,13 @@ export async function openOffers(userId: string): Promise<OpenOffer[]> {
     // nothing to restore, and a counter that has never been above zero never
     // had a run to lose. A type with no counter yet is not skipped, because
     // absent is not the same as zero.
+    //
+    // "Live" is `current > 0` AND NOT GREY. A weekly run that came short holds
+    // its number rather than falling to zero, so a positive count stopped
+    // meaning alive. Reading it as alive skipped the walk for exactly the runs
+    // that needed it and no gym week could ever be forgiven again.
     const counter = counters.get(activity.typeKey);
-    if (counter && (counter.current > 0 || counter.best === 0)) continue;
+    if (counter && ((counter.current > 0 && !counter.grey) || counter.best === 0)) continue;
 
     const offer = await offerFor(userId, activity.typeKey);
     if (!offer) continue;

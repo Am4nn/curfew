@@ -6,7 +6,7 @@ import { shortDay } from "@/lib/day-format";
 import { ownPhotos } from "@/server/own-photos";
 import { PhotoGrid } from "../photo-tile";
 import { QuorumMark } from "../mark";
-import { ActivityIcon, Flame } from "../activity-icon";
+import { ActivityIcon, DeadFlame, Flame } from "../activity-icon";
 import { ActivityChartView } from "./charts";
 import { BackLink } from "@/app/back-link";
 
@@ -249,7 +249,17 @@ export default async function StatsPage({
                           <span className="text-[11.5px] tabular-nums text-muted">
                             {row.percent}%
                           </span>
-                          {row.streak > 0 ? (
+                          {/* Grey before alive: a run that came short keeps
+                              its number, so a positive count is not a live
+                              flame. Same order as Home and Activities. */}
+                          {row.grey ? (
+                            <span className="flex items-center gap-1">
+                              <DeadFlame size={13} />
+                              <span className="text-[12px] leading-none text-muted tabular-nums">
+                                {row.streak}
+                              </span>
+                            </span>
+                          ) : row.streak > 0 ? (
                             <span className="flex items-center gap-1">
                               <Flame size={13} />
                               <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">

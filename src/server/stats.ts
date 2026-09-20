@@ -44,6 +44,8 @@ export interface Overview {
     icon: string;
     percent: number;
     streak: number;
+    /** The run has ended and the number has not fallen. See StreakState. */
+    grey: boolean;
   }[];
 }
 
@@ -159,6 +161,7 @@ export async function overviewFor(userId: string): Promise<Overview> {
           ? 0
           : Math.round((its.filter((r) => r.passed).length / its.length) * 100),
       streak: standing?.streak ?? 0,
+      grey: standing?.grey ?? false,
     });
   }
   byActivity.sort((a, b) => b.percent - a.percent);

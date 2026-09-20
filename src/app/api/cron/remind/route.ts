@@ -9,13 +9,14 @@ import { deliver, pushConfigured } from "@/server/push";
 import { nextFor } from "@/server/notification-kinds";
 
 // The tick. QStash hits this every fifteen minutes with the same
-// `Authorization: Bearer $CRON_SECRET` header Vercel Cron sends to
-// /api/cron/score, so there is one shape for "a scheduler called us" rather
-// than two.
+// `Authorization: Bearer $CRON_SECRET` header the other two jobs check, so
+// there is one shape for "a scheduler called us" rather than three.
 //
-// Vercel Cron cannot do this job: on Hobby it is once a day, UTC only, with
-// timing guaranteed to the hour. Reminders are per member, in their own zone,
-// and a last call at ten minutes needs minute precision.
+// Vercel Cron could never do this job: on Hobby it is once a day, UTC only,
+// with timing guaranteed to the hour. Reminders are per member, in their own
+// zone, and a last call at ten minutes needs minute precision. Scoring has
+// since moved to QStash for a version of the same reason, and `vercel.json`
+// now schedules nothing at all.
 
 /** How wide a net each run casts. Must match the QStash schedule. */
 const SLOT_MINUTES = 15;

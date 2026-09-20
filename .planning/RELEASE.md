@@ -194,18 +194,40 @@ changed"**: the overlay blocks the whole app, so an entry nobody needed to read
 teaches people to dismiss the next one unread. The test is whether somebody has
 to do something differently tomorrow.
 
-### 9. Scoring
+### 9. The schedule
 
-Vercel Cron runs against the production deployment only, so production scores
-itself nightly and needs nothing here. Check the next morning:
+**Only when `JOBS` in `scripts/schedule-jobs.ts` changed in this release.** The
+schedules live in QStash, not in the deployment, so a tag does not move them and
+nothing tells you they are stale.
 
 ```
-# the admin console, Overview: last run, and Ops for a live drift report
+bun run schedule:production -- --dry     # read it
+bun run schedule:production
 ```
 
-Preview is never scored on its own. `bun run score` is how dev gets a nightly
-pass, by hand, and it writes fines, which are append-only ledger rows, so it is
-a deliberate act rather than housekeeping.
+It prints every declared job, what QStash currently holds for it, and anything
+pointing at this origin that no job declares. Unchanged cadences say "all
+scheduled" and it does nothing. It replaces rather than adds, so running it
+twice is safe and running it never is the failure.
+
+There is no Vercel cron any more: `vercel.json` has no `crons` key, and
+`check:cron` fails if one reappears. Scoring is hourly because a single daily
+firing in UTC cannot serve members in more than one timezone, which cost a
+Berlin member a day of lag on every day they used the app.
+
+`bun run schedule` is the same thing against dev, which now gets a real scoring
+tick for the first time. Preview used to be scored only by hand.
+
+### 10. Scoring
+
+Check the next morning, in the admin console: Overview for the last run, Ops for
+a live drift report. **Read Ops twice, hours apart.** A drift report taken just
+after a job has run is the one reading that cannot show a scheduling gap, and
+that is exactly how the Berlin bug hid: clean at 07:30 UTC, two rows by 10:00,
+every single day.
+
+`bun run score` is a scoring pass by hand, against dev. It writes fines, which
+are append-only ledger rows, so it is a deliberate act rather than housekeeping.
 
 ---
 
@@ -286,5 +308,6 @@ rolls itself back.
 [ ] hostile migrations applied
 [ ] data migrations: --dry read, then run
 [ ] release notice: --dry read, then published
-[ ] next morning: admin Overview last run, Ops drift report
+[ ] schedule:production, if JOBS changed: --dry read, then run
+[ ] next morning: admin Overview last run, Ops drift report, read twice hours apart
 ```

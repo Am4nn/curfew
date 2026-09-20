@@ -139,6 +139,12 @@ The schedule is created by `bun run schedule:reminders`, a script in this repo
 with a `--dry` and a `:production` twin, so the tick is a thing under review
 rather than a thing somebody once clicked in a dashboard.
 
+> Since 3.4.2 that script is `bun run schedule` and `scripts/schedule-jobs.ts`,
+> which declares all three schedules rather than only this one. The argument
+> above was made for reminders and then turned out to apply to scoring too: a
+> daily Vercel cron in UTC cannot serve two timezones, and a Berlin member was
+> judged a day late every day until scoring moved here as well.
+
 `PUSH_REMINDERS` gates the scheduled route and **unset means off**. Everything
 else in this repo fails loudly when a key is missing. This one fails silent on
 purpose: a notification reaches somebody's phone, so a forgotten variable in a

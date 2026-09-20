@@ -7,11 +7,5 @@
       "production": false,
       "main": false
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/score",
-      "schedule": "0 7 * * *"
-    }
-  ]
+  }
 }

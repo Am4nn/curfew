@@ -49,10 +49,11 @@ jobs:
       - name: Test
         run: bun run test
 
-      # The one thing about the schedule no test can see: vercel.json is in UTC
+      # The one thing about the schedule no test can see: the jobs fire in UTC
       # and a period ends in the member's zone. `0 4 * * *` was 90 minutes
-      # before a sleep night became scorable, so its fine posted a day late.
-      - name: The nightly job runs late enough to score last night
+      # before a sleep night became scorable, so its fine posted a day late,
+      # and `0 7 * * *` was 33 minutes before a Berlin member's, every day.
+      - name: No period waits more than an hour to be scored
         run: bun run check:cron
 
       # The browser suites are sharded across parallel jobs, and a suite no

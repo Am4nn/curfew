@@ -191,12 +191,27 @@ enough to catch it: a variable older than the branch it is supposed to name has
 never been updated. The values are encrypted and never returned, so the dates
 are all you get and all you need.
 
-**Vercel Cron runs against the production deployment only.** There is no cron on
-Preview and no setting that adds one, so the dev deployment is never scored on
-its own. Reads still close periods lazily, so its screens are right; the ledger
-and reputation rows wait for `bun run score`. A scheduled GitHub Actions
-workflow hitting `/api/cron/score` with `CRON_SECRET` is the way to give dev a
-real nightly job, and it is not worth it while dev has three users.
+**Nothing is scheduled by Vercel any more.** `vercel.json` has no `crons` key
+and `check:cron` fails if one comes back. Every tick is a QStash schedule
+declared in `scripts/schedule-jobs.ts`, and `bun run schedule` reconciles the
+environment against that table.
+
+The reason is that a Vercel cron on Hobby is once a day, UTC only, guaranteed
+only to the hour, and **one daily firing in UTC cannot serve members in more
+than one span of timezones.** 07:00 UTC is comfortably late in Kolkata and too
+early in Berlin, where a sleep period shuts at 08:00 UTC. That member was scored
+a day late every day for as long as the daily cron existed: the job ran, truly
+reported nothing to do, and the window shut half an hour later. Moving the hour
+only moves the cliff west.
+
+Scoring runs HOURLY now, so the worst wait between a period closing and being
+judged is one hour anywhere on earth, and `check:cron` asserts exactly that
+across six zones rather than only `DEFAULT_ZONE`, which is what it used to do
+and why it missed this.
+
+QStash points at one environment at a time, whichever `BETTER_AUTH_URL` the
+loaded env file names, so dev is scheduled by `bun run schedule` and production
+by `bun run schedule:production`.
 
 `package.json` carries `3.4.0`, cut as a tag on 2026-09-17. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
@@ -210,9 +225,8 @@ the commit that gets tagged.
   Proved rather than assumed: `/api/cron/remind` on dev answers
   `{ ok: true, skipped: "disabled" }` to a valid `CRON_SECRET`.
 - QStash schedule `scd_6fChaPXD1rssMQaF1VjebR5XEgTD`, `*/15 * * * *`, pointed at
-  production. Re-running `bun run schedule:reminders:production` says "already
-  scheduled" rather than adding a second, which is the thing that script exists
-  to prevent.
+  production. Re-running `bun run schedule:production` says "all scheduled"
+  rather than adding a second, which is the thing that script exists to prevent.
 - The 3.3.0 release note is published to both, 3 accounts on production.
 
 **v3.4.0 rewrote what those notifications SAY**, after the first day in
@@ -228,10 +242,15 @@ became a real setting that nothing overrides.
   day with no database. Read its output before changing a word of
   `notification-copy.ts`.
 
-**There is exactly one QStash schedule and it must stay that way.** Two pointing
-at the same URL looks like nothing at all: the job runs twice a tick, the
-idempotency index absorbs the second, and the only symptom is the bill. Always
-change it through the script, never the dashboard.
+**There is exactly one QStash schedule PER DESTINATION and it must stay that
+way.** Three destinations: `/api/cron/remind` every fifteen minutes,
+`/api/cron/score` hourly, `/api/cron/nightly` at 07:00 UTC. Two schedules
+pointing at the same URL looks like nothing at all: the job runs twice a tick,
+the idempotency claim absorbs the second, and the only symptom is the bill.
+Always change them through `bun run schedule`, never the dashboard. The script
+replaces rather than adds, and removes any schedule on this origin that the
+`JOBS` table does not declare, which is how a renamed route stops leaving a tick
+behind.
 
 **The steps are in `.planning/RELEASE.md`, and the order is not obvious.** Read
 it rather than working from this section.
@@ -376,7 +395,7 @@ zones      bun run check:timezones — a day belongs to the member, not to UTC
 streak     bun run check:streak    — the first thing you ever do counts
 offer      bun run check:offer     — a button is there when a press would count
 evidence   bun run check:evidence  — what you shared reaches the group
-cron       bun run check:cron      — the job runs after last night became scorable
+cron       bun run check:cron      — no period waits over an hour to be scored
 browser    bun run browser         — every screen and every form, against a running server
 audit      bun audit               — published advisories against the lockfile
 migrate    bun run migrate         — migrations, then sync, against .env.preview
@@ -395,7 +414,7 @@ sleep      bun run migrate:sleep   — move existing members onto the anchored c
 remind     bun run check:reminders — a reminder is sent only when a press would count
 sim        bun run sim:push        — a day of notifications, printed, no database
 push       bun run check:push      — what Curfew actually said to people
-schedule   bun run schedule:reminders — create or update the QStash tick
+schedule   bun run schedule         — reconcile every QStash tick with JOBS
 ```
 
 **`bun run sim:push` is the review gate for notification copy, and reading its

@@ -30,14 +30,37 @@ def rows_card(rows, margin=14):
 
 
 # --------------------------------------------------------------- Settings ---
-H = 1210
+H = 1330
 st = [HEAD, root(H)]
-st.append(nav('Activities.dc.html', 'Back to you'))
-st.append(title('Settings'))
+st.append(nav('Main.dc.html', 'Back to Today'))
 
-st.append(eyebrow('YOU', GREY, top=24))
+# THE PROFILE AND THE SETTINGS ARE ONE PAGE. Two pages would mean two routes to
+# remember and a profile screen carrying four facts, which is a screen nobody
+# opens twice.
+st.append("""  <div style="flex: none; padding: 4px 20px 0; display: flex; align-items: center; gap: 16px;">
+    <div style="flex: none; position: relative; width: 76px; height: 76px;">
+      <span style="position: absolute; inset: 0; border-radius: 999px; background: linear-gradient(150deg, #6f5ab8, #3b2e6b); display: flex; align-items: center; justify-content: center; font-family: %s; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; color: #ffffff;">AA</span>
+      <!-- Initials until there is a photograph. A grey silhouette is a face
+           that is not yours, and this app is careful about whose face is where. -->
+      <button type="button" aria-label="Change your picture" style="position: absolute; right: -2px; bottom: -2px; width: 28px; height: 28px; border-radius: 999px; border: 2px solid #000000; background: %s; display: flex; align-items: center; justify-content: center; padding: 0;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.2"/></svg>
+      </button>
+    </div>
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Aman Arya</h1>
+      <span style="font-size: 13.5px; color: %s;">Joined 2 July &middot; 3 groups</span>
+      <span style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: %s;">INVITED BY MIRA</span>
+      </span>
+    </div>
+  </div>
+""" % (MONO, PINK, GREY, GREEN, MONO, GREY))
+
+st.append(eyebrow('YOUR DETAILS', GREY, top=26))
 st.append(rows_card([
-    ('Name', 'Aman', '#ffffff', None),
+    ('Name', 'Aman Arya', '#ffffff', None),
+    ('Email', '125aryaaman', '#ffffff', None),
     ('Time zone', 'Asia/Kolkata', '#ffffff', None),
     ('Your day starts', '4:00 AM', '#ffffff', None),
 ], margin=12))
@@ -71,7 +94,7 @@ st.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px;
   </div>
 """ % (CARD, RED, MONO, DIM))
 st.append(grow())
-st.append(tabbar('Activities.dc.html'))
+st.append(tabbar('Main.dc.html'))
 st.append(logic(H))
 write('Settings.dc.html', st)
 
@@ -82,7 +105,7 @@ write('Settings.dc.html', st)
 # otherwise.
 H = 1240
 sh = [HEAD, root(H)]
-sh.append(nav('Settings.dc.html', 'Back to settings'))
+sh.append(nav('Settings.dc.html', 'Back to you'))
 sh.append(title('What you share', 'Per group, per activity. The camera icon is the second switch: it shares the photograph, and a shared photograph is read by that group&#39;s coaches too.'))
 
 # Three groups, unrolled, so each one is its own card with its own heading. A
@@ -117,7 +140,7 @@ for gname, gnote, gkey in GROUPS:
 sh.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Switching one off stops it now. It does not go back and hide what the group already saw, because they already saw it.</p>
 """ % GREY)
 sh.append(grow())
-sh.append(tabbar('Activities.dc.html'))
+sh.append(tabbar('Main.dc.html'))
 sh.append(logic(H, """  renderVals() {
     const ON = '""" + PINK + """', OFF = '""" + CARD2 + """', SEP = '""" + SEP + """';
     const paint = (rows) => rows.map(([name, on, photo], i) => ({
@@ -143,7 +166,7 @@ write('Sharing.dc.html', sh)
 # point of drawing it above the per-activity times rather than below them.
 H = 1210
 nt = [HEAD, root(H)]
-nt.append(nav('Settings.dc.html', 'Back to settings'))
+nt.append(nav('Settings.dc.html', 'Back to you'))
 nt.append(title('Notifications', 'Curfew speaks first here, and only here. One notification is about one activity and it always says which.'))
 
 nt.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
@@ -207,7 +230,7 @@ nt.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 16px;
   <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">A notification never tells you how far along you are. Only the activity itself knows that, and it says so in its own words or not at all.</p>
 """ % (PINK, MONO, DIM, GREY))
 nt.append(grow())
-nt.append(tabbar('Activities.dc.html'))
+nt.append(tabbar('Main.dc.html'))
 nt.append(logic(H, """  renderVals() {
     const ON = '""" + PINK + """', OFF = '""" + CARD2 + """', SEP = '""" + SEP + """';
     const defs = [
@@ -234,7 +257,7 @@ write('Notifs.dc.html', nt)
 # ----------------------------------------------------------- Your photos ---
 H = 1120
 ph = [HEAD, root(H)]
-ph.append(nav('Settings.dc.html', 'Back to settings'))
+ph.append(nav('Settings.dc.html', 'Back to you'))
 ph.append(title('Your photographs', '148 of them, newest first. This screen is yours alone: nothing here can be edited, shared or replaced from it.'))
 
 ph.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: %s; padding: 14px 16px; display: flex; gap: 12px;">
@@ -260,7 +283,7 @@ for heading, items in GRID:
     ph.append('  </div>\n')
 
 ph.append(grow())
-ph.append(tabbar('Activities.dc.html'))
+ph.append(tabbar('Main.dc.html'))
 ph.append(logic(H))
 write('Photos.dc.html', ph)
 
@@ -268,7 +291,7 @@ write('Photos.dc.html', ph)
 # ------------------------------------------------------------- Your data ---
 H = 1080
 dt = [HEAD, root(H)]
-dt.append(nav('Settings.dc.html', 'Back to settings'))
+dt.append(nav('Settings.dc.html', 'Back to you'))
 dt.append(title('Your data', 'What Curfew holds, and how to be rid of it. Every one of these is final the moment you confirm it.'))
 
 dt.append(eyebrow('WHAT IS HELD', GREY, top=24))
@@ -317,7 +340,7 @@ dt.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px;
   </div>
 """ % (CARD, GREY, GREY))
 dt.append(grow())
-dt.append(tabbar('Activities.dc.html'))
+dt.append(tabbar('Main.dc.html'))
 dt.append(logic(H, """  renderVals() {
     const SEP = '""" + SEP + """';
     const rows = [
@@ -338,7 +361,7 @@ write('Data.dc.html', dt)
 # thing on a different screen.
 H = 1010
 aw = [HEAD, root(H)]
-aw.append(nav('Settings.dc.html', 'Back to settings'))
+aw.append(nav('Settings.dc.html', 'Back to you'))
 aw.append(title('Away days', 'Tell Curfew you are away and those days do not count against you. Say so first: an away day cannot be declared over a day that has already been judged.'))
 
 aw.append("""  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; padding: 18px 16px; display: flex; align-items: center; gap: 16px;">
@@ -385,7 +408,7 @@ aw.append("""  <div style="flex: none; margin: 14px 20px 0; display: flex; flex-
   <p style="flex: none; margin: 18px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Your group sees that you are away rather than seeing you vanish, which is the difference between a member on a trip and a member who quit.</p>
 """ % GREY)
 aw.append(grow())
-aw.append(tabbar('Activities.dc.html'))
+aw.append(tabbar('Main.dc.html'))
 aw.append(logic(H, """  renderVals() {
     const SEP = '""" + SEP + """', TICK = 'M20 6L9 17l-5-5', CROSS = 'M6 6l12 12M18 6L6 18';
     return {

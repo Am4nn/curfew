@@ -15,7 +15,7 @@
       "title": "Ops",
       "w": 390,
       "x": 0,
-      "y": 13988
+      "y": 14078
     },
     "Away.dc.html": {
       "h": 1010,
@@ -38,7 +38,7 @@
       "is_interactive": true,
       "title": "Add an activity",
       "w": 390,
-      "x": 2350,
+      "x": 1880,
       "y": 2050
     },
     "Coach.dc.html": {
@@ -50,11 +50,11 @@
       "y": 0
     },
     "Configure.dc.html": {
-      "h": 1020,
+      "h": 1077,
       "is_interactive": true,
       "title": "Configure · Sleep",
       "w": 390,
-      "x": 2820,
+      "x": 2350,
       "y": 2050
     },
     "Consent.dc.html": {
@@ -62,7 +62,7 @@
       "is_interactive": true,
       "title": "The consent gate",
       "w": 390,
-      "x": 1880,
+      "x": 1410,
       "y": 2050
     },
     "Data.dc.html": {
@@ -148,7 +148,7 @@
       "title": "The mark",
       "w": 390,
       "x": 0,
-      "y": 10808
+      "y": 10898
     },
     "Monk.dc.html": {
       "h": 1240,
@@ -178,7 +178,7 @@
       "h": 844,
       "title": "A release notice",
       "w": 390,
-      "x": 3290,
+      "x": 2820,
       "y": 2050
     },
     "Notifs.dc.html": {
@@ -212,7 +212,7 @@
       "y": 9248
     },
     "Ranks.dc.html": {
-      "h": 1070,
+      "h": 1127,
       "is_interactive": true,
       "title": "How standing works",
       "w": 390,
@@ -224,7 +224,7 @@
       "title": "Ren, every mood",
       "w": 390,
       "x": 470,
-      "y": 10808
+      "y": 10898
     },
     "Restore.dc.html": {
       "h": 844,
@@ -235,9 +235,9 @@
       "y": 6920
     },
     "Settings.dc.html": {
-      "h": 1210,
+      "h": 1330,
       "is_interactive": true,
-      "title": "Settings",
+      "title": "You",
       "w": 390,
       "x": 0,
       "y": 9248
@@ -254,21 +254,14 @@
       "h": 844,
       "title": "Sign in",
       "w": 390,
-      "x": 940,
+      "x": 470,
       "y": 2050
     },
     "Splash.dc.html": {
       "h": 844,
-      "title": "Opening · A, with the word",
+      "title": "Opening Curfew",
       "w": 390,
       "x": 0,
-      "y": 2050
-    },
-    "Splash2.dc.html": {
-      "h": 844,
-      "title": "Opening · B, just the mark",
-      "w": 390,
-      "x": 470,
       "y": 2050
     },
     "Stamp.dc.html": {
@@ -279,7 +272,7 @@
       "y": 6920
     },
     "Standing.dc.html": {
-      "h": 1058,
+      "h": 1115,
       "is_interactive": true,
       "title": "Standing & money",
       "w": 390,
@@ -295,7 +288,7 @@
       "y": 0
     },
     "Switches.dc.html": {
-      "h": 916,
+      "h": 973,
       "is_interactive": true,
       "title": "Ren and nudges, off",
       "w": 390,
@@ -307,7 +300,7 @@
       "is_interactive": true,
       "title": "First run",
       "w": 390,
-      "x": 1410,
+      "x": 940,
       "y": 2050
     }
   },
@@ -340,7 +333,7 @@
     "t-1": {
       "color": "pink",
       "kind": "title1",
-      "maxW": 3680,
+      "maxW": 3210,
       "text": "Getting in",
       "w": 640,
       "x": 0,
@@ -386,7 +379,7 @@
       "color": "pink",
       "kind": "title1",
       "maxW": 3210,
-      "text": "You",
+      "text": "You, and everything under it",
       "w": 640,
       "x": 0,
       "y": 8998
@@ -398,7 +391,7 @@
       "text": "The mark, and Ren",
       "w": 640,
       "x": 0,
-      "y": 10558
+      "y": 10648
     },
     "t-8": {
       "color": "pink",
@@ -407,7 +400,7 @@
       "text": "Behind the glass",
       "w": 640,
       "x": 0,
-      "y": 13738
+      "y": 13828
     }
   },
   "order": [
@@ -417,7 +410,6 @@
     "Groups.dc.html",
     "Activities.dc.html",
     "Splash.dc.html",
-    "Splash2.dc.html",
     "Signin.dc.html",
     "Welcome.dc.html",
     "Consent.dc.html",

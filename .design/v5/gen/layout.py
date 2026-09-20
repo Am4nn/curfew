@@ -16,13 +16,13 @@ OUT = os.environ.get('CURFEW_V5_PROJECT') or os.path.join(
 
 ROWS = [
     ('Five tabs', ['Main', 'Coach', 'Stats', 'Groups', 'Activities']),
-    ('Getting in', ['Splash', 'Splash2', 'Signin', 'Welcome', 'Consent', 'Catalog', 'Configure', 'Notice']),
+    ('Getting in', ['Splash', 'Signin', 'Welcome', 'Consent', 'Catalog', 'Configure', 'Notice']),
     ('In a group', ['Group', 'GroupStats', 'Evidence', 'Standing', 'Ranks', 'Ledger',
                     'GroupSettings', 'Invite']),
     ('Monk mode', ['Monk', 'MonkSetup', 'MonkLocked']),
     ('The moments', ['Capture', 'Declare', 'Stamp', 'Restore']),
     ('Helping each other', ['Nudge', 'Nudged']),
-    ('You', ['Settings', 'Sharing', 'Notifs', 'Photos', 'Away', 'Data', 'Switches']),
+    ('You, and everything under it', ['Settings', 'Sharing', 'Notifs', 'Photos', 'Away', 'Data', 'Switches']),
     ('The mark, and Ren', ['Mark', 'Ren']),
     ('Behind the glass', ['Admin']),
 ]
@@ -32,8 +32,7 @@ TITLES = {
     'Activities': 'Your activities', 'Signin': 'Sign in', 'Welcome': 'First run',
     'Consent': 'The consent gate', 'Catalog': 'Add an activity',
     'Configure': 'Configure · Sleep', 'Notice': 'A release notice',
-    'Splash': 'Opening \u00b7 A, with the word',
-    'Splash2': 'Opening \u00b7 B, just the mark',
+    'Splash': 'Opening Curfew',
     'Group': 'One group', 'GroupStats': 'The group’s week',
     'Evidence': 'What the group shared', 'Standing': 'Standing & money',
     'Ranks': 'How standing works', 'Ledger': 'The full ledger',
@@ -42,14 +41,14 @@ TITLES = {
     'MonkLocked': 'Monk mode · not yet', 'Capture': 'Check in · tap through it',
     'Declare': 'Check in · no camera', 'Stamp': 'The day is done',
     'Restore': 'After a miss', 'Nudge': 'Nudge a friend', 'Nudged': 'Being nudged',
-    'Settings': 'Settings', 'Sharing': 'What you share', 'Notifs': 'Notifications',
+    'Settings': 'You', 'Sharing': 'What you share', 'Notifs': 'Notifications',
     'Photos': 'Your photographs', 'Away': 'Away days', 'Data': 'Your data',
     'Switches': 'Ren and nudges, off', 'Ren': 'Ren, every mood', 'Admin': 'Ops',
     'Mark': 'The mark',
 }
 
 STATIC = {'Stamp', 'Nudged', 'Ren', 'Signin', 'Notice', 'Evidence', 'Photos',
-          'Ledger', 'Mark', 'Splash', 'Splash2'}
+          'Ledger', 'Mark', 'Splash'}
 
 ROOT_RE = re.compile(r'width:\s*390px;\s*height:\s*(\d+)px')
 PREVIEW_RE = re.compile(r'"\$preview"\s*:\s*\{\s*"width"\s*:\s*390\s*,\s*"height"\s*:\s*(\d+)\s*\}')

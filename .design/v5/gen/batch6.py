@@ -43,14 +43,14 @@ a.append("""
     -->
     <div style="margin-top: 38px; display: flex;">
       <sc-for list="{{letters}}" as="l" hint-placeholder-count="6">
-        <span class="sp-letter" style="animation-delay: {{l.delay}}; font-family: %s; font-size: 42px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; color: #ffffff;">{{l.ch}}</span>
+        <span class="sp-letter" style="animation-delay: {{l.delay}}; font-family: %s; font-size: 40px; %s line-height: 1; color: #ffffff;">{{l.ch}}</span>
       </sc-for>
     </div>
 
-    <p class="sp-line" style="margin: 18px 0 0; font-size: 15.5px; line-height: 1.45; color: %s; text-align: center;">Nothing counts until you say so.</p>
+    <p class="sp-line" style="margin: 18px 0 0; font-family: %s; font-size: 12.5px; font-weight: 600; letter-spacing: 0.2em; line-height: 1.45; color: %s; text-align: center; text-transform: uppercase;">Windows close. Be there.</p>
   </div>
   <div style="flex-grow: 1.25;"></div>
-""" % (DISPLAY, GREY))
+""" % (DISPLAY, LOGOTYPE, MONO, GREY))
 a.append(logic(H, """  renderVals() {
     return {
       letters: 'CURFEW'.split('').map((ch, i) => ({ ch, delay: `${660 + i * 52}ms` })),
@@ -59,29 +59,3 @@ a.append(logic(H, """  renderVals() {
 write('Splash.dc.html', a)
 
 
-# ------------------------------------------- B. the mark and a sentence ----
-H = 844
-b = [HEAD_EMBER, root(H, '', stage=False)]
-b.append("""
-  <!--
-    No word, no footer, no version string. The mark is already the name for
-    anybody who has the app installed, and a splash is shown to nobody else.
-
-    So the only thing left to say is what the app is FOR, and it gets said at
-    the size of a statement rather than a caption. Two lines, because the
-    second one is the instruction and it earns its own line.
-  -->
-  <div style="flex-grow: 1;"></div>
-  <div style="flex: none; display: flex; flex-direction: column; align-items: center; padding: 0 34px;">
-""")
-b.append(hero(152, 'lvspb', 0))
-b.append("""
-    <div style="margin-top: 44px; display: flex; flex-direction: column; align-items: center; gap: 2px;">
-      <span class="sp-l1" style="font-size: 33px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.16; color: #ffffff;">Windows close.</span>
-      <span class="sp-l2" style="font-size: 33px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.16; color: %s;">Be there.</span>
-    </div>
-  </div>
-  <div style="flex-grow: 1.3;"></div>
-""" % PINK)
-b.append(logic(H))
-write('Splash2.dc.html', b)

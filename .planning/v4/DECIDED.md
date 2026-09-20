@@ -402,13 +402,18 @@ Mono.** Nothing about `CLAUDE.md`'s typography rule changes: one display face
 over the body face is the shape that rule already describes, and a logotype is
 the one place it applies.
 
-**The splash is two candidates, and Aman picks.** `Splash` is the mark, the word
-and a line under it: *"Nothing counts until you say so"*, which is invariant 9
-said out loud. `Splash2` drops the word, the footer and the version string
-entirely and says one thing at the size of a statement: **Windows close. Be
-there.** The argument for B is that the mark is already the name to anybody who
-has the app installed, and a splash is shown to nobody else, so the only thing
-left worth saying is what the app is for.
+**IT IS SET EXPANDED, AND THAT WAS THE WHOLE FIX.** Archivo at its default
+width is a TEXT width, and flat 900 at a text width reads plain no matter how
+big it is. It has a `wdth` axis; the mark is three wide blocks; the word is set
+at 125. The family was never the problem. Typewolf and the 2026 roundups both
+put Archivo in the bold-wordmark slot for exactly this reason, and what was
+missing was the axis.
+
+**One splash, and it kept the rejected candidate's line.** B was dropped, but
+*"Windows close. Be there."* was the better sentence and it moved onto A. It is
+set in the body mono, small and tracked out, so it sits UNDER the logotype
+rather than competing with it: a tagline in the same face as the logotype is a
+second logotype.
 
 **THE STAMP LANDS.** It used to be simply present, which makes it a badge, and a
 badge is a participation trophy. It descends from 2.35x, hits at 42% of the
@@ -435,6 +440,38 @@ and its back button pointed at Activities, and no screen pointed in. A gear now
 sits top left on Activities, which is the one bar that had nothing on that side.
 It is a plain white glyph rather than 1.8c's red pill, because the pill is for
 the one action a screen is for and an escape hatch is not it.
+
+### 1.8e Where Settings lives, and what the tab bar does
+
+Settled 2026-09-21, after *"Fix the bottom bar everywhere, it should be
+consistent... where does Settings go?"*
+
+**THE FIFTH TAB IS ACTIVITIES AND THAT IS FINAL.** It is what the screen is.
+
+**Settings is not a tab. It is YOU, and it is one page.** Profile at the top,
+settings under it: the picture, the name, when you joined, who invited you, then
+your details, then Ren and nudges, then what others see, then the app, then sign
+out. Two pages would be two routes to remember and a profile screen carrying
+four facts, which is a screen nobody opens twice.
+
+**It is reached from the avatar on Home and from nowhere else.** That avatar
+already existed and pointed at Activities, which is why nobody could find
+Settings: the one control shaped like a profile went somewhere else. The gear
+added to Activities the day before is removed, so there is exactly one way in.
+
+**The picture is initials until there is a photograph.** A grey silhouette is a
+face that is not yours, and this app is careful about whose face is where.
+
+**The rule for the tab bar, and it is now true of every board.** A page that
+sits INSIDE a tab keeps the bar, and the tab it sits under stays lit. A
+full-screen moment or a gate has no bar at all.
+
+Four pushed pages were missing one and now have it: Configure and Ranks under
+Activities, Standing under Groups, and the two switches under Today. Everything
+in the You stack says Today, because that is the tab it was pushed from. The
+fourteen with no bar are the moments and the gates: Splash, Signin, Welcome,
+Consent, Notice, Invite, Capture, Declare, Stamp, Restore, Nudge, Mark, Ren,
+Admin.
 
 ### 1.8c The top-right control has one shape
 

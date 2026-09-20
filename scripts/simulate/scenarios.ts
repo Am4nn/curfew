@@ -187,7 +187,12 @@ export const SCENARIOS: Scenario[] = [
 
       return {
         checks: [
-          eq("the miss ends the run", broken?.streak, 0),
+          // GREY, and the number holds at 29 rather than falling to nothing.
+          // The run is over; the twenty-nine days still happened, and a long
+          // run that vanishes from the row is worse to look at than one that
+          // dims. Same rule as a weekly week that came short.
+          holds("the miss greys the run", broken?.grey === true, broken?.grey),
+          eq("and the number holds rather than erasing", broken?.streak, 29),
           eq("and best keeps the twenty-nine", broken?.best, 29),
           eq("one missed day costs one grace", offer?.cost, 1),
           eq("and the offer says what comes back", offer?.restoresTo, 29),

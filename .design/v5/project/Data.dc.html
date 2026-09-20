@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 1080px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <a href="Settings.dc.html" aria-label="Back to settings" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
+    </a>
+    <span style="flex-grow: 1;"></span>
+  </div>
+  <div style="flex: none; padding: 4px 20px 0;">
+    <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">Your data</h1>
+    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">What Curfew holds, and how to be rid of it. Every one of these is final the moment you confirm it.</span>
+  </div>
+  <div style="flex: none; margin: 24px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">WHAT IS HELD</span></div>
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{held}}" as="h" hint-placeholder-count="5">
+      <div style="padding-left: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{h.sep}};">
+          <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 16px;">{{h.name}}</span>
+            <span style="font-size: 12.5px; color: #8e8e93;">{{h.note}}</span>
+          </span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; font-weight: 600;">{{h.count}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #ff453a;">DELETE</span></div>
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <button type="button" style="width: 100%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; font-family: inherit; text-align: left;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 14px 16px 14px 0; border-top: 0.5px solid transparent;">
+        <span style="font-size: 16px; color: #ff453a;">Delete every photograph</span>
+        <span style="font-size: 12.5px; line-height: 1.45; color: #8e8e93;">The check-ins stay and so do the streaks. Only the pictures go, from here and from every group.</span>
+      </span>
+    </button>
+    <button type="button" style="width: 100%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; font-family: inherit; text-align: left;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 14px 16px 14px 0; border-top: 0.5px solid rgba(255,255,255,0.08);">
+        <span style="font-size: 16px; color: #ff453a;">Delete your history</span>
+        <span style="font-size: 12.5px; line-height: 1.45; color: #8e8e93;">Every check-in, score, streak and standing. Groups keep their totals and lose your rows.</span>
+      </span>
+    </button>
+    <button type="button" style="width: 100%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; font-family: inherit; text-align: left;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 14px 16px 14px 0; border-top: 0.5px solid rgba(255,255,255,0.08);">
+        <span style="font-size: 16px; color: #ff453a;">Delete your account</span>
+        <span style="font-size: 12.5px; line-height: 1.45; color: #8e8e93;">Everything above, plus the account itself. You cannot sign back in, invitation or not.</span>
+      </span>
+    </button>
+  </div>
+  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 15px 16px; display: flex; gap: 12px;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 2v20M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.6 7 6.5 9.2 10 12 11s5 2.3 5 4.2-2.2 3.3-5 3.3-5-1.4-5-3.3"/></svg>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 15px; font-weight: 600;">Money is never deleted</span>
+      <span style="font-size: 13px; line-height: 1.45; color: #8e8e93;">A ledger entry is a record of what two people agreed, so it belongs to both of them. Deleting your account does not clear what you owe and does not clear what you are owed.</span>
+    </div>
+  </div>
+  <div style="flex: none; margin: 20px 20px 0;">
+    <button type="button" style="width: 100%; height: 48px; border: 1px solid #3a3a3c; border-radius: 13px; background: transparent; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 500;">Download everything first</button>
+  </div>
+  <div style="flex-grow: 1;"></div>
+  <div style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+    <a href="Main.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2.5v3M16 2.5v3M3 9.5h18"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Today</span>
+    </a>
+    <a href="Coach.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.3" fill="#8e8e93"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.34)"/><ellipse cx="9.1" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/><ellipse cx="15.2" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Ren</span>
+    </a>
+    <a href="Stats.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-5 4 3 5-7"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Stats</span>
+    </a>
+    <a href="Groups.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 8.5a3 3 0 0 1 0 5"/><path d="M19.5 20a6.5 6.5 0 0 0-3.2-5.2"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Groups</span>
+    </a>
+    <a href="Activities.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6" fill="#ff375f"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" fill="#ff375f"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #ff375f;">You</span>
+    </a>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SEP = 'rgba(255,255,255,0.08)';
+    const rows = [
+      { name: 'Check-ins', note: 'Every press, since 2 July', count: '2,914' },
+      { name: 'Photographs', note: 'Live camera only, 90 day retention', count: '148' },
+      { name: 'Scores and streaks', note: 'All of it rebuildable from the check-ins', count: '1,206' },
+      { name: 'Groups', note: 'Wing, Deep Work, Morning', count: '3' },
+      { name: 'Ledger entries', note: 'Append-only, never edited', count: '61' },
+    ];
+    return { held: rows.map((r, i) => ({ ...r, sep: i === 0 ? 'transparent' : SEP })) };
+  }
+}
+</script>
+</body>
+</html>

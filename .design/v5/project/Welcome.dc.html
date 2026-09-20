@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 6px;">
+    <sc-for list="{{pips}}" as="p" hint-placeholder-count="3">
+      <span style="width: 26px; height: 3px; border-radius: 999px; background: {{p.fill}};"></span>
+    </sc-for>
+    <span style="flex-grow: 1;"></span>
+    <!-- No Skip. You leave this with one activity set up or you do not leave. -->
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #48484a;">{{stepLabel}}</span>
+  </div>
+
+  <!-- 1. He arrives. -->
+  <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
+    <div style="padding: 44px 26px 0; display: flex; flex-direction: column; align-items: center;">
+      <div style="position: relative; width: 134px; height: 134px;">
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 73% 87%, rgba(255,255,255,0.26), transparent 30%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 31% 23%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.30) 17%, transparent 34%);"></div>
+        <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%;" aria-hidden="true">
+          <ellipse cx="38" cy="52" rx="5.4" ry="7.4" fill="#3a0512" opacity="0.9"/>
+          <ellipse cx="63" cy="52" rx="5.4" ry="7.4" fill="#3a0512" opacity="0.9"/>
+          <ellipse cx="36.3" cy="49" rx="1.9" ry="2.3" fill="#ffffff" opacity="0.85"/>
+          <ellipse cx="61.3" cy="49" rx="1.9" ry="2.3" fill="#ffffff" opacity="0.85"/>
+          <path d="M41 68 Q50.5 75 60 68" stroke="#3a0512" stroke-width="3.4" fill="none" stroke-linecap="round" opacity="0.88"/>
+        </svg>
+      </div>
+
+      <h1 style="margin: 30px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
+      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He reads what you log, your photographs and whatever your groups share with you, and he tells you what he notices.</p>
+      <p style="margin: 18px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He never decides whether a day counted. That is arithmetic, and it stays arithmetic.</p>
+    </div>
+  </sc-if>
+
+  <!-- 2. He asks for something, rather than explaining himself further. -->
+  <sc-if value="{{isPick}}" hint-placeholder-val="{{false}}">
+    <div style="padding: 20px 20px 0; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: flex-start; gap: 13px;">
+        <div style="flex: none; position: relative; width: 44px; height: 44px;">
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 73% 87%, rgba(255,255,255,0.26), transparent 30%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 31% 23%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.30) 17%, transparent 34%);"></div>
+        <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%;" aria-hidden="true">
+          <ellipse cx="38" cy="52" rx="5.4" ry="7.4" fill="#3a0512" opacity="0.9"/>
+          <ellipse cx="63" cy="52" rx="5.4" ry="7.4" fill="#3a0512" opacity="0.9"/>
+          <ellipse cx="36.3" cy="49" rx="1.9" ry="2.3" fill="#ffffff" opacity="0.85"/>
+          <ellipse cx="61.3" cy="49" rx="1.9" ry="2.3" fill="#ffffff" opacity="0.85"/>
+          <path d="M41 68 Q50.5 75 60 68" stroke="#3a0512" stroke-width="3.4" fill="none" stroke-linecap="round" opacity="0.88"/>
+        </svg>
+      </div>
+        <p style="margin: 0; font-size: 19px; line-height: 1.42; font-weight: 500;">Pick two or three to start. You can change all of it tomorrow.</p>
+      </div>
+
+      <div style="margin-top: 22px; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+        <sc-for list="{{picks}}" as="p" hint-placeholder-count="5">
+          <button type="button" onClick="{{p.toggle}}" style="width: 100%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; align-items: center; gap: 13px; font-family: inherit; text-align: left;">
+            <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 14px 16px 14px 0; border-top: 0.5px solid {{p.sep}};">
+              <span style="flex: none; width: 34px; height: 34px; border-radius: 10px; background: {{p.chipBg}}; display: flex; align-items: center; justify-content: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{p.chipFg}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{p.path}}"/></svg>
+              </span>
+              <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: 16px; font-weight: 500; color: #ffffff;">{{p.name}}</span>
+                <span style="font-size: 13px; color: #8e8e93;">{{p.rule}}</span>
+              </span>
+              <span style="flex: none; width: 24px; height: 24px; border-radius: 999px; border: 1.6px solid {{p.ringColour}}; background: {{p.ringFill}}; display: flex; align-items: center; justify-content: center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{p.tickColour}}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      <p style="margin: 14px 2px 0; font-size: 13px; line-height: 1.45; color: #8e8e93;">Defaults are filled in for each one. Nothing here is a commitment you cannot undo, and none of it starts until tomorrow.</p>
+    </div>
+  </sc-if>
+
+  <!-- 3. He has already helped with something, which is the point of 1.15. -->
+  <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+    <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
+      <div style="position: relative; width: 104px; height: 104px;">
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 73% 87%, rgba(255,255,255,0.26), transparent 30%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 31% 23%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.30) 17%, transparent 34%);"></div>
+        <svg viewBox="0 0 100 100" style="position: absolute; inset: 0; width: 100%; height: 100%;" aria-hidden="true">
+          <ellipse cx="38" cy="52" rx="5.4" ry="7.4" fill="#3a0512" opacity="0.9"/>
+          <ellipse cx="63" cy="52" rx="5.4" ry="7.4" fill="#3a0512" opacity="0.9"/>
+          <ellipse cx="36.3" cy="49" rx="1.9" ry="2.3" fill="#ffffff" opacity="0.85"/>
+          <ellipse cx="61.3" cy="49" rx="1.9" ry="2.3" fill="#ffffff" opacity="0.85"/>
+          <path d="M41 68 Q50.5 75 60 68" stroke="#3a0512" stroke-width="3.4" fill="none" stroke-linecap="round" opacity="0.88"/>
+        </svg>
+      </div>
+
+      <h1 style="margin: 26px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
+      <p style="margin: 11px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">Your first windows open tomorrow morning. I will be on Today when they do.</p>
+
+      <div style="margin-top: 26px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
+        <sc-for list="{{chosen}}" as="c" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style="flex-grow: 1; font-size: 15px; font-weight: 500;">{{c.name}}</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; color: #8e8e93;">{{c.when}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <div style="flex-grow: 1;"></div>
+  <div style="flex: none; padding: 0 20px 34px;">
+    <sc-if value="{{notLast}}" hint-placeholder-val="{{true}}">
+      <button type="button" onClick="{{next}}" style="width: 100%; height: 54px; border: 0; border-radius: 15px; background: {{nextBg}}; color: {{nextFg}}; font-family: inherit; font-size: 17px; font-weight: 600;">{{nextLabel}}</button>
+    </sc-if>
+    <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+      <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 54px; border-radius: 15px; background: #ff375f; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Go to Today</a>
+    </sc-if>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Water and Sleep are pre-ticked, which is the only nudge in the tutorial.
+    // Leaving with nothing is not an outcome this screen offers.
+    this.state = { step: 0, on: { water: true, sleep: true, gym: false, read: false, food: false } };
+  }
+  renderVals() {
+    const ON = '#ff375f', OFF = '#2c2c2e', SEP = 'rgba(255,255,255,0.08)';
+    const step = this.state.step, on = this.state.on;
+    const defs = [
+      { key: 'water', name: 'Water', rule: '8 glasses, any time', when: 'all day',
+        path: 'M12 3s6 6.4 6 10.2A6 6 0 0 1 6 13.2C6 9.4 12 3 12 3z' },
+      { key: 'sleep', name: 'Sleep', rule: 'In bed 10:30 PM, up 6:30 AM', when: '10:30 PM',
+        path: 'M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z' },
+      { key: 'gym',   name: 'Gym', rule: 'Three a week, photo on the way out', when: 'Mon Wed Fri',
+        path: 'M6.5 8v8M17.5 8v8M3.5 10v4M20.5 10v4M6.5 12h11' },
+      { key: 'read',  name: 'Reading', rule: '20 minutes before bed', when: '9:00 PM',
+        path: 'M4 5.5A2.5 2.5 0 0 1 6.5 3H12v17H6.5A2.5 2.5 0 0 0 4 22zM20 5.5A2.5 2.5 0 0 0 17.5 3H12v17h5.5a2.5 2.5 0 0 1 2.5 2z' },
+      { key: 'food',  name: 'Food', rule: 'Three meals, under 2,000 calories', when: 'all day',
+        path: 'M6 3v8a2.5 2.5 0 0 0 5 0V3M8.5 11v10M18 3c-1.6 1.4-2.4 3.4-2.4 5.6 0 1.6.8 2.6 2.4 2.8V21' },
+    ];
+    const count = defs.filter((d) => on[d.key]).length;
+    return {
+      pips: [0, 1, 2].map((i) => ({ fill: i <= step ? ON : OFF })),
+      stepLabel: `STEP ${step + 1} OF 3`,
+      isMeet: step === 0, isPick: step === 1, isDone: step === 2, notLast: step < 2,
+      nextLabel: step === 0 ? 'Hello, Ren' : (count === 0 ? 'Pick at least one' : `Set up ${count}`),
+      nextBg: step === 0 || count > 0 ? ON : OFF,
+      nextFg: step === 0 || count > 0 ? '#ffffff' : '#48484a',
+      next: () => { if (step === 1 && count === 0) return; this.setState({ step: step + 1 }); },
+      count,
+      chosen: defs.filter((d) => on[d.key]).map((d) => ({ name: d.name, when: d.when })),
+      picks: defs.map((d, i) => ({
+        name: d.name, rule: d.rule, path: d.path,
+        sep: i === 0 ? 'transparent' : SEP,
+        chipBg: on[d.key] ? 'rgba(255,55,95,0.16)' : OFF,
+        chipFg: on[d.key] ? ON : '#ffffff',
+        ringColour: on[d.key] ? ON : '#5a5a5e',
+        ringFill: on[d.key] ? ON : 'transparent',
+        tickColour: on[d.key] ? '#ffffff' : 'transparent',
+        toggle: () => this.setState({ on: { ...on, [d.key]: !on[d.key] } }),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

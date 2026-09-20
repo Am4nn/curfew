@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>After a miss</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<!--
+  Rewritten because the previous version could not be read.
+
+  It led with reassurance ("Today is still open"), named the activity in a
+  10px label, drew the lapse as an abstract eight-bar strip, explained the
+  base rate in a paragraph, and hid the one mechanism the product built for
+  this exact moment behind the words "Or carry the 15 across" on a button
+  that looked switched off. Every clause was true and the screen still did
+  not answer the three questions a person arrives with.
+
+  It now answers them in the order they are asked.
+
+  1. WHAT HAPPENED. Named activity, named day, named number, in one sentence
+     at the top. Not a mono label, not a chart.
+  2. WHAT CAN I DO. Two buttons, each with the consequence written under it
+     in plain words. Grace is the primary, because grace is what the product
+     built for this and hiding it helps nobody.
+  3. WHAT DOES IT COST. Three rows of numbers: grace left, the fine, the
+     standing. This is the "how much" the old paragraph buried.
+
+  WHAT IS KEPT FROM THE OLD ONE, because the research behind it still holds:
+  the lost number is never drawn bigger than the next one, there is no
+  penalty red anywhere, nothing is congratulated, and the group is told
+  about the return rather than the gap. The abstinence violation effect is
+  about tone and emphasis. It was never an argument for burying the button.
+-->
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; position: relative; overflow: hidden;">
+
+  <!-- Home behind, dimmed but legible, so the sheet reads as something that
+       happened to the screen you were on. -->
+  <div style="position: absolute; inset: 0; opacity: 0.4; display: flex; flex-direction: column; padding: 20px 20px 0;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #8e8e93;">THU 17 SEPTEMBER</span>
+      <span style="width: 30px; height: 30px; border-radius: 999px; background: #3a3a3c;"></span>
+    </div>
+    <div style="margin-top: 12px; display: flex; align-items: baseline; gap: 7px;">
+      <span style="font-size: 44px; font-weight: 700; line-height: 1;">4</span>
+      <span style="font-size: 22px; font-weight: 600; color: #48484a;">of 7 today</span>
+    </div>
+    <div style="margin-top: 13px; display: flex; gap: 4px;">
+      <sc-for list="{{segments}}" as="s" hint-placeholder-count="7">
+        <span style="flex-grow: 1; height: 5px; border-radius: 999px; background: {{s.fill}};"></span>
+      </sc-for>
+    </div>
+    <div style="margin-top: 20px; border-radius: 16px; background: #1c1c1e; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px; font-weight: 700;">Gym</span>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: #ff9f0a;">CLOSES 8:00 PM</span>
+      </div>
+      <span style="font-size: 14px; color: #8e8e93;">One more day this week.</span>
+      <span style="height: 50px; border-radius: 14px; background: #d81e46;"></span>
+    </div>
+  </div>
+
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.58);"></div>
+
+  <!-- the sheet -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #1c1c1e; border-radius: 22px 22px 0 0; padding: 10px 20px 34px; display: flex; flex-direction: column;">
+
+    <span style="align-self: center; width: 36px; height: 5px; border-radius: 999px; background: #48484a;"></span>
+
+    <!-- 1. WHAT HAPPENED. Named, in one sentence, at the top. -->
+    <span style="margin-top: 20px; font-size: 27px; font-weight: 700; letter-spacing: -0.02em; line-height: 32px;">You missed Reading yesterday.</span>
+    <span style="margin-top: 8px; font-size: 15px; line-height: 21px; color: #8e8e93;">That ended a 15 day streak.</span>
+
+    <!--
+      2. WHAT CAN I DO. Two buttons in the order a person weighs them, each
+      with its consequence underneath in plain words rather than on the
+      button, where 13px white on a saturated fill gets busy.
+    -->
+    <a href="Main.dc.html" style="margin-top: 22px; height: 52px; border-radius: 14px; background: #d81e46; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+      <span style="font-size: 17px; font-weight: 600; color: #ffffff;">Spend 1 grace</span>
+    </a>
+    <span style="margin-top: 9px; font-size: 13.5px; line-height: 19px; color: #8e8e93;">Yesterday counts and Reading stays at 15 days.</span>
+
+    <a href="Capture.dc.html" style="margin-top: 16px; height: 52px; border-radius: 14px; background: #3a3a3c; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+      <span style="font-size: 17px; font-weight: 600; color: #ffffff;">Start again tonight</span>
+    </a>
+    <span style="margin-top: 9px; font-size: 13.5px; line-height: 19px; color: #8e8e93;">Keep the grace. Reading starts again from 1, if you log it before 11:59 PM.</span>
+
+    <!-- 3. WHAT DOES IT COST. The numbers, mono and right aligned, so the
+         three of them read as a column rather than as three sentences. -->
+    <div style="margin-top: 22px; border-radius: 14px; background: #2c2c2e; overflow: hidden;">
+      <sc-for list="{{facts}}" as="f" hint-placeholder-count="3">
+        <div style="display: flex; align-items: baseline; gap: 12px; padding: 13px 15px; border-top: 0.5px solid {{f.sep}};">
+          <span style="flex-grow: 1; min-width: 0; font-size: 14.5px; font-weight: 400; color: #8e8e93;">{{f.label}}</span>
+          <span style="flex: none; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 500; color: #ffffff;">{{f.value}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- the group is told about the return, never about the gap -->
+    <div style="margin-top: 18px; display: flex; align-items: flex-start; gap: 10px;">
+      <span style="flex: none; display: flex; margin-top: 1px;">
+        <span style="width: 20px; height: 20px; border-radius: 999px; background: linear-gradient(150deg, #4a6fb8, #2a4270); border: 2px solid #1c1c1e; box-sizing: border-box;"></span>
+        <span style="width: 20px; height: 20px; border-radius: 999px; background: linear-gradient(150deg, #7a4ab8, #432a70); border: 2px solid #1c1c1e; box-sizing: border-box; margin-left: -7px;"></span>
+      </span>
+      <span style="flex-grow: 1; font-size: 13px; line-height: 18px; color: #8e8e93;">Mira and Anya are not shown the day you missed.</span>
+    </div>
+
+  <!--
+    REN, one line. He gets ONE on a screen and never two: a voice that
+    comments on everything is noise, and the tab is where he says more.
+    Tapping it opens him, so the line is an entrance rather than a notice.
+  -->
+  <a href="Coach.dc.html" style="flex: none; margin: 20px 0 0; display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-radius: 14px; background: #2c2c2e; text-decoration: none;">
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9.3" fill="#e08a45"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.42)"/><ellipse cx="9.1" cy="12.6" rx="1.5" ry="1.1" fill="#3b1505"/><ellipse cx="15.2" cy="12.6" rx="1.5" ry="1.1" fill="#3b1505"/><path d="M6.9 9.1 11 10.9 M17.4 9.1 13.3 10.9" fill="none" stroke="#3b1505" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span style="flex-grow: 1; min-width: 0; font-size: 14.5px; font-weight: 500; line-height: 1.35; color: #ffffff;">You have rebuilt this one eleven times. It comes back.</span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+  </a>
+
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ON = '#ff375f', OFF = '#2c2c2e';
+    const SEP = 'rgba(255,255,255,0.08)';
+    // Spending grace moves the streak and nothing else. The fine was charged
+    // when the day closed and the standing was scored then too, so both rows
+    // say the same thing whichever button gets pressed. Saying so here is
+    // what stops somebody spending grace to undo a charge it cannot undo.
+    const facts = [
+      { label: 'Grace left this month',  value: '2',                sep: 'transparent' },
+      { label: "Yesterday's fine",       value: '₹50, SETTLED', sep: SEP },
+      { label: 'Your standing',          value: '692, UNCHANGED',   sep: SEP },
+    ];
+    return {
+      facts,
+      segments: Array.from({ length: 7 }, (_, i) => ({ fill: i < 4 ? ON : OFF })),
+    };
+  }
+}
+</script>
+</body>
+</html>

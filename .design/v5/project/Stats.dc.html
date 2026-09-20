@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<!--
+  Every block here is a field of Overview in src/server/stats.ts:
+  perfectDays, daysInMonth, awayThisMonth, passRate, longestStreak, graceLeft,
+  heatmap (eight weeks of 0..1, -1 future, -2 away) and byActivity.
+  Nothing on this screen needs a query that does not already run.
+-->
+<div style="width: 390px; height: 1271px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="flex: none; padding: 22px 20px 0;">
+    <span style="font-size: 34px; font-weight: 700; letter-spacing: 0.01em;">Your record</span>
+  </div>
+
+  <!-- perfectDays of daysInMonth, and the line that changes when awayThisMonth > 0 -->
+  <div style="flex: none; margin: 18px 20px 0;">
+    <div style="display: flex; align-items: baseline; gap: 9px;">
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; line-height: 1;">17</span>
+      <span style="font-size: 20px; font-weight: 600; color: #48484a;">of 30 perfect days</span>
+    </div>
+    <span style="display: block; margin-top: 9px; font-size: 14px; font-weight: 400; color: #8e8e93; line-height: 1.4;">2 days away are not counted, either way. A perfect day is every activity that was scheduled, done.</span>
+  </div>
+
+  <!--
+    REN, one line. He gets ONE on a screen and never two: a voice that
+    comments on everything is noise, and the tab is where he says more.
+    Tapping it opens him, so the line is an entrance rather than a notice.
+  -->
+  <a href="Coach.dc.html" style="flex: none; margin: 20px 20px 0; display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-radius: 14px; background: #1c1c1e; text-decoration: none;">
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9.3" fill="#9aa4ae"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.46)"/><ellipse cx="9.1" cy="12.2" rx="1.45" ry="2" fill="#20262b"/><ellipse cx="15.2" cy="12.2" rx="1.45" ry="2" fill="#20262b"/></svg>
+    <span style="flex-grow: 1; min-width: 0; font-size: 14.5px; font-weight: 500; line-height: 1.35; color: #ffffff;">Water you have never once missed. Reading is the one worth a look.</span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+  </a>
+
+  <!-- the three tiles the route already renders -->
+  <div style="flex: none; margin: 20px 20px 0; display: flex; gap: 9px;">
+    <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
+      <div style="flex-grow: 1; flex-basis: 0; min-width: 0; border-radius: 13px; background: #1c1c1e; padding: 13px 12px; display: flex; flex-direction: column; gap: 7px;">
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <sc-if value="{{t.flame}}" hint-placeholder-val="{{false}}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#ff375f" style="flex: none;"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+          </sc-if>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1;">{{t.value}}</span>
+        </span>
+        <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; color: #8e8e93; line-height: 1.3;">{{t.label}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- heatmap: a week is a column, a day a row, exactly as the route draws it -->
+  <div style="flex: none; margin: 26px 20px 0; display: flex; align-items: baseline; gap: 8px;">
+    <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Every day, how much of it</span>
+    <!--
+      THE GRID IS EIGHT WEEKS AND THE BLOCK ABOVE IT IS ONE MONTH. Nothing said
+      so, so the two read as the same period and the heatmap looked wrong
+      against the count. Naming the span costs one chip.
+    -->
+    <span style="flex: none; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; color: #8e8e93;">LAST 8 WEEKS</span>
+  </div>
+
+  <div style="flex: none; margin: 13px 20px 0; display: flex; gap: 4px;">
+    <sc-for list="{{weeks}}" as="wk" hint-placeholder-count="8">
+      <div style="flex-grow: 1; flex-basis: 0; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+        <sc-for list="{{wk.days}}" as="d" hint-placeholder-count="7">
+          <span style="width: 100%; aspect-ratio: 1; border-radius: 6px; background: {{d.fill}}; border: {{d.edge}}; box-sizing: border-box;"></span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex: none; margin: 14px 20px 0; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+    <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #ff375f;"></span><span style="font-size: 12.5px; color: #8e8e93;">All of it</span></span>
+    <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 11px; height: 11px; border-radius: 3px; background: rgba(255,55,95,0.4);"></span><span style="font-size: 12.5px; color: #8e8e93;">Some</span></span>
+    <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #1c1c1e;"></span><span style="font-size: 12.5px; color: #8e8e93;">None</span></span>
+    <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 11px; height: 11px; border-radius: 3px; border: 1px dashed #48484a; box-sizing: border-box;"></span><span style="font-size: 12.5px; color: #8e8e93;">Away</span></span>
+  </div>
+
+  <!-- byActivity: percent and streak, which is all this query carries -->
+  <div style="flex: none; margin: 26px 20px 0;">
+    <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Every activity</span>
+  </div>
+
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{activities}}" as="a" hint-placeholder-count="7">
+      <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px;">
+        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 11px 16px 11px 0; border-top: 0.5px solid {{a.sep}};">
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 15.5px; font-weight: 400;">{{a.name}}</span>
+            <span style="display: block; height: 4px; border-radius: 999px; background: #2c2c2e; overflow: hidden;">
+              <span style="display: block; height: 4px; width: {{a.bar}}; border-radius: 999px; background: {{a.tone}};"></span>
+            </span>
+          </div>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; flex: none; width: 40px; text-align: right; font-size: 14px; font-weight: 500; color: #8e8e93;">{{a.percent}}</span>
+          <span style="flex: none; display: flex; align-items: center; gap: 3px; width: 44px; justify-content: flex-end;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="{{a.flame}}"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{a.flame}};">{{a.streak}}</span>
+          </span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <!--
+    Tab bar, to spec. iOS reserves 83pt here: 49 of content over a 34pt
+    home-indicator area. Icons 25x25, labels 10pt. The active tab is FILLED
+    as well as tinted, which is what the HIG asks for, so the state is not
+    carried by colour alone.
+
+    The 34pt is NOT drawn here. These artboards draw the app and not the phone:
+    there is no status bar at the top, so there is no home indicator at the
+    bottom, and reserving the strip with nothing in it just reads as a gap. The
+    real app adds it back with env(safe-area-inset-bottom).
+  -->
+  <div style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+    <a href="Main.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2.5v3M16 2.5v3M3 9.5h18"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Today</span>
+    </a>
+    <a href="Coach.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.3" fill="#8e8e93"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.34)"/><ellipse cx="9.1" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/><ellipse cx="15.2" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Ren</span>
+    </a>
+    <a href="Stats.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="13" width="4" height="8" rx="1.6" fill="#ff375f"/><rect x="10" y="8" width="4" height="13" rx="1.6" fill="#ff375f"/><rect x="17" y="3" width="4" height="18" rx="1.6" fill="#ff375f"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #ff375f;">Stats</span>
+    </a>
+    <a href="Groups.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 8.5a3 3 0 0 1 0 5"/><path d="M19.5 20a6.5 6.5 0 0 0-3.2-5.2"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Groups</span>
+    </a>
+    <a href="Activities.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">You</span>
+    </a>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1271}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SEP = 'rgba(255,255,255,0.08)';
+    const ON = '#ff375f';
+
+    // heatmap values as stats.ts produces them: 0..1 of what was scheduled,
+    // -1 for a day that has not happened, AWAY (-2) for a declared trip.
+    const FUTURE = -1, AWAY = -2;
+    const grid = [
+      [1, 1, 0.7, 1, 0.5, 1, 1],
+      [1, 0.8, 1, 1, 1, 0.3, 1],
+      [1, 1, 1, 0.6, 1, 1, 0],
+      [AWAY, AWAY, AWAY, AWAY, 1, 1, 1],
+      [1, 0.5, 1, 1, 1, 0.8, 1],
+      [1, 1, 0.4, 1, 0, 1, 1],
+      [1, 1, 1, 0.6, 1, 1, 1],
+      [1, 0.8, 1, 0.5, FUTURE, FUTURE, FUTURE],
+    ];
+    const cell = (v) => {
+      if (v === AWAY) return { fill: 'transparent', edge: '1px dashed #48484a' };
+      if (v === FUTURE) return { fill: '#0e0e10', edge: '0' };
+      if (v === 0) return { fill: '#1c1c1e', edge: '0' };
+      if (v >= 1) return { fill: ON, edge: '0' };
+      return { fill: `rgba(255,55,95,${(0.22 + v * 0.6).toFixed(2)})`, edge: '0' };
+    };
+
+    const act = (name, percent, streak) => ({
+      name,
+      percent: `${percent}%`,
+      bar: `${percent}%`,
+      tone: percent >= 80 ? ON : '#8e8e93',
+      streak: String(streak),
+      flame: streak > 0 ? ON : '#48484a',
+      sep: SEP,
+    });
+    const activities = [
+      act('Water', 97, 31),
+      act('Sleep', 88, 19),
+      act('Supplements', 93, 27),
+      act('Nightfast', 90, 14),
+      act('Gym', 78, 12),
+      act('Food', 71, 6),
+      act('Reading', 54, 0),
+    ];
+    activities[0].sep = 'transparent';
+
+    return {
+      tiles: [
+        { value: '84%', label: 'PERIODS PASSED, 30 DAYS', flame: false },
+        { value: '31', label: 'LONGEST RUNNING STREAK', flame: true },
+        { value: '2', label: 'GRACE LEFT THIS MONTH', flame: false },
+      ],
+      weeks: grid.map((week) => ({ days: week.map(cell) })),
+      activities,
+    };
+  }
+}
+</script>
+</body>
+</html>

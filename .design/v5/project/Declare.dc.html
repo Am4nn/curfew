@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!--
+    Nav bar, to spec. 44px tall, the iOS standard. The back control is a 44x44
+    tap target (Apple's minimum) offset by -12px so the chevron's optical left
+    edge sits on the 20px margin, exactly above the large title's first letter.
+    No circle on an opaque screen: the disc is only for a chevron over a
+    photograph, where a bare glyph would be illegible.
+  -->
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <a href="Main.dc.html" aria-label="Back to Today" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
+    </a>
+    <span style="flex-grow: 1;"></span>
+  </div>
+
+  <div style="flex: none; padding: 26px 24px 0; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+    <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3 2"/><path d="M4 4l16 16"/></svg>
+    <span style="font-size: 30px; font-weight: 700; letter-spacing: -0.01em; text-align: center; line-height: 1.2;">Did the fast hold?</span>
+    <span style="font-size: 16px; font-weight: 400; color: #8e8e93; text-align: center; line-height: 1.4;">Nothing after 8:00 PM last night. Only you know, and Curfew takes your word for it.</span>
+  </div>
+
+  <!-- what is riding on the answer, before the answer is asked for -->
+  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 15px 16px; display: flex; align-items: center; gap: 13px;">
+    <span style="flex: none; display: flex; align-items: center; gap: 6px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff375f"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 24px; font-weight: 700; letter-spacing: -0.02em;">14</span>
+    </span>
+    <span style="flex-grow: 1; font-size: 14.5px; font-weight: 400; color: #8e8e93; line-height: 1.4;">Fourteen nights running. Two short of your best.</span>
+  </div>
+
+  <div style="flex: none; margin: 24px 20px 0; display: flex; flex-direction: column; gap: 11px;">
+    <button type="button" style="border: 0; width: 100%; padding: 19px; border-radius: 15px; background: #ff375f; color: #ffffff; font-family: inherit; font-size: 18px; font-weight: 600;">It held</button>
+    <button type="button" style="width: 100%; padding: 19px; border-radius: 15px; background: transparent; border: 1px solid #3a3a3c; color: #ffffff; font-family: inherit; font-size: 18px; font-weight: 500;">I slipped</button>
+  </div>
+
+  <!-- correction is allowed, and saying so is what makes the honest answer safe -->
+  <div style="flex: none; margin: 20px 20px 0; display: flex; gap: 11px;">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" style="flex: none; margin-top: 1px;"><path d="M4 12a8 8 0 0 1 13.7-5.7L21 9"/><path d="M21 4v5h-5"/></svg>
+    <span style="font-size: 13.5px; font-weight: 400; color: #8e8e93; line-height: 1.45;">You can change this until the window closes at 10:00 AM. The last answer is the one that counts, so an honest correction costs you nothing.</span>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="flex: none; padding: 0 20px 34px; display: flex; align-items: center; justify-content: center; gap: 7px;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    <span style="font-size: 13px; font-weight: 400; color: #48484a;">No photograph for this one. There is nothing to photograph.</span>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

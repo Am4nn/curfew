@@ -1,0 +1,434 @@
+{
+  "attachments": {},
+  "boards": {
+    "Activities.dc.html": {
+      "h": 1024,
+      "is_interactive": true,
+      "title": "Your activities",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "Admin.dc.html": {
+      "h": 1280,
+      "is_interactive": true,
+      "title": "Ops",
+      "w": 390,
+      "x": 0,
+      "y": 12286
+    },
+    "Away.dc.html": {
+      "h": 1010,
+      "is_interactive": true,
+      "title": "Away days",
+      "w": 390,
+      "x": 1880,
+      "y": 9248
+    },
+    "Capture.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Check in · tap through it",
+      "w": 390,
+      "x": 0,
+      "y": 6920
+    },
+    "Catalog.dc.html": {
+      "h": 1180,
+      "is_interactive": true,
+      "title": "Add an activity",
+      "w": 390,
+      "x": 1410,
+      "y": 2050
+    },
+    "Coach.dc.html": {
+      "h": 1010,
+      "is_interactive": true,
+      "title": "Ren",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Configure.dc.html": {
+      "h": 1020,
+      "is_interactive": true,
+      "title": "Configure · Sleep",
+      "w": 390,
+      "x": 1880,
+      "y": 2050
+    },
+    "Consent.dc.html": {
+      "h": 1004,
+      "is_interactive": true,
+      "title": "The consent gate",
+      "w": 390,
+      "x": 940,
+      "y": 2050
+    },
+    "Data.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Your data",
+      "w": 390,
+      "x": 2350,
+      "y": 9248
+    },
+    "Declare.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Check in · no camera",
+      "w": 390,
+      "x": 470,
+      "y": 6920
+    },
+    "Evidence.dc.html": {
+      "h": 1150,
+      "title": "What the group shared",
+      "w": 390,
+      "x": 940,
+      "y": 3550
+    },
+    "Group.dc.html": {
+      "h": 1108,
+      "is_interactive": true,
+      "title": "One group",
+      "w": 390,
+      "x": 0,
+      "y": 3550
+    },
+    "GroupSettings.dc.html": {
+      "h": 1330,
+      "is_interactive": true,
+      "title": "Group settings",
+      "w": 390,
+      "x": 2820,
+      "y": 3550
+    },
+    "GroupStats.dc.html": {
+      "h": 1210,
+      "is_interactive": true,
+      "title": "The group’s week",
+      "w": 390,
+      "x": 470,
+      "y": 3550
+    },
+    "Groups.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "title": "Groups",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "Invite.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "An invitation",
+      "w": 390,
+      "x": 3290,
+      "y": 3550
+    },
+    "Ledger.dc.html": {
+      "h": 1130,
+      "title": "The full ledger",
+      "w": 390,
+      "x": 2350,
+      "y": 3550
+    },
+    "Main.dc.html": {
+      "h": 1730,
+      "is_interactive": true,
+      "title": "Home",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Monk.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "title": "Monk mode",
+      "w": 390,
+      "x": 0,
+      "y": 5200
+    },
+    "MonkLocked.dc.html": {
+      "h": 924,
+      "is_interactive": true,
+      "title": "Monk mode · not yet",
+      "w": 390,
+      "x": 940,
+      "y": 5200
+    },
+    "MonkSetup.dc.html": {
+      "h": 1400,
+      "is_interactive": true,
+      "title": "Monk mode · set up",
+      "w": 390,
+      "x": 470,
+      "y": 5200
+    },
+    "Notice.dc.html": {
+      "h": 844,
+      "title": "A release notice",
+      "w": 390,
+      "x": 2350,
+      "y": 2050
+    },
+    "Notifs.dc.html": {
+      "h": 1210,
+      "is_interactive": true,
+      "title": "Notifications",
+      "w": 390,
+      "x": 940,
+      "y": 9248
+    },
+    "Nudge.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Nudge a friend",
+      "w": 390,
+      "x": 0,
+      "y": 8084
+    },
+    "Nudged.dc.html": {
+      "h": 844,
+      "title": "Being nudged",
+      "w": 390,
+      "x": 470,
+      "y": 8084
+    },
+    "Photos.dc.html": {
+      "h": 1120,
+      "title": "Your photographs",
+      "w": 390,
+      "x": 1410,
+      "y": 9248
+    },
+    "Ranks.dc.html": {
+      "h": 1070,
+      "is_interactive": true,
+      "title": "How standing works",
+      "w": 390,
+      "x": 1880,
+      "y": 3550
+    },
+    "Ren.dc.html": {
+      "h": 1158,
+      "title": "Ren, every mood",
+      "w": 390,
+      "x": 0,
+      "y": 10808
+    },
+    "Restore.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "After a miss",
+      "w": 390,
+      "x": 1410,
+      "y": 6920
+    },
+    "Settings.dc.html": {
+      "h": 1210,
+      "is_interactive": true,
+      "title": "Settings",
+      "w": 390,
+      "x": 0,
+      "y": 9248
+    },
+    "Sharing.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "title": "What you share",
+      "w": 390,
+      "x": 470,
+      "y": 9248
+    },
+    "Signin.dc.html": {
+      "h": 844,
+      "title": "Sign in",
+      "w": 390,
+      "x": 0,
+      "y": 2050
+    },
+    "Stamp.dc.html": {
+      "h": 844,
+      "title": "The day is done",
+      "w": 390,
+      "x": 940,
+      "y": 6920
+    },
+    "Standing.dc.html": {
+      "h": 1058,
+      "is_interactive": true,
+      "title": "Standing & money",
+      "w": 390,
+      "x": 1410,
+      "y": 3550
+    },
+    "Stats.dc.html": {
+      "h": 1271,
+      "is_interactive": true,
+      "title": "Your record",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Switches.dc.html": {
+      "h": 916,
+      "is_interactive": true,
+      "title": "Ren and nudges, off",
+      "w": 390,
+      "x": 2820,
+      "y": 9248
+    },
+    "Welcome.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "First run",
+      "w": 390,
+      "x": 470,
+      "y": 2050
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-17T12:20:00Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/artifact/EegrmSkMHUjv9UxhPMw7Hn",
+      "copiedAt": "2026-09-17T12:20:00Z",
+      "namespace": "ember",
+      "title": "Ember",
+      "version": null
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t-0": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 2270,
+      "text": "Five tabs",
+      "w": 640,
+      "x": 0,
+      "y": -250
+    },
+    "t-1": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 2740,
+      "text": "Getting in",
+      "w": 640,
+      "x": 0,
+      "y": 1800
+    },
+    "t-2": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "In a group",
+      "w": 640,
+      "x": 0,
+      "y": 3300
+    },
+    "t-3": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 1330,
+      "text": "Monk mode",
+      "w": 640,
+      "x": 0,
+      "y": 4950
+    },
+    "t-4": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "The moments",
+      "w": 640,
+      "x": 0,
+      "y": 6670
+    },
+    "t-5": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 860,
+      "text": "Helping each other",
+      "w": 640,
+      "x": 0,
+      "y": 7834
+    },
+    "t-6": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 3210,
+      "text": "You",
+      "w": 640,
+      "x": 0,
+      "y": 8998
+    },
+    "t-7": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 640,
+      "text": "Ren, every mood",
+      "w": 640,
+      "x": 0,
+      "y": 10558
+    },
+    "t-8": {
+      "color": "pink",
+      "kind": "title1",
+      "maxW": 640,
+      "text": "Behind the glass",
+      "w": 640,
+      "x": 0,
+      "y": 12036
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Coach.dc.html",
+    "Stats.dc.html",
+    "Groups.dc.html",
+    "Activities.dc.html",
+    "Signin.dc.html",
+    "Welcome.dc.html",
+    "Consent.dc.html",
+    "Catalog.dc.html",
+    "Configure.dc.html",
+    "Notice.dc.html",
+    "Group.dc.html",
+    "GroupStats.dc.html",
+    "Evidence.dc.html",
+    "Standing.dc.html",
+    "Ranks.dc.html",
+    "Ledger.dc.html",
+    "GroupSettings.dc.html",
+    "Invite.dc.html",
+    "Monk.dc.html",
+    "MonkSetup.dc.html",
+    "MonkLocked.dc.html",
+    "Capture.dc.html",
+    "Declare.dc.html",
+    "Stamp.dc.html",
+    "Restore.dc.html",
+    "Nudge.dc.html",
+    "Nudged.dc.html",
+    "Settings.dc.html",
+    "Sharing.dc.html",
+    "Notifs.dc.html",
+    "Photos.dc.html",
+    "Away.dc.html",
+    "Data.dc.html",
+    "Switches.dc.html",
+    "Ren.dc.html",
+    "Admin.dc.html"
+  ],
+  "pages": [],
+  "title": "Curfew v5",
+  "v": 3
+}

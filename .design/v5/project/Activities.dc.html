@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    a { color: inherit; }
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 1024px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!--
+    Same 44px bar as every other screen, so the large title always starts at
+    the same place. A bar glyph is WHITE: the accent is reserved for the one
+    primary action, and an escape hatch or an add button is not it.
+  -->
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <span style="flex-grow: 1;"></span>
+    <a href="#" aria-label="Add an activity" style="flex: none; width: 44px; height: 44px; margin-right: -10px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    </a>
+  </div>
+
+  <div style="flex: none; padding: 0 20px;">
+    <span style="font-size: 34px; font-weight: 700; letter-spacing: 0.01em;">Activities</span>
+  </div>
+
+  <div style="flex: none; padding: 4px 20px 0;">
+    <span style="font-size: 15px; font-weight: 400; color: #8e8e93;">Seven tracked. Anything you change starts tomorrow, never tonight.</span>
+  </div>
+
+  <!-- globalScore() and its band, which is what /activities already puts here
+       and the only way into the ranks page. -->
+  <a href="Ranks.dc.html" style="flex: none; margin: 20px 20px 0; text-decoration: none; border-radius: 14px; background: #1c1c1e; padding: 14px 16px; display: flex; align-items: center; gap: 13px;">
+    <span style="flex: none; width: 34px; height: 34px; border-radius: 10px; background: rgba(107,161,127,0.16); display: flex; align-items: center; justify-content: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6ba17f" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M8.7 11.8 11.2 14.3 15.6 9.8"/></svg>
+    </span>
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+      <div style="display: flex; align-items: baseline; gap: 8px;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; font-weight: 600; color: #ffffff;">714</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.09em; color: #6ba17f;">DISCIPLINE</span>
+      </div>
+      <span style="font-size: 13px; font-weight: 400; color: #8e8e93;">Across everything you track. Only you see this.</span>
+    </div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+  </a>
+
+  <!-- the list: each carries its own streak and its own rule -->
+  <div style="flex: none; margin: 22px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{list}}" as="a" hint-placeholder-count="7">
+      <a href="{{a.href}}" style="text-decoration: none; display: flex; align-items: center; gap: 13px; padding-left: 16px;">
+        <span style="flex: none; color: #8e8e93;" aria-hidden="true">
+          <sc-if value="{{a.isMoon}}" hint-placeholder-val="{{true}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+          </sc-if>
+          <sc-if value="{{a.isGym}}" hint-placeholder-val="{{false}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6M20 9v6M7 7v10M17 7v10M7 12h10"/></svg>
+          </sc-if>
+          <sc-if value="{{a.isFood}}" hint-placeholder-val="{{false}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v8a2.5 2.5 0 0 0 5 0V3M8.5 11v10M18 3c-1.6 1.4-2.4 3.4-2.4 5.6 0 1.6.8 2.6 2.4 2.8V21"/></svg>
+          </sc-if>
+          <sc-if value="{{a.isWater}}" hint-placeholder-val="{{false}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.6 6 10.4A6 6 0 0 1 6 13.4C6 9.6 12 3 12 3z"/></svg>
+          </sc-if>
+          <sc-if value="{{a.isPill}}" hint-placeholder-val="{{false}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="19" height="8" rx="4"/><path d="M12 8v8"/></svg>
+          </sc-if>
+          <sc-if value="{{a.isDesk}}" hint-placeholder-val="{{false}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="13" rx="2.5"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+          </sc-if>
+          <sc-if value="{{a.isBook}}" hint-placeholder-val="{{false}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2 2 0 0 1 6 3h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 19.5A2 2 0 0 0 6 21h13"/></svg>
+          </sc-if>
+          <sc-if value="{{a.isNight}}" hint-placeholder-val="{{false}}">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3 2"/><path d="M4 4l16 16"/></svg>
+          </sc-if>
+        </span>
+        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{a.sep}};">
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 16px; font-weight: 500; color: #ffffff;">{{a.name}}</span>
+            <span style="font-size: 13px; font-weight: 400; color: #8e8e93;">{{a.rule}}</span>
+          </div>
+          <span style="flex: none; display: flex; align-items: center; gap: 3px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="{{a.tone}}"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: {{a.tone}};">{{a.streak}}</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+        </div>
+      </a>
+    </sc-for>
+  </div>
+
+  <!-- pause: the thing people look for and cannot find -->
+  <div style="flex: none; margin: 26px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+    <a href="#" style="text-decoration: none; display: flex; align-items: center; gap: 13px; padding: 14px 16px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="2" stroke-linecap="round" style="flex: none;"><path d="M9 5v14M15 5v14"/></svg>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 16px; font-weight: 500; color: #ffffff;">Going away</span>
+        <span style="font-size: 13px; font-weight: 400; color: #8e8e93;">Tell us you are away and those days do not count against you</span>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+    </a>
+    <a href="#" style="text-decoration: none; display: flex; align-items: center; gap: 13px; padding: 14px 16px; border-top: 0.5px solid rgba(255,255,255,0.08);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linejoin="round" style="flex: none;"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 16px; font-weight: 500; color: #ffffff;">Grace</span>
+        <span style="font-size: 13px; font-weight: 400; color: #8e8e93;">Two a month per activity, spent when a streak ends</span>
+      </div>
+      <span style="flex: none; font-size: 15px; font-weight: 400; color: #8e8e93;">2 of 14 left</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+    </a>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <!--
+    Tab bar, to spec. iOS reserves 83pt here: 49 of content over a 34pt
+    home-indicator area. Icons 25x25, labels 10pt. The active tab is FILLED
+    as well as tinted, which is what the HIG asks for, so the state is not
+    carried by colour alone.
+
+    The 34pt is NOT drawn here. These artboards draw the app and not the phone:
+    there is no status bar at the top, so there is no home indicator at the
+    bottom, and reserving the strip with nothing in it just reads as a gap. The
+    real app adds it back with env(safe-area-inset-bottom).
+  -->
+  <div style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+    <a href="Main.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2.5v3M16 2.5v3M3 9.5h18"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Today</span>
+    </a>
+    <a href="Coach.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.3" fill="#8e8e93"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.34)"/><ellipse cx="9.1" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/><ellipse cx="15.2" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Ren</span>
+    </a>
+    <a href="Stats.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-5 4 3 5-7"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Stats</span>
+    </a>
+    <a href="Groups.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 8.5a3 3 0 0 1 0 5"/><path d="M19.5 20a6.5 6.5 0 0 0-3.2-5.2"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Groups</span>
+    </a>
+    <a href="Activities.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.1" fill="#ff375f"/><path d="M4 20.5a8 8 0 0 1 16 0z" fill="#ff375f"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #ff375f;">You</span>
+    </a>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1024}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SEP = 'rgba(255,255,255,0.08)', ON = '#ff375f', OFF = '#48484a';
+    const kinds = ['isMoon','isGym','isFood','isWater','isPill','isDesk','isBook','isNight'];
+    const one = (k) => Object.fromEntries(kinds.map((x) => [x, x === k]));
+    const row = (k, name, rule, streak, tone, sep, href) =>
+      ({ ...one(k), name, rule, streak, tone, sep, href: href || '#' });
+    return {
+      // The same six activities, the same streaks, as Home and Your record.
+      // The rule under each name is the module's own summary of its config.
+      list: [
+        row('isMoon',  'Sleep',       'In bed by 10:30 PM, up by 6:30 AM', '19', ON,  'transparent', 'Configure.dc.html'),
+        row('isGym',   'Gym',         '3 days a week, any days',           '12', ON,  SEP),
+        row('isFood',  'Food',        '3 meals, under 2,000 calories',     '6',  ON,  SEP),
+        row('isWater', 'Water',       '8 glasses a day',                   '31', ON,  SEP),
+        row('isPill',  'Supplements', '2 doses a day',                     '27', ON,  SEP),
+        row('isNight', 'Nightfast',   'Nothing after 8:00 PM',             '14', ON,  SEP),
+        row('isBook',  'Reading',     '30 minutes a day',                  '0',  OFF, SEP),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

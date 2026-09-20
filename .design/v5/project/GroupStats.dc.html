@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 1210px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <a href="Group.dc.html" aria-label="Back to Wing" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
+    </a>
+    <span style="flex-grow: 1;"></span>
+  </div>
+  <div style="flex: none; padding: 4px 20px 0;">
+    <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">Wing this week</h1>
+    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">Mon 15 to Sun 21 September. Everything counted here is something a member chose to share.</span>
+  </div>
+  <div style="flex: none; margin: 20px 20px 0; display: flex; gap: 10px;">
+    <sc-for list="{{figures}}" as="f" hint-placeholder-count="3">
+      <div style="flex-grow: 1; flex-basis: 0; border-radius: 14px; background: #1c1c1e; padding: 14px 13px; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: {{f.tone}};">{{f.value}}</span>
+        <span style="font-size: 12px; line-height: 1.3; color: #8e8e93;">{{f.label}}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Day by day</span></div>
+  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 16px 14px 12px;">
+    <div style="display: flex; align-items: flex-end; gap: 7px; height: 124px;">
+      <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+        <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; color: {{d.tone}};">{{d.count}}</span>
+          <span style="width: 100%; height: {{d.h}}px; border-radius: 4px 4px 0 0; background: {{d.fill}};"></span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top: 8px; display: flex; gap: 7px; border-top: 0.5px solid rgba(255,255,255,0.08); padding-top: 8px;">
+      <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+        <span style="flex-grow: 1; flex-basis: 0; text-align: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: {{d.labelTone}};">{{d.label}}</span>
+      </sc-for>
+    </div>
+    <span style="display: block; margin-top: 11px; font-size: 12.5px; color: #8e8e93;">Out of 21 shared activities a day. Sunday has not finished.</span>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Who carried it</span></div>
+  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 6px 16px 14px;">
+    <sc-for list="{{members}}" as="m" hint-placeholder-count="3">
+      <div style="padding-top: 14px; display: flex; flex-direction: column; gap: 7px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="font-size: 15px; font-weight: 500;">{{m.name}}</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 700;">{{m.pct}}</span>
+          <span style="font-size: 12.5px; color: #8e8e93;">{{m.of}}</span>
+        </div>
+        <span style="height: 6px; border-radius: 999px; background: #2c2c2e; position: relative; overflow: hidden;">
+          <span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{m.pct}}; background: {{m.fill}}; border-radius: 999px;"></span>
+        </span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">What Wing finds hard</span></div>
+  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{hard}}" as="h" hint-placeholder-count="3">
+      <div style="padding-left: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{h.sep}};">
+          <span style="flex-grow: 1; font-size: 16px; font-weight: 500;">{{h.name}}</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: {{h.tone}};">{{h.miss}}</span>
+          <span style="font-size: 13px; color: #8e8e93;">missed</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Counted across the group, never per person. Who missed what is on nobody&#39;s screen but their own.</p>
+  <div style="flex-grow: 1;"></div>
+  <div style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+    <a href="Main.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2.5v3M16 2.5v3M3 9.5h18"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Today</span>
+    </a>
+    <a href="Coach.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.3" fill="#8e8e93"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.34)"/><ellipse cx="9.1" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/><ellipse cx="15.2" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Ren</span>
+    </a>
+    <a href="Stats.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-5 4 3 5-7"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Stats</span>
+    </a>
+    <a href="Groups.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.4" fill="#ff375f"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0" fill="#ff375f"/><path d="M17 8.5a3 3 0 0 1 0 5" stroke="#ff375f" stroke-width="1.9" fill="none" stroke-linecap="round"/><path d="M19.5 20a6.5 6.5 0 0 0-3.2-5.2" stroke="#ff375f" stroke-width="1.9" fill="none" stroke-linecap="round"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #ff375f;">Groups</span>
+    </a>
+    <a href="Activities.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">You</span>
+    </a>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1210}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ON = '#ff375f', OFF = '#2c2c2e', SEP = 'rgba(255,255,255,0.08)';
+    // Sunday is today and unfinished, so it is drawn flat grey rather than as
+    // a short bar: an unfinished day is not a bad day.
+    const raw = [
+      { label: 'MON', count: 19 }, { label: 'TUE', count: 14 }, { label: 'WED', count: 21 },
+      { label: 'THU', count: 18 }, { label: 'FRI', count: 12 }, { label: 'SAT', count: 20 },
+      { label: 'SUN', count: 9, running: true },
+    ];
+    return {
+      figures: [
+        { value: '113', label: 'passed of 138 shared', tone: '#ffffff' },
+        { value: '82%', label: 'of the week held', tone: ON },
+        { value: '2', label: 'clean days, all three', tone: '#ffffff' },
+      ],
+      days: raw.map((d) => ({
+        label: d.label, count: d.count,
+        h: Math.round((d.count / 21) * 104),
+        fill: d.running ? OFF : ON,
+        tone: d.running ? '#48484a' : '#ffffff',
+        labelTone: d.running ? '#ffffff' : '#8e8e93',
+      })),
+      members: [
+        { name: 'Rahul', pct: '91%', of: '31 of 34', fill: ON },
+        { name: 'Mira',  pct: '84%', of: '38 of 45', fill: ON },
+        { name: 'Anya',  pct: '73%', of: '44 of 59', fill: ON },
+      ],
+      hard: [
+        { name: 'Gym',     miss: '9', tone: '#ffffff', sep: 'transparent' },
+        { name: 'Reading', miss: '7', tone: '#ffffff', sep: SEP },
+        { name: 'Water',   miss: '5', tone: '#ffffff', sep: SEP },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

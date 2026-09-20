@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ren and nudges, off</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+    @keyframes breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.022); } }
+    .b-breath { animation: breath 5.2s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) { .b-breath { animation: none; } }
+  </style>
+</helmet>
+
+<!--
+  THE TWO OFF SWITCHES, and the point of the screen is the CONSEQUENCE rather
+  than the controls.
+
+  A settings row that says "Ren [OFF]" tells you nothing about what you just
+  did. Both of these switches remove something visible from the app, so the
+  screen shows what goes: press Play and toggle either one. Ren's ball dims and
+  the tab bar at the bottom loses a tab. The nudge row's sentence changes to
+  name who can no longer reach you.
+
+  DECIDED 1.14: off means GONE. No tab, no lines on Home or After a miss or
+  Your record or the day is done, and nothing of yours is ever sent to a model
+  again. A half-off that hid the tab and kept reading the photographs would
+  make DIRECTION's "off is a real off" a lie.
+
+  DECIDED 1.13: one nudge switch, never per person. In a group of three,
+  muting one friend is a thing they work out, and a per-person list is a
+  blocklist with a friendly name on it.
+-->
+<div style="width: 390px; height: 916px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <a href="Activities.dc.html" aria-label="Back" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
+    </a>
+  </div>
+
+  <div style="flex: none; padding: 4px 20px 0;">
+    <span style="font-size: 34px; font-weight: 700; letter-spacing: -0.01em;">Ren and nudges</span>
+  </div>
+
+  <div style="flex-grow: 1; min-height: 0; margin-top: 22px; padding: 0 20px; display: flex; flex-direction: column;">
+
+    <!-- ================= REN ================= -->
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; color: #8e8e93;">THE COACH</span>
+
+    <div style="margin-top: 11px; display: flex; align-items: center; gap: 13px;">
+      <div class="b-breath" style="flex: none; position: relative; width: 44px; height: 44px;">
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: {{renSkin}};"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
+        <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 31% 23%, rgba(255,255,255,0.90) 0%, rgba(255,255,255,0.28) 17%, transparent 34%);"></div>
+        <svg viewBox="0 0 116 116" style="position: absolute; inset: 0;" aria-hidden="true">
+          <path d="{{renEyes}}" fill="{{renInk}}"/>
+          <path d="{{renEyeLine}}" fill="none" stroke="{{renInk}}" stroke-width="4" stroke-linecap="round"/>
+          <path d="{{renMouth}}" fill="none" stroke="{{renInk}}" stroke-width="4.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 500;">Ren</span>
+      <!-- A real switch, styled the way iOS styles one, because this is the
+           one control on the screen and it should look like the platform's. -->
+      <button type="button" onClick="{{toggleRen}}" role="switch" aria-checked="{{renOn}}" aria-label="Ren" style="flex: none; width: 51px; height: 31px; border-radius: 999px; border: none; padding: 0; background: {{renTrack}}; position: relative; cursor: pointer;">
+        <span style="position: absolute; top: 2px; left: {{renKnob}}; width: 27px; height: 27px; border-radius: 999px; background: #ffffff;"></span>
+      </button>
+    </div>
+
+    <p style="margin: 13px 0 0; font-size: 14px; line-height: 1.5; color: #8e8e93;">{{renBody}}</p>
+
+    <!--
+      Named in full, because "off" on a settings row is a word and this is a
+      list of things that stop existing. Somebody turning a coach off wants to
+      know whether the camera stops too, and the honest answer is the reason
+      the switch is worth trusting.
+    -->
+    <div style="margin-top: 13px; border-radius: 14px; background: #1c1c1e; padding: 13px 15px; display: flex; flex-direction: column; gap: 7px;">
+      <sc-for list="{{gone}}" as="g" hint-placeholder-count="4">
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{g.tone}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="{{g.mark}}"/></svg>
+          <span style="flex-grow: 1; font-size: 13.5px; color: {{g.tone}};">{{g.what}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- ================= NUDGES ================= -->
+    <div style="margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 13px;">
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 500;">Nudges from friends</span>
+      <button type="button" onClick="{{toggleNudge}}" role="switch" aria-checked="{{nudgeOn}}" aria-label="Nudges from friends" style="flex: none; width: 51px; height: 31px; border-radius: 999px; border: none; padding: 0; background: {{nudgeTrack}}; position: relative; cursor: pointer;">
+        <span style="position: absolute; top: 2px; left: {{nudgeKnob}}; width: 27px; height: 27px; border-radius: 999px; background: #ffffff;"></span>
+      </button>
+    </div>
+
+    <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.5; color: #8e8e93;">{{nudgeBody}}</p>
+
+    <!--
+      One switch, never a list of people. 1.13: in a group of three, muting one
+      friend is a thing they will work out, and a per-person list is a blocklist
+      with a friendly name on it.
+    -->
+    <p style="margin: 9px 0 0; font-size: 12.5px; line-height: 1.5; color: #48484a;">There is no way to mute one person. Off is off for everybody, and nobody is told.</p>
+
+    <!-- Quiet hours are not one of these switches and saying so matters: a
+         person turning nudges off may believe that is what was protecting
+         their sleep. It never was. -->
+    <div style="margin-top: 16px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #1c1c1e;">
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 14.5px; font-weight: 500;">Quiet hours</span>
+        <span style="font-size: 12.5px; color: #8e8e93;">Nothing reaches you, whatever is on above.</span>
+      </div>
+      <span style="flex: none; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #8e8e93;">10 PM &ndash; 7 AM</span>
+    </div>
+
+    <div style="flex-grow: 1;"></div>
+
+    <!-- THE CONSEQUENCE, live. Toggle Ren above and watch a tab leave. -->
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; color: #48484a;">YOUR TAB BAR</span>
+    <div style="margin-top: 9px; margin-bottom: 20px; border-radius: 14px; background: rgba(18,18,20,0.96); border: 1px solid #2c2c2e; display: flex; padding: 6px 4px 8px;">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+          <span style="width: 21px; height: 21px; border-radius: {{t.round}}; background: {{t.fill}};"></span>
+          <span style="font-size: 9.5px; font-weight: 500; color: {{t.tone}};">{{t.label}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":916}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { ren: true, nudges: true };
+  }
+  renderVals() {
+    const ON = '#30d158', OFF = '#39393d';
+    const ren = this.state.ren, nudges = this.state.nudges;
+
+    // Off, he is the QUIET mood: dark, eyes shut. Not a greyed-out version of
+    // the live one. He has not been disabled, he has gone to sleep.
+    const skinOn  = 'radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%)';
+    const skinOff = 'radial-gradient(circle at 33% 25%, #6c757e 0%, #525a63 18%, #373d44 44%, #22262b 72%, #0e1013 100%)';
+
+    const goneRow = (what, on) => ({
+      what,
+      tone: on ? '#8e8e93' : '#5d6167',
+      // A tick while it is happening, a cross once it has stopped.
+      mark: on ? 'M20 6 9 17l-5-5' : 'M18 6 6 18M6 6l12 12',
+    });
+
+    const tab = (label, on) => ({
+      label, tone: on ? '#8e8e93' : '#48484a',
+      fill: on ? '#3a3a3c' : '#2c2c2e', round: '6px',
+    });
+    const tabs = [tab('Today', true)];
+    if (ren) tabs.push({ label: 'Ren', tone: '#ff375f', fill: '#ff375f', round: '999px' });
+    tabs.push(tab('Stats', true), tab('Groups', true), tab('You', true));
+
+    return {
+      renOn: ren, nudgeOn: nudges,
+      renTrack: ren ? ON : OFF, renKnob: ren ? '22px' : '2px',
+      nudgeTrack: nudges ? ON : OFF, nudgeKnob: nudges ? '22px' : '2px',
+
+      renSkin: ren ? skinOn : skinOff,
+      renInk: ren ? '#33060f' : '#aab2ba',
+      renEyes: ren ? 'M37.6 50a5.4 6.4 0 1 0 10.8 0a5.4 6.4 0 1 0 -10.8 0z M67.6 50a5.4 6.4 0 1 0 10.8 0a5.4 6.4 0 1 0 -10.8 0z' : '',
+      renEyeLine: ren ? '' : 'M37 52h12 M67 52h12',
+      renMouth: ren ? 'M45 66q13 13 26 0' : 'M54 69h8',
+
+      renBody: ren
+        ? 'He reads what you log, your photographs, and what your group shares with you. He never decides whether a day counted.'
+        : 'Ren is off. Curfew still tracks everything, scores every day and settles every fine, because he was never part of that.',
+
+      gone: [
+        goneRow('His tab', ren),
+        goneRow('His line on Home, After a miss, Your record and the day is done', ren),
+        goneRow('Reading your photographs', ren),
+        goneRow('Anything of yours reaching a model', ren),
+      ],
+
+      nudgeBody: nudges
+        ? 'Mira, Kabir and Anya can send you one of four set messages while a window of yours is still open.'
+        : 'Nobody can nudge you. The button is gone from their screens and they are not told why.',
+
+      tabs,
+      toggleRen: () => this.setState({ ren: !this.state.ren }),
+      toggleNudge: () => this.setState({ nudges: !this.state.nudges }),
+    };
+  }
+}
+</script>
+</body>
+</html>

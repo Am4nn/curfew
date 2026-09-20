@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 1020px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!--
+    Nav bar, to spec. 44px tall, the iOS standard. The back control is a 44x44
+    tap target (Apple's minimum) offset by -12px so the chevron's optical left
+    edge sits on the 20px margin, exactly above the large title's first letter.
+    No circle on an opaque screen: the disc is only for a chevron over a
+    photograph, where a bare glyph would be illegible.
+  -->
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <a href="Activities.dc.html" aria-label="Back to Activities" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
+    </a>
+    <span style="flex-grow: 1;"></span>
+    <button type="button" style="flex: none; height: 34px; margin-right: -2px; padding: 0 16px; border-radius: 999px; border: 0; background: #d81e46; font-family: inherit; font-size: 15px; font-weight: 600; color: #ffffff;">Save</button>
+  </div>
+
+  <div style="flex: none; padding: 4px 20px 0; display: flex; align-items: center; gap: 12px;">
+    <span style="font-size: 34px; font-weight: 700; letter-spacing: 0.01em;">Sleep</span>
+  </div>
+
+  <!-- the rule, said once, before anything is offered -->
+  <div style="flex: none; margin: 16px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 16px; display: flex; flex-direction: column; gap: 7px;">
+    <span style="font-size: 17px; font-weight: 600; line-height: 1.35;">In bed by 10:30 PM, up by 6:30 AM, every day.</span>
+    <span style="font-size: 14px; font-weight: 400; color: #8e8e93; line-height: 1.4;">A night belongs to the day it ends, so a 12:30 AM check-in still counts for last night.</span>
+  </div>
+
+  <!-- windows -->
+  <div style="flex: none; margin: 26px 20px 0;">
+    <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Windows</span>
+  </div>
+
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{windows}}" as="w" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px;">
+        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{w.sep}};">
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 16px; font-weight: 400;">{{w.name}}</span>
+            <span style="font-size: 13px; font-weight: 400; color: #8e8e93;">{{w.note}}</span>
+          </div>
+          <span style="flex: none; display: flex; gap: 7px;">
+            <span style="padding: 7px 11px; border-radius: 9px; background: #2c2c2e; font-size: 15px; font-weight: 500;">{{w.from}}</span>
+            <span style="padding: 7px 11px; border-radius: 9px; background: #2c2c2e; font-size: 15px; font-weight: 500;">{{w.to}}</span>
+          </span>
+        </div>
+      </div>
+    </sc-for>
+
+    <!-- the anchored one, which has no clock times to set -->
+    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; border-top: 0.5px solid rgba(255,255,255,0.08); background: #242426;">
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px; font-weight: 400;">Confirm</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; color: #ff9f0a; border: 1px solid #ff9f0a; border-radius: 5px; padding: 1px 5px;">ANCHORED</span>
+        </div>
+        <span style="font-size: 13px; font-weight: 400; color: #8e8e93; line-height: 1.4;">Opens 30 minutes after you press Wake, and stays open 30 minutes. Nothing to set: it follows the morning you actually had.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- evidence -->
+  <div style="flex: none; margin: 26px 20px 0;">
+    <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Evidence</span>
+  </div>
+
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 12px; background: #1c1c1e; padding: 14px 16px; display: flex; align-items: center; gap: 13px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 16px; font-weight: 500;">Photo on the confirm window</span>
+      <span style="font-size: 13px; font-weight: 400; color: #8e8e93;">Live camera. A gallery photo is not accepted.</span>
+    </div>
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; flex: none; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #ff375f;">REQUIRED</span>
+  </div>
+
+  <!-- schedule -->
+  <div style="flex: none; margin: 26px 20px 0;">
+    <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Which days</span>
+  </div>
+
+  <div style="flex: none; margin: 12px 20px 0; display: flex; gap: 7px;">
+    <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+      <span style="flex-grow: 1; text-align: center; padding: 11px 0; border-radius: 10px; background: {{d.bg}}; color: {{d.fg}}; font-size: 14px; font-weight: 600;">{{d.label}}</span>
+    </sc-for>
+  </div>
+
+  <!-- the rule that governs every change on this screen -->
+  <div style="flex: none; margin: 22px 20px 0; display: flex; gap: 11px;">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="2" stroke-linecap="round" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
+    <span style="font-size: 13.5px; font-weight: 400; color: #8e8e93; line-height: 1.45;">Anything you change here starts tomorrow. Today is already being judged by what you set before it began, and Curfew will not rewrite a day in progress.</span>
+  </div>
+
+  <div style="flex: none; margin: 28px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+    <button type="button" style="width: 100%; border: 0; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; font-weight: 400; color: #ff453a;">Stop tracking Sleep</button>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1020}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SEP = 'rgba(255,255,255,0.08)';
+    return {
+      windows: [
+        { name: 'Night', note: 'When you say you are in bed', from: '10:00 PM', to: '11:30 PM', sep: 'transparent' },
+        { name: 'Wake',  note: 'When you say you are up',     from: '5:30 AM',  to: '7:30 AM',  sep: SEP },
+      ],
+      days: ['M','T','W','T','F','S','S'].map((label) => ({ label, bg: '#ff375f', fg: '#ffffff' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

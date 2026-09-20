@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 1280px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 9px;">
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #ff375f;">ADMIN</span>
+    <span style="flex-grow: 1;"></span>
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #48484a;">PRODUCTION &middot; 4.0.0</span>
+  </div>
+  <div style="flex: none; padding: 4px 20px 0;">
+    <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">Ops</h1>
+  </div>
+  <div style="flex: none; margin: 24px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">SCHEDULER</span></div>
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{jobs}}" as="j" hint-placeholder-count="3">
+      <div style="padding-left: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{j.sep}};">
+          <span style="flex: none; width: 8px; height: 8px; border-radius: 999px; background: {{j.dot}};"></span>
+          <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 16px; font-weight: 500;">{{j.name}}</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #48484a;">{{j.cron}}</span>
+          </span>
+          <span style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: {{j.tone}};">{{j.ago}}</span>
+            <span style="font-size: 11.5px; color: #8e8e93;">{{j.state}}</span>
+          </span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <p style="flex: none; margin: 11px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">A paused schedule is not a failed delivery, it is the absence of one, so this reads heartbeats rather than errors. A job late past its own cadence says so here before anything downstream goes wrong.</p>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">FAILURES, LAST 7 DAYS</span></div>
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 16px; display: flex; align-items: center; gap: 13px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    <span style="flex-grow: 1; font-size: 15.5px;">Nothing. No job has reported a failure.</span>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">EVIDENCE</span></div>
+  <div style="flex: none; margin: 12px 20px 0; display: flex; gap: 10px;">
+    <sc-for list="{{figures}}" as="f" hint-placeholder-count="3">
+      <div style="flex-grow: 1; flex-basis: 0; border-radius: 14px; background: #1c1c1e; padding: 14px 13px; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; line-height: 1;">{{f.value}}</span>
+        <span style="font-size: 12px; line-height: 1.3; color: #8e8e93;">{{f.label}}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">DRIFT</span></div>
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{drift}}" as="d" hint-placeholder-count="5">
+      <div style="padding-left: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{d.sep}};">
+          <span style="flex-grow: 1; font-size: 15.5px;">{{d.name}}</span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{d.tone}};">{{d.value}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #ff9f0a;">CONTROLS</span></div>
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{controls}}" as="c" hint-placeholder-count="4">
+      <div style="padding-left: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{c.sep}};">
+          <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 16px;">{{c.name}}</span>
+            <span style="font-size: 12px; color: #8e8e93;">{{c.note}}</span>
+          </span>
+          <span role="switch" aria-checked="{{c.onStr}}" style="flex: none; width: 46px; height: 28px; border-radius: 999px; background: {{c.track}}; display: flex; align-items: center; justify-content: {{c.justify}};">
+            <span style="width: 24px; height: 24px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
+          </span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <p style="flex: none; margin: 11px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Switching one off takes effect now and rewrites nothing. A period already closed keeps the settings it closed under, and nobody loses the ability to check in.</p>
+  <div style="flex-grow: 1;"></div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1280}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SEP = 'rgba(255,255,255,0.08)';
+    return {
+      jobs: [
+        { name: 'Scoring', cron: '0 * * * *  \u2192  /api/cron/score', ago: '12m', state: 'on time',
+          dot: '#30d158', tone: '#ffffff', sep: 'transparent' },
+        { name: 'Reminders', cron: '*/15 * * * *  \u2192  /api/cron/remind', ago: '4m', state: 'on time',
+          dot: '#30d158', tone: '#ffffff', sep: SEP },
+        { name: 'Nightly', cron: '0 7 * * *  \u2192  /api/cron/nightly', ago: '6h 41m', state: 'on time',
+          dot: '#30d158', tone: '#ffffff', sep: SEP },
+      ],
+      figures: [
+        { value: '148', label: 'photographs stored' },
+        { value: '0', label: 'orphaned in R2' },
+        { value: '3', label: 'swept last night' },
+      ],
+      drift: [
+        { name: 'Scores', value: 'none', tone: '#30d158', sep: 'transparent' },
+        { name: 'Outcomes', value: 'none', tone: '#30d158', sep: SEP },
+        { name: 'Streaks', value: 'none', tone: '#30d158', sep: SEP },
+        { name: 'Reputation', value: 'none', tone: '#30d158', sep: SEP },
+        { name: 'Monk mode', value: 'none', tone: '#30d158', sep: SEP },
+      ],
+      controls: [
+        { name: 'Money', note: 'Fines and the ledger, everywhere', on: true, sep: 'transparent' },
+        { name: 'Photographs', note: 'Evidence capture and upload', on: true, sep: SEP },
+        { name: 'Ren', note: 'The coach, for every account', on: true, sep: SEP },
+        { name: 'Nudges', note: 'Member to member notifications', on: true, sep: SEP },
+      ].map((c) => ({ ...c, onStr: c.on ? 'true' : 'false',
+        track: c.on ? '#ff375f' : '#2c2c2e',
+        justify: c.on ? 'flex-end' : 'flex-start' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

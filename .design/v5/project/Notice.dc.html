@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <!-- Home, dimmed, so it is obvious what is behind this and that it is yours. -->
+  <div style="position: absolute; inset: 0; opacity: 0.22; display: flex; flex-direction: column; padding: 16px 20px 0;">
+    <span style="font-size: 34px; font-weight: 700;">Today</span>
+    <span style="margin-top: 22px; font-size: 44px; font-weight: 700;">4 <span style="font-size: 20px; color: #8e8e93;">of 7</span></span>
+    <div style="margin-top: 16px; display: flex; gap: 4px;">
+      <sc-for list="{{segs}}" as="s" hint-placeholder-count="7">
+        <span style="flex-grow: 1; height: 5px; border-radius: 999px; background: {{s.fill}};"></span>
+      </sc-for>
+    </div>
+    <sc-for list="{{ghost}}" as="g" hint-placeholder-count="5">
+      <div style="margin-top: 18px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; border-radius: 10px; background: #2c2c2e;"></span>
+        <span style="flex-grow: 1; height: 13px; border-radius: 4px; background: #1c1c1e;"></span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.72);"></div>
+
+  <div style="position: absolute; left: 16px; right: 16px; top: 132px; border-radius: 22px; background: #161618; border: 0.5px solid rgba(255,255,255,0.1); padding: 26px 22px 22px; display: flex; flex-direction: column;">
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #ff375f;">CURFEW 4.0</span>
+    <h2 style="margin: 12px 0 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;">Ren, nudges, and Monk mode</h2>
+
+    <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">
+      <sc-for list="{{lines}}" as="l" hint-placeholder-count="4">
+        <div style="display: flex; gap: 11px;">
+          <span style="flex: none; margin-top: 7px; width: 5px; height: 5px; border-radius: 999px; background: #ff375f;"></span>
+          <span style="flex-grow: 1; font-size: 15px; line-height: 1.5; color: #c7c7cc;">{{l.text}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <!--
+      The words came out of release-notes.json in the same commit as the change
+      they describe, so they went through review with the code. Nothing here was
+      typed at the moment of publishing.
+    -->
+    <button type="button" style="margin-top: 24px; width: 100%; height: 50px; border: 0; border-radius: 14px; background: #ff375f; color: #ffffff; font-family: inherit; font-size: 17px; font-weight: 600;">Got it</button>
+    <span style="margin-top: 11px; text-align: center; font-size: 12px; color: #48484a;">There is no dismiss. Got it is final.</span>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ON = '#ff375f', OFF = '#2c2c2e';
+    return {
+      segs: Array.from({ length: 7 }, (_, i) => ({ fill: i < 4 ? ON : OFF })),
+      ghost: Array.from({ length: 5 }, () => ({})),
+      lines: [
+        { text: 'Ren is a coach who reads what you log, including your photographs, and says what he notices. He never scores anything.' },
+        { text: 'You can see who in your groups is at risk right now, and nudge them. Four set messages, no typing.' },
+        { text: 'Monk mode reads the activities you already track and gives the day a percentage. No streak, no pass, no fine.' },
+        { text: 'Cold shower and No junk food are new activities. Both are a held-or-slipped answer with no photograph.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

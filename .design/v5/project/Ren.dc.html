@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ren, every mood</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+
+    /*
+      HE TURNS, and that is what finally makes him a sphere rather than a
+      circle with a face painted on it.
+
+      A ball rotating does two things at once and both are needed. The features
+      TRAVEL across the surface, and they COMPRESS as they near the silhouette,
+      because you are seeing them at an angle. Translate without the squeeze
+      reads as a face sliding on glass. The squeeze is the whole illusion.
+
+      The specular moves the OTHER WAY by a smaller amount, because a highlight
+      is the light source reflected and the light does not turn with him. That
+      one detail is most of what sells it.
+
+      Everything else lives in the face too: brows, eyes and mouth do the
+      acting, and the body only breathes. A ball that lurches around the screen
+      reads as a loading spinner.
+    */
+
+    /* Looking around. Slow, and it rests at each end rather than sweeping. */
+    @keyframes turn {
+      0%, 100% { transform: translateX(0) scaleX(1); }
+      24%      { transform: translateX(-8px) scaleX(0.84); }
+      46%      { transform: translateX(-8px) scaleX(0.84); }
+      70%      { transform: translateX(6.5px) scaleX(0.88); }
+      86%      { transform: translateX(0) scaleX(1); }
+    }
+    @keyframes turnSpec {
+      0%, 100% { transform: translateX(0); }
+      24%, 46% { transform: translateX(3.4px); }
+      70%      { transform: translateX(-2.6px); }
+    }
+    /* A "no" shake, in the face only. Anger reads as refusal, not a wobble. */
+    @keyframes shake {
+      0%, 58%, 100% { transform: translateX(0) scaleX(1); }
+      66%  { transform: translateX(-6px) scaleX(0.9); }
+      74%  { transform: translateX(6px) scaleX(0.9); }
+      82%  { transform: translateX(-3.5px) scaleX(0.95); }
+      90%  { transform: translateX(0) scaleX(1); }
+    }
+    /* A quick glance up at you, then back. Attention without travel. */
+    @keyframes peek {
+      0%, 100% { transform: translateX(0) scaleX(1); }
+      30%      { transform: translateX(4px) scaleX(0.92); }
+      60%      { transform: translateX(-3px) scaleX(0.94); }
+    }
+    .t-turn  { animation: turn 8.4s ease-in-out infinite; transform-origin: 58px 56px; }
+    .t-shake { animation: shake 3.6s ease-in-out infinite; transform-origin: 58px 56px; }
+    .t-peek  { animation: peek 2.9s ease-in-out infinite; transform-origin: 58px 56px; }
+    .p-turn  { animation: turnSpec 8.4s ease-in-out infinite; }
+
+    @keyframes breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.022); } }
+    @keyframes breathSlow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.038); } }
+    .b-breath { animation: breath 5.2s ease-in-out infinite; }
+    .b-slow   { animation: breathSlow 6.4s ease-in-out infinite; }
+
+    /* EYES. Blink nested inside the turn so both can run at once. */
+    @keyframes blink {
+      0%, 38%, 100% { transform: scaleY(1); }
+      40%   { transform: scaleY(0.06); }
+      42.5% { transform: scaleY(1); }
+      73%   { transform: scaleY(1); }
+      75%   { transform: scaleY(0.06); }
+      77%   { transform: scaleY(1); }
+    }
+    @keyframes widen {
+      0%, 100% { transform: scale(1); }
+      14%      { transform: scale(1.24); }
+      46%      { transform: scale(1.04); }
+    }
+    @keyframes narrow {
+      0%, 54%, 100% { transform: scaleY(1); }
+      64%, 88%      { transform: scaleY(0.5); }
+    }
+    @keyframes squint { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.82) translateY(1px); } }
+    .e-blink  { animation: blink 7.4s ease-in-out infinite; }
+    .e-widen  { animation: widen 2.6s ease-in-out infinite; }
+    .e-narrow { animation: narrow 3.6s ease-in-out infinite; }
+    .e-squint { animation: squint 3.2s ease-in-out infinite; }
+
+    /* BROWS. The most expressive thing on a face and the cheapest to move. */
+    @keyframes browPulse {
+      0%, 50%, 100% { transform: translateY(0); }
+      14%           { transform: translateY(-4.6px); }
+      34%           { transform: translateY(-1.2px); }
+    }
+    @keyframes browPress {
+      0%, 54%, 100% { transform: translateY(0) scaleX(1); }
+      64%, 88%      { transform: translateY(2.8px) scaleX(1.06); }
+    }
+    .w-pulse { animation: browPulse 2.6s ease-in-out infinite; }
+    .w-press { animation: browPress 3.6s ease-in-out infinite; }
+
+    /* MOUTH. Scale only, because CSS cannot morph a path. */
+    @keyframes talk {
+      0%, 100% { transform: scaleY(1); }
+      16%      { transform: scaleY(0.28); }
+      38%      { transform: scaleY(1.16); }
+      60%      { transform: scaleY(0.45); }
+      80%      { transform: scaleY(1.06); }
+    }
+    @keyframes grin { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12, 1.24); } }
+    @keyframes sigh { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(1.1); } }
+    .o-talk { animation: talk 2.6s ease-in-out infinite; }
+    .o-grin { animation: grin 3.2s ease-in-out infinite; }
+    .o-sigh { animation: sigh 5.2s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .t-turn, .t-shake, .t-peek, .p-turn, .b-breath, .b-slow,
+      .e-blink, .e-widen, .e-narrow, .e-squint,
+      .w-pulse, .w-press, .o-talk, .o-grin, .o-sigh { animation: none; }
+    }
+  </style>
+</helmet>
+
+<!--
+  REN, THE CHARACTER SHEET.
+
+  WHAT MAKES HIM READ AS A SPHERE, in order of how much each one buys:
+
+  1. RIM OCCLUSION. A dark ring hugging the last 40% of the radius. The single
+     largest gain, and the thing every flat "3D" circle is missing: a real ball
+     loses light at its silhouette because the surface has turned away.
+  2. THE TURN. Features travel AND compress toward the edge, and the highlight
+     slides the other way because the light does not turn with him.
+  3. A TIGHT SPECULAR. One small hot spot near white. Size sells the material;
+     a broad pale wash reads as matte paper.
+  4. BOUNCE LIGHT, low and opposite the key. Without it the bottom goes dead.
+
+  No outer bloom on any of them. Shading is form; a halo is glow, and the only
+  glow in this app belongs to IMMACULATE.
+-->
+<div style="width: 390px; height: 1158px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="flex: none; padding: 22px 20px 0;">
+    <span style="font-size: 34px; font-weight: 700; letter-spacing: -0.01em;">Ren, every mood</span>
+    <p style="margin: 8px 0 0; font-size: 14.5px; line-height: 1.45; color: #8e8e93;">Colour is the feeling. Brows, eyes and mouth do the acting, and he turns to look around. The ball itself only breathes.</p>
+  </div>
+
+  <div style="flex-grow: 1; min-height: 0; margin-top: 22px; padding: 0 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 14px;">
+    <sc-for list="{{moods}}" as="m" hint-placeholder-count="6">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 11px;">
+
+        <div class="{{m.body}}" style="position: relative; width: 112px; height: 112px;">
+          <div style="position: absolute; inset: 0; border-radius: 999px; background: {{m.skin}};"></div>
+          <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
+          <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 73% 87%, {{m.bounce}}, transparent 30%);"></div>
+          <!-- the highlight slides opposite the turn: the light does not rotate -->
+          <div class="{{m.specA}}" style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 31% 23%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.30) 17%, transparent 34%);"></div>
+
+          <svg viewBox="0 0 116 116" style="position: absolute; inset: 0;" aria-label="{{m.label}}" role="img">
+            <!-- one group turns, everything inside it acts -->
+            <g class="{{m.turnA}}">
+              <g class="{{m.browA}}" style="transform-origin: 58px 42px;">
+                <path d="{{m.brow}}" fill="none" stroke="{{m.ink}}" stroke-width="3.4" stroke-linecap="round"/>
+              </g>
+              <g class="{{m.eyeA}}" style="transform-origin: 58px 52px;">
+                <path d="{{m.eyeFill}}" fill="{{m.ink}}"/>
+                <path d="{{m.eyeLine}}" fill="none" stroke="{{m.ink}}" stroke-width="3.6" stroke-linecap="round"/>
+              </g>
+              <g class="{{m.mouthA}}" style="transform-origin: 58px 70px;">
+                <path d="{{m.mouth}}" fill="{{m.mouthFill}}" stroke="{{m.ink}}" stroke-width="{{m.mw}}" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;">
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: {{m.tone}};">{{m.label}}</span>
+          <span style="font-size: 12.5px; line-height: 1.4; color: #8e8e93;">{{m.when}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex: none; margin: 16px 20px 22px; border-left: 2px solid #ff375f; background: #1c1c1e; padding: 13px 15px;">
+    <p style="margin: 0; font-size: 12.5px; line-height: 1.55; color: #8e8e93;">A mood is never chosen. Each answers a value the app already holds: a window closing, a period passing, a run ending, quiet hours, sixty clean days. <span style="color:#ffffff;">Angry is at the situation, never at you</span>, and only the words carry that.</p>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1158}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const skin = (a, b, c, d) =>
+      `radial-gradient(circle at 33% 25%, #ffffff 0%, ${a} 18%, ${b} 44%, ${c} 72%, ${d} 100%)`;
+    const oval = (cx, ry) =>
+      `M${cx - 5.4} 52a5.4 ${ry} 0 1 0 10.8 0a5.4 ${ry} 0 1 0 -10.8 0z`;
+    const eyesOpen = (ry) => `${oval(43, ry)} ${oval(73, ry)}`;
+    const eyesArc  = 'M36.5 54q6.5 -9 13 0 M66.5 54q6.5 -9 13 0';
+    const eyesShut = 'M37 52h12 M67 52h12';
+
+    return {
+      moods: [
+        {
+          // Looking around the room, blinking, breathing. The turn is the
+          // whole personality of this one: he has nothing to say and he is
+          // still present.
+          label: 'RESTING', when: 'Nothing due for a while',
+          skin: skin('#eef2f5', '#c2ccd5', '#77828c', '#2b3137'),
+          bounce: 'rgba(255,255,255,0.20)', ink: '#20262b', tone: '#8e8e93',
+          brow: '', eyeFill: eyesOpen(6.6), eyeLine: '',
+          mouth: 'M48 68q10 8 20 0', mouthFill: 'none', mw: 3.6,
+          body: 'b-breath', turnA: 't-turn', specA: 'p-turn',
+          browA: '', eyeA: 'e-blink', mouthA: 'o-sigh',
+        },
+        {
+          // Everything at once and all of it in the face: brows pumping, eyes
+          // wide, mouth working, and a short glance up at you. The body holds
+          // still, which is what makes it read as someone calling out rather
+          // than an icon wobbling.
+          label: 'RINGING', when: 'A window shuts soon',
+          skin: skin('#ffccd8', '#ff5c7f', '#c11a3e', '#380813'),
+          bounce: 'rgba(255,255,255,0.26)', ink: '#33060f', tone: '#ff375f',
+          brow: 'M35 37.5q7.5 -5.5 15 0 M66 37.5q7.5 -5.5 15 0',
+          eyeFill: eyesOpen(7.4), eyeLine: '',
+          mouth: 'M51.5 69a6.5 8.5 0 1 0 13 0a6.5 8.5 0 1 0 -13 0z', mouthFill: '#33060f', mw: 0,
+          body: 'b-breath', turnA: 't-peek', specA: '',
+          browA: 'w-pulse', eyeA: 'e-widen', mouthA: 'o-talk',
+        },
+        {
+          label: 'DONE', when: 'Everything scheduled, logged',
+          skin: skin('#dbf7e3', '#8ae5a6', '#2ba553', '#0c3a1e'),
+          bounce: 'rgba(255,255,255,0.22)', ink: '#08301a', tone: '#30d158',
+          brow: '', eyeFill: '', eyeLine: eyesArc,
+          mouth: 'M42 64q16 17 32 0', mouthFill: 'none', mw: 4.2,
+          body: 'b-breath', turnA: '', specA: '',
+          browA: '', eyeA: 'e-squint', mouthA: 'o-grin',
+        },
+        {
+          // The face shakes no. Brows press in and down, eyes narrow to a
+          // slit. It is refusal rather than a wobble, and who it is aimed at
+          // is decided by the words beside it, never by the drawing.
+          label: 'ANGRY', when: 'A run ended, or a grace went on it',
+          skin: skin('#ffe0cc', '#ffab78', '#c95c26', '#451a06'),
+          bounce: 'rgba(255,255,255,0.18)', ink: '#3b1505', tone: '#ff9f0a',
+          brow: 'M34.5 38.5 50.5 45.5 M81.5 38.5 65.5 45.5',
+          eyeFill: eyesOpen(4.4), eyeLine: '',
+          mouth: 'M48 73q10 -7 20 0', mouthFill: 'none', mw: 3.6,
+          body: '', turnA: 't-shake', specA: '',
+          browA: 'w-press', eyeA: 'e-narrow', mouthA: '',
+        },
+        {
+          label: 'QUIET', when: 'His hours are your quiet hours',
+          skin: skin('#525a63', '#373d44', '#22262b', '#0e1013'),
+          bounce: 'rgba(255,255,255,0.07)', ink: '#aab2ba', tone: '#48484a',
+          brow: '', eyeFill: '', eyeLine: eyesShut,
+          mouth: 'M54 69h8', mouthFill: 'none', mw: 3.6,
+          body: 'b-slow', turnA: '', specA: '',
+          browA: '', eyeA: '', mouthA: '',
+        },
+        {
+          label: 'IMMACULATE', when: 'Sixty days, nothing missed',
+          skin: skin('#fff2cc', '#ffd873', '#cf9718', '#40300a'),
+          bounce: 'rgba(255,255,255,0.26)', ink: '#3a2a05', tone: '#ffc14a',
+          brow: '', eyeFill: '', eyeLine: eyesArc,
+          mouth: 'M42 64q16 17 32 0', mouthFill: 'none', mw: 4.2,
+          body: 'b-breath', turnA: 't-turn', specA: 'p-turn',
+          browA: '', eyeA: '', mouthA: 'o-grin',
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

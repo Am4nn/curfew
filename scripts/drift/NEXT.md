@@ -4,35 +4,47 @@ Last updated 2026-09-21, on v3.4.8.
 
 ## Still open
 
-### v4 DESIGN, picked up tomorrow
+### v4 DESIGN: every screen is drawn, 2026-09-21
 
-The canvas is https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, 18 boards in
-five titled rows. Decisions are in `.planning/v4/DECIDED.md`, 1.1 to 1.18, and
-that file is the one to read first.
+The canvas is https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, now **37 boards
+in nine rows**, up from 17. Decisions are in `.planning/v4/DECIDED.md`, 1.1 to
+1.18, and that file is still the one to read first.
 
-**Not drawn yet, in the order they matter:**
+**The three that were owed are drawn.** Monk mode in all three states (`Monk`,
+`MonkSetup`, `MonkLocked`), the consent gate (`Consent`), and first run
+(`Welcome`, three steps, unskippable, not one model call in it). Monk mode also
+has its Home row, a percentage with no flame and no "closes at", inserted into
+`Main` above the at-risk section.
 
-1. **Monk mode.** 1.16 settles the whole design and there is no mock of any of
-   it. Needs: the Home row (a percentage, no flame, no "closes at"), the
-   configure screen (compulsory activities, required categories, the stricter
-   monk bar, and the pass-at number), and the not-yet state where it does not
-   appear because you are missing a required activity.
-2. **The consent gate.** The only screen v4 cannot ship without. New terms
-   covering a model reading your photographs, plus 1.18: sharing a photo with a
-   group consents to that group's coaches reading it. All three members
-   re-accept through the blocking overlay Phase 9 already built.
-3. **First run.** 1.15: you meet Ren and he walks you through setting up your
-   first activities. Deterministic, not a single model call, and it cannot be
-   skipped. Two or three screens at most.
+**And the v3 gap is closed.** Seventeen more boards, so nothing v3 built is
+undrawn: `Signin`, `Catalog`, `Notice`, `Evidence`, `GroupStats`, `Ledger`,
+`GroupSettings`, `Invite`, `Settings`, `Sharing`, `Notifs`, `Photos`, `Data`,
+`Away`, `Admin`. Three of the old set were deliberately folded rather than
+copied, and DECIDED 1.8 says which and why.
 
-**The one open decision:** which new activity types v4 adds. Monk mode
-aggregates activities, so cold shower and no junk food have to exist as types
-before they can be counted. Steps and Screen already do.
+**The photographs are real now.** `public/landing/{food,gym,sleep}.webp` are
+uploaded to the canvas and used everywhere a member's evidence appears. The CSS
+gradient stand-ins are gone.
+
+**Still open, and it is the only thing blocking the build:** the rest of the new
+activity types. Cold shower and No junk food are drawn and priced in DECIDED
+3.1; whatever else "many more things" meant is unwritten. Each one is a
+declarative module, so it is a list to agree rather than a problem to solve.
+
+**Next, and it is no longer a drawing job:** `.planning/v4/PLAN.md` and
+`SCHEMA.md`. Phases, tables, order.
 
 **Known cost, accepted, not solved:** the stricter monk bar means one activity
 carries two verdicts for one day, and `activity_scores` holds one row per user,
-type and period. That needs a second scope, a second pass, and `verify`
-diffing both. See 1.16.
+type and period. That needs a second scope, a second pass, and `verify` diffing
+both. See 1.16, and `MonkSetup` draws what it buys.
+
+**One thing every future board has to satisfy.** `.design/v5/gen/layout.py`
+rebuilds `canvas.json` from a declared row layout and refuses to write it when a
+board's root height, its `$preview` height and its frame `h` disagree. Those
+three have to be the same number: when they are not, `overflow: hidden` clips
+the content and the frame paints the difference as empty background. That is the
+bug that cost an afternoon on `Main`.
 
 ### Android push is VERIFIED, 2026-09-21. Closed.
 

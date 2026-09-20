@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 924px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <a href="Main.dc.html" aria-label="Back to Today" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
+    </a>
+    <span style="flex-grow: 1;"></span>
+  </div>
+  <div style="flex: none; padding: 4px 20px 0;">
+    <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; color: #8e8e93;">Monk mode</h1>
+    <p style="margin: 14px 0 0; font-size: 18px; line-height: 1.45; font-weight: 500;">You are two short of the four kinds it needs, so there is no number to show you yet.</p>
+    <p style="margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: #8e8e93;">A percentage over the two easy things you already do would be a number comparable to nobody, and scoring you on something you never agreed to do is not something this app does anywhere else.</p>
+  </div>
+  <div style="flex: none; margin: 24px 20px 0; display: flex; flex-direction: column; gap: 9px;">
+    <sc-for list="{{cats}}" as="c" hint-placeholder-count="4">
+      <div style="border-radius: 13px; background: {{c.bg}}; border: 1px solid {{c.border}}; padding: 13px 15px; display: flex; align-items: center; gap: 12px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{c.tone}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="{{c.mark}}"/></svg>
+        <span style="flex: none; width: 58px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #8e8e93;">{{c.kind}}</span>
+        <span style="flex-grow: 1; font-size: 15px; color: {{c.textTone}};">{{c.covered}}</span>
+        <sc-if value="{{c.missing}}" hint-placeholder-val="{{false}}">
+          <a href="Catalog.dc.html" style="flex: none; height: 30px; padding: 0 12px; border-radius: 999px; background: #ff375f; display: flex; align-items: center; text-decoration: none; color: #ffffff; font-size: 14px; font-weight: 600;">Add</a>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 16px; display: flex; flex-direction: column; gap: 9px;">
+    <span style="font-size: 15.5px; font-weight: 600;">Also compulsory, and you have them</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+      <sc-for list="{{fixed}}" as="f" hint-placeholder-count="3">
+        <span style="display: flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 999px; background: #2c2c2e;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          <span style="font-size: 13.5px; color: #8e8e93;">{{f.name}}</span>
+        </span>
+      </sc-for>
+    </div>
+  </div>
+
+  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Add both and Monk mode appears on Today tomorrow morning, with its first day scored from tomorrow onward.</p>
+  <div style="flex-grow: 1;"></div>
+  <div style="flex: none; padding: 0 20px 22px;">
+    <a href="Catalog.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 52px; border-radius: 15px; background: #ff375f; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Add what is missing</a>
+  </div>
+  <div style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+    <a href="Main.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4" fill="#ff375f"/><path d="M8 2.5v3M16 2.5v3" stroke="#ff375f" stroke-width="2" stroke-linecap="round"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #ff375f;">Today</span>
+    </a>
+    <a href="Coach.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.3" fill="#8e8e93"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.34)"/><ellipse cx="9.1" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/><ellipse cx="15.2" cy="12.4" rx="1.45" ry="2" fill="#000000" opacity="0.82"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Ren</span>
+    </a>
+    <a href="Stats.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-5 4 3 5-7"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Stats</span>
+    </a>
+    <a href="Groups.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 8.5a3 3 0 0 1 0 5"/><path d="M19.5 20a6.5 6.5 0 0 0-3.2-5.2"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Groups</span>
+    </a>
+    <a href="Activities.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+      <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">You</span>
+    </a>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":924}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const TICK = 'M20 6L9 17l-5-5', CROSS = 'M6 6l12 12M18 6L6 18';
+    const have = (kind, covered) => ({ kind, covered, mark: TICK, tone: '#30d158',
+      textTone: '#ffffff', bg: '#1c1c1e', border: 'transparent', missing: false });
+    const need = (kind, covered) => ({ kind, covered, mark: CROSS, tone: '#ff9f0a',
+      textTone: '#8e8e93', bg: 'transparent', border: 'rgba(255,159,10,0.38)', missing: true });
+    return {
+      cats: [
+        have('BODY', 'Gym'),
+        need('FOOD', 'Nothing yet. No junk food, or Water.'),
+        have('MIND', 'Reading'),
+        need('SLEEP', 'Nothing yet. Sleep, or Nightfast.'),
+      ],
+      fixed: ['Screen'].map((name) => ({ name })),
+    };
+  }
+}
+</script>
+</body>
+</html>

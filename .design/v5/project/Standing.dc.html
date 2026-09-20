@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 1058px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!--
+    Nav bar, to spec. 44px tall, the iOS standard. The back control is a 44x44
+    tap target (Apple's minimum) offset by -12px so the chevron's optical left
+    edge sits on the 20px margin, exactly above the large title's first letter.
+    No circle on an opaque screen: the disc is only for a chevron over a
+    photograph, where a bare glyph would be illegible.
+  -->
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <a href="Group.dc.html" aria-label="Back to Morning Crew" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
+    </a>
+    <span style="flex-grow: 1;"></span>
+  </div>
+
+  <div style="flex: none; padding: 4px 20px 0;">
+    <span style="font-size: 34px; font-weight: 700; letter-spacing: 0.01em;">Your standing</span>
+  </div>
+
+  <!-- the number, and where it is going -->
+  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 16px; display: flex; flex-direction: column; gap: 13px;">
+    <div style="display: flex; align-items: flex-end; gap: 10px;">
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1;">692</span>
+      <span style="display: flex; align-items: center; gap: 7px; padding-bottom: 6px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6ba17f" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" style="flex: none;"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M8.7 11.8 11.2 14.3 15.6 9.8"/></svg><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #6ba17f;">DISCIPLINE</span></span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-size: 16px; font-weight: 600; color: #30d158; padding-bottom: 6px;">+4 today</span>
+    </div>
+    <!-- ceiling and breadth are fields of Standing in group-view.ts, and they
+         are the answer to why a score stops climbing: you are only judged on
+         what you share here. -->
+    <!--
+      THE CEILING WAS A 1PX DASHED BORDER ON A 6PX BAR, which renders as about
+      two dots and reads as dust. It is the single most important mark on this
+      card: without it a score that stops climbing looks like a bug rather than
+      the consequence of sharing three activities out of seven.
+
+      It is a solid 2px tick now, overhanging the bar top and bottom so it is
+      legible against both the filled and unfilled halves, and it carries its
+      own number. A mark nobody can see is not a mark.
+    -->
+    <div style="position: relative; padding-top: 19px;">
+      <div style="position: relative; height: 6px; border-radius: 999px; background: #2c2c2e;">
+        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 69.2%; border-radius: 999px; background: #6ba17f;"></div>
+        <div style="position: absolute; left: 82%; top: -5px; bottom: -5px; width: 2px; border-radius: 1px; background: #c7ccd1;"></div>
+      </div>
+      <span style="position: absolute; left: 82%; top: 0; transform: translateX(-50%); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; color: #c7ccd1; white-space: nowrap;">820 CEILING</span>
+    </div>
+    <span style="font-size: 13.5px; font-weight: 400; color: #8e8e93; line-height: 1.4;">Your ceiling here is 820. You share 3 of the 7 activities you track, and this group can only judge you on those.</span>
+    <a href="Ranks.dc.html" style="text-decoration: none; display: flex; align-items: center; gap: 4px;">
+      <span style="font-size: 14px; font-weight: 400; color: #8e8e93;">208 to UNBROKEN.</span>
+      <span style="font-size: 14px; font-weight: 500; color: #ff375f;">How standing works</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff375f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg>
+    </a>
+  </div>
+
+  <!-- money -->
+  <div style="flex: none; margin: 26px 20px 0; display: flex; align-items: baseline; gap: 8px;">
+    <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Money</span>
+    <span style="font-size: 15px; font-weight: 400; color: #8e8e93;">IOU only</span>
+  </div>
+
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px;">
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 16px; font-weight: 500;">You owe the group</span>
+        <span style="font-size: 13.5px; font-weight: 400; color: #8e8e93;">4 missed days this month</span>
+      </div>
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; flex: none; font-size: 20px; font-weight: 700; color: #ff453a;">&#8377;200</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 0.5px solid rgba(255,255,255,0.08);">
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 16px; font-weight: 500;">The group owes you</span>
+        <span style="font-size: 13.5px; font-weight: 400; color: #8e8e93;">Your share of days other people missed</span>
+      </div>
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; flex: none; font-size: 20px; font-weight: 700; color: #30d158;">&#8377;340</span>
+    </div>
+    <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 0.5px solid rgba(255,255,255,0.08); text-decoration: none;">
+      <span style="flex-grow: 1; font-size: 16px; font-weight: 500; color: #ffffff;">Every entry</span>
+      <span style="flex: none; font-size: 15px; font-weight: 400; color: #8e8e93;">31 rows</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+    </a>
+  </div>
+
+  <div style="flex: none; margin: 10px 20px 0; display: flex; gap: 10px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2" stroke-linecap="round" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
+    <span style="font-size: 13px; font-weight: 400; color: #48484a; line-height: 1.45;">Curfew never moves money. These are notes between you and the people in this group, and they settle it themselves.</span>
+  </div>
+
+  <!-- what moved it -->
+  <div style="flex: none; margin: 26px 20px 0;">
+    <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Recent movement</span>
+  </div>
+
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{moves}}" as="m" hint-placeholder-count="5">
+      <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px;">
+        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{m.sep}};">
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 15.5px; font-weight: 400;">{{m.what}}</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 400; color: #8e8e93;">{{m.when}}</span>
+          </div>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; flex: none; font-size: 16px; font-weight: 600; color: {{m.tone}};">{{m.delta}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1058}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SEP = 'rgba(255,255,255,0.08)', UP = '#30d158', DOWN = '#ff453a';
+    return {
+      moves: [
+        // Three shared activities here, so a clean day is three of three.
+        { what: 'Three of three, clean day', when: 'Yesterday',    delta: '+4', tone: UP,   sep: 'transparent' },
+        { what: 'Three of three, clean day', when: 'Tuesday',      delta: '+4', tone: UP,   sep: SEP },
+        { what: 'Missed Supplements',        when: 'Monday',       delta: '-9', tone: DOWN, sep: SEP },
+        { what: 'Two of three',              when: 'Sunday',       delta: '+1', tone: UP,   sep: SEP },
+        { what: 'Three of three, clean day', when: 'Saturday',     delta: '+4', tone: UP,   sep: SEP },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

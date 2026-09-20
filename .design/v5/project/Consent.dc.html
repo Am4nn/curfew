@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+  <style>
+    html, body { margin: 0; background: #000000; overflow: hidden; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 1004px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!--
+    Phase 9's blocking overlay, reused. No tab bar, no back control and no way
+    around it: the whole app is behind this until it is answered. Curfew has
+    exactly one screen with no escape and this is it.
+  -->
+  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #ff375f;">CURFEW 4.0</span>
+  </div>
+  <div style="flex: none; padding: 4px 20px 0;">
+    <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">What changes, and what you are agreeing to</h1>
+    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">Curfew has a coach in it now. He reads things, so this needs saying plainly before you carry on.</span>
+  </div>
+  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: #1c1c1e; overflow: hidden;">
+    <div style="display: flex; gap: 13px; padding: 16px; border-top: 0.5px solid transparent;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff375f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 21a7.5 7.5 0 0 1 15 0"/></svg>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 15.5px; font-weight: 600; line-height: 1.3;">Ren reads everything you log</span>
+        <span style="font-size: 13.5px; line-height: 1.48; color: #8e8e93;">Every check-in, every time, every number, and <b style="color:#ffffff;font-weight:600;">every photograph you have taken</b>. That is new. Until now nothing read your pictures, and a model does now.</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 13px; padding: 16px; border-top: 0.5px solid rgba(255,255,255,0.08);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="M3 8h3l2-3h8l2 3h3v12H3zM12 13m-3.4 0a3.4 3.4 0 1 0 6.8 0 3.4 3.4 0 1 0-6.8 0"/></svg>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 15.5px; font-weight: 600; line-height: 1.3;">A photograph you share with a group is read for them too</span>
+        <span style="font-size: 13.5px; line-height: 1.48; color: #8e8e93;">If you share Food with Wing, Wing&#39;s members see your meals, and their coaches read them the same way yours reads yours. Sharing a picture is sharing it with the coach behind the person.</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 13px; padding: 16px; border-top: 0.5px solid rgba(255,255,255,0.08);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="M20 6L9 17l-5-5"/></svg>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 15.5px; font-weight: 600; line-height: 1.3;">He never decides whether a day counted</span>
+        <span style="font-size: 13.5px; line-height: 1.48; color: #8e8e93;">Not one number in this app comes from a model. Passes, misses, streaks, standing and money are arithmetic over your check-ins and they stay that way.</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 13px; padding: 16px; border-top: 0.5px solid rgba(255,255,255,0.08);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="M4 12h16M12 4v16"/></svg>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 15.5px; font-weight: 600; line-height: 1.3;">Turn him off and off is real</span>
+        <span style="font-size: 13.5px; line-height: 1.48; color: #8e8e93;">One switch in Settings. The tab goes, his lines go, and nothing of yours is sent to a model again. What is left is the tracker, which is a whole app on its own.</span>
+      </div>
+    </div>
+  </div>
+  <div style="flex: none; margin: 18px 20px 0; display: flex; gap: 11px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
+    <span style="font-size: 13px; line-height: 1.48; color: #8e8e93;">The money you owe is not deleted by anything on this screen, and never has been. A balance is a record of what two people agreed, so it survives you leaving.</span>
+  </div>
+  <div style="flex-grow: 1;"></div>
+  <div style="flex: none; padding: 0 20px 30px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; gap: 14px;">
+      <a href="Data.dc.html" style="flex-grow: 1; height: 52px; border-radius: 15px; border: 1px solid #3a3a3c; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #ffffff; font-size: 16px; font-weight: 500;">Read the terms</a>
+      <button type="button" style="flex-grow: 1; height: 52px; border: 0; border-radius: 15px; background: #ff375f; color: #ffffff; font-family: inherit; font-size: 17px; font-weight: 600;">I accept</button>
+    </div>
+    <span style="text-align: center; font-size: 12.5px; color: #48484a;">Every member accepts this once. Nobody is carried over silently.</span>
+  </div>
+
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1004}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

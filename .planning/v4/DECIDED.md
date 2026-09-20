@@ -285,6 +285,30 @@ Retiring the gate outright was offered and refused: it is the only thing in the
 repo that says a person has to look at a screen on a phone, and the two rows
 that matter most, Configure and Check-in, have never been ticked.
 
+**THE CANVAS NOW COVERS EVERY v3 SCREEN, 2026-09-21.** It went from 17 boards
+to 37, in nine titled rows, and the twenty added close the gap between what v3
+built and what v5 had drawn. Sign in, first run, the consent gate, the catalog,
+a release notice, the group's week, its shared evidence, its full ledger, its
+settings, an invitation, settings, what you share, notifications, your
+photographs, your data, away days, the ops console, and Monk mode in its three
+states.
+
+**And the photographs are real.** `public/landing/{food,gym,sleep}.webp` are
+uploaded to the canvas and used wherever a member's evidence appears: the feed
+on Home, the group feed, the camera and its review, the shared-evidence screen,
+your photographs, and Ren's four plates. The layered CSS gradients that stood in
+for them are gone.
+
+Those three images are the generated ones, which is the point: a real member's
+evidence must never appear anywhere a stranger can reach, and the sign-in board
+is exactly that. The same rule that put them on the landing page puts them here.
+
+**Nothing drawn one-for-one from the old `.design/` set.** `V3Admin*` was seven
+boards and is one here, Ops, because the scheduler, drift and the controls are
+what the console is actually read for. The twelve configure boards are still one
+board, Sleep, because that was always the point of the declarative model. The
+per-activity stats variants stay inside `Stats`.
+
 ### 1.9 The v5 copy is not being rewritten yet
 
 Aman: *"We will make it coach soon. Currently I was focused on theme but soon on
@@ -461,6 +485,23 @@ own before they can be aggregated. That is a feature rather than a cost. They
 get their own streaks, their own windows and their own evidence, and Monk mode
 gets to be nothing but a lens over them.
 
+### 1.18 Sharing a photograph consents to that group's coaches reading it
+
+Settled 2026-09-21, from a menu, and written down on 2026-09-21 after
+`scripts/drift/NEXT.md` referenced a section that did not exist.
+
+If you share Food with Wing, Wing's members see your meals, and **their** coaches
+read them the same way yours reads yours. Sharing a picture is sharing it with
+the coach behind the person.
+
+The alternative is a photograph that three people can look at and no model may
+read, which would need the group feed and the coach to hold different copies of
+the same picture and would be a promise the architecture cannot keep. Saying it
+plainly on the consent gate is the honest version.
+
+This is 1.2's boundary stated from the other end. 1.2 says what Ren may read;
+this says what you agree to when you hand something over.
+
 ### 1.17 Aman pays for the model
 
 Settled 2026-09-21. Personally, out of pocket, for three members.
@@ -543,3 +584,16 @@ of "many more things" is unwritten.
 
 Each one is a declarative module and adding a type never edits the engine, so
 this is a list to agree rather than a problem to solve.
+
+**What the mocks assume, pending the rest of the list.** Cold shower and No junk
+food are drawn in the catalog, marked NEW, and both are a held-or-slipped answer
+with no photograph, which is the Sugar-free module's shape and needs nothing new
+from the engine. Cold shower is a BODY category and No junk food is a FOOD one,
+which is what lets Monk mode's four kinds be covered at all. If the list grows,
+the catalog board grows with it and nothing else changes.
+
+**One contradiction, resolved in favour of this file.** `NEXT.md` asked the Monk
+mode configure screen for "the pass-at number". 1.16 says NO PASS, in those
+words, and gives the reason: a bar is a pass, a pass is a miss, and a miss is a
+thing to dread. There is no pass-at number on `MonkSetup`, and `NEXT.md` was
+wrong rather than ahead.

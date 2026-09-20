@@ -92,7 +92,24 @@ export function ActivityRow({
           {/* A rest day is not a broken streak, so an unscheduled row still
               carries its count. The whole row is at 0.42, so the flame dims
               with it rather than needing a duller treatment of its own. */}
-          {row.streak > 0 ? (
+          {row.grey ? (
+            // GREY. The run is over on the arithmetic and the number has NOT
+            // fallen: a weekly week that came short holds what it earned, and
+            // the flame going out is what says the run ended. Asked BEFORE
+            // `streak > 0`, because a grey run still has a positive count and
+            // would otherwise draw a live flame over a dead run.
+            //
+            // There may be nothing to press yet. A week goes grey the moment
+            // its minimum is unreachable, and the price of forgiving it is not
+            // final until the week ends, so the control below waits for
+            // `restore` while this does not.
+            <span className="flex items-center gap-1">
+              <DeadFlame size={13} />
+              <span className="text-[12px] leading-none text-muted tabular-nums">
+                {row.streak}
+              </span>
+            </span>
+          ) : row.streak > 0 ? (
             <span className="flex items-center gap-1">
               <Flame size={13} />
               <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">

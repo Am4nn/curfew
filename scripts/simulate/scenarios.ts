@@ -309,7 +309,17 @@ export const SCENARIOS: Scenario[] = [
 
       return {
         checks: [
-          eq("a week that fell short ends the run", broken?.streak, 0),
+          // GREY, not zero. The run is over on the arithmetic and the two
+          // sessions the week did manage are still in the number: it holds at
+          // 11 rather than falling, and the flame going out is what says the
+          // run ended. Only a session in a LATER week returns it to zero.
+          holds("a week that fell short greys the run", broken?.grey === true, broken?.grey),
+          holds(
+            "and the number holds rather than falling",
+            (broken?.streak ?? 0) > 0,
+            broken?.streak,
+            "the days the short week did earn",
+          ),
           // Three a week, two sessions managed. Two days of the thing missed,
           // not one missed week: the price is what was actually short.
           eq("and costs what it came short, not one", offer?.cost, 1),

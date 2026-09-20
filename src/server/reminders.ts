@@ -289,7 +289,17 @@ export async function dayFor(
         (deadline.toMillis() - instant.getTime()) / 60_000,
       ),
       period: state.period,
-      streak: streaks.get(state.typeKey)?.current ?? 0,
+      // A GREY run is over. It keeps its number on screen, because the days
+      // happened, but it is not a streak that tonight can save and a
+      // notification must not say it is. "Don't break a 23 day streak" about a
+      // run that ended on Saturday is the same class of lie as telling somebody
+      // with nothing logged that they were almost there, which is what
+      // notification-copy.ts exists to make impossible. Zero here means the
+      // streak kind never fires for it.
+      streak: (() => {
+        const k = streaks.get(state.typeKey);
+        return k && !k.grey ? k.current : 0;
+      })(),
       streakUnit: periodUnit(state.schedule),
     });
   }

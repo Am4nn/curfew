@@ -7,7 +7,7 @@ import { standingFor } from "@/server/standing";
 import { globalScore } from "@/server/scoring";
 import { cleanRunIn } from "@/server/clean-run";
 import { QuorumMark } from "../mark";
-import { ActivityIcon, Flame } from "../activity-icon";
+import { ActivityIcon, DeadFlame, Flame } from "../activity-icon";
 import { RankIcon, rankText } from "../rank-icon";
 
 /** "Daily, 3 windows, photo on confirm", from the type's own declaration. */
@@ -54,6 +54,7 @@ export default async function ActivitiesPage() {
       typeKey: a.typeKey,
       type: getActivityType(a.typeKey),
       streak: (await standingFor(user.id, a.typeKey))?.streak ?? 0,
+      grey: (await standingFor(user.id, a.typeKey))?.grey ?? false,
       summary: summarise(a.typeKey, a.schedule, a.config),
     })),
   );
@@ -103,7 +104,17 @@ export default async function ActivitiesPage() {
                   <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                     <div className="flex items-center gap-[9px]">
                       <span className="text-[14px]">{row.type.name}</span>
-                      {row.streak > 0 ? (
+                      {/* Grey first, for the same reason as on Home: a run
+                          that came short holds its number, so a positive count
+                          is not enough to earn a live flame. */}
+                      {row.grey ? (
+                        <span className="flex items-center gap-1">
+                          <DeadFlame size={13} />
+                          <span className="text-[12px] leading-none text-muted tabular-nums">
+                            {row.streak}
+                          </span>
+                        </span>
+                      ) : row.streak > 0 ? (
                         <span className="flex items-center gap-1">
                           <Flame size={13} />
                           <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">

@@ -59,6 +59,16 @@ export interface TodayRow {
    * offer, drops its button and says what it needs against what you have.
    */
   restore: { cost: number; restoresTo: number; affordable: boolean } | null;
+  /**
+   * The run has ended but the number has not fallen. GREY.
+   *
+   * Not the same as `restore` being set. A weekly week goes grey the moment its
+   * minimum becomes unreachable, which is usually mid-week, and there is no
+   * offer yet because the price is not final: nothing logged by Saturday is
+   * three short, and two sessions over the weekend makes it one. So a row can
+   * be grey with nothing to press, and that is the honest state to draw.
+   */
+  grey: boolean;
 }
 
 export interface Today {
@@ -135,6 +145,7 @@ export async function todayFor(userId: string): Promise<Today> {
       icon: type.icon,
       kind: type.checkin.kind,
       streak: standings.get(activity.typeKey)?.streak ?? 0,
+      grey: standings.get(activity.typeKey)?.grey ?? false,
       scheduled: state.scheduled,
       done: state.passed,
       countedToday: state.countedToday,

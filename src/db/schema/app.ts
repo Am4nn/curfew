@@ -455,6 +455,11 @@ export const activityStreaks = pgTable(
     // judged when it ends, so the count has to survive between presses.
     weekStart: date("week_start", { mode: "string" }),
     weekSessions: integer("week_sessions").notNull().default(0),
+    // The run is over on the arithmetic but still recoverable (migration 0030).
+    // A weekly streak that came short holds its number and goes grey rather
+    // than dropping to zero, so a positive `current` no longer means alive and
+    // this is what says which it is.
+    grey: boolean("grey").notNull().default(false),
     closedThrough: date("closed_through", { mode: "string" }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

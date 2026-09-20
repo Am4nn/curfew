@@ -255,6 +255,10 @@ async function verifyStreaks(userId: string, scores: ScoreRow[]): Promise<Drift[
     const fields: [string, unknown, unknown][] = [
       ["current", s.current, computed.current],
       ["best", s.best, computed.best],
+      // Grey decides whether that number is a live run or a dead one holding
+      // its value, so a stored flag that disagrees with the rebuild is the
+      // difference between a lit flame and an extinguished one on every screen.
+      ["grey", s.grey, computed.grey],
     ];
     for (const [field, was, now] of fields) {
       if (was !== now) {

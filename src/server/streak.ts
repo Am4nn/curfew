@@ -46,6 +46,8 @@ import { now } from "@/lib/clock";
 export interface StoredStreak {
   current: number;
   best: number;
+  /** The run is over on the arithmetic but still recoverable. See StreakState. */
+  grey: boolean;
   closedThrough: string | null;
   weekStart: string | null;
   weekSessions: number;
@@ -102,6 +104,7 @@ export async function readStreak(
   return {
     current: row.current,
     best: row.best,
+    grey: row.grey,
     closedThrough: row.closedThrough,
     weekStart: row.weekStart,
     weekSessions: row.weekSessions,
@@ -340,6 +343,8 @@ async function walkFor(
   activity: NonNullable<Awaited<ReturnType<typeof getUserActivity>>>;
   days: StreakDay[];
   closedThrough: string | null;
+  /** The member's local date now. What lets a week go grey before it ends. */
+  today: string;
   timezone: string;
   instant: Date;
   unit: "day" | "week";
@@ -374,6 +379,7 @@ async function walkFor(
     closedThrough,
     timezone,
     instant,
+    today: iso(DateTime.fromJSDate(instant, { zone: timezone })),
     unit,
   };
 }
@@ -391,7 +397,12 @@ export async function offerFor(
 ): Promise<RestoreOffer | null> {
   const walk = await walkFor(userId, typeKey);
   if (!walk) return null;
-  return restoreOffer(walk.days, walk.activity.schedule.schedule, asOf(walk.closedThrough));
+  return restoreOffer(
+    walk.days,
+    walk.activity.schedule.schedule,
+    asOf(walk.closedThrough),
+    walk.today,
+  );
 }
 
 export async function rebuildStreak(
@@ -401,12 +412,17 @@ export async function rebuildStreak(
 ): Promise<StoredStreak | null> {
   const walk = await walkFor(userId, typeKey);
   if (!walk) return null;
-  const { activity, days, closedThrough, timezone, instant, unit } = walk;
+  const { activity, days, closedThrough, today, unit } = walk;
 
-  const result = streakOver(days, activity.schedule.schedule, EMPTY_STREAK, asOf(closedThrough));
+  const result = streakOver(
+    days,
+    activity.schedule.schedule,
+    EMPTY_STREAK,
+    asOf(closedThrough),
+    today,
+  );
 
   // The week in flight, so a press can add to it without re-reading history.
-  const today = iso(DateTime.fromJSDate(instant, { zone: timezone }));
   const weekStart = unit === "week" ? mondayOf(today) : null;
   const weekSessions =
     weekStart === null
@@ -416,6 +432,7 @@ export async function rebuildStreak(
   const stored: StoredStreak = {
     current: result.current,
     best: result.best,
+    grey: result.grey,
     closedThrough,
     weekStart,
     weekSessions,
@@ -438,6 +455,7 @@ async function writeStreak(
       typeKey,
       current: s.current,
       best: s.best,
+      grey: s.grey,
       lastDay,
       weekStart: s.weekStart,
       weekSessions: s.weekSessions,
@@ -448,6 +466,7 @@ async function writeStreak(
       set: {
         current: sql`excluded.current`,
         best: sql`excluded.best`,
+        grey: sql`excluded.grey`,
         lastDay: sql`excluded.last_day`,
         weekStart: sql`excluded.week_start`,
         weekSessions: sql`excluded.week_sessions`,
@@ -491,8 +510,19 @@ export async function bumpStreak(
   const unit = periodUnit(activity.schedule.schedule);
 
   const latest = days.reduce((a, b) => (a > b ? a : b));
-  const current = stored.current + days.length;
   const week = unit === "week" ? mondayOf(latest) : null;
+
+  // A press against a GREY run, and which week it lands in decides everything.
+  //
+  // In the SAME week the run went grey, it adds: two sessions over the weekend
+  // of a dead three-a-week are two days of the thing, and they bring the price
+  // of forgiving that week down from three to one.
+  //
+  // In a LATER week, turning up is the answer. The offer expires, the old run
+  // is over, and this is day one of a new one. It is the only place a weekly
+  // streak returns to zero, and `streakOver` does the same thing on rebuild.
+  const restarting = stored.grey && week !== null && week !== stored.weekStart;
+  const current = (restarting ? 0 : stored.current) + days.length;
 
   await writeStreak(
     userId,
@@ -500,6 +530,7 @@ export async function bumpStreak(
     {
       current,
       best: Math.max(stored.best, current),
+      grey: restarting ? false : stored.grey,
       closedThrough: stored.closedThrough,
       weekStart: week,
       // A new week starts its own count; the same week continues.
@@ -516,7 +547,21 @@ export async function bumpStreak(
  * `closedThrough` is what makes the close idempotent: nothing new means nothing
  * to do, and the counter keeps whatever the press added.
  */
-function needsClosing(stored: StoredStreak | null, scoredThrough: string | null): boolean {
+function needsClosing(
+  stored: StoredStreak | null,
+  scoredThrough: string | null,
+  unit: "day" | "week",
+): boolean {
+  // A WEEKLY type always rebuilds. Its run can now go grey in the MIDDLE of a
+  // week, the moment the minimum stops being reachable, and nothing has closed
+  // when that happens: no period ended, no score was written, so the gate below
+  // would skip the one rebuild that would notice. The alternative is to
+  // re-derive reachability here from the stored week, which needs to know
+  // whether TODAY is one of the sessions already counted, and the row does not
+  // say. One extra rebuild for one activity is the cheaper thing to be wrong
+  // about; a streak that reads healthy when the arithmetic says it is grey is
+  // the thing this whole rule exists to stop.
+  if (unit === "week") return true;
   if (!stored?.closedThrough) return true;
   if (scoredThrough === null) return false;
   return scoredThrough > stored.closedThrough;
@@ -560,6 +605,7 @@ export async function allStreaks(userId: string): Promise<Map<string, StoredStre
       {
         current: row.current,
         best: row.best,
+        grey: row.grey,
         closedThrough: row.closedThrough,
         weekStart: row.weekStart,
         weekSessions: row.weekSessions,
@@ -585,9 +631,12 @@ export async function closeStreaks(userId: string): Promise<void> {
   // disabled ones left a type with scores and no row, and `verify` reported
   // that as drift, correctly. What the number stops doing is moving.
   for (const a of activities) {
-    if (!needsClosing(stored.get(a.typeKey) ?? null, scoredThrough.get(a.typeKey) ?? null)) {
-      continue;
-    }
+    const needed = needsClosing(
+      stored.get(a.typeKey) ?? null,
+      scoredThrough.get(a.typeKey) ?? null,
+      periodUnit(a.schedule.schedule),
+    );
+    if (!needed) continue;
     await rebuildStreak(userId, a.typeKey);
   }
 }
@@ -599,5 +648,5 @@ export async function recomputeStreak(
 ): Promise<StreakState | null> {
   const rebuilt = await rebuildStreak(userId, typeKey, { write: false });
   if (!rebuilt) return null;
-  return { current: rebuilt.current, best: rebuilt.best };
+  return { current: rebuilt.current, best: rebuilt.best, grey: rebuilt.grey };
 }

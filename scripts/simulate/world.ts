@@ -331,6 +331,8 @@ export async function share(
 export interface Standing {
   streak: number;
   best: number;
+  /** The run is over on the arithmetic and the number has not fallen. */
+  grey: boolean;
 }
 
 export interface DayScore {
@@ -371,7 +373,7 @@ export async function streakOf(userId: string, typeKey: string): Promise<Standin
     .from(activityStreaks)
     .where(sql`${activityStreaks.userId} = ${userId} AND ${activityStreaks.typeKey} = ${typeKey}`);
   return row
-    ? { streak: row.current, best: row.best }
+    ? { streak: row.current, best: row.best, grey: row.grey }
     : null;
 }
 

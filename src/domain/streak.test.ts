@@ -116,7 +116,10 @@ describe("what it would take to restore a run", () => {
   it("brings a short gym week back to the days it did earn", () => {
     const start = { current: 21, best: 21 };
     const week = streakOver(days("2026-09-21", "xx....."), ANY3, start, "2026-09-27");
-    expect(week.current).toBe(0);
+    // 23 and GREY, not 0. The two sessions happened and the number does not
+    // fall; the week going short is what the grey says.
+    expect(week.current).toBe(23);
+    expect(week.grey).toBe(true);
     const offer = restoreOffer(days("2026-09-21", "xx....."), ANY3, "2026-09-27");
     // From EMPTY rather than 21, because `restoreOffer` walks the same days the
     // rebuild walks and the rebuild starts from the join date. Two sessions.
@@ -187,8 +190,13 @@ describe("frequency activities", () => {
     const week2 = streakOver(days("2026-09-14", "xxx...."), ANY3, week1);
     expect(week2.current).toBe(21);
 
+    // Week 3 is where the worked example in ACTIVITIES.md and this code now
+    // part company, on purpose. It says the run ends at zero. It goes GREY
+    // instead: 21 plus the two sessions week 3 did manage, held rather than
+    // taken away, with grace or a fresh start to choose between.
     const week3 = streakOver(days("2026-09-21", "xx....."), ANY3, week2);
-    expect(week3.current).toBe(0);
+    expect(week3.current).toBe(23);
+    expect(week3.grey).toBe(true);
   });
 
   it("grace holds the run where it is, keeping the days the week did add", () => {
@@ -225,23 +233,89 @@ describe("frequency activities", () => {
     }
   });
 
-  it("best keeps the high water mark even when days are taken back", () => {
+  it("holds the number rather than taking the days back", () => {
     const start = { current: 21, best: 21 };
     const r = streakOver(days("2026-09-21", "xx....."), ANY3, start);
-    expect(r.current).toBe(0);
+    // Nothing is taken back any more. The two sessions count, the week came
+    // short, and the run is grey at 23 rather than zero. best agrees because
+    // there is nothing for it to be a high water mark ABOVE.
+    expect(r.current).toBe(23);
+    expect(r.best).toBe(23);
+    expect(r.grey).toBe(true);
+  });
+
+  it("a session in a LATER week is what finally resets it", () => {
+    const start = { current: 21, best: 21 };
+    // Week of the 21st comes up short and goes grey at 23. The member does not
+    // spend grace; they just turn up again the following Monday. That is the
+    // answer, and the only place a weekly streak returns to zero.
+    const r = streakOver(days("2026-09-21", "xx.....xxx...."), ANY3, start);
+    expect(r.current).toBe(3);
+    expect(r.grey).toBe(false);
     expect(r.best).toBe(23);
   });
 
+  it("a session in the SAME grey week still counts toward the shortfall", () => {
+    // Saturday of a dead three-a-week, nothing done. Going Saturday and Sunday
+    // cannot save it, but it makes the week one short instead of three, so the
+    // grace it would take to forgive drops from three to one.
+    // A full week first, so there is a run to lose in the second one.
+    const bare = restoreOffer(days("2026-09-07", "xxx...." + "......."), ANY3, "2026-09-20");
+    const tried = restoreOffer(days("2026-09-07", "xxx...." + ".....xx"), ANY3, "2026-09-20");
+    expect(bare?.cost).toBe(3);
+    expect(tried?.cost).toBe(1);
+    // And the two sessions are still in the number it comes back to.
+    expect(bare?.restoresTo).toBe(3);
+    expect(tried?.restoresTo).toBe(5);
+  });
+
   it("judges each week on its own", () => {
-    // Week 1 meets 3, week 2 does not.
+    // Week 1 meets 3, week 2 does not, so the run is grey at 5 rather than 0.
     const r = streakOver(days("2026-09-07", "xxx....xx....."), ANY3);
-    expect(r.current).toBe(0);
+    expect(r.current).toBe(5);
+    expect(r.grey).toBe(true);
     expect(r.best).toBe(5);
+  });
+
+  describe("grey starts before the week ends", () => {
+    // The week of 2026-09-07 runs Monday to Sunday the 13th.
+    const start = { current: 20, best: 20 };
+    const asOf = "2026-09-06";
+
+    it("on the Saturday, when two days cannot make three", () => {
+      const r = streakOver(days("2026-09-07", ""), ANY3, start, asOf, "2026-09-12");
+      expect(r.grey).toBe(true);
+      expect(r.current).toBe(20);
+    });
+
+    it("but not on the Friday, when three days still can", () => {
+      const r = streakOver(days("2026-09-07", ""), ANY3, start, asOf, "2026-09-11");
+      expect(r.grey).toBe(false);
+      expect(r.current).toBe(20);
+    });
+
+    it("and a session today is a session, not a day still available", () => {
+      // Friday done. Two needed, two days left after today: still reachable.
+      const r = streakOver(days("2026-09-11", "x"), ANY3, start, asOf, "2026-09-11");
+      expect(r.grey).toBe(false);
+      expect(r.current).toBe(21);
+    });
+
+    it("with no offer yet, because the price is not final", () => {
+      // Grey on the Saturday, but the week can still go from three short to one
+      // by Sunday night, so there is nothing honest to put on a button.
+      expect(restoreOffer(days("2026-09-07", ""), ANY3, asOf, "2026-09-12")).toBeNull();
+    });
+
+    it("says nothing without a today, which is what an old caller passes", () => {
+      const r = streakOver(days("2026-09-07", ""), ANY3, start, asOf);
+      expect(r.grey).toBe(false);
+    });
   });
 });
 
 describe("EMPTY", () => {
   it("is a run that has not started", () => {
-    expect(EMPTY).toEqual({ current: 0, best: 0 });
+    expect(EMPTY).toEqual({ current: 0, best: 0, grey: false });
   });
 });

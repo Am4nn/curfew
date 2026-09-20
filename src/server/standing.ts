@@ -24,6 +24,14 @@ export interface Standing {
   typeKey: string;
   streak: number;
   best: number;
+  /**
+   * The run is over on the arithmetic but still recoverable. See StreakState.
+   *
+   * A weekly streak holds its number when a week comes short, so `streak` above
+   * being positive no longer means the run is alive. Every surface that draws a
+   * flame has to ask this as well, or a dead run gets a live one.
+   */
+  grey: boolean;
 }
 
 /**
@@ -57,6 +65,7 @@ export const standingsFor = cache(
         typeKey: activity.typeKey,
         streak: s.current,
         best: s.best,
+        grey: s.grey,
       });
     }
     return out;

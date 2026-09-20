@@ -53,10 +53,27 @@ export interface StreakDay {
 }
 
 export interface StreakState {
-  /** Days completed in the run that is still alive. */
+  /** Days completed in the run. Grey or not, this is the number on screen. */
   current: number;
   /** The longest run ever reached. Never taken back. */
   best: number;
+  /**
+   * The run is over on the arithmetic but still recoverable. GREY.
+   *
+   * A streak only ever goes UP. It does not fall on the Sunday of a week that
+   * came short, and it does not fall the moment a week becomes impossible. It
+   * goes grey: the same number, marked, with something to decide about it.
+   *
+   * Grey starts the moment the week's minimum stops being reachable, which can
+   * be mid-week. Sessions logged after that STILL ADD, and still count against
+   * what the week came short, because a person who turns up on Saturday and
+   * Sunday of a dead week has missed one day of three rather than three.
+   *
+   * It ends one of two ways. Grace forgives the week and the run carries on
+   * from where it is. Or the next session in a LATER week starts a new run from
+   * one, which is the only place a weekly streak returns to zero.
+   */
+  grey: boolean;
 }
 
 interface StreakStep {
@@ -64,6 +81,25 @@ interface StreakStep {
   at: string;
   current: number;
   graceUsed: boolean;
+  /**
+   * This period ended the run, or would have without grace.
+   *
+   * It used to be inferred from `current` falling to zero, and grey took that
+   * away: a weekly run that came short HOLDS its number, so a step can be a
+   * failure and still carry a positive count. `restoreOffer` reads this to find
+   * the tail of periods a grace spend would have to cover.
+   */
+  failed?: boolean;
+  /**
+   * The period is grey but has NOT ended, so it has no price yet.
+   *
+   * A week goes grey the moment its minimum is unreachable, and what it will
+   * finally be short by is not known until Sunday: nothing logged by Saturday
+   * is three short, and two sessions over the weekend makes it one. An offer
+   * cannot name a number yet, so `restoreOffer` steps over these rather than
+   * refusing on them, and the member can still forgive the weeks behind it.
+   */
+  open?: boolean;
   /**
    * How much grace this period would cost to forgive, when it failed.
    *
@@ -79,7 +115,7 @@ export interface StreakResult extends StreakState {
   steps: StreakStep[];
 }
 
-export const EMPTY: StreakState = { current: 0, best: 0 };
+export const EMPTY: StreakState = { current: 0, best: 0, grey: false };
 
 /**
  * Walk a chronological run of activity-days and return the streak.
@@ -91,16 +127,29 @@ export const EMPTY: StreakState = { current: 0, best: 0 };
  * `asOf` is the last activity-day that has CLOSED. It only matters to weekly
  * activities, where a week is judged at week end: without it a week two days
  * old looks like a week that missed its minimum, and the streak would collapse
- * every Tuesday. Defaults to the last day supplied, which is what the nightly
- * job passes anyway.
+ * every Tuesday. Defaults to the last day supplied, which is what the jobs pass
+ * anyway.
+ *
+ * `today` is the member's current local date, and it is what lets a week go
+ * GREY early, before it has ended. Omit it and a week is only ever judged at
+ * its Sunday, which is what every caller did before and what the tests that do
+ * not pass it still assert.
  */
 export function streakOver(
   days: StreakDay[],
   schedule: Schedule,
-  from: StreakState = EMPTY,
+  // Grey is optional coming IN and always present going OUT. A caller
+  // continuing an earlier result passes it; one starting from a pair of numbers
+  // does not have to invent it.
+  from: { current: number; best: number; grey?: boolean } = EMPTY,
   asOf?: string,
+  today?: string,
 ): StreakResult {
-  const state: StreakState = { current: from.current, best: from.best };
+  const state: StreakState = {
+    current: from.current,
+    best: from.best,
+    grey: from.grey ?? false,
+  };
   const steps: StreakStep[] = [];
 
   const sorted = [...days].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
@@ -115,7 +164,7 @@ export function streakOver(
       // consecutive days, so grace is never even consulted.
       if (day.paused) {
         state.current = 0;
-        steps.push({ at: day.date, current: 0, graceUsed: false });
+        steps.push({ at: day.date, current: 0, graceUsed: false, failed: true });
         continue;
       }
 
@@ -133,15 +182,20 @@ export function streakOver(
         at: day.date,
         current: state.current,
         graceUsed: day.graced === true,
+        failed: true,
         short: 1,
       });
     }
     return { ...state, steps };
   }
 
-  // A minimum a week. Days add as they happen (decision 77), and the week is
-  // judged at week end. A week that misses its minimum takes those days back:
-  // the run resets, or holds where it is when grace covers it.
+  // A minimum a week. Days add as they happen (decision 77).
+  //
+  // A week that misses its minimum does NOT take those days back and does not
+  // zero the run. It goes GREY: the number holds, marked, with a choice
+  // attached. See StreakState.grey. Grey starts the moment the minimum becomes
+  // unreachable, which is usually before the week has ended, and the only thing
+  // that returns a weekly streak to zero is the next session in a later week.
   const weeks = new Map<string, StreakDay[]>();
   for (const day of sorted) {
     const monday = mondayOf(day.date);
@@ -150,8 +204,19 @@ export function streakOver(
     else weeks.set(monday, [day]);
   }
 
+  // The week in progress, even when it is empty.
+  //
+  // A caller supplies the days it knows about, and for the week in flight that
+  // is only the days already DONE. So a week in which nothing has happened
+  // contributes no days, produces no bucket, and would never be looked at,
+  // which is exactly the week grey exists for: nothing logged by Saturday is
+  // the case where a three-a-week has already failed.
+  if (today && !weeks.has(mondayOf(today))) weeks.set(mondayOf(today), []);
+
   const minimum = schedule.kind === "minimum" ? schedule.perWeek : 0;
   const closedThrough = asOf ?? sorted.at(-1)?.date ?? "";
+  /** The Monday of the week the run went grey on, so a later one can end it. */
+  let greySince: string | null = null;
 
   for (const [monday, week] of weeks) {
     // A week entirely inside a pause. Nothing was scheduled, so nothing was
@@ -159,9 +224,24 @@ export function streakOver(
     // all the same.
     if (week.length > 0 && week.every((d) => d.paused)) {
       if (sundayOf(monday) > closedThrough) continue;
+      // Not grey. A pause is a gap the member declared, not a week they came
+      // short in, so there is nothing to forgive and nothing to decide.
       state.current = 0;
-      steps.push({ at: monday, current: 0, graceUsed: false });
+      state.grey = false;
+      greySince = null;
+      steps.push({ at: monday, current: 0, graceUsed: false, failed: true });
       continue;
+    }
+
+    // A session in a week AFTER the one that went grey. The offer has expired
+    // by turning up: the old run is over, and this is the first day of a new
+    // one. The only place a weekly streak goes to zero.
+    if (state.grey && greySince !== null && monday > greySince) {
+      if (week.some((d) => d.done)) {
+        state.current = 0;
+        state.grey = false;
+        greySince = null;
+      }
     }
 
     let sessions = 0;
@@ -169,33 +249,49 @@ export function streakOver(
     for (const day of week) {
       if (!day.done) continue;
       sessions += 1;
+      // Sessions add whether or not the week is already grey. Somebody who goes
+      // on the Saturday and Sunday of a dead week did two days of the thing,
+      // and the week is short by one rather than by three.
       state.current += 1;
       if (state.current > state.best) state.best = state.current;
       steps.push({ at: day.date, current: state.current, graceUsed: false });
     }
 
-    if (sessions >= minimum) continue;
+    if (sessions >= minimum) {
+      // The week was made. Anything grey before it has been overtaken.
+      state.grey = false;
+      greySince = null;
+      continue;
+    }
 
-    // Still in flight. Its days have counted up, and it is not judged until it
-    // ends, so a good week shows progress and a bad one has time to recover.
-    if (sundayOf(monday) > closedThrough) continue;
+    const ended = sundayOf(monday) <= closedThrough;
+    const reachable = !ended && !unreachable(week, monday, minimum, sessions, today);
 
-    // The week failed. Without grace the run ends. With it the run HOLDS where
-    // it is, keeping the days this week did add.
-    //
-    // It used to roll back to the value the week opened on, taking those days
-    // away again. That makes the number fall while the app says grace protected
-    // it, which reads as a bug whatever the rule says. A streak only ever adds
-    // one or goes to zero; grace is what makes it do neither.
+    // Still in flight and still possible. Its days have counted up and it is
+    // not judged yet, so a good week shows progress and a bad one has time.
+    if (reachable) continue;
+
+    // Grey, from here. Either the minimum can no longer be reached or the week
+    // has ended short. Grace forgives it and the run carries on; otherwise the
+    // number holds where it is, marked, until the next session in a later week.
     const graceUsed = week.some((d) => d.graced === true);
-    if (!graceUsed) state.current = 0;
+    state.grey = !graceUsed;
+    greySince = graceUsed ? null : monday;
+
+    // Only a week that has ENDED carries a price. While it is still running the
+    // shortfall is not final: nothing logged by Saturday is three short, and
+    // two sessions over the remaining weekend makes it one. Quoting a number
+    // before the week is out either shows the wrong one or freezes it and
+    // charges somebody for still turning up. `restoreOffer` refuses a tail with
+    // no price, which is what keeps the offer off the screen until Monday.
     steps.push({
       at: monday,
       current: state.current,
       graceUsed,
+      failed: true,
       // What the week came SHORT, not one. A three-a-week that managed one
       // missed two days of the thing and costs two to forgive.
-      short: minimum - sessions,
+      ...(ended ? { short: minimum - sessions } : { open: true }),
     });
   }
 
@@ -229,23 +325,41 @@ export function restoreOffer(
   days: StreakDay[],
   schedule: Schedule,
   asOf?: string,
+  today?: string,
 ): RestoreOffer | null {
-  const walk = streakOver(days, schedule, EMPTY, asOf);
-  if (walk.current > 0) return null;
+  const walk = streakOver(days, schedule, EMPTY, asOf, today);
+  // Nothing to offer on a run that is still going. A weekly run that has gone
+  // grey still HOLDS its number, so a positive count no longer means alive and
+  // the flag is what says which it is. A daily miss still zeroes, so both
+  // conditions are asked.
+  if (walk.current > 0 && !walk.grey) return null;
 
-  // The tail: every judged period after the last one the run was alive on.
+  // The tail: every failed period after the last one that was not a failure.
   // A paused day is in here and is deliberately not forgivable, so an offer
-  // covering one is no offer at all.
+  // covering one is no offer at all. A week still RUNNING that has gone grey is
+  // in here too and carries no `short`, which is what keeps the offer off the
+  // screen until the week ends and its price is final.
+  //
+  // This asked `current > 0` until grey arrived. A grey run holds its number,
+  // so a failed step can have a positive count and the scan ran off the end.
   let lastAlive = -1;
   for (let i = walk.steps.length - 1; i >= 0; i -= 1) {
-    if (walk.steps[i].current > 0) {
+    if (!walk.steps[i].failed) {
       lastAlive = i;
       break;
     }
   }
-  if (lastAlive === -1) return null; // never had a run to lose
+  if (lastAlive === -1 && walk.steps.every((s) => s.failed)) return null;
 
-  const tail = walk.steps.slice(lastAlive + 1);
+  // Trailing periods that are grey but still running are dropped, not refused.
+  // They have no price yet, and letting one block the offer would mean that
+  // being in a bad week stops you forgiving the week before it, for up to seven
+  // days. Each week gets its own decision when it ends.
+  let tail = walk.steps.slice(lastAlive + 1);
+  while (tail.length > 0 && tail[tail.length - 1].open) tail = tail.slice(0, -1);
+
+  // What is left must all carry a price. A paused day never does, which is what
+  // keeps a declared absence unforgivable.
   if (tail.length === 0 || tail.some((s) => s.short === undefined)) return null;
 
   const covering = tail.map((s) => s.at);
@@ -258,6 +372,7 @@ export function restoreOffer(
     schedule,
     EMPTY,
     asOf,
+    today,
   );
 
   return { brokeOn: covering.at(-1)!, cost, restoresTo: after.current, covering };
@@ -280,9 +395,43 @@ export function coveredDays(
   return days.filter((d) => wanted.has(mondayOf(d.date))).map((d) => d.date);
 }
 
+/**
+ * Can this week still reach its minimum?
+ *
+ * False, meaning it still can, whenever the answer is not certain: no `today`,
+ * a week that is not the one `today` sits in, or a schedule with no minimum. A
+ * run is only ever marked grey here by arithmetic that cannot come out the
+ * other way.
+ *
+ * Counts the days from today to Sunday that are NOT already done, so a session
+ * logged this morning is not counted twice, once as a session and again as a
+ * day still available.
+ */
+function unreachable(
+  week: StreakDay[],
+  monday: string,
+  minimum: number,
+  sessions: number,
+  today?: string,
+): boolean {
+  if (!today || minimum <= 0) return false;
+  const sunday = sundayOf(monday);
+  if (today < monday || today > sunday) return false;
+
+  const done = new Set(week.filter((d) => d.done).map((d) => d.date));
+  let left = 0;
+  for (let d = today; d <= sunday; d = addDay(d)) if (!done.has(d)) left += 1;
+  return sessions + left < minimum;
+}
+
 // Local to this module: the streak walks days, and only weekly activities need
 // to group them. periodStart() is for resolving an instant, which is a
 // different question.
+function addDay(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10);
+}
+
 function sundayOf(monday: string): string {
   const [y, m, d] = monday.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d + 6)).toISOString().slice(0, 10);

@@ -251,6 +251,30 @@ async function apiRoutes(w: World, base: string, shape: "local" | "auth"): Promi
     check(`${job} refuses the wrong one`, wrongSecret.status === 401, `${wrongSecret.status}`);
   }
 
+  // The failure callback is the fourth door and the one most easily forgotten,
+  // because it is not in the JOBS table and nothing schedules it. QStash POSTs
+  // there when a job has failed every retry, so it is a POST and the sweep
+  // above, which is GETs, would only ever have proved it returns 405.
+  //
+  // Unauthenticated it is a free write into the events table, which is the
+  // append-only source of truth for everything (invariant 1). It forges an
+  // outage rather than causes one, and an admin acting on a fabricated failure
+  // is the whole cost.
+  for (const token of [null, "Bearer not-the-secret"]) {
+    const headers: Record<string, string> = { "content-type": "application/json" };
+    if (token) headers.authorization = token;
+    const r = await fetch(`${base}/api/cron/failed`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ url: `${base}/api/cron/score`, status: 500 }),
+    });
+    check(
+      `the failure callback refuses ${token ? "the wrong one" : "no token"}`,
+      r.status === 401,
+      `${r.status}`,
+    );
+  }
+
   // A check-in is a POST. A GET must not record one (invariant 9).
   const getCheckin = await get(`${base}/api/checkin`);
   check(

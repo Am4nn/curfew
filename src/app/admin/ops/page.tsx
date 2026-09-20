@@ -3,7 +3,7 @@ import { getSessionUser } from "@/lib/session";
 import { can, getDriftReport } from "@/server/admin";
 import { runRebuildAction } from "../actions";
 import { Recompute } from "./recompute";
-import { evidenceOps, humanBytes } from "@/server/ops";
+import { evidenceOps, humanBytes, schedulerHealth } from "@/server/ops";
 import { now } from "@/lib/clock";
 import { userDay } from "@/server/config";
 
@@ -46,8 +46,9 @@ export default async function AdminOps({
   const to = sp.to || (await userDay(user.id));
   const from = sp.from || isoDate(new Date(instant.getTime() - 30 * 864e5));
 
-  const [ev, driftReport] = await Promise.all([
+  const [ev, scheduler, driftReport] = await Promise.all([
     evidenceOps(),
+    schedulerHealth(),
     canVerify ? getDriftReport({ from, to }) : Promise.resolve({ rows: [], total: 0 }),
   ]);
 
@@ -64,6 +65,53 @@ export default async function AdminOps({
         canRebuild={canRebuild}
         rebuild={runRebuildAction}
       />
+
+      <section className="mb-8 flex flex-col gap-[10px]">
+        {/* First, because a job that did not run explains every other number
+            below it. Drift is what a wrong answer looks like; this is whether
+            anybody was asked the question. */}
+        <h2 className="text-[13px] font-semibold tracking-[0.1em]">SCHEDULER</h2>
+        <div className="flex flex-col">
+          {scheduler.jobs.map((j) => (
+            <OpsRow
+              key={j.path}
+              label={j.label}
+              value={
+                j.ranAt === null
+                  ? "never run"
+                  : `last ran ${ago(j.ranAt, instant)}, expected every ${every(j.staleAfterMinutes)}`
+              }
+              right={j.ranAt === null ? "" : j.stale ? "late" : "ok"}
+            />
+          ))}
+        </div>
+        {scheduler.failures.length === 0 ? (
+          <p className="text-[11.5px] text-muted">
+            No job has failed its retries in the last 7 days.
+          </p>
+        ) : (
+          <div className="flex flex-col">
+            {scheduler.failures.map((f, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-[10px] border-b border-rule py-[11px]"
+              >
+                <div className="flex min-w-0 flex-col gap-[3px]">
+                  <span className="text-[13px]">
+                    {[shortDate(f.at.toISOString()), f.path, f.status ? `HTTP ${f.status}` : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </span>
+                  <span className="truncate text-[10.5px] text-muted">
+                    {f.response ?? "gave up after every retry, no response body"}
+                  </span>
+                </div>
+                <span className="flex-none text-[11.5px] text-muted">failed</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="mb-8 flex flex-col gap-[10px]">
         <h2 className="text-[13px] font-semibold tracking-[0.1em]">EVIDENCE</h2>
@@ -123,6 +171,23 @@ export default async function AdminOps({
       </div>
     </>
   );
+}
+
+/** How long ago, against the app's clock so the preview clock moves it too. */
+function ago(at: Date, instant: Date): string {
+  const minutes = Math.max(0, Math.round((instant.getTime() - at.getTime()) / 60_000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return `${hours} hr ago`;
+  return `${Math.round(hours / 24)} days ago`;
+}
+
+/** The cadence a job is held to, said the way the row above it reads. */
+function every(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = minutes / 60;
+  return hours < 24 ? `${hours} hr` : `${Math.round(hours / 24)} days`;
 }
 
 function OpsRow({ label, value, right }: { label: string; value: string; right?: string }) {

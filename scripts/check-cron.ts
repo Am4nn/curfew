@@ -120,6 +120,23 @@ check(
   `${remind} against SLOT_MINUTES ${slotMinutes}`,
 );
 
+// A job with no failure callback fails into silence. QStash retries three times
+// and then drops the message into a dead letter queue the free plan keeps for
+// three days and nothing here reads, so the only symptom is drift on the Ops
+// page the next day, which names the consequence and not the cause.
+//
+// This asserts the header is declared and that the secret is forwarded to it,
+// because QStash does not report either field back on a schedule listing: once
+// `bun run schedule` has run, the source is the only place that says so.
+check(
+  "every schedule names a failure callback, so a job that breaks says so",
+  /"Upstash-Failure-Callback":/.test(jobs),
+);
+check(
+  "the failure callback is sent the secret its route checks",
+  /"Upstash-Failure-Callback-Forward-Authorization":/.test(jobs),
+);
+
 // ---------------------------------------------------------------------------
 // The wait, per module, per zone
 // ---------------------------------------------------------------------------

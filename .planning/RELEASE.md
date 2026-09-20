@@ -205,6 +205,20 @@ bun run schedule:production -- --dry     # read it
 bun run schedule:production
 ```
 
+**When the FAILURE CALLBACK changed, that is not enough.** QStash does not report
+either callback field back, on the list endpoint or on a single schedule, so the
+script cannot see that a live schedule is missing one and will happily report
+"all scheduled". Recreating them is the only way:
+
+```
+bun run schedule:production -- --rewrite
+```
+
+Run it once against each environment whose schedules predate 3.4.7, and again
+after any change to `/api/cron/failed` or the headers that point at it. The Ops
+page proves it landed: SCHEDULER shows a row per job, and `check:cron` asserts
+the header is still declared in the source.
+
 It prints every declared job, what QStash currently holds for it, and anything
 pointing at this origin that no job declares. Unchanged cadences say "all
 scheduled" and it does nothing. It replaces rather than adds, so running it
@@ -309,5 +323,6 @@ rolls itself back.
 [ ] data migrations: --dry read, then run
 [ ] release notice: --dry read, then published
 [ ] schedule:production, if JOBS changed: --dry read, then run
+[ ] schedule:production -- --rewrite, if the failure callback changed
 [ ] next morning: admin Overview last run, Ops drift report, read twice hours apart
 ```

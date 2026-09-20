@@ -1,0 +1,42 @@
+-- Two things nothing could see: a scheduled job that ran and broke, and a
+-- scheduled job that stopped being called at all.
+--
+-- QStash retries a delivery three times and then gives up. Until now that was
+-- the end of it: the failure went to Upstash's dead letter queue, which the
+-- free plan keeps for THREE DAYS, and nothing in this repo has ever read it.
+-- A tick that stopped happening looked exactly like a quiet night. The only
+-- symptom was drift on the Ops page a day later, which is the downstream
+-- effect rather than the fault, and by the time anybody read it the evidence
+-- had expired in somebody else's console.
+--
+-- So failures come to us. `Upstash-Failure-Callback` POSTs to /api/cron/failed
+-- after the last retry and that route writes `ops.job.failed`. It lands in the
+-- events table, which is append-only and ours, so it outlives the three days.
+--
+-- dlqId is QStash's id for the failed message, unique per failure, so this is
+-- the idempotency key: a callback delivered twice records once. It is the same
+-- shape as events_one_push_idx (0027) and events_one_score_run_idx (0029).
+-- Partial, so it costs nothing on the rows that are not this. A payload with
+-- no dlqId indexes as NULL, and Postgres allows many of those, which is the
+-- behaviour we want: a malformed callback is still recorded, never dropped for
+-- want of a key.
+CREATE UNIQUE INDEX IF NOT EXISTS events_one_job_failure_idx
+    ON events ((payload->>'dlqId'))
+    WHERE type = 'ops.job.failed';
+
+-- The other half is not an index at all, and is recorded here so the next
+-- person looking for it stops looking.
+--
+-- A failure callback can only fire for a job that RAN. It says nothing about a
+-- schedule that was deleted, paused, or silently stopped firing, and that is
+-- the worse outage: everything reports healthy because nothing reports at all.
+-- The answer is a heartbeat, and all three jobs already had one. Scoring writes
+-- `ops.score.ran` once an hour before any work, the nightly pass writes
+-- `ops.verify.ran`, and the reminder tick writes `ops.push.ran` when it
+-- finishes. Absence is the signal, so `schedulerHealth()` reads the newest of
+-- each and calls it stale past its own cadence.
+--
+-- The one change the tick needed was to write that event on the paths that
+-- return early. It used to record only after a real send pass, so every
+-- environment with PUSH_REMINDERS unset looked identical to one where QStash
+-- had stopped calling. It now records the skip and the reason.

@@ -31,6 +31,11 @@ export default async function AdminOverview() {
         <h2 className="text-[10px] tracking-[0.16em] text-muted">LAST NIGHT&rsquo;S RUN</h2>
         <div className="flex flex-col">
           <RunRow
+            label="Scheduler"
+            detail={schedulerDetail(lastRun.scheduler)}
+            status={lastRun.scheduler.ok ? "ok" : "review"}
+          />
+          <RunRow
             label="Scoring"
             detail={`${lastRun.scoring.periodsClosed.toLocaleString()} periods closed`}
             status="ok"
@@ -145,4 +150,13 @@ function RunRow({
       <span className="flex-none text-[11.5px] text-muted">{status}</span>
     </div>
   );
+}
+
+/** The scheduler row's sentence, which has to say WHICH of the two went wrong. */
+function schedulerDetail(s: { late: number; failures: number; ok: boolean }): string {
+  if (s.ok) return "all jobs running, none failed";
+  const parts: string[] = [];
+  if (s.late > 0) parts.push(`${s.late} job(s) overdue`);
+  if (s.failures > 0) parts.push(`${s.failures} failed in 7 days`);
+  return parts.join(", ");
 }

@@ -4,6 +4,9 @@
 //   bun run schedule
 //   bun run schedule:production
 //   bun run schedule -- --remove
+//   bun run schedule -- --rewrite   (recreate all, the only way to change the
+//                                     failure callback, which QStash never
+//                                     reports back)
 //
 // ---------------------------------------------------------------------------
 // Why this is a script and not a thing somebody clicks
@@ -29,6 +32,27 @@
 // routes check. QStash signs its requests as well, and the signing keys sit in
 // the env files unused: verifying them would mean a second auth path and a
 // package, to prove something the bearer token already proves.
+//
+// ---------------------------------------------------------------------------
+// The failure callback, and why --rewrite exists
+//
+// Every schedule names /api/cron/failed as its `Upstash-Failure-Callback`.
+// QStash POSTs there once a delivery has exhausted its retries, and that route
+// writes an `ops.job.failed` event. Without it a job that failed three times
+// simply vanished: the record went to Upstash's dead letter queue, which the
+// free plan keeps for THREE DAYS, and nothing in this repo has ever read it.
+//
+// QStash DOES NOT REPORT THE CALLBACK BACK. A schedule listing carries the
+// cron, the destination, the retries and the forwarded Authorization header,
+// and says nothing at all about either callback field, on the list endpoint or
+// on a single-schedule GET. So this script cannot tell a schedule that has the
+// callback from one that does not, and the reconcile below cannot pick it up
+// as a difference the way it picks up a changed cadence.
+//
+// Hence `--rewrite`: delete and recreate every declared job, whatever its
+// current cadence. Run it after changing anything about the callback, and once
+// against an environment whose schedules predate it. Everything else in here
+// is still reconcile-and-leave-alone.
 // ---------------------------------------------------------------------------
 
 // Nothing here imports anything, and top-level await needs a module. Every
@@ -63,6 +87,7 @@ const JOBS: { path: string; cron: string; what: string }[] = [
 
 const dry = process.argv.includes("--dry");
 const remove = process.argv.includes("--remove");
+const rewrite = process.argv.includes("--rewrite");
 
 const base = process.env.QSTASH_URL ?? "https://qstash.upstash.io";
 const token = process.env.QSTASH_TOKEN;
@@ -84,6 +109,11 @@ if (!origin) {
 
 const root = origin.replace(/\/$/, "");
 const wanted = JOBS.map((j) => ({ ...j, destination: `${root}${j.path}` }));
+
+// Not a job and never a schedule: QStash calls it, once, when one of the three
+// above has failed every retry. It is a POST, unlike the GETs, because QStash
+// chooses the method for a callback.
+const FAILURE_CALLBACK = `${root}/api/cron/failed`;
 
 async function qstash(path: string, init: RequestInit = {}): Promise<Response> {
   return fetch(`${base}${path}`, {
@@ -164,12 +194,17 @@ if (remove) {
 }
 
 const changed = wanted.filter((job) => {
+  if (rewrite) return true;
   const existing = forDestination(job.destination);
   return !(existing.length === 1 && existing[0].cron === job.cron);
 });
 
 if (changed.length === 0 && strays.length === 0) {
-  console.log("\nAll scheduled, with these cadences. Nothing to do.");
+  console.log(
+    "\nAll scheduled, with these cadences. Nothing to do. The failure " +
+      "callback cannot be read back from QStash, so if you have just changed " +
+      "it, run again with --rewrite.",
+  );
   process.exit(0);
 }
 
@@ -199,6 +234,12 @@ for (const job of changed) {
       // retry of this one. Scoring claims its hour before doing any work, so a
       // retry arriving late cannot run the pass a second time.
       "Upstash-Retries": "3",
+      // After those three tries, tell us. This is the only moment anybody
+      // finds out, so the alternative is a job that disappeared.
+      "Upstash-Failure-Callback": FAILURE_CALLBACK,
+      // Forwarded to the callback as a plain `Authorization` header, the same
+      // secret and the same shape the three job routes already check.
+      "Upstash-Failure-Callback-Forward-Authorization": `Bearer ${secret}`,
     },
   });
 

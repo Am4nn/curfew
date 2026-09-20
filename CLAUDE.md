@@ -213,7 +213,7 @@ QStash points at one environment at a time, whichever `BETTER_AUTH_URL` the
 loaded env file names, so dev is scheduled by `bun run schedule` and production
 by `bun run schedule:production`.
 
-`package.json` carries `3.4.2`, cut as a tag on 2026-09-20. The admin header
+`package.json` carries `3.4.7`, cut as a tag on 2026-09-20. The admin header
 reads that number, so the next version bump is the next release: add the `-dev`
 suffix back while the following version is being built, and take it off again in
 the commit that gets tagged.
@@ -270,6 +270,35 @@ Always change them through `bun run schedule`, never the dashboard. The script
 replaces rather than adds, and removes any schedule on this origin that the
 `JOBS` table does not declare, which is how a renamed route stops leaving a tick
 behind.
+
+**A job that fails now says so, and a job that stops running is noticed (3.4.7).**
+Two different faults that both used to be invisible, and they need different
+mechanisms because one of them cannot report anything at all.
+
+- **Ran and broke.** Every schedule names `/api/cron/failed` as its
+  `Upstash-Failure-Callback`. QStash POSTs there after the last retry and the
+  route writes an `ops.job.failed` event. Before it, the record went to
+  Upstash's dead letter queue, which the free plan keeps for **three days**, and
+  nothing in this repo had ever read it. The only symptom was drift on the Ops
+  page the next day, which names the consequence and not the cause.
+- **Stopped being called.** No Upstash feature can tell you this: a deleted or
+  paused schedule is not a failed delivery, it is the absence of one. So the
+  signal is an absence too. Each job writes a heartbeat (`ops.score.ran`,
+  `ops.push.ran`, `ops.verify.ran`) and `schedulerHealth()` calls it late past
+  its own cadence. The reminder tick now beats on its skip paths as well, so an
+  environment with `PUSH_REMINDERS` unset no longer reads identically to one
+  QStash has abandoned.
+
+Both land in **SCHEDULER**, first on Admin Ops, above Evidence and Drift,
+because a job that did not run explains every other number under it.
+
+**`Upstash-Failure-Callback` cannot be read back**, on the list endpoint or on a
+single-schedule GET. A schedule listing carries the cron, the destination, the
+retries and the forwarded Authorization header, and nothing about either
+callback. So `bun run schedule` cannot see that a live schedule is missing one,
+and will say "all scheduled". `bun run schedule -- --rewrite` recreates every
+declared job, and is the only way to change that field. `check:cron` asserts the
+header is declared in the source, which is the only place that still knows.
 
 **The steps are in `.planning/RELEASE.md`, and the order is not obvious.** Read
 it rather than working from this section.
@@ -434,6 +463,8 @@ remind     bun run check:reminders — a reminder is sent only when a press woul
 sim        bun run sim:push        — a day of notifications, printed, no database
 push       bun run check:push      — what Curfew actually said to people
 schedule   bun run schedule         — reconcile every QStash tick with JOBS
+rewrite    bun run schedule -- --rewrite — recreate all; the failure callback
+                                     is the one field QStash never reports back
 ```
 
 **`bun run sim:push` is the review gate for notification copy, and reading its

@@ -24,7 +24,7 @@ import { accountDisabledEmail, approvalEmail, sendEmailBestEffort } from "./emai
 import { userBalances } from "./groups";
 import { rebuildAll } from "./scoring";
 import { verifyAll, type Drift } from "./verify";
-import { evidenceOps } from "./ops";
+import { evidenceOps, schedulerHealth } from "./ops";
 import {
   roleCapabilities,
   roleHas,
@@ -100,6 +100,13 @@ export interface LastRun {
   retentionSweep: { photosDeleted: number; ok: true };
   /** Rows that differ from stored, of any kind: a period or a reputation day. */
   driftCheck: { periodsDiffer: number; ok: boolean };
+  /**
+   * Whether the jobs are running at all, which is the one row here that is not
+   * about last night's numbers. It is first on the page for that reason: every
+   * other row is computed from tables the jobs write, so a dead scheduler makes
+   * all four of them describe whenever it died, confidently and with no sign.
+   */
+  scheduler: { late: number; failures: number; ok: boolean };
 }
 
 export async function getOverview(): Promise<Overview> {
@@ -213,7 +220,7 @@ async function checkinsScoredPct(): Promise<number | null> {
  * the screen you open to ask on purpose.
  */
 export async function getLastRun(): Promise<LastRun> {
-  const [scoringRow, reputationRow, ev, verifyRun] = await Promise.all([
+  const [scoringRow, reputationRow, ev, verifyRun, health] = await Promise.all([
     db
       .select({ periodEnd: activityScores.periodEnd, n: sql<number>`count(*)` })
       .from(activityScores)
@@ -233,6 +240,7 @@ export async function getLastRun(): Promise<LastRun> {
       .where(eq(events.type, "ops.verify.ran"))
       .orderBy(desc(events.occurredAt))
       .limit(1),
+    schedulerHealth(),
   ]);
 
   // Every kind, not just "score": counting only period drift reported "0
@@ -249,6 +257,11 @@ export async function getLastRun(): Promise<LastRun> {
     reputation: { usersRecomputed: Number(reputationRow[0]?.n ?? 0), ok: true },
     retentionSweep: { photosDeleted: ev.lastSweep?.deleted ?? 0, ok: true },
     driftCheck: { periodsDiffer, ok: periodsDiffer === 0 },
+    scheduler: {
+      late: health.jobs.filter((j) => j.stale).length,
+      failures: health.failures.length,
+      ok: health.ok,
+    },
   };
 }
 

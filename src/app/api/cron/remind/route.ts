@@ -33,12 +33,15 @@ export async function GET(request: NextRequest) {
   // so "off on purpose" has to read as success or every disabled tick becomes
   // four disabled ticks. `skipped` is there so a person reading the QStash log
   // can tell the difference between off and nothing due.
-  if (env.PUSH_REMINDERS !== "1") {
-    return NextResponse.json({ ok: true, skipped: "disabled" });
-  }
-  if (!pushConfigured()) {
-    return NextResponse.json({ ok: true, skipped: "unconfigured" });
-  }
+  //
+  // Both skips still write `ops.push.ran`, and that is the point of the
+  // helper. That event is this job's heartbeat: `schedulerHealth()` reads the
+  // newest one and calls the tick stale when it is older than a few slots.
+  // While the skips returned silently, an environment with PUSH_REMINDERS
+  // unset was indistinguishable from one QStash had stopped calling, which is
+  // the exact failure the heartbeat exists to catch.
+  if (env.PUSH_REMINDERS !== "1") return await skip("disabled");
+  if (!pushConfigured()) return await skip("unconfigured");
 
   const instant = await now();
 
@@ -124,4 +127,10 @@ export async function GET(request: NextRequest) {
   });
 
   return NextResponse.json({ ok: true, considered, sent, gone, failures });
+}
+
+/** Answer a tick this environment is not going to send on, and still beat. */
+async function skip(reason: string) {
+  await recordEvent({ type: "ops.push.ran", payload: { skipped: reason } });
+  return NextResponse.json({ ok: true, skipped: reason });
 }

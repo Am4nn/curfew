@@ -116,22 +116,6 @@
     .t-peek  { animation: peek 2.9s ease-in-out infinite; transform-origin: 58px 56px; }
     .p-turn  { animation: turnSpec 8.4s ease-in-out infinite; }
 
-    /*
-      THE CROWN ROCKS, and it rocks on its own clock. 6.8s against the body's
-      5.2s share no short multiple, so the two drift in and out of step and it
-      never settles into a beat you can count. A crown pinned dead still to a
-      breathing head reads as pasted on.
-
-      Small numbers: five degrees of travel and half a pixel of lift. It is
-      sitting on him, not balancing.
-    */
-    @keyframes crownRock {
-      0%, 100% { transform: rotate(-8deg)   translateY(0); }
-      38%      { transform: rotate(-4.6deg) translateY(-0.7px); }
-      71%      { transform: rotate(-9.6deg) translateY(0.45px); }
-    }
-    .k-rock { transform-box: view-box; transform-origin: 58px 16px; animation: crownRock 6800ms ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) { .k-rock { animation: none; transform: rotate(-8deg); } }
 
     @keyframes breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.022); } }
     @keyframes breathSlow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.038); } }
@@ -214,14 +198,14 @@
   No outer bloom on any of them. Shading is form; a halo is glow, and the only
   glow in this app belongs to IMMACULATE.
 -->
-<div style="width: 390px; height: 1178px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+<div style="width: 390px; height: 1158px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
 
   <div style="flex: none; padding: 22px 20px 0;">
     <span style="font-size: 34px; font-weight: 700; letter-spacing: -0.01em;">Ren, every mood</span>
     <p style="margin: 8px 0 0; font-size: 14.5px; line-height: 1.45; color: #8e8e93;">Colour is the feeling. Brows, eyes and mouth do the acting, and he turns to look around. The ball itself only breathes.</p>
   </div>
 
-  <div style="flex-grow: 1; min-height: 0; margin-top: 22px; padding: 0 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 14px;">
+  <div style="flex-grow: 1; min-height: 0; margin-top: 22px; padding: 0 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 14px;">
     <sc-for list="{{moods}}" as="m" hint-placeholder-count="6">
       <div style="display: flex; flex-direction: column; align-items: center; gap: 11px;">
 
@@ -232,45 +216,9 @@
           <!-- the highlight slides opposite the turn: the light does not rotate -->
           <div class="{{m.specA}}" style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 31% 23%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.30) 17%, transparent 34%);"></div>
 
-          <svg viewBox="0 0 116 116" style="position: absolute; inset: 0; overflow: visible;" aria-label="{{m.label}}" role="img">
-            <defs>
-              <filter id="crownGlow" x="-70%" y="-70%" width="240%" height="240%">
-                <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#ffd23f" flood-opacity="0.55"/>
-              </filter>
-            </defs>
+          <svg viewBox="0 0 116 116" style="position: absolute; inset: 0;" aria-label="{{m.label}}" role="img">
             <!-- one group turns, everything inside it acts -->
             <g class="{{m.turnA}}">
-              <!--
-                Inside the turn group on purpose. When he looks left the crown
-                goes with him and squashes the same way the face does, because
-                it is on the same sphere. Outside the group it would slide.
-              -->
-              <sc-if value="{{m.crown}}" hint-placeholder-val="{{false}}">
-                <g class="k-rock" filter="url(#crownGlow)">
-                  <!--
-                    THE CROWN FROM src/app/rank-icon.tsx, path for path. The
-                    rank tile has drawn IMMACULATE this way since v3 and there
-                    was never a second one to design.
-
-                    Scaled 2.1 and dropped so its base sits at y=16, which is
-                    far enough into the head to look worn and not so far that
-                    it looks swallowed. Square caps and miter joins, as the
-                    emblem has.
-
-                    Painted differently, though, and it has to be: the emblem
-                    is a gold outline because it sits inside a dark ring, and a
-                    gold outline on a gold head is invisible. Filled gold with
-                    his own ink around it, the way his eyes and mouth are done.
-                  -->
-                  <g transform="translate(32.8, -23.9) scale(2.1)">
-                    <path d="M3.2 7.6 7.4 13l4.6-7.6L16.6 13l4.2-5.4V19H3.2Z"
-                          fill="#ffd23f" stroke="#3a2a05" stroke-width="0.9"
-                          stroke-linecap="square" stroke-linejoin="miter"/>
-                    <path d="M3.2 15.4h17.6" fill="none" stroke="#3a2a05" stroke-width="0.9"
-                          stroke-linecap="square"/>
-                  </g>
-                </g>
-              </sc-if>
               <g class="{{m.browA}}" style="transform-origin: 58px 42px;">
                 <path d="{{m.brow}}" fill="none" stroke="{{m.ink}}" stroke-width="3.4" stroke-linecap="round"/>
               </g>
@@ -300,7 +248,7 @@
 </div>
 </x-dc>
 
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1178}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1158}}'>
 class Component extends DCLogic {
   renderVals() {
     const skin = (a, b, c, d) =>
@@ -393,10 +341,6 @@ class Component extends DCLogic {
           mouth: 'M50 67q8 7 16 0', mouthFill: 'none', mw: 3.6,
           body: 'b-slow', turnA: 't-turn', specA: 'p-turn',
           browA: '', eyeA: 'e-blink', mouthA: '',
-          // Three square teeth, zero radius: the mark's rhythm rather than a
-          // clip-art crown. It is not the mark and must never be read as one,
-          // so it is a row of three on a band and never a grid with a hole.
-          crown: true,
         },
       ],
     };

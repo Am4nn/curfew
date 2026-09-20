@@ -775,31 +775,25 @@ switch stops being a real switch.
 The refusal sits UNDER the primary button rather than beside it. Side by side
 makes two equal choices out of one obvious one and one honest escape.
 
-### 1.4b IMMACULATE wears a crown, and it is made of three squares
+### 1.4b Ren wears no crown, and IMMACULATE does not need one
 
-Settled 2026-09-21. **It is the crown Curfew already had**, from
-`src/app/rank-icon.tsx`, path for path.
+Tried twice on 2026-09-21 and dropped. The first attempt invented a crown out of
+three square teeth to echo the mark; the second used the real one, from
+`src/app/rank-icon.tsx`, which `Ranks.dc.html` has drawn the rank with since v3.
+Both were awkward, and the second one settles it: **the shape was never the
+problem.**
 
-The first attempt invented one out of three square teeth, on the theory that it
-should echo the mark. Aman: *"WTF is that crown, use the crown we have for
-IMMACULATE."* He was right twice over: there was a crown, `Ranks.dc.html` has
-been drawing the rank with it since v3, and the invented one was a shape nobody
-recognised solving a problem that was already solved.
+A crown on a sphere with a face is a hat on a ball. There is nowhere on a sphere
+for a hat to sit, because a sphere has no head to be the top of. Every angle
+reads either pasted on the front or balanced on nothing.
 
-**The path is unchanged. Only the painting is.** The emblem is a gold OUTLINE
-because it sits inside a dark ring; on a gold head a gold outline is invisible.
-So on Ren it is filled gold with his own ink around it, the way his eyes and his
-mouth are drawn. Square caps and miter joins, as the emblem has.
+**IMMACULATE already says what it is.** The skin goes gold, the expression is
+composed rather than pleased, and 1.4's mood pass gave it the one thing it was
+missing, which was a face of its own rather than DONE's in another colour.
 
-It rocks on its own clock, 6.8 seconds against the body's 5.2, which share no
-short multiple, so the two drift and it never settles into a beat you can count.
-Five degrees of travel and half a pixel of lift: it is sitting on him, not
-balancing.
-
-It also finishes the job 1.4's mood pass started. DONE and IMMACULATE used to be
-one drawing in two colours, so the rarest state in the app said exactly what an
-ordinary good day said. Now DONE is pleased and looks at you, IMMACULATE is
-composed, and only one of them is wearing anything.
+**The crown stays on the rank tile**, where it works: an emblem inside a ring is
+a symbol on a surface, not an object balanced on a curve. That is also the only
+glow in the app and it does not need a second home.
 
 ### 1.16 Monk mode is an aggregate, not an activity
 

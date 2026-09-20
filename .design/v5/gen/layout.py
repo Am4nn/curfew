@@ -16,7 +16,7 @@ OUT = os.environ.get('CURFEW_V5_PROJECT') or os.path.join(
 
 ROWS = [
     ('Five tabs', ['Main', 'Coach', 'Stats', 'Groups', 'Activities']),
-    ('Getting in', ['Signin', 'Welcome', 'Consent', 'Catalog', 'Configure', 'Notice']),
+    ('Getting in', ['Splash', 'Signin', 'Welcome', 'Consent', 'Catalog', 'Configure', 'Notice']),
     ('In a group', ['Group', 'GroupStats', 'Evidence', 'Standing', 'Ranks', 'Ledger',
                     'GroupSettings', 'Invite']),
     ('Monk mode', ['Monk', 'MonkSetup', 'MonkLocked']),
@@ -32,6 +32,7 @@ TITLES = {
     'Activities': 'Your activities', 'Signin': 'Sign in', 'Welcome': 'First run',
     'Consent': 'The consent gate', 'Catalog': 'Add an activity',
     'Configure': 'Configure · Sleep', 'Notice': 'A release notice',
+    'Splash': 'Opening Curfew',
     'Group': 'One group', 'GroupStats': 'The group’s week',
     'Evidence': 'What the group shared', 'Standing': 'Standing & money',
     'Ranks': 'How standing works', 'Ledger': 'The full ledger',
@@ -47,7 +48,7 @@ TITLES = {
 }
 
 STATIC = {'Stamp', 'Nudged', 'Ren', 'Signin', 'Notice', 'Evidence', 'Photos',
-          'Ledger', 'Mark'}
+          'Ledger', 'Mark', 'Splash'}
 
 ROOT_RE = re.compile(r'width:\s*390px;\s*height:\s*(\d+)px')
 PREVIEW_RE = re.compile(r'"\$preview"\s*:\s*\{\s*"width"\s*:\s*390\s*,\s*"height"\s*:\s*(\d+)\s*\}')

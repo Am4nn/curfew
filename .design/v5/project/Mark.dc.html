@@ -132,6 +132,34 @@
     .em-4 { transform-origin:  4px  6px; animation: em4 26000ms ease-in-out infinite; }
     .em-5 { transform-origin: 28px 19px; animation: em5 30600ms ease-in-out infinite; }
 
+
+    /*
+      THE SPLASH. Everything here has to arrive and be read inside two seconds,
+      so nothing waits on anything it does not have to.
+
+      The word is set down a letter at a time on a 52ms step, left to right,
+      each one dropping the last 6px and settling. A word that fades in is a
+      word fading in; a word that lands is a name.
+    */
+    @keyframes spHalo {
+      0%   { opacity: 0; transform: scale(0.72); }
+      55%  { opacity: 1; transform: scale(1.04); }
+      100% { opacity: 0.82; transform: scale(1); }
+    }
+    @keyframes spLetter {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes spSoft { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .sp-halo   { animation: spHalo 2600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-letter { animation: spLetter 480ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-line   { animation: spSoft 620ms 1080ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-foot   { animation: spSoft 620ms 1400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sp-halo, .sp-letter, .sp-line, .sp-foot { animation: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .em-field { animation: none; }
       .em-1, .em-2, .em-3, .em-4, .em-5 { animation: none; }

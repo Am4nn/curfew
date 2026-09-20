@@ -156,6 +156,34 @@ EMBER_CSS = """    /*
     .em-4 { transform-origin:  4px  6px; animation: em4 26000ms ease-in-out infinite; }
     .em-5 { transform-origin: 28px 19px; animation: em5 30600ms ease-in-out infinite; }
 
+
+    /*
+      THE SPLASH. Everything here has to arrive and be read inside two seconds,
+      so nothing waits on anything it does not have to.
+
+      The word is set down a letter at a time on a 52ms step, left to right,
+      each one dropping the last 6px and settling. A word that fades in is a
+      word fading in; a word that lands is a name.
+    */
+    @keyframes spHalo {
+      0%   { opacity: 0; transform: scale(0.72); }
+      55%  { opacity: 1; transform: scale(1.04); }
+      100% { opacity: 0.82; transform: scale(1); }
+    }
+    @keyframes spLetter {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes spSoft { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .sp-halo   { animation: spHalo 2600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-letter { animation: spLetter 480ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-line   { animation: spSoft 620ms 1080ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .sp-foot   { animation: spSoft 620ms 1400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sp-halo, .sp-letter, .sp-line, .sp-foot { animation: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .em-field { animation: none; }
       .em-1, .em-2, .em-3, .em-4, .em-5 { animation: none; }
@@ -231,7 +259,7 @@ def lava_mark(size, pfx='lv'):
 
 def lava_wordmark(word_size=20, mark_size=64, gap=14, colour='#ffffff', pfx='lv'):
     return ('<span style="display: flex; align-items: center; gap: {g}px;">{m}'
-            '<span style="font-family: {f}; font-size: {w}px; font-weight: 700; letter-spacing: 0.3em; '
+            '<span style="font-family: {f}; font-size: {w}px; font-weight: 600; letter-spacing: 0.07em; '
             'color: {c};">CURFEW</span></span>').format(
         g=gap, m=lava_mark(mark_size, pfx), f=MONO, w=word_size, c=colour)
 
@@ -309,9 +337,11 @@ _TABS = [
     ('Groups.dc.html', 'Groups',
      '<circle cx="9" cy="8" r="3.4" fill="%s"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0" fill="%s"/><path d="M17 8.5a3 3 0 0 1 0 5" stroke="#ff375f" stroke-width="1.9" fill="none" stroke-linecap="round"/><path d="M19.5 20a6.5 6.5 0 0 0-3.2-5.2" stroke="#ff375f" stroke-width="1.9" fill="none" stroke-linecap="round"/>',
      '<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 8.5a3 3 0 0 1 0 5"/><path d="M19.5 20a6.5 6.5 0 0 0-3.2-5.2"/>'),
-    ('Activities.dc.html', 'You',
-     '<circle cx="12" cy="8" r="3.6" fill="%s"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" fill="%s"/>',
-     '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>'),
+    # A checklist, not a person. The tab holds what you track, and a
+    # silhouette said 'profile' to everybody who looked at it.
+    ('Activities.dc.html', 'Activities',
+     '<rect x="9" y="4.9" width="11" height="2.3" fill="%s"/><rect x="9" y="10.85" width="11" height="2.3" fill="%s"/><rect x="9" y="16.8" width="11" height="2.3" fill="#ff375f"/><path d="M3.4 6.1l1.7 1.7L8.1 4.8M3.4 12.05l1.7 1.7L8.1 10.75M3.4 18l1.7 1.7L8.1 16.7" stroke="#ff375f" stroke-width="2.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+     '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.4 6.1l1.7 1.7L8.1 4.8M3.4 12.05l1.7 1.7L8.1 10.75M3.4 18l1.7 1.7L8.1 16.7"/>'),
 ]
 
 

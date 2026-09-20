@@ -376,6 +376,50 @@ Its CSS is opt-in, `HEAD_EMBER` rather than `HEAD`. Two boards show it and
 thirty-six do not, and dead rules in thirty-six helmets is how a stylesheet
 stops being readable.
 
+### 1.8d The splash, the stamp, and how anybody reaches Activities
+
+Settled 2026-09-21, all of it small except the last one, which was a hole.
+
+**A splash screen exists now.** `Splash.dc.html`. The mark at 192, the field
+blooming inside it, and its light spilling past the apertures onto the black,
+which is the one reading under which a glow is honest in this app: something IS
+lit inside those squares. The word is set down a letter at a time on a 52ms
+step, left to right, each one dropping the last 6px. A word that fades in is a
+word fading in; a word that lands is a name.
+
+One line under it, "The day is still open", and no spinner. A spinner on a
+splash is an apology printed in advance.
+
+**The wordmark stopped being airy.** 20px at 0.3em tracking was a tech-startup
+lockup and it fought the mark, which is three solid blocks with a 2-unit gutter.
+26px at weight 600 and 0.07em matches it.
+
+**THE STAMP LANDS.** It used to be simply present, which makes it a badge, and a
+badge is a participation trophy. It descends from 2.35x, hits at 42% of the
+fall, and the page flinches 2.5px. A square ring leaves on the same frame,
+square because what struck the page was a square. The overshoot is UNDER the
+resting size, never over: rubber compresses, and a stamp that bounces past its
+size and settles back is a balloon. The word inks in from 0.5em tracking after
+the ink is down, then the icons, then Ren.
+
+**The sample notification wears the mark** rather than a letter C in a pink
+tile, which is what a lock screen actually shows.
+
+**Home, lightly.** The mark sits top left at 17px, once, where an app puts
+itself. The day's segments fill left to right, 60ms apart. Nothing else.
+
+**AND ACTIVITIES WAS UNREACHABLE BY NAME.** Aman: *"how do someone reach
+Activities Page??"*, which is the kind of question that is really a bug report.
+The fifth tab said **You** and carried a person silhouette, so it read as a
+profile; the screen behind it is titled Activities. The tab now says
+**Activities** and its icon is a checklist.
+
+**Settings was worse: nothing in the app linked to it at all.** It was drawn,
+and its back button pointed at Activities, and no screen pointed in. A gear now
+sits top left on Activities, which is the one bar that had nothing on that side.
+It is a plain white glyph rather than 1.8c's red pill, because the pill is for
+the one action a screen is for and an escape hatch is not it.
+
 ### 1.8c The top-right control has one shape
 
 Settled 2026-09-21. Aman: *"any btn up there in top right corner should always

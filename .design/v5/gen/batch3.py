@@ -190,7 +190,7 @@ nt.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13px; line-h
 # and this is the only place in the app that says so out loud.
 nt.append(section('What one sounds like', top=26))
 nt.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 16px; background: #161618; border: 0.5px solid rgba(255,255,255,0.09); padding: 14px 15px; display: flex; gap: 12px;">
-    <span style="flex: none; width: 34px; height: 34px; border-radius: 9px; background: %s; display: flex; align-items: center; justify-content: center; font-family: %s; font-size: 12px; font-weight: 700;">C</span>
+    <span style="flex: none; width: 34px; height: 34px; border-radius: 9px; background: %s; display: flex; align-items: center; justify-content: center;"><svg viewBox="0 0 32 32" width="19" height="19" shape-rendering="crispEdges" aria-hidden="true" style="display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg></span>
     <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
       <div style="display: flex; align-items: baseline; gap: 7px;">
         <span style="font-size: 13.5px; font-weight: 600;">Curfew</span>
@@ -205,7 +205,7 @@ nt.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 16px;
     <button type="button" style="width: 100%%; height: 46px; border: 1px solid #3a3a3c; border-radius: 13px; background: transparent; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 500;">Send me a test</button>
   </div>
   <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">A notification never tells you how far along you are. Only the activity itself knows that, and it says so in its own words or not at all.</p>
-""" % (PINK, MONO, MONO, DIM, GREY))
+""" % (PINK, MONO, DIM, GREY))
 nt.append(grow())
 nt.append(tabbar('Activities.dc.html'))
 nt.append(logic(H, """  renderVals() {

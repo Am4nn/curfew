@@ -369,61 +369,65 @@ three screens, or the thing people want to escape becomes the tutorial.
 It is also where Ren stops being a tab nobody was introduced to. He arrives
 having already helped with something.
 
-### 1.16 Monk mode: the first activity with no pass and no fail
+### 1.16 Monk mode is an aggregate, not an activity
 
-Settled 2026-09-21. A new activity type, and the shape of it diverges from
-`DIRECTION.md` section 6 rather than adopting it.
+Settled 2026-09-21, and it replaces a worse design of the same thing.
 
-**What section 6 proposed:** a phone-reduction target, a threshold type like
-Screen, argued on a 619-person trial.
+**What was nearly built:** a thirteenth activity type with its own checklist,
+its own `checkin.kind`, and a special flag telling the scoring pass to skip it.
 
-**What Aman wants:** *"dopamine detox is a different composite or complex
-activity, this will consist of minimum steps + no junk food + no screen + cold
-water and many more things."* Phone and screen time stay separate.
+**What Aman proposed instead:** *"how about monk mode is an aggregate on
+existing activities? You add activities which contribute to monk mode. Hence
+monk mode doesn't need to be a real activity, just aggregate score."*
 
-**It is called MONK MODE**, which is what people already call this exact
-composite. Two better-sounding names were unavailable: "clean day" is how
-reputation counts toward IMMACULATE, and DISCIPLINE is a rank.
+That is better on five counts and the composite design is abandoned.
 
-**The conditions are ours, the selection is yours.** A fixed menu lives in the
-module and each member switches on the rules they want, through the normal
-insert-only, future-dated config path. Free-text rules were offered and
-refused: a module that cannot know what its own conditions mean cannot say
-anything about them, and neither can Ren.
+- **No new module, no new check-in screen.** Nothing is added to the engine.
+- **No double entry.** The composite would have had you log 10,000 steps inside
+  Monk mode AND inside Steps. The same fact twice is what invariant 1 exists to
+  prevent.
+- **Derived by construction.** It reads `activity_outcomes`, stores nothing, and
+  is rebuildable because the things under it already are.
+- **The unscored-type problem dissolves.** It is not excluded from scoring by a
+  special flag; it is a reading OF things that were already scored, so there was
+  never anything to exclude and no way to inflate reputation with it.
+- **Invariant 6 survives.** The aggregate reads `passed` and nothing else, which
+  is exactly the engine's public contract. It never learns what a type means.
 
-**IT IS SCORED, NOT PASSED**, and this is the part that costs something.
+**THE SET IS EFFECTIVE-DATED.** Add Cold shower to Monk mode today and it counts
+from tomorrow. September does not move. This is invariant 5 applied to a view:
+resolve the set as it stood on the day being looked at, never as it stands now.
+A live set was offered, and it was refused because nothing in Curfew has ever
+let a setting rewrite the past, and a score that dropped while you did nothing
+is the exact confusion that rule exists to stop.
 
-Every other activity answers `{ passed, detail }`, and `passed` is read by
-scoring, streaks, reputation, outcomes and fines. A type with no pass has
-nothing for any of them to read. So Monk mode becomes the first **unscored**
-type: recorded, shown as a percentage, and deliberately outside the machinery.
+**A WEEKLY COUNTS ON THE DAYS YOU DID IT, and is ignored otherwise.** Gym is
+three a week; on a Tuesday you went, it counts, and on a Wednesday you did not,
+it is not asked. So **the denominator moves daily** and a weekly can only ever
+lift a day, never drag it down.
 
-  - no pass, so no miss
-  - no miss, so no fine and no streak
-  - and it must not move reputation either, or merely switching it on would
-    pay you for nothing
+One edge that falls out and has to be handled rather than discovered: a day
+where nothing in the set was scheduled is **0 of 0**, which is no score at all
+and must never render as 0%.
 
-That last one is the trap. Marking it permanently passed would have been the
-cheap way to make the engine accept it, and it would have inflated everybody's
-standing for free. One module flag, and the scoring pass skips it.
+**NO STREAK, NO PASS, NO FINE.** A percentage and nothing else. The activity
+whose entire subject is compulsive behaviour is the one thing in this app that
+cannot punish you. A bar you clear was offered, and a bar is a pass, a pass is a
+miss, and a miss is a thing to dread.
 
-**What this buys:** the activity whose entire subject is compulsive behaviour is
-the one activity that cannot punish you. `DIRECTION.md` section 6 asked for
-exactly that and got further than it asked.
+**It is called MONK MODE**, which is what people already call this. "Clean day"
+and "Discipline" were both unavailable: the first is how reputation counts
+toward IMMACULATE, the second is a rank.
 
-**What it costs:** Monk mode cannot be group accountability in the way
-everything else is. There is no fine to split and no streak to break. The group
-can see the number and that is all the pressure there is.
+**The score is arithmetic by construction**, so the question of whether a model
+produces it closes with this design. Passed over scheduled. Ren reads the number
+and says something about the week, which is 1.3 exactly as written.
 
-**ONE READING I HAD TO PICK.** Aman: *"score + some ai, tells how detox you are
-every day."* Taken as: **the score is arithmetic and Ren describes it.** Five of
-six rules is 83% whether or not a model is awake, and Ren reads that number and
-says something about the week.
-
-The other reading, a model producing the score itself, is refused unless Aman
-says otherwise. It would break 1.3 and invariant 1 in one move: a model's output
-is not replayable, so the number could not be rebuilt from `events`, and the
-app's whole claim that every figure can be recomputed would stop being true.
+**What this creates:** the conditions Aman named that Curfew does not track yet,
+cold shower and no junk food among them, have to become activity types of their
+own before they can be aggregated. That is a feature rather than a cost. They
+get their own streaks, their own windows and their own evidence, and Monk mode
+gets to be nothing but a lens over them.
 
 ### 1.17 Aman pays for the model
 
@@ -499,14 +503,11 @@ Carried from `DIRECTION.md` §8. None of it was reopened on 2026-09-20.
 
 ## 3. Open
 
-### 3.1 Monk mode's conditions
+### 3.1 Which new activity types v4 adds
 
-1.16 settles that the menu is ours and the selection is the member's. It does
-not settle what is on the menu. Named so far: minimum steps, no junk food, no
-screen, cold water, and "many more things".
+Monk mode aggregates activities, so the conditions have to exist first. Named
+so far: cold shower and no junk food. Steps and Screen already exist. The rest
+of "many more things" is unwritten.
 
-### 3.2 Whether the score is arithmetic or a model's opinion
-
-1.16 reads it as arithmetic, with Ren narrating. Recorded as an assumption
-rather than a decision, because the other reading breaks two invariants and
-should be chosen deliberately if it is chosen at all.
+Each one is a declarative module and adding a type never edits the engine, so
+this is a list to agree rather than a problem to solve.

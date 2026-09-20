@@ -117,8 +117,8 @@ export async function todayFor(userId: string): Promise<Today> {
           ? (hint ?? `${open.label} window closes ${open.closesLabel}`)
           : (hint ?? "No window open");
 
-    // Two things the engine has to say about its own rules, because a row that
-    // does not say them reads as broken.
+    // Three things the engine has to say about its own rules, because a row
+    // that does not say them reads as broken.
     //
     // A gap holds the control down, and without a word the activity looks like
     // it has stopped working.
@@ -130,14 +130,26 @@ export async function todayFor(userId: string): Promise<Today> {
     // offer rather than a demand, and nothing on the row drew that line. Saying
     // so is the engine's job and not the module's: what counts is the module's
     // business, whether another press would still be taken is this one's.
+    // And a GREY run, which is the third. The flame going out says the run
+    // ended; it cannot say why, and "0 of 3 this week" beside a dead flame
+    // reads as a bug rather than as a week that is over. No number and no
+    // activity word in it: what the week counts is the module's business
+    // (invariant 6) and it has already said it in `base`.
+    //
+    // It DOES say "week", and that is safe only while grey is a weekly idea. A
+    // daily miss still zeroes rather than greying. If that ever changes this
+    // sentence has to stop naming a week before it ships.
+    const grey = standings.get(activity.typeKey)?.grey ?? false;
     const waiting = state.steps.find((s) => s.waitingUntil)?.waitingUntil ?? null;
     const status = !state.scheduled
       ? base
-      : waiting && !open
-        ? `${base} Next counts ${waiting}.`
-        : state.passed && open
-          ? `${base} Another still counts.`
-          : base;
+      : grey
+        ? `${base} This week can no longer be made.`
+        : waiting && !open
+          ? `${base} Next counts ${waiting}.`
+          : state.passed && open
+            ? `${base} Another still counts.`
+            : base;
 
     rows.push({
       typeKey: activity.typeKey,

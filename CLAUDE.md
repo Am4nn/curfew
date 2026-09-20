@@ -690,11 +690,15 @@ judgement call. ROADMAP theme 3 decides whether the rest of the app follows, and
 until it does, do not carry this register onto a screen.
 
 **Theme 3 has now answered, and the answer is yes (2026-09-20).** v4 makes the
-app a coach. Nothing above changes YET: v4 is not being built, the v5 canvas
-still carries clerk copy on purpose, and whether the RECORD stays flat is still
-open. So this section still governs every line written today. When v4 starts,
-`.planning/v4/DECIDED.md` is what replaces it, and 3.1 in that file is the part
-that is not settled.
+app a coach, and `.planning/v4/DECIDED.md` is what replaces this section when v4
+starts. Nothing above changes YET: v4 is not being built and the v5 canvas still
+carries clerk copy on purpose, so this section governs every line written today.
+
+**The clerk does survive, in one place.** DECIDED 1.11: every number, time,
+money amount, balance, standing and ledger row stays flat. Only the sentences
+around them get warm. So the rule that a warm writer is never handed the numbers
+holds in v4 too, and the two hard rules below outlive the register change that
+was supposed to retire them.
 
 **Two hard rules inside that file, both bought with a bad release (v3.4).**
 

@@ -15,6 +15,12 @@ Sequencing is at the end.
 
 ## 1. Every activity, reviewed
 
+**CLOSED as a separate theme, 2026-09-20. It folds into v4.** Each of the twelve
+types gets its rules reviewed on the same day its screen is redrawn, which
+answers this theme's own argument rather than skipping it: you cannot make a
+rule prettier and leave it wrong if fixing it is the same sitting. See
+`.planning/v4/DECIDED.md` 1.12.
+
 All twelve types, one at a time, end to end.
 
 Already queued in detail in `scripts/drift/NEXT.md`, asked for on 2026-09-15 and

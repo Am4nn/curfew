@@ -78,49 +78,105 @@ score, `events` stops replaying cleanly into `activity_scores`.
 `DIRECTION.md` §5's four hard rules stand: it never scores, everything it says
 is recorded as an event, it never invents a number, and off is a real off.
 
-### 1.4 The coach is called Bell, and it is a someone
+### 1.4 The coach is called Ren, and he is a someone
 
-Chosen over "a tab only" and "woven into the screens only".
+Chosen over "a tab only" and "woven into the screens only". Lines on the screens
+that already exist, plus a tab. The v5 tab bar goes from four to five, which is
+exactly Apple's maximum, so nothing else can ever have one.
 
-- **Lines** on screens that already exist. Home, After a miss, Your record.
-- **A tab** for the longer conversation. The v5 tab bar goes from four to five,
-  which is exactly Apple's maximum, so nothing else can ever have one.
+`DIRECTION.md` section 9 puts coach tier 1 at position seven and has no tab at
+all. That order is superseded by 1.7.
 
-`DIRECTION.md` §9 puts coach tier 1 at position seven and has no tab at all.
-That order is superseded by 1.7.
+**THREE VERSIONS OF THE TAB WERE WRONG AND EACH FAILURE IS WORTH KEEPING.**
 
-**THE FIRST VERSION OF THE TAB WAS WRONG AND THE REASON IS WORTH KEEPING.** It
-was two report cards, A PATTERN and A SUGGESTION, with a text box underneath.
-Aman: *"this coach is really not good at all, no coach figure either."* He was
-right. Nobody was there. It did not speak first, did not greet you, did not ask
-you anything, and the one part that was actually a coach was the smallest thing
-on the screen, below two cards you passively read. A coach is a someone. That
-was a report with a chat box stapled to it.
+**One** was two report cards with a text box underneath. Aman: *"this coach is
+really not good at all, no coach figure either."* Nobody was there. It did not
+speak first, did not greet you, did not ask you anything, and the one part that
+was actually a coach was the smallest thing on the screen.
 
-**Its name is Bell**, and the name is not decoration. A curfew bell is the
-object the app is named after: it rang at dusk to tell a town to cover its fire
-for the night, and couvre-feu means cover fire. A bell also rings BEFORE the
-thing happens, which is the whole job. Chosen over Pip and Nine.
+**Two** gave him a face and then said everything in 22px semibold. A wall. Every
+word at the same weight means no word matters more than any other, and the eye
+has nowhere to land.
 
-**It has a figure**, drawn in the rank-icon language: 1.6 stroke, square caps,
-miter joins, hard edges, no glow and no gradient. It carries state rather than
-decorating: upright and grey when there is time, tilted and accent-coloured
-with two strokes beside it when there is not. Colour is never the only carrier,
-which is the same rule the tab bar follows by filling the active icon.
+**Three** drew the character as a bell pictogram, 26px, in a rounded square. An
+illustrated character had been chosen and an app icon was delivered.
 
-**The tab says Bell, not Coach.** A named coach introduced by job title is the
-opposite of the point.
+**HIS NAME IS REN.** Short, human, easy to say to a friend, and carrying no
+meaning of its own, which was the trade against Juno and Vesper. Both of those
+had far better etymology, Juno Moneta being Rome's warner and the root of both
+*monitor* and *money*, and neither sounded like somebody you would text about.
 
-**It talks like a friend in your corner.** Warm, short, on your side, never
-scolds, celebrates without gushing. Chosen over blunt and over dry-and-funny.
-The failure mode both of those carry is the same: on the week somebody is
-genuinely struggling, the app that is hard on them or makes a joke is the app
-they delete.
+**HE IS A BALL WITH A FACE.** The form came from a reference Aman brought: a
+soft sphere with dot eyes whose colour carries its mood. That reference is
+lavender and mint pastel on cream with a bloom, which is three separate things
+the visual tells forbid, so **the form was taken and the palette was not.** Ren
+carries each mood's hue through his whole body, in colours the app already owns.
+Three things make him read as a sphere, in order of how much each buys: rim
+occlusion, one tight specular hot spot, and bounce light. No outer bloom on any
+of them, because shading is form and a halo is glow, and the only glow in this
+app is IMMACULATE's.
 
-**The tab is a conversation and Bell speaks first.** You open it and it has
-already read your day. The pattern and the suggestion are things it SAYS, with
-their figures flat and mono inside the message, rather than cards filed under
-headings. 1.11 holds inside a speech bubble exactly as it holds anywhere else.
+**THE MOTION LIVES IN THE FACE.** Brows, eyes and mouth do the acting; the body
+breathes by one part in a hundred and never travels. A ball that lurches around
+reads as a loading spinner. The earlier attempts swung and bobbed the whole
+sphere, which is what you do when the face cannot act, and they looked cheap for
+a reason worth naming: a symmetric ease-in-out loop with no pause is a
+metronome. Every cycle now anticipates, damps, and then holds still for roughly
+half its length.
+
+**SIX MOODS, ON `Ren.dc.html`.** Resting, Ringing, Done, Angry, Quiet,
+Immaculate. **A mood is never chosen**: each answers a value the app already
+holds, so nobody can add a seventh because it looked nice.
+
+**ANGRY IS REAL**, decided 2026-09-21, and it fires when a run ends or a grace
+is spent on one. It sits against this section's own rule that he never scolds,
+and the drawing does not resolve that. Brows tipped in and down is anger and it
+is also determination, and which one it is depends entirely on who it is pointed
+at. He is furious that Tuesday got you again, on your side, the way a corner man
+is between rounds.
+
+    "Right. Tuesday again. We go Wednesday."   correct
+    "You knew Tuesday was coming."             scolding, and banned
+
+Nothing in the drawing enforces that. Only the words do, which is why it is
+written here rather than left to whoever writes them.
+
+**HE TALKS LIKE A FRIEND IN YOUR CORNER.** Warm, short, never scolds, celebrates
+without gushing. Blunt and dry-and-funny were both offered and refused, and they
+share a failure mode: in the week somebody is genuinely struggling, the app that
+is hard on them or makes a joke is the app they delete.
+
+**HE READS YOUR PHOTOGRAPHS**, and this is the thing no count can do. The app has
+always known you logged Food seven days running. It has never known you ate the
+same dinner four of those times. *"Four of your seven dinners this week were the
+same thing"* is an observation about your life rather than about your
+compliance, and it is the whole argument for 1.2.
+
+### 1.4a Where Ren speaks, and where he is silent
+
+The rule: **he speaks where there is a decision or a moment, and is silent where
+there is a list or a press.**
+
+| Speaks | Why |
+|---|---|
+| His own tab | the conversation |
+| Home | what to do next |
+| After a miss | the moment people quit |
+| Your record | reflection, not instruction |
+| The day is done | the emotional peak, and the only place he may be pleased |
+
+| Silent | Why |
+|---|---|
+| Check-in, Declare | time-to-press is the largest-effect item in `DIRECTION.md`, on a six-second budget. He must never be in the way of a press. |
+| Groups, Group | other people's space |
+| Configure, Standing, Ranks | forms and reference |
+
+**One line per screen, never two.** A voice that comments on everything is noise,
+and the tab is where he says more.
+
+**AND HE STANDS DOWN WHEN A PERSON SPEAKS.** If Mira nudges you about Water, Ren
+says nothing about Water. A human beat him to it, and two voices about one thing
+is worse than either alone.
 
 ### 1.5 Seeing who is slipping, and nudging them, is a core pillar
 

@@ -1,4 +1,4 @@
-import { getActivityType, type CheckinKind } from "@/domain";
+import { getActivityType, periodUnit, type CheckinKind } from "@/domain";
 import { listUserActivities } from "./activities";
 import { getCheckinState } from "./checkin";
 import { standingsFor } from "./standing";
@@ -130,16 +130,20 @@ export async function todayFor(userId: string): Promise<Today> {
     // offer rather than a demand, and nothing on the row drew that line. Saying
     // so is the engine's job and not the module's: what counts is the module's
     // business, whether another press would still be taken is this one's.
-    // And a GREY run, which is the third. The flame going out says the run
-    // ended; it cannot say why, and "0 of 3 this week" beside a dead flame
-    // reads as a bug rather than as a week that is over. No number and no
-    // activity word in it: what the week counts is the module's business
-    // (invariant 6) and it has already said it in `base`.
+    // And a GREY WEEK, which is the third. "0 of 3 this week" beside a dead
+    // flame reads as a bug rather than as a week that is over, so the engine
+    // says which it is. No number and no activity word in it: what the week
+    // counts is the module's business (invariant 6) and `base` has said it.
     //
-    // It DOES say "week", and that is safe only while grey is a weekly idea. A
-    // daily miss still zeroes rather than greying. If that ever changes this
-    // sentence has to stop naming a week before it ships.
-    const grey = standings.get(activity.typeKey)?.grey ?? false;
+    // WEEKLY ONLY, and the guard is load-bearing. A daily miss greys too now,
+    // and without this every missed glass of water read "1 of 8 today. This
+    // week can no longer be made." A daily row needs no sentence anyway: the
+    // dead flame says the run ended and there is no ambiguity about what a
+    // missed day was. The comment here used to be a warning to whoever made
+    // daily grey; they were me, I did not read it, and the simulation did.
+    const grey =
+      (standings.get(activity.typeKey)?.grey ?? false) &&
+      periodUnit(activity.schedule.schedule) === "week";
     const waiting = state.steps.find((s) => s.waitingUntil)?.waitingUntil ?? null;
     const status = !state.scheduled
       ? base

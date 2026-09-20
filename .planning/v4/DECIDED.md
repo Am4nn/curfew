@@ -117,7 +117,35 @@ member can cause one.
 
 Both are new build. The nudge is the first feature in Curfew where one member
 can put a notification on another member's phone, which is a design problem
-before it is a table. See 3.3.
+before it is a table.
+
+**Three things settled 2026-09-20, from a menu.**
+
+**It shows AT RISK, not MISSED.** Two different things get called slipping. A
+miss is settled, past, and nothing anybody does now changes it, so showing it is
+pointing rather than helping, and it turns a screen into a scoreboard of failure
+on an app that is careful never to draw the lost number bigger than the next
+one. At risk is present and actionable: window open, closing soon, nothing
+logged. It is the only state a nudge can move, so it is the only one drawn.
+
+**It lives on HOME**, under your own activities, above the feed. Chosen over
+putting it inside each group. Two taps deep is a feature; on Home it is the half
+of the product Aman says it is. You see it without going looking.
+
+**A nudge is one of a few set messages, not a text box.** Tap one, it sends.
+Free text would make Curfew a messaging app, which needs blocking, reporting and
+an answer to what happens when somebody replies, none of which exists. Typing
+can be added later once it is missed, which is a thing a week of use will say
+and a design argument will not.
+
+**No rate limit**, chosen knowingly over one nudge per person per activity per
+day. Three friends who know each other will sort it out. The failure it accepts
+is the day somebody is having a bad week and gets nudged nine times.
+
+**Quiet hours still win, and that is not a rate limit.** No limit means no cap
+on how many you may send, not permission to reach a phone that is meant to be
+silent. Quiet hours is a real setting that nothing overrides (v3.4.0), a nudge
+is a notification, and nothing about this decision exempts it.
 
 ### 1.6 Fines stay, per group
 
@@ -274,13 +302,14 @@ be surprised by it.
 Not chosen. Vercel Hobby allows 300s per function, so duration is not the
 constraint. Cost is, and there is no mechanism in the product to recover it.
 
-### 3.3 How a nudge is rate limited, and whether it can be refused
+### 3.3 What the person being nudged can refuse
 
-A member causing a notification on another member's phone has an obvious failure
-mode. Curfew already has quiet hours as a real setting that nothing overrides,
-and a nudge has to respect them or that setting becomes a lie. Open: a
-per-sender cap, a per-recipient cap, whether a member can turn nudges off from
-one specific person, and whether the recipient sees who sent it.
+The rate limit question is answered in 1.5: there is not one. What is still open
+is the other side of it. Can a member turn nudges off entirely, or off from one
+specific person, and does the recipient see who sent it? The set-message
+decision makes the last one nearly settled by itself, since a canned line with
+no name attached would be worse than no nudge, but none of the three has been
+decided.
 
 ### 3.4 The dopamine detox activity
 

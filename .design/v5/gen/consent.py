@@ -209,23 +209,22 @@ def block_px(sections):
 
 
 SUMMARY_PX = 22 + sum(20 + math.ceil(len(b) / 44.0) * 19 + 28 for _, _, _, b in SUMMARY)
-H = int((60 + 96 + 116 + SUMMARY_PX + 54 + block_px(STORES) + 54 + block_px(RULES) + 210) * 1.04)
+H = int((40 + 96 + 130 + SUMMARY_PX + 54 + block_px(STORES) + 54 + block_px(RULES) + 210) * 1.04)
 
 c = [HEAD, root(H)]
 
 # The bar. The one screen in the app with no back control, no tab bar and no way
 # around it, so it carries the state of the gate and nothing else.
+# No eyebrow over the title. "BEFORE YOU START" above "Before you carry on" is
+# the same sentence twice and the second one is better. The mark stays, small,
+# because this is the one screen with no chrome of any other kind on it.
 c.append("""
-  <div style="flex: none; padding: 20px 20px 14px; border-bottom: 0.5px solid %s; display: flex; align-items: center; gap: 10px;">
-    <svg viewBox="0 0 32 32" width="15" height="15" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg>
-    <span style="font-family: %s; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: %s;">{{bar}}</span>
-  </div>
-
-  <div style="flex: none; padding: 22px 20px 0;">
-    <h1 style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.14;">{{title}}</h1>
+  <div style="flex: none; padding: 26px 20px 0;">
+    <svg viewBox="0 0 32 32" width="17" height="17" shape-rendering="crispEdges" aria-hidden="true" style="display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg>
+    <h1 style="margin: 18px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.12;">{{title}}</h1>
     <p style="margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: %s;">{{intro}}</p>
   </div>
-""" % (SEP, MONO, PINK, GREY))
+""" % GREY)
 
 # The summary card.
 c.append('  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; overflow: hidden;">\n' % CARD)
@@ -281,23 +280,41 @@ c.append(part('THE RULES', '9 SECTIONS', RULES, ('rgba(255,159,10,0.13)', ORANGE
 
 c.append(grow())
 
+# THE FOOTER IS PINNED, and the button does not accept until the document has
+# been reached the end of.
+#
+# It is disabled and it SAYS WHY, with a progress line along the top edge of the
+# bar. A grey button that will not explain itself is the thing people tap three
+# times and then complain about, and on the one screen with no way around it
+# that is an unkind place to be silent.
+#
+# The progress line doubles as the answer to "how much of this is there",
+# which on a seven-thousand-pixel document is the first thing anybody wants.
+#
 # The timezone is collected HERE and nowhere else, because every window, streak
 # and fine is judged in it and a wrong one is wrong from the first day.
-c.append("""  <div style="flex: none; margin-top: 28px; padding: 20px 20px 30px; border-top: 0.5px solid %s; display: flex; flex-direction: column; gap: 15px;">
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <label for="zone" style="font-family: %s; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: %s;">YOUR TIME ZONE</label>
-      <div style="display: flex; align-items: center; gap: 11px; height: 50px; padding: 0 15px; border-radius: 14px; background: %s;">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>
-        <input id="zone" type="text" value="Asia/Kolkata" readonly style="flex-grow: 1; min-width: 0; border: 0; background: transparent; color: #ffffff; font-family: inherit; font-size: 16px; padding: 0;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="6 9.5 12 15.5 18 9.5"/></svg>
+c.append("""  <div style="flex: none; margin-top: 28px; border-top: 0.5px solid %s; position: relative;">
+    <span style="position: absolute; left: 0; top: -1px; height: 2px; width: {{progress}}; background: {{progressTone}};"></span>
+    <div style="padding: 20px 20px 30px; display: flex; flex-direction: column; gap: 15px;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label for="zone" style="font-family: %s; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: %s;">YOUR TIME ZONE</label>
+        <div style="display: flex; align-items: center; gap: 11px; height: 50px; padding: 0 15px; border-radius: 14px; background: %s;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>
+          <input id="zone" type="text" value="Asia/Kolkata" readonly style="flex-grow: 1; min-width: 0; border: 0; background: transparent; color: #ffffff; font-family: inherit; font-size: 16px; padding: 0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="6 9.5 12 15.5 18 9.5"/></svg>
+        </div>
       </div>
-      <span style="font-size: 12px; line-height: 1.45; color: %s;">Every window, streak and fine is judged in this zone. A day belongs to you, never to UTC.</span>
-    </div>
 
-    <button type="button" style="width: 100%%; height: 54px; border: 0; border-radius: 15px; background: %s; color: #ffffff; font-family: inherit; font-size: 17px; font-weight: 600;">I am 18 or older, and I agree</button>
-    <span style="text-align: center; font-size: 12px; color: %s;">Both of these stay in Settings afterwards, always.</span>
+      <button type="button" aria-disabled="{{waitingStr}}" style="width: 100%%; height: 54px; border: 0; border-radius: 15px; background: {{buttonBg}}; color: {{buttonFg}}; font-family: inherit; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 9px;">
+        <sc-if value="{{waiting}}" hint-placeholder-val="{{true}}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{buttonFg}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5v14M6 13l6 6 6-6"/></svg>
+        </sc-if>
+        {{buttonLabel}}
+      </button>
+      <span style="text-align: center; font-size: 12.5px; line-height: 1.4; color: {{noteTone}};">{{note}}</span>
+    </div>
   </div>
-""" % (SEP, MONO, GREY, CARD, GREY, DIM, GREY, PINK, DIM))
+""" % (SEP, MONO, GREY, CARD, GREY, DIM))
 
 # A tweak rather than a control, because the two states are one screen and the
 # difference between them is three sentences.
@@ -305,14 +322,29 @@ c.append(logic(H, """  renderVals() {
     // At the 4.0 release every existing member meets this as a re-accept, and
     // every member after them meets it as a gate. Same document, two framings.
     const returning = this.props.returning ?? false;
+    // `read` is the state after somebody reaches the end. Both states are
+    // levers rather than controls, because a control on a mock is a feature
+    // somebody will ask about.
+    const read = this.props.read ?? false;
     return {
-      bar: returning ? 'THE RULES HAVE CHANGED' : 'BEFORE YOU START',
       title: returning ? 'Three things changed' : 'Before you carry on',
       intro: returning
-        ? 'Curfew has a coach in it now and he reads your photographs. That is a material change, so this needs accepting again. What is new is at the top and the rest is word for word what you accepted before.'
-        : 'Curfew keeps a record of what you say you did, and shows some of it to people you choose. Two things to read: what it stores, and the rules. There is no way past this page and no dismiss on it.',
+        ? 'Curfew has a coach in it now and he reads your photographs. That is a material change, so this needs accepting again. What is new is at the top and the rest is word for word what you accepted before. Read to the end and the button wakes up.'
+        : 'Curfew keeps a record of what you say you did, and shows some of it to people you choose. Two things to read: what it stores, and the rules. There is no way past this page and no dismiss on it, and the button at the end only wakes up once you get there.',
+      waiting: !read,
+      waitingStr: read ? 'false' : 'true',
+      progress: read ? '100%' : '34%',
+      progressTone: read ? '""" + GREEN + """' : '""" + PINK + """',
+      buttonBg: read ? '""" + PINK + """' : '""" + CARD + """',
+      buttonFg: read ? '#ffffff' : '""" + DIM + """',
+      buttonLabel: read ? 'I am 18 or older, and I agree' : 'Read to the end first',
+      note: read
+        ? 'Both of these stay in Settings afterwards, always.'
+        : 'Two thirds of it left. Nobody is asked to agree to something they have not been shown.',
+      noteTone: read ? '""" + DIM + """' : '""" + GREY + """',
     };
-  }""", '"returning":{"editor":"boolean","default":false}'))
+  }""", '"returning":{"editor":"boolean","default":false},'
+        '"read":{"editor":"boolean","default":false}'))
 
 write('Consent.dc.html', c)
 print('    %dpx, %d sections' % (H, len(STORES) + len(RULES)))

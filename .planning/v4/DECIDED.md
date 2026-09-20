@@ -554,9 +554,32 @@ by a `returning` tweak in `data-props` rather than by a control, because the
 difference between them is two sentences and a `data-props` lever is what this
 canvas has for exactly that.
 
-- Default: **BEFORE YOU START**, and *"there is no way past this page and no
-  dismiss on it."*
-- Returning: **THE RULES HAVE CHANGED**, and what is new is named.
+- Default: **"Before you carry on"**, and *"there is no way past this page and
+  no dismiss on it."*
+- Returning: **"Three things changed"**, and what is new is named.
+
+There is no eyebrow over either. `BEFORE YOU START` above `Before you carry on`
+was the same sentence twice and the second one is better. The mark stays, small,
+because this is the one screen with no chrome of any other kind on it.
+
+### 1.8i The agree button waits until the end, and says why
+
+Settled 2026-09-21. **It is disabled until the document has been reached the end
+of, and it explains itself while it waits**: `Read to the end first`, with a
+down arrow, over a line saying how much is left. A progress rule runs along the
+top edge of the footer bar, which doubles as the answer to "how much of this is
+there" on a seven-thousand-pixel document.
+
+A grey button that will not say why is the thing people tap three times and then
+complain about, and on the one screen with no way around it that is an unkind
+place to be silent.
+
+**It also makes the consent real rather than procedural.** Nobody is asked to
+agree to something they have not been shown, which is the only version of this
+gate worth having given what it now covers.
+
+Both states are `data-props` levers, `returning` and `read`, not controls. A
+control on a mock is a feature somebody will ask about later.
 
 **The timezone is collected here**, as the real gate does, because every window,
 streak and fine is judged in it and a wrong one is wrong from the first day. The

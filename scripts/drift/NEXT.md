@@ -50,7 +50,7 @@ four anti-drift mechanisms. `SCHEMA.md` is the tables, `DECIDED.md` is 1.1 to
   `DECIDED.md` is now assembled from sorted blocks rather than appended to.
 
 **Still to do in Phase 0:** `CLAUDE.md` (current phase, Voice replaced by
-`DECIDED.md`, "Not in v3"), retire `.planning/v3/SCREENS.md` and write the v4
+`DECIDED.md`, "Not in v3"), retire `.planning/v4/SCREENS.md` and write the v4
 one, the six `COACH_*` env keys in all three files plus `.env.example` plus
 Vercel, and `check:decided` and `check:member`.
 

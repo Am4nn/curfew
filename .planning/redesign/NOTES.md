@@ -367,7 +367,7 @@ things missed the same way:
 - The day completing lands a **stamp** with a motion spec. Already designed,
   never mocked.
 
-Read `src/server/today.ts` and `.planning/v3/SCREENS.md` before drawing
+Read `src/server/today.ts` and `.planning/v3/SCREENS-retired.md` before drawing
 anything else.
 
 ### Still open after this round

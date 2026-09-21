@@ -1,4 +1,4 @@
-# SCREENS.md — The screen inventory and the review gate
+# SCREENS.md — RETIRED 2026-09-21. The v3 record.
 
 Every approved artboard, its route, and a box to tick. This is the contract
 between the mocks and the build (decision 74). If a screen ships and does not

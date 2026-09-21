@@ -80,7 +80,8 @@ assertion can.
   reasoning is preserved in `SCHEMA.md`'s opening section and in 1.16.
 - `CLAUDE.md`: current phase becomes v4, the Voice section is replaced by
   `DECIDED.md` as 1.1 promised, "Not in v3" replaced by v4's own.
-- Retire `.planning/v3/SCREENS.md`; write the v4 one (M3).
+- Retire v3's screen gate to `.planning/v3/SCREENS-retired.md`; generate the
+  v4 one from `canvas.json` (M3).
 - New env keys in all three `.env` files, `.env.example` and Vercel per
   environment: `COACH_PROVIDER`, `COACH_MODEL`, `COACH_API_KEY`,
   `COACH_MONTHLY_CEILING`, `COACH_DAILY_ASKS`, `COACH_ENABLED`. **A key missing

@@ -1236,7 +1236,7 @@ blocks a phase.
 | The four nudge messages | *Don't break it* / *You've got time* / *Mine's done* / *Come on* |
 | `COACH_DAILY_ASKS` | 20 |
 | `COACH_MONTHLY_CEILING` | 800 rupees |
-| `.planning/v3/SCREENS.md` | Retired. A v4 file lists all 41 boards. |
+| `.planning/v3/SCREENS-retired.md` | Retired. A v4 file lists all 41 boards. |
 
 **"Walking" is Steps.** Aman named it among the compulsory four; Steps already
 exists and is at-or-above a number, so nothing new is built. It covers BODY.

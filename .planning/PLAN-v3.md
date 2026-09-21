@@ -15,7 +15,7 @@ with `v3/SCOPE.md`, which indexes the rest.
 | `v3/TRUST-SAFETY.md` | Consent, policies, moderation, deletion, the security round |
 | `v3/ARCHITECTURE.md` | Runtime, schema, the module spec, scoring jobs, uploads, testing |
 | `v3/CONFIG.md` | The module registry, app settings, the sync script, caching |
-| `v3/SCREENS.md` | Every artboard, its route, and the review gate |
+| `v3/SCREENS-retired.md` | Every artboard, its route, and the review gate |
 | `v3/PLAN.md` | The nine build phases |
 
 What the old plan said and the new set changes:

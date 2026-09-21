@@ -1,0 +1,153 @@
+# -*- coding: utf-8 -*-
+"""Generate `.planning/v4/SCREENS.md` from `canvas.json`.
+
+The v3 file was written by hand, which is how it came to list thirteen artboards
+that existed only on a canvas. This one is generated from the index, so a board
+cannot be missing from the gate: add a board, re-run, get a row.
+
+The TICKS are not generated. They are set by a person who opened the screen
+beside the board, and re-running preserves every one already set.
+"""
+import io, json, os, re
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+CANVAS = os.path.join(os.path.dirname(HERE), 'project', 'canvas.json')
+OUT = os.path.join(REPO, '.planning', 'v4', 'SCREENS.md')
+
+# board -> (route, phase, what has to be true when it is ticked)
+SCREENS = {
+    'Splash':        ('none, the app shell', 7, 'The mark alive, the word landing a letter at a time, one line. No spinner.'),
+    'Signin':        ('/signin', 7, 'Three generated photographs, the lockup, three numbered lines, invite-only. No member evidence anywhere on it.'),
+    'Welcome':       ('/welcome', 7, 'Three steps, unskippable. Step 1 carries "I do not want a coach" and the whole tutorial branches on it.'),
+    'Consent':       ('blocking overlay, any route', 7, 'All twenty sections. The accept button disabled until the end, with the progress rule. `returning` flips the two framings.'),
+    'Main':          ('/', 2, 'Seven tracked, the hero, the grouped Simple ones row open and closed, Monk row, at risk, the feed. Ren deferring to a nudge in ONE line.'),
+    'Coach':         ('/coach', 5, 'Ren, three tiers of type, the photo insight, the chips, Ask Ren. One line per surface.'),
+    'CoachDown':     ('/coach', 6, 'The night that failed, with the guarded retry. The ask box off, and `budget` flips the reason.'),
+    'Memory':        ('/settings/memory', 6, 'The paragraph as editable text, Edit and Clear, and the four notes about what it is.'),
+    'Stats':         ('/stats', 3, 'Perfect days, three figures, the heatmap, per-activity bars. Ren speaks once.'),
+    'Groups':        ('/groups', 4, 'Invite banner, group list with rank and number.'),
+    'Activities':    ('/activities', 1, 'Global score, the list, each with its streak. The gear is gone: Settings is reached from Home.'),
+    'Catalog':       ('/activities/add', 1, 'Simple ones as ONE entry over five, each with its category, then write-your-own marked NO CATEGORY.'),
+    'Configure':     ('/activities/[key]', 1, 'Sleep. The anchored confirm window, evidence required, the effective-from note.'),
+    'Notice':        ('blocking overlay, any route', 7, 'Got it only, no dismiss, no version number.'),
+    'Group':         ('/group/[id]', 4, 'Tracks, members, your standing, the week, the shared feed.'),
+    'GroupStats':    ('/group/[id]/stats', 4, 'The week day by day, who carried it, what the group finds hard. Counted across the group, never per person.'),
+    'Evidence':      ('/group/[id]/evidence', 4, 'Today and yesterday, load older. Nothing from before you joined.'),
+    'Standing':      ('/group/[id]/standing', 4, 'Rank, money, the ceiling, movements.'),
+    'Ranks':         ('/ranks', 3, 'Your standing, the six bands, IMMACULATE with the only glow in the app.'),
+    'Ledger':        ('/group/[id]/ledger', 4, 'Every entry including a correction row. Append-only, said out loud.'),
+    'GroupSettings': ('/group/[id]/settings', 4, 'Share toggles with the camera switch, Monk mode as a row, who runs it, the rules, leave.'),
+    'Invite':        ('/invite/[token]', 7, 'Share toggles, and an untracked type offering setup rather than a dead switch.'),
+    'Monk':          ('/monk', 3, 'The percentage, no flame and no closes-at. Today, the week, a dash for 0 of 0. Ren reads the number.'),
+    'MonkSetup':     ('/monk/setup', 3, 'Compulsory, four kinds covered, the stricter bar for Water, Screen and Sleep, effective-dated.'),
+    'MonkLocked':    ('/monk', 3, 'Two of four kinds missing, with Add on each. Monk mode does not appear at all.'),
+    'Capture':       ('/checkin/[key]', 1, 'Aim, review, done. Live camera only. The real meal photograph.'),
+    'Declare':       ('/checkin/[key]', 1, 'It held or I slipped, the streak at stake, the correction window.'),
+    'Stamp':         ('/', 2, 'The stamp LANDS: falls, hits, the page flinches, the square ring leaves on the impact frame.'),
+    'Restore':       ('/', 3, 'After a miss. Grace offered, and what it costs.'),
+    'Nudge':         ('/group/[id]', 4, 'Four set messages, no typing, and the sent state.'),
+    'Nudged':        ('/', 4, 'One card, not an inbox. No reply button. Ren defers in one line.'),
+    'Settings':      ('/settings', 7, 'Profile and settings on one page. Seven groups, checked row for row against the real screen. Admin only for an admin.'),
+    'Sharing':       ('/settings/sharing', 4, 'Every group, every activity, the camera switch, Monk mode.'),
+    'Notifs':        ('/settings/notifications', 4, 'The switch, quiet hours, per activity, and what one sounds like.'),
+    'Photos':        ('/settings/photos', 7, 'Newest first, read-only, and the 90 day retention said plainly.'),
+    'Away':          ('/settings/pause', 3, 'Four a month, what an away day does and the one thing it does not.'),
+    'Data':          ('/settings/data', 7, 'What is held, the three deletes, and money is never deleted.'),
+    'Switches':      ('/settings/coach', 6, 'Ren off and nudges off, each showing its consequence.'),
+    'Admin':         ('/admin/ops', 5, 'SCHEDULER first with four jobs, failures, the coach and the bill, evidence, drift, controls.'),
+    'Mark':          ('none, a reference sheet', 0, 'Construction, sizes, the lava, where it sits, and the four nevers.'),
+    'Ren':           ('none, a motion spec', 0, 'Six moods. Motion lives in the face; the body only breathes.'),
+}
+
+canvas = json.load(io.open(CANVAS, encoding='utf-8'))
+stems = [n[:-len('.dc.html')] for n in canvas['order']]
+titles = {n[:-len('.dc.html')]: canvas['boards'][n].get('title', '') for n in canvas['order']}
+
+missing = [s for s in stems if s not in SCREENS]
+extra = [s for s in SCREENS if s not in stems]
+assert not missing, 'board with no row: %s' % missing
+assert not extra, 'row with no board: %s' % extra
+
+# Preserve ticks across a re-run. A tick is a person's word and this script is
+# not allowed to take it back.
+ticked = set()
+if os.path.exists(OUT):
+    for line in io.open(OUT, encoding='utf-8'):
+        m = re.match(r'\| `([A-Za-z]+)` .*\| \[x\] \|', line)
+        if m:
+            ticked.add(m.group(1))
+
+PHASES = {
+    0: 'Phase 0 — reference, nothing to build',
+    1: 'Phase 1 — the five new types',
+    2: 'Phase 2 — the grouped row',
+    3: 'Phase 3 — Monk mode',
+    4: 'Phase 4 — nudges, and the group',
+    5: 'Phase 5 — the coach against a stub',
+    6: 'Phase 6 — the model',
+    7: 'Phase 7 — the gate and the surface',
+}
+
+out = ["""# SCREENS.md — the v4 review gate
+
+Every board on the v5 canvas, its route, and a box only a person may tick.
+
+The canvas is https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP and the sources
+are in `.design/v5/project/`. **This file is generated from `canvas.json`** by
+`.design/v5/gen/screens.py`, so a board cannot be missing from the gate: add a
+board, re-run, get a row. The v3 file was written by hand, which is how thirteen
+artboards came to exist only on a canvas with nothing in the repo knowing.
+
+**The ticks are not generated.** They are a person's word, and re-running
+preserves every one already set.
+
+## The gate
+
+A phase in `PLAN.md` is not done until, for every board it touched:
+
+1. The route exists and renders in preview mode with seeded data.
+2. It has been opened **side by side with the board** and compared: layout,
+   spacing, copy, empty state, and the states in the Notes column.
+3. The box is ticked, in the same commit as the screen.
+
+**A phase cannot close with an unticked row it touched.** v3's file was never
+ticked once, which is the whole reason this one says so.
+
+**No screenshot tooling.** A reference capture is a capture of what was built,
+so it locks in drift rather than preventing it. A person comparing to the board
+catches what a diff never would.
+
+**If the screen and the board disagree, that is drift.** Fix the code, or amend
+the board and this row deliberately, and say which in the commit.
+
+"""]
+
+for phase in sorted(PHASES):
+    rows = [s for s in stems if SCREENS[s][1] == phase]
+    if not rows:
+        continue
+    out.append('## %s\n\n' % PHASES[phase])
+    out.append('| Board | Route | What it has to show | Done |\n|---|---|---|---|\n')
+    for stem in rows:
+        route, _, note = SCREENS[stem]
+        tick = '[x]' if stem in ticked else '[ ]'
+        out.append('| `%s` | `%s` | %s | %s |\n' % (stem, route, note, tick))
+    out.append('\n')
+
+out.append("""## Three boards have no route, and that is on purpose
+
+`Mark` and `Ren` are reference sheets: the mark's construction and the mood set.
+`Splash` is the app shell rather than a route. They are in the gate anyway,
+because a reference sheet that drifts from the app is worse than none.
+
+## What this replaces
+
+`.planning/v3/SCREENS.md`, retired on 2026-09-21 and kept as the record of what
+v3 built. It is keyed to the `.design/` artboards, which are the old design, and
+two of its rows were never ticked on purpose: Configure and Check-in, whose
+three known differences it lists.
+""")
+
+io.open(OUT, 'w', encoding='utf-8', newline='').write(''.join(out))
+print('%s: %d boards, %d already ticked' % (os.path.relpath(OUT, REPO), len(stems), len(ticked)))

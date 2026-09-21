@@ -13,7 +13,7 @@ Money is optional and can be switched off entirely.
   condition.
 - `.planning/v3/ARCHITECTURE.md` — runtime, schema, the module spec, scoring
   jobs, uploads.
-- `.planning/v3/SCREENS.md` — every mock, its route, and the review gate that
+- `.planning/v4/SCREENS.md` — every mock, its route, and the review gate that
   stops the build drifting from the design.
 - `.planning/v3/OPEN.md` — **what is not done.** Every defect found and how it
   was closed, what the security round cannot say, what is untested, what needs
@@ -75,7 +75,7 @@ designed and specified: twelve activity types with per-user schedules and
 thresholds, photo evidence, a 0 to 1000 reputation per group with six ranks,
 group stats, an admin console that can switch whole systems off, and a fresh
 start on data. Every screen is mocked in `.design/` and listed in
-`.planning/v3/SCREENS.md`.
+`.planning/v4/SCREENS.md`.
 
 - **Phase 0** ground: APAC Neon migrated from empty, `activity_types`,
   `bun run sync:activities` gating CI, `sin1`, R2 and Upstash in place.
@@ -521,6 +521,8 @@ streak     bun run check:streak    — the first thing you ever do counts
 offer      bun run check:offer     — a button is there when a press would count
 evidence   bun run check:evidence  — what you shared reaches the group
 cron       bun run check:cron      — no period waits over an hour to be scored
+decided    bun run check:decided   — the code still says what DECIDED.md says
+member     bun run check:member    — every group-scoped query checks membership
 browser    bun run browser         — every screen and every form, against a running server
 audit      bun audit               — published advisories against the lockfile
 migrate    bun run migrate         — migrations, then sync, against .env.preview

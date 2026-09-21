@@ -151,7 +151,7 @@ takes, and the sign-in page's own photographs and font have both been broken by
 it.
 
 If you touched a screen, open it beside its artboard in `.design/` and tick its
-row in `.planning/v3/SCREENS.md` in the same commit. If the screen and the mock
+row in `.planning/v4/SCREENS.md` in the same commit. If the screen and the mock
 disagree, that is drift: fix the code, or amend the mock and the row
 deliberately. A screenshot test would only lock in whatever was built, which is
 why the gate is a person.

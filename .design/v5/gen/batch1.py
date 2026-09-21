@@ -21,10 +21,15 @@ first.append("""
       <span style="width: 26px; height: 3px; border-radius: 999px; background: {{p.fill}};"></span>
     </sc-for>
     <span style="flex-grow: 1;"></span>
-    <!-- No Skip. You leave this with one activity set up or you do not leave. -->
-    <span style="font-family: %s; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: %s;">{{stepLabel}}</span>
+    <!--
+      No Skip. You leave this with one activity set up or you do not leave.
+
+      And no "STEP 1 OF 3" beside the pips either. The pips already say it, and
+      two indicators for one fact is the thing this round exists to remove,
+      failing on the first screen anybody sees.
+    -->
   </div>
-""" % (MONO, DIM))
+""")
 
 REN_SPHERE = """      <div style="position: relative; width: {size}px; height: {size}px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
@@ -167,7 +172,6 @@ first.append(logic(H, """  constructor(props) {
     const count = defs.filter((d) => on[d.key]).length;
     return {
       pips: [0, 1, 2].map((i) => ({ fill: i <= step ? ON : OFF })),
-      stepLabel: `STEP ${step + 1} OF 3`,
       isMeet: step === 0, isPick: step === 1, isDone: step === 2, notLast: step < 2,
       ren, noRen: !ren,
       // He asks on the picking screen only if he is still here. Otherwise the

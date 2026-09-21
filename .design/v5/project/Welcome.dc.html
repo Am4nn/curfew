@@ -75,8 +75,13 @@
       <span style="width: 26px; height: 3px; border-radius: 999px; background: {{p.fill}};"></span>
     </sc-for>
     <span style="flex-grow: 1;"></span>
-    <!-- No Skip. You leave this with one activity set up or you do not leave. -->
-    <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #48484a;">{{stepLabel}}</span>
+    <!--
+      No Skip. You leave this with one activity set up or you do not leave.
+
+      And no "STEP 1 OF 3" beside the pips either. The pips already say it, and
+      two indicators for one fact is the thing this round exists to remove,
+      failing on the first screen anybody sees.
+    -->
   </div>
 
   <!-- 1. He arrives, and the refusal is on the same screen. -->
@@ -237,7 +242,6 @@ class Component extends DCLogic {
     const count = defs.filter((d) => on[d.key]).length;
     return {
       pips: [0, 1, 2].map((i) => ({ fill: i <= step ? ON : OFF })),
-      stepLabel: `STEP ${step + 1} OF 3`,
       isMeet: step === 0, isPick: step === 1, isDone: step === 2, notLast: step < 2,
       ren, noRen: !ren,
       // He asks on the picking screen only if he is still here. Otherwise the

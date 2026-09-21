@@ -1421,6 +1421,59 @@ the first question take three screens and a memory.
 five judgement rows under HOW YOU ARE JUDGED, which is this problem solved.
 Changing it twice before anybody has used it once is guessing.
 
+### 1.39 The invite stays a card. No deep link in the email
+
+Confirmed 2026-09-21 rather than changed, and Aman's reasoning beats the one I
+recommended against it.
+
+A deep link into the join screen would be a link that does not go where it says.
+Two things sit between signing in and an invite, both of them blocking and
+neither skippable: **admin approval**, which is a human and may take a day, and
+**the consent gate**, which has no dismiss. A link promising "join Wing" that
+lands on "waiting for approval" is worse than no link.
+
+So the email says open Curfew, and the invite is a card on Home and on Groups
+when you get there. It is one hunt, once, after two screens that would have
+interrupted a link anyway.
+
+### 1.40 Setting up an activity mid-join returns you whole
+
+Settled 2026-09-21. The detour stays; the two faults in it go.
+
+**Both buttons come back to the invite.** Today "Add and share" returns and "Add
+for myself only" pushes to `/activities`, so choosing the more private of two
+options drops you out of the flow entirely, with the invite still pending and
+nothing saying where it went.
+
+**And the toggles survive.** `JoinForm`'s state is a `useState` initializer over
+the server rows, so coming back remounts it and resets every switch to its
+default. Three untracked types is three resets of everything you had already
+decided.
+
+The alternative, setting an activity up in place on the join screen, was offered
+and refused: it is a better screen and a much larger build, and it would put the
+configure wizard inside a flow that has its own Back.
+
+This is defect 3 of 3.6, promoted from filed to decided. It stays Phase 7.
+
+### 1.41 The join screen shows the ceiling, not the opening score
+
+Settled 2026-09-21. The ceiling is a **consequence of the switches on that
+screen**, so it belongs there and 1.35 already says as much.
+
+The opening score is not. It is a fact about you, computed from your global
+score, that you cannot change from this screen and have no way to check. It was
+**wrong by sixty points for a long time** for exactly that reason: the screen
+said `START_SCORE`, which is where a global score starts and is not a number
+anybody opens a group on, and both readings landed in INTENT, *"which is why it
+survived being looked at."*
+
+A number nobody can check, on a screen whose job is a yes or a no, is the
+easiest kind of number to be wrong.
+
+The v5 `Invite` board never drew it, so this constrains the build rather than
+the design.
+
 ---
 
 ## 2. Confirmed unchanged
@@ -1629,8 +1682,13 @@ want drastic changes."*
 **SETTLED SO FAR:** 1.33 (one switch), 1.34 (grace names one thing), 1.35 (the
 ceiling is stated where the toggle is). Three defects filed as 3.6.
 
-**STILL OPEN IN THIS ROUND:** first run, which 1.15 already builds and which has
-not been looked at against this round's test; and the family below.
+**SETTLED IN THE SECOND PASS:** 1.39 (the invite stays a card), 1.40 (the join
+detour returns you whole), 1.41 (the join screen shows the ceiling, not the
+opening score). First run itself lost one thing and only one: it said which step
+you were on twice, with three pips AND "STEP 1 OF 3", and two indicators for one
+fact is this round's test failing on the first screen anybody sees.
+
+**STILL OPEN IN THIS ROUND:** the family below, and nothing else.
 
 **And one he named as confusing without naming a fix:** grace, away days, pause
 and grey. Four different ways a day can fail to count against you, each with its

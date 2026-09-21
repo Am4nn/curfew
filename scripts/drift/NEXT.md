@@ -75,11 +75,31 @@ tripwire: adding a type should make you visit every place that cares.
 moment it becomes true, in that phase's closing commit, alongside M4's re-read.
 
 
-## TWO BIG THINGS NOT IN THE PLAN YET, raised 2026-09-21
+## THE SIMPLIFICATION ROUND, one thing left
 
-Both are in `DECIDED.md` as 3.4 and 3.5. Neither is scheduled, and the second
-one can overturn settled decisions, so neither should be started without saying
-when it runs.
+**Done, 2026-09-21.** Nine decisions, 1.33 to 1.41, and three defects filed as
+3.6. Sharing went from two switches to one and from 93 controls to 51; the
+ceiling moved to where the toggle is; grace stopped naming two things; grey says
+why; the invite card lost its third control; joining returns you whole and shows
+one number instead of two; first run stopped saying which step you were on
+twice.
+
+**STILL OPEN: the grace family.** Four different ways a day does not count
+against you, each with its own rule about what it protects. 1.34 renamed one and
+1.37 explained another, and the SHAPE is untouched:
+
+| | Declared | Protects | Costs |
+|---|---|---|---|
+| Grace | after, by hand | the streak only | 2 a month per activity |
+| Away days | before, in advance | everything, and nothing is asked | 4 a month, no clean day |
+| Grey | nothing, it is a state | nothing, it is a warning | |
+| Settling | nothing, it is a state | the first days of a new activity | |
+
+The UI has already been forced to write *"A pause is a gap, not a grace"* on
+Standing to keep two of them apart, which is a screen whose words are working
+against it.
+
+**Then:** 3.4 the admin console, and Phase 1.
 
 ### 3.4 The admin console. Nine routes, and v4 has drawn ONE
 

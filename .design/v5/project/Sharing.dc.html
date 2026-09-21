@@ -77,7 +77,18 @@
   </div>
   <div style="flex: none; padding: 4px 20px 0;">
     <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">What you share</h1>
-    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">Per group, per activity. The camera icon is the second switch: it shares the photograph, and a shared photograph is read by that group&#39;s coaches too.</span>
+    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">One switch per activity, per group. On means they see it, photographs included, and their coaches read them.</span>
+  </div>
+  <!--
+    1.35. THE CEILING IS STATED WHERE THE TOGGLE IS.
+    It was explained in four different sentences on four screens, and on none of
+    them was there a switch. The number moves to where the decision happens.
+  -->
+  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">WHAT SHARING BUYS</span>
+    </div>
+    <span style="font-size: 13.5px; line-height: 1.5; color: #8e8e93;">Your standing in a group can only climb as high as the share of its activities you share. <span style="color:#ffffff;">Four of five in Wing caps you at 850.</span> Turning one off does not erase what you earned: the score settles down to the lower number, two points a day.</span>
   </div>
   <div style="flex: none; margin: 24px 20px 0;">
     <div style="display: flex; align-items: baseline; gap: 9px;">
@@ -89,9 +100,6 @@
         <div style="padding-left: 16px;">
           <div style="display: flex; align-items: center; gap: 11px; padding: 11px 16px 11px 0; border-top: 0.5px solid {{r.sep}};">
             <span style="flex-grow: 1; font-size: 16px; color: {{r.tone}};">{{r.name}}</span>
-            <span style="flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid {{r.photoBorder}}; background: {{r.photoBg}}; display: flex; align-items: center; justify-content: center;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{r.photoFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
-            </span>
             <span role="switch" aria-checked="{{r.onStr}}" style="flex: none; width: 46px; height: 28px; border-radius: 999px; background: {{r.track}}; display: flex; align-items: center; justify-content: {{r.justify}};">
               <span style="width: 24px; height: 24px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
             </span>
@@ -110,9 +118,6 @@
         <div style="padding-left: 16px;">
           <div style="display: flex; align-items: center; gap: 11px; padding: 11px 16px 11px 0; border-top: 0.5px solid {{r.sep}};">
             <span style="flex-grow: 1; font-size: 16px; color: {{r.tone}};">{{r.name}}</span>
-            <span style="flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid {{r.photoBorder}}; background: {{r.photoBg}}; display: flex; align-items: center; justify-content: center;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{r.photoFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
-            </span>
             <span role="switch" aria-checked="{{r.onStr}}" style="flex: none; width: 46px; height: 28px; border-radius: 999px; background: {{r.track}}; display: flex; align-items: center; justify-content: {{r.justify}};">
               <span style="width: 24px; height: 24px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
             </span>
@@ -131,9 +136,6 @@
         <div style="padding-left: 16px;">
           <div style="display: flex; align-items: center; gap: 11px; padding: 11px 16px 11px 0; border-top: 0.5px solid {{r.sep}};">
             <span style="flex-grow: 1; font-size: 16px; color: {{r.tone}};">{{r.name}}</span>
-            <span style="flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid {{r.photoBorder}}; background: {{r.photoBg}}; display: flex; align-items: center; justify-content: center;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{r.photoFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
-            </span>
             <span role="switch" aria-checked="{{r.onStr}}" style="flex: none; width: 46px; height: 28px; border-radius: 999px; background: {{r.track}}; display: flex; align-items: center; justify-content: {{r.justify}};">
               <span style="width: 24px; height: 24px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
             </span>
@@ -142,7 +144,7 @@
       </sc-for>
     </div>
   </div>
-  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Switching one off stops it now. It does not go back and hide what the group already saw, because they already saw it.</p>
+  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Switching one off stops it now, photographs included, and takes back the ones already sent. It does not un-see them: the group saw them.</p>
   <div style="flex-grow: 1;"></div>
   <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
     <a href="Main.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
@@ -174,14 +176,13 @@
 class Component extends DCLogic {
   renderVals() {
     const ON = '#ff375f', OFF = '#2c2c2e', SEP = 'rgba(255,255,255,0.08)';
-    const paint = (rows) => rows.map(([name, on, photo], i) => ({
+    // 1.33: one switch. The second flag is still written, and it is written
+    // from this one, so what a past period was judged against is untouched.
+    const paint = (rows) => rows.map(([name, on], i) => ({
       name, sep: i === 0 ? 'transparent' : SEP,
       tone: on ? '#ffffff' : '#8e8e93',
       onStr: on ? 'true' : 'false',
       track: on ? ON : OFF, justify: on ? 'flex-end' : 'flex-start',
-      photoBg: photo ? ON : 'transparent',
-      photoBorder: photo ? ON : (on ? '#3a3a3c' : '#262628'),
-      photoFg: photo ? '#ffffff' : (on ? '#8e8e93' : '#48484a'),
     }));
     return {
       // 1.29: Monk mode has a share toggle like anything else. It is

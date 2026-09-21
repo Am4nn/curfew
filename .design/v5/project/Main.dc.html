@@ -466,8 +466,14 @@ class Component extends DCLogic {
         { name: 'Water', ...icon('water'),
           streak: '31', flame: ON, glyph: '#ffffff', nameTone: '#ffffff', status: '5 of 8 today',
           plus: true, broken: false, done: false, sep: 'transparent' },
+        // 1.37. GREY, and it SAYS SO. A weekly run that cannot reach its
+        // minimum keeps its number, so 15 beside a dead flame reads as a live
+        // streak to everybody who has not been told otherwise. It was drawn
+        // with a dead flame and the words "Run ended yesterday at 15", which is
+        // the BROKEN state, and grey is the one that needed the sentence.
         { name: 'Reading', ...icon('book'),
-          streak: '0', flame: '#48484a', glyph: '#8e8e93', nameTone: '#ffffff', status: 'Run ended yesterday at 15',
+          streak: '15', flame: '#48484a', glyph: '#8e8e93', nameTone: '#ffffff',
+          status: 'Three a week, two days left. This run cannot be saved.',
           plus: false, broken: true, done: false, sep: SEP },
         { name: 'Food', ...icon('food'),
           streak: '6', flame: ON, glyph: '#8e8e93', nameTone: '#8e8e93', status: '3 meals, 1,640 calories',

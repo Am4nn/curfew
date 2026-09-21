@@ -154,13 +154,26 @@ write('Settings.dc.html', st)
 H = 1300
 sh = [HEAD, root(H)]
 sh.append(nav('Settings.dc.html', 'Back to you'))
-sh.append(title('What you share', 'Per group, per activity. The camera icon is the second switch: it shares the photograph, and a shared photograph is read by that group&#39;s coaches too.'))
+sh.append(title('What you share', 'One switch per activity, per group. On means they see it, photographs included, and their coaches read them.'))
 
 # Three groups, unrolled, so each one is its own card with its own heading. A
 # loop inside a loop is not a shape these artboards are documented to support,
 # and the answer here is three blocks rather than a clever one.
 GROUPS = [('Wing', '3 members', 'wing'), ('Deep Work', '4 members', 'deep'),
           ('Morning', '2 members, no money', 'morning')]
+sh.append("""  <!--
+    1.35. THE CEILING IS STATED WHERE THE TOGGLE IS.
+    It was explained in four different sentences on four screens, and on none of
+    them was there a switch. The number moves to where the decision happens.
+  -->
+  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: %s; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: %s;">WHAT SHARING BUYS</span>
+    </div>
+    <span style="font-size: 13.5px; line-height: 1.5; color: %s;">Your standing in a group can only climb as high as the share of its activities you share. <span style="color:#ffffff;">Four of five in Wing caps you at 850.</span> Turning one off does not erase what you earned: the score settles down to the lower number, two points a day.</span>
+  </div>
+""" % (CARD, MONO, GREY, GREY))
+
 for gname, gnote, gkey in GROUPS:
     sh.append("""  <div style="flex: none; margin: 24px 20px 0;">
     <div style="display: flex; align-items: baseline; gap: 9px;">
@@ -172,9 +185,6 @@ for gname, gnote, gkey in GROUPS:
         <div style="padding-left: 16px;">
           <div style="display: flex; align-items: center; gap: 11px; padding: 11px 16px 11px 0; border-top: 0.5px solid {{r.sep}};">
             <span style="flex-grow: 1; font-size: 16px; color: {{r.tone}};">{{r.name}}</span>
-            <span style="flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid {{r.photoBorder}}; background: {{r.photoBg}}; display: flex; align-items: center; justify-content: center;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{r.photoFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
-            </span>
             <span role="switch" aria-checked="{{r.onStr}}" style="flex: none; width: 46px; height: 28px; border-radius: 999px; background: {{r.track}}; display: flex; align-items: center; justify-content: {{r.justify}};">
               <span style="width: 24px; height: 24px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
             </span>
@@ -185,20 +195,19 @@ for gname, gnote, gkey in GROUPS:
   </div>
 """ % (gname, GREY, gnote, CARD, gkey))
 
-sh.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Switching one off stops it now. It does not go back and hide what the group already saw, because they already saw it.</p>
+sh.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Switching one off stops it now, photographs included, and takes back the ones already sent. It does not un-see them: the group saw them.</p>
 """ % GREY)
 sh.append(grow())
 sh.append(tabbar('Main.dc.html'))
 sh.append(logic(H, """  renderVals() {
     const ON = '""" + PINK + """', OFF = '""" + CARD2 + """', SEP = '""" + SEP + """';
-    const paint = (rows) => rows.map(([name, on, photo], i) => ({
+    // 1.33: one switch. The second flag is still written, and it is written
+    // from this one, so what a past period was judged against is untouched.
+    const paint = (rows) => rows.map(([name, on], i) => ({
       name, sep: i === 0 ? 'transparent' : SEP,
-      tone: on ? '#ffffff' : '""" + GREY + """',
+      tone: on ? '#ffffff' : '#8e8e93',
       onStr: on ? 'true' : 'false',
       track: on ? ON : OFF, justify: on ? 'flex-end' : 'flex-start',
-      photoBg: photo ? ON : 'transparent',
-      photoBorder: photo ? ON : (on ? '#3a3a3c' : '#262628'),
-      photoFg: photo ? '#ffffff' : (on ? '""" + GREY + """' : '""" + DIM + """'),
     }));
     return {
       // 1.29: Monk mode has a share toggle like anything else. It is

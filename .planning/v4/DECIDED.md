@@ -1289,6 +1289,138 @@ assertion can.
 
 ---
 
+### 1.33 One switch per activity per group. The evidence switch goes
+
+Settled 2026-09-21, in the simplification round. Aman: *"remove evidence sharing
+from photo sharing, they are combined."*
+
+**Sharing an activity with a group shares it, photographs included.** One
+switch. There is no second control and no nested checkbox.
+
+**What the map found, which is worse than "two switches".** Five inputs decide
+one (member, group, activity) cell and three of them live on other screens: the
+owner's accepted list, whether you track the type at all, and whether the type
+takes evidence. At v4's seventeen types over three groups that is **up to 93
+controls on one unsegmented page**, 51 toggles and 42 checkboxes.
+
+**Three things the second switch was doing badly, all of which go with it:**
+
+- **It defaulted OFF and it was nested inside the first.** `share_evidence`
+  defaults false in the schema and on the join screen, and the checkbox only
+  renders while sharing is on. So a member turned sharing on, never noticed the
+  control, and silently shared the fact and not the photograph, for ever.
+- **It was asymmetric and nothing said so.** Turning photographs off revokes the
+  tags on the ones already sent; turning it back on brings nothing back, because
+  tagging is insert-only. That is deliberate and correct, and it was never
+  written on either screen.
+- **It appeared for nine types and not for three**, because water, nightfast and
+  sugarfree take no evidence, with no line explaining the absence.
+
+**What is lost, stated plainly.** The member who wants a group to know they went
+to the gym without seeing the picture. That person is real and this decision
+costs them the option. The argument for the switch, decision 16's *"share it
+here, and share its evidence"*, does not survive the count: a choice offered 42
+times that defaults to off and is never explained is not a choice, it is a
+control people do not find.
+
+**It makes 1.18 SIMPLER rather than harder.** The consent gate said sharing a
+photograph with a group consents to that group's coaches reading it. It now
+says: **share an activity and the group sees it, pictures included, and their
+coaches read them.** One sentence, one act.
+
+**The column stays.** `member_shares.share_evidence` is append-only and resolved
+as it stood on the day being scored (invariant 5), so deleting it would rewrite
+what past periods were judged against. One switch WRITES BOTH FLAGS. That is
+drawing-first exactly as 3.5 requires, and it is reversible.
+
+### 1.34 Grace names one thing. The join-day amnesty is renamed
+
+Settled 2026-09-21. **Grace is the spendable pool**: two a month per activity
+tracked, spent by hand after a streak has already ended, protecting a streak and
+never a fine or a standing.
+
+**The other grace is renamed.** `src/server/grace.ts` is the day you join not
+counting, because somebody who accepts an invite at nine in the evening has
+already lived that day. It shows as a `GRACE` chip on the member list and a
+`GRACE PERIOD` banner on Standing, and it shares no mechanism with the pool.
+
+It becomes **"Your first day"**. It is not a grace, it is the group not counting
+a day that was over before you heard of the group.
+
+The pool keeps the name because it is the one with a screen, a count and a
+Settings row, so renaming it is four surfaces instead of two.
+
+**This is the third word in the same family**, and the UI has already been
+forced to write *"A pause is a gap, not a grace"* on Standing to keep a pause
+apart from the pool. A screen that has to say what a thing is NOT is a screen
+whose words are working against it.
+
+### 1.35 The ceiling is stated where the toggle is
+
+Settled 2026-09-21. The reputation ceiling is explained in **four different
+sentences in four places** and on none of them is there a switch: the group
+settings hub, Standing, the join screen and Ranks. The panel where the toggles
+actually live never shows it.
+
+**The number moves onto the screen where the decision is made**, and the press
+says what it will cost before it is made.
+
+This is not a new control. It is one existing number, moved to where it is
+needed, which is the cheapest possible shape of a simplification: it reduces
+what somebody has to go and find.
+
+**The cost it has to state, because it is larger than anybody would guess.**
+Breadth is shared over accepted, and the ceiling is `250 + 750b`. Turning one
+share off in a five-type group drops the ceiling 150 points, and the score then
+walks down at **2 points a day for 75 days**, during which a clean day earns
+nothing, because the drift branch returns before the completion branch.
+
+### 1.36 The invite card has two controls, not three
+
+Settled 2026-09-21. Accept and Decline. **The bare cross goes.**
+
+It hid the card while leaving the invite pending: the sender saw no change, a
+link already in hand still worked, and the invite stopped being listed anywhere
+in the app. That is a state nobody can see and nobody can find again, and it
+exists so somebody can avoid making a decision.
+
+If the answer is "not now", leaving the card alone already does that. A control
+whose only job is to postpone a two-way choice is a third option on a card that
+had two.
+
+### 1.37 A grey streak says why, on the row where it greys
+
+Settled 2026-09-21. Where the flame greys, the row says it in words: *"Three a
+week, two days left. This run cannot be saved."*
+
+**Grey is the one state in this app whose number means the opposite of what it
+looks like.** A weekly run that can no longer reach its minimum KEEPS its count,
+so 15 beside a dead flame reads as a live streak of 15 to anybody who has not
+been told otherwise. The code knows: `standing.ts:27-34` warns that *"`streak`
+above being positive no longer means the run is alive. Every surface that draws
+a flame has to ask this as well."*
+
+**And it was explained nowhere.** Not on Ranks, not in Settings, not on the row.
+The entire member-facing account of it was a different flame icon.
+
+No new screen and no new control. The sentence goes where the state is.
+
+### 1.38 Two sharing screens, and that is right
+
+Confirmed 2026-09-21 rather than changed. `/settings/sharing` is every group at
+once; a group's own settings is one thing at a time. They answer different
+questions: *"who can see my meals"* is the first, *"what does Wing see"* is the
+second.
+
+The flat one was unreadable because of the count, not the shape: 93 controls at
+v4's seventeen types over three groups. 1.33 takes it to 51, which is the actual
+fix. Collapsing the two screens into one would have removed a route and made
+the first question take three screens and a memory.
+
+**Settings is left alone in this round.** The v4 `You` board already groups the
+five judgement rows under HOW YOU ARE JUDGED, which is this problem solved.
+Changing it twice before anybody has used it once is guessing.
+
 ---
 
 ## 2. Confirmed unchanged
@@ -1398,6 +1530,30 @@ cannot be "restyle the v3 boards":
 **Not decided:** whether this is a Phase 7 slice, a phase of its own, or work
 that follows v4. It is eight boards and eight routes, so it is not small.
 
+### 3.6 Three defects the simplification round found. FILED, not fixed
+
+Found 2026-09-21 while mapping sharing and onboarding. None was being looked
+for. They are written down with file and line so they cannot be lost the way
+1.19 was, and each names the phase that fixes it.
+
+**1. A photograph is tagged to a group that no longer accepts the type.**
+`groupsSeeingEvidence` (`src/server/sharing.ts:138-156`) checks only
+`mine?.shareEvidence` and never consults `acceptedTypes`. So a check-in tags a
+photograph to a group that dropped that type. **Phase 4**, and 1.33's one-switch
+change touches this exact function.
+
+**2. Un-accepting a type, then re-accepting it, silently turns everyone's
+sharing back on.** `setAccepted` (`sharing.ts:220`) writes one row and does not
+revoke member shares. Those rows stay in `member_shares`, invisible on every
+screen, and `sharesAsOf` resolves the latest one. **Phase 4.**
+
+**3. The join screen loses everything you set.** `JoinForm`'s state is a
+`useState` initializer over the server rows (`join-form.tsx:44-48`). Pressing
+"Set it up first" leaves for the configure wizard and `router.push` back
+remounts it, resetting every toggle to its default. Three untracked types is
+three resets. Worse, "Add for myself only" pushes to `/activities` rather than
+back to the invite, so the person falls out of the flow entirely. **Phase 7.**
+
 ### 3.5 A simplification round, and it will reopen settled decisions
 Raised 2026-09-21. Aman: *"we have to do a round with simplifying some of the
 things like sharing with group, group onboarding, etc more. Mainly this round
@@ -1437,6 +1593,48 @@ the original reasoning to argue against.
 **When.** Not inside a build phase: a round whose aim is to change what the
 screens are cannot run at the same time as the phases that build them. Either
 before Phase 1 or after Phase 8, and that is itself undecided.
+
+**THE RULES OF THE ROUND, settled 2026-09-21 before any of it was proposed.**
+
+Aman: *"I am really looking for simpler data exposure and controls for users.
+More we show, more users may get confused. I like the designs we have, I don't
+want drastic changes."*
+
+- **The test is DATA EXPOSURE and CONTROLS, not concepts.** Show less, ask for
+  less. This is a narrower test than the one offered and it is the right one:
+  the designs are approved and this round is not allowed to relitigate them.
+- **Drawing first. The engine only where drawing genuinely cannot do it**, and
+  where it cannot, say so and price it. 1.19 is the model.
+- **A feature may be REMOVED where its original argument does not survive
+  re-reading.** Not because there are many.
+- **No drastic design changes.** The 41 boards stand. This round edits them, it
+  does not redraw them.
+
+**Three targets named by Aman, in his words:**
+
+1. *"When user signs up, ask users to create activities and set some easily."*
+   First run already does this (1.15) and the question is whether it is easy
+   ENOUGH.
+2. *"When users join a group, ask them to share things, default enabled
+   everything they already track."* Joining becomes one press for the common
+   case instead of a checklist.
+3. *"Remove evidence sharing from photo sharing, they are combined."* **One
+   switch per activity per group instead of two.** This is the one that
+   collides with 1.2 and 1.18, and the collision has to be answered rather
+   than noticed later: if sharing an activity shares its photographs, then the
+   sentence on the consent gate gets simpler too, and the thing that is lost is
+   the member who wants a group to know they went to the gym without seeing the
+   picture.
+
+**SETTLED SO FAR:** 1.33 (one switch), 1.34 (grace names one thing), 1.35 (the
+ceiling is stated where the toggle is). Three defects filed as 3.6.
+
+**STILL OPEN IN THIS ROUND:** first run, which 1.15 already builds and which has
+not been looked at against this round's test; and the family below.
+
+**And one he named as confusing without naming a fix:** grace, away days, pause
+and grey. Four different ways a day can fail to count against you, each with its
+own rule about what it protects.
 
 **One thing to hold on to when it runs.** Every switch in this app was argued
 for once, and the argument is in this file. Simplifying is removing a choice

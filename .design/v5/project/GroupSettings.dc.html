@@ -80,7 +80,7 @@
     <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">Three members. You joined 2 July.</span>
   </div>
   <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">What you share here</span></div>
-  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: #8e8e93;">Two switches per activity. The first lets Wing see that you did it, the second lets Wing see the photograph.</p>
+  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: #8e8e93;">One switch per activity. On means Wing sees it, photographs included. You share four of five, so your ceiling here is 850.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
     <sc-for list="{{shares}}" as="s" hint-placeholder-count="5">
       <div style="padding-left: 16px;">
@@ -89,9 +89,6 @@
             <span style="font-size: 16px; font-weight: 500;">{{s.name}}</span>
             <span style="font-size: 12.5px; color: #8e8e93;">{{s.note}}</span>
           </span>
-          <button type="button" onClick="{{s.togglePhoto}}" aria-label="Share the photograph" style="flex: none; width: 34px; height: 34px; border-radius: 9px; border: 1px solid {{s.photoBorder}}; background: {{s.photoBg}}; display: flex; align-items: center; justify-content: center;">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{s.photoFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
-          </button>
           <button type="button" onClick="{{s.toggle}}" role="switch" aria-checked="{{s.onStr}}" aria-label="Share {{s.name}} with Wing" style="flex: none; width: 51px; height: 31px; border-radius: 999px; border: 0; background: {{s.track}}; padding: 0; display: flex; align-items: center; justify-content: {{s.justify}};">
             <span style="width: 27px; height: 27px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
           </button>
@@ -159,8 +156,8 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { on: { monk: true, gym: true, food: true, sleep: true, water: false, reading: true },
-                   photo: { monk: false, gym: true, food: true, sleep: false, water: false, reading: false } };
+    // 1.33: one switch. `photo` is gone from the screen, not from the record.
+    this.state = { on: { monk: true, gym: true, food: true, sleep: true, water: false, reading: true } };
   }
   renderVals() {
     const ON = '#ff375f', OFF = '#2c2c2e', SEP = 'rgba(255,255,255,0.08)';
@@ -175,15 +172,11 @@ class Component extends DCLogic {
     const s = this.state;
     return {
       shares: defs.map((d, i) => {
-        const on = s.on[d.key], photo = on && s.photo[d.key];
+        const on = s.on[d.key];
         return {
           name: d.name, note: d.note, sep: i === 0 ? 'transparent' : SEP,
           track: on ? ON : OFF, justify: on ? 'flex-end' : 'flex-start', onStr: on ? 'true' : 'false',
-          photoBg: photo ? ON : 'transparent',
-          photoBorder: photo ? ON : (on ? '#3a3a3c' : '#2a2a2c'),
-          photoFg: photo ? '#ffffff' : (on ? '#8e8e93' : '#48484a'),
           toggle: () => this.setState({ on: { ...s.on, [d.key]: !on } }),
-          togglePhoto: () => { if (on) this.setState({ photo: { ...s.photo, [d.key]: !s.photo[d.key] } }); },
         };
       }),
       people: [

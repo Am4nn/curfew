@@ -213,7 +213,22 @@ def block_px(sections):
 
 
 SUMMARY_PX = 22 + sum(20 + math.ceil(len(b) / 44.0) * 19 + 28 for _, _, _, b in SUMMARY)
-H = int((40 + 96 + 130 + SUMMARY_PX + 54 + block_px(STORES) + 54 + block_px(RULES) + 210) * 1.04)
+_ESTIMATE = int((40 + 96 + 130 + SUMMARY_PX + 54 + block_px(STORES) + 54 + block_px(RULES) + 210) * 1.04)
+
+# The frame was raised to 8000 in the editor on 2026-09-21, and 8000 is also the
+# canvas's hard ceiling for a frame. So it is pinned there rather than estimated:
+# the three heights have to agree and this is the only value both can be.
+#
+# The estimator carries 4% slack, so an estimate around 8080 is roughly 7770 of
+# real content and fits with room to spare. The assertion is the tripwire for the
+# day that stops being true, because this board has no headroom left: it cannot
+# be made taller, so the next thing added to the gate has to make room.
+H = 8000
+assert _ESTIMATE / 1.04 < H, (
+    'the consent gate no longer fits its own frame (%d estimated, %d is the '
+    'canvas maximum). It cannot grow. Cut copy or tighten the cards.'
+    % (int(_ESTIMATE / 1.04), H)
+)
 
 c = [HEAD, root(H)]
 

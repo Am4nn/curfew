@@ -251,7 +251,7 @@ gset.append(nav('Group.dc.html', 'Back to Wing'))
 gset.append(title('Wing', 'Three members. You joined 2 July.'))
 
 gset.append(section('What you share here', top=26))
-gset.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Two switches per activity. The first lets Wing see that you did it, the second lets Wing see the photograph.</p>
+gset.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">One switch per activity. On means Wing sees it, photographs included. You share four of five, so your ceiling here is 850.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{shares}}" as="s" hint-placeholder-count="5">
       <div style="padding-left: 16px;">
@@ -260,9 +260,6 @@ gset.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; li
             <span style="font-size: 16px; font-weight: 500;">{{s.name}}</span>
             <span style="font-size: 12.5px; color: %s;">{{s.note}}</span>
           </span>
-          <button type="button" onClick="{{s.togglePhoto}}" aria-label="Share the photograph" style="flex: none; width: 34px; height: 34px; border-radius: 9px; border: 1px solid {{s.photoBorder}}; background: {{s.photoBg}}; display: flex; align-items: center; justify-content: center;">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{s.photoFg}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
-          </button>
           <button type="button" onClick="{{s.toggle}}" role="switch" aria-checked="{{s.onStr}}" aria-label="Share {{s.name}} with Wing" style="flex: none; width: 51px; height: 31px; border-radius: 999px; border: 0; background: {{s.track}}; padding: 0; display: flex; align-items: center; justify-content: {{s.justify}};">
             <span style="width: 27px; height: 27px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
           </button>
@@ -310,8 +307,8 @@ gset.append(grow())
 gset.append(tabbar('Groups.dc.html'))
 gset.append(logic(H, """  constructor(props) {
     super(props);
-    this.state = { on: { monk: true, gym: true, food: true, sleep: true, water: false, reading: true },
-                   photo: { monk: false, gym: true, food: true, sleep: false, water: false, reading: false } };
+    // 1.33: one switch. `photo` is gone from the screen, not from the record.
+    this.state = { on: { monk: true, gym: true, food: true, sleep: true, water: false, reading: true } };
   }
   renderVals() {
     const ON = '""" + PINK + """', OFF = '""" + CARD2 + """', SEP = '""" + SEP + """';
@@ -326,15 +323,11 @@ gset.append(logic(H, """  constructor(props) {
     const s = this.state;
     return {
       shares: defs.map((d, i) => {
-        const on = s.on[d.key], photo = on && s.photo[d.key];
+        const on = s.on[d.key];
         return {
           name: d.name, note: d.note, sep: i === 0 ? 'transparent' : SEP,
           track: on ? ON : OFF, justify: on ? 'flex-end' : 'flex-start', onStr: on ? 'true' : 'false',
-          photoBg: photo ? ON : 'transparent',
-          photoBorder: photo ? ON : (on ? '#3a3a3c' : '#2a2a2c'),
-          photoFg: photo ? '#ffffff' : (on ? '""" + GREY + """' : '""" + DIM + """'),
           toggle: () => this.setState({ on: { ...s.on, [d.key]: !on } }),
-          togglePhoto: () => { if (on) this.setState({ photo: { ...s.photo, [d.key]: !s.photo[d.key] } }); },
         };
       }),
       people: [
@@ -404,11 +397,16 @@ inv.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; lin
   </div>
 """ % (GREY, CARD, PINK))
 
-inv.append("""  <div style="flex: none; margin: 22px 20px 0; border-radius: 14px; background: %s; padding: 15px 16px; display: flex; gap: 12px;">
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
+inv.append("""  <!--
+    1.33 and 3.5. Everything you already track is ON when this opens, so the
+    common case is one press. The switches are here to turn something OFF,
+    which is the rarer thing and the one worth a decision.
+  -->
+  <div style="flex: none; margin: 22px 20px 0; border-radius: 14px; background: %s; padding: 15px 16px; display: flex; gap: 12px;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M8.7 11.8 11.2 14.3 15.6 9.8"/></svg>
     <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
-      <span style="font-size: 15px; font-weight: 600;">Photographs are a separate switch</span>
-      <span style="font-size: 13px; line-height: 1.45; color: %s;">Sharing an activity shares that you did it. Sharing the picture is a second decision, per activity, and it means Wing&#39;s coaches read it too.</span>
+      <span style="font-size: 15px; font-weight: 600;">On means they see it, pictures included</span>
+      <span style="font-size: 13px; line-height: 1.45; color: %s;">One switch each. Wing sees what you share and their coaches read the photographs. Sharing three of four caps your standing here at 812, and sharing more raises it.</span>
     </div>
   </div>
 """ % (CARD, ORANGE, GREY))

@@ -68,7 +68,7 @@
   </style>
 </helmet>
 
-<div class="stage" style="width: 390px; height: 1240px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+<div class="stage" style="width: 390px; height: 1300px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
     <a href="Settings.dc.html" aria-label="Back to you" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
@@ -170,7 +170,7 @@
 </div>
 </x-dc>
 
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1240}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
 class Component extends DCLogic {
   renderVals() {
     const ON = '#ff375f', OFF = '#2c2c2e', SEP = 'rgba(255,255,255,0.08)';
@@ -184,7 +184,11 @@ class Component extends DCLogic {
       photoFg: photo ? '#ffffff' : (on ? '#8e8e93' : '#48484a'),
     }));
     return {
-      wing: paint([['Gym', true, true], ['Food', true, true], ['Sleep', true, false], ['Water', false, false]]),
+      // 1.29: Monk mode has a share toggle like anything else. It is
+      // comparable between members only because 1.16's requirements make it
+      // mean the same thing for everybody, which was the point of them. No
+      // camera switch on it: there is no photograph, only a percentage.
+      wing: paint([['Monk mode', true, false], ['Gym', true, true], ['Food', true, true], ['Sleep', true, false], ['Water', false, false]]),
       deep: paint([['Study', true, true], ['Screen', true, false], ['Reading', false, false]]),
       morning: paint([['Sleep', true, false], ['Cold shower', true, false]]),
     };

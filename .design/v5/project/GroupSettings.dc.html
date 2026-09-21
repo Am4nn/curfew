@@ -68,7 +68,7 @@
   </style>
 </helmet>
 
-<div class="stage" style="width: 390px; height: 1330px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+<div class="stage" style="width: 390px; height: 1390px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
     <a href="Group.dc.html" aria-label="Back to Wing" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
@@ -155,16 +155,17 @@
 </div>
 </x-dc>
 
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1330}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1390}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { on: { gym: true, food: true, sleep: true, water: false, reading: true },
-                   photo: { gym: true, food: true, sleep: false, water: false, reading: false } };
+    this.state = { on: { monk: true, gym: true, food: true, sleep: true, water: false, reading: true },
+                   photo: { monk: false, gym: true, food: true, sleep: false, water: false, reading: false } };
   }
   renderVals() {
     const ON = '#ff375f', OFF = '#2c2c2e', SEP = 'rgba(255,255,255,0.08)';
     const defs = [
+      { key: 'monk', name: 'Monk mode', note: 'Your percentage, not the parts' },
       { key: 'gym', name: 'Gym', note: 'Three a week' },
       { key: 'food', name: 'Food', note: 'Three meals, under 2,000 calories' },
       { key: 'sleep', name: 'Sleep', note: 'In bed 10:30 PM, up 6:30 AM' },

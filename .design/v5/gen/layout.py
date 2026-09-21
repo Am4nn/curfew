@@ -23,7 +23,7 @@ ROWS = [
     ('The moments', ['Capture', 'Declare', 'Stamp', 'Restore']),
     ('Helping each other', ['Nudge', 'Nudged']),
     ('You, and everything under it', ['Settings', 'Sharing', 'Notifs', 'Photos', 'Away', 'Data', 'Switches']),
-    ('The mark, and Ren', ['Mark', 'Ren']),
+    ('The mark, and Ren', ['Mark', 'Ren', 'CoachDown', 'Memory']),
     ('Behind the glass', ['Admin']),
     # Its own row. It is six thousand pixels of policy and it would otherwise
     # leave every board beside it floating in empty canvas.
@@ -48,6 +48,8 @@ TITLES = {
     'Photos': 'Your photographs', 'Away': 'Away days', 'Data': 'Your data',
     'Switches': 'Ren and nudges, off', 'Ren': 'Ren, every mood', 'Admin': 'Ops',
     'Mark': 'The mark',
+    'CoachDown': 'Ren, unavailable',
+    'Memory': 'What Ren remembers',
 }
 
 STATIC = {'Stamp', 'Nudged', 'Ren', 'Signin', 'Notice', 'Evidence', 'Photos',

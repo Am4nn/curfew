@@ -22,6 +22,8 @@ STORES = [
         "Ren reads everything you log: every check-in, every time, every number, and <b>every photograph you have taken</b>. That is new in this version.",
         "He never decides whether a day counted. Passes, misses, streaks, standing and money are arithmetic over your check-ins and they stay that way.",
         "One switch in Settings turns him off. The tab goes, his lines go, and nothing of yours is sent to a model again.",
+        "<b>What he reads leaves Curfew.</b> A summary of your record, and the photographs he needs for it, are sent to a model run by another company. Google and DeepSeek today, and this page is updated if that changes.",
+        "He keeps one paragraph about you, rewritten every night, and it is the only thing he carries between conversations. You can read it, edit it and clear it in Settings.",
     ]),
     ("BEFORE ANYTHING ELSE", [
         "You must be 18 or older to use Curfew.",
@@ -33,6 +35,7 @@ STORES = [
         "The photos you attach, where the activity asks for one.",
         "What you configure: which activities you track, their windows, targets and grace.",
         "Your streaks, and a reputation score for each group you are in.",
+        "The paragraph Ren keeps about you. Not what you asked him: he rewrites the summary each night and the previous one is gone.",
     ]),
     ("PHOTOS", [
         "Stored in object storage outside this app, and deleted 90 days after they are taken.",
@@ -70,6 +73,7 @@ STORES = [
     ]),
     ("DELETING", [
         "You can delete your photos, one activity's history, all of it, or your account, in Settings.",
+        "Ren's paragraph about you goes with any of those, and you can clear it on its own at any time without turning him off.",
         "Deleting your account removes your name, your email and your history, and you cannot sign in again.",
         "Two things survive. Ledger rows, with your name on them, so the people you owe or who owe you can still see who. And check-in records, with nothing identifying left on them.",
     ]),

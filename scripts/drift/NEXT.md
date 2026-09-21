@@ -5,54 +5,24 @@ since, and some of them changed a screen.
 
 ## Still open
 
-### READ THIS FIRST: the designs are approved and now out of date
+### The design catch-up is DONE, 2026-09-21. Closed.
 
-Aman, 2026-09-21: *"make sure to remind me to update designs next day as today's
-decisions might need some design changes."* They do. Thirty decisions landed
-AFTER the canvas was signed off, and eleven of them changed a screen.
+All eleven items. 41 boards now, up from 39.
 
-The canvas is https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP and the sources
-are in `.design/v5/`. **Do this before PLAN.md**, because a plan written against
-the wrong screens is a plan that gets rewritten.
+Drawn: the grouped Home row (1.19, expandable, five streaks under one lid),
+`Memory` (1.25, read, edit, clear), `CoachDown` (1.23 and 1.26, the failed
+night with its guarded retry and the Ask box off for either reason).
 
-**Not drawn at all:**
+Changed: `Catalog` shows the five as one Simple ones entry plus write-your-own
+and the no-category warning; `Admin` has the fourth job, the provider, the
+calls, the spend against its ceiling and the armed hard stop; `Sharing` and
+`GroupSettings` carry Monk mode; `Settings` carries what Ren remembers; `Main`
+and `Nudged` have Ren deferring to Mira in ONE line, which is the half of 1.4a
+that survives 1.28.
 
-1. **The grouped Home row (1.19).** `Simple ones, 3 of 5`, one row on Home that
-   taps open to five. This is the whole reason the five new types are
-   affordable and there is no mock of it.
-2. **What Ren remembers (1.25).** The rolling summary, shown as plain text, with
-   edit and clear. A row in You and probably a board of its own.
-3. **He has no line today (1.23).** Home and his tab when the job failed, with
-   the guarded recompute. Plus the two states the cap produces: out of
-   questions for today, and Ask Ren off until the 1st (1.26).
-4. **Write your own condition (1.19).** And the line saying a self-written one
-   carries no category and counts toward nothing.
-
-**Drawn but now wrong:**
-
-5. **`Catalog.dc.html`** lists Cold shower and No junk food as ordinary types
-   with their own rows. It needs the five (3.1: Cold shower, Morning sunlight,
-   No junk food, No alcohol, No social media) grouped under one Simple ones
-   entry, not five entries.
-6. **`Admin.dc.html` SCHEDULER** shows three jobs. There are four now: the coach
-   has its own (1.23). It also needs the spend section, calls and estimated
-   spend for the month, and the hard-stop state (1.26).
-7. **`Sharing.dc.html` and `GroupSettings.dc.html`** need Monk mode as a
-   shareable row (1.29).
-8. **`Main.dc.html` and `Nudged.dc.html`** need Ren referring to a nudge
-   (1.28), and it has to be his ONE line for that screen, not an extra one.
-9. **`Settings.dc.html`** needs the Ren-remembers row, and the Grace row now
-   sits beside a Monk mode that is shareable.
-
-**And one that is a gap rather than a change:**
-
-10. **The consent gate does not say the photographs leave.** It says they are
-    stored in object storage outside the app, and it says Ren reads them. It
-    does not say they are sent to a third-party model provider, because until
-    today there was no named provider. 1.21 names two. That sentence has to go
-    in WHAT CURFEW STORES before anybody accepts this.
-11. **The rolling summary is a new table** (1.25), so it needs a line in WHAT IS
-    RECORDED and a line in DELETING.
+**And the gap that mattered is closed.** The consent gate now says what he
+reads leaves Curfew, names Google and DeepSeek, and names the paragraph he
+keeps in WHAT IS RECORDED and in DELETING.
 
 ### v4 DESIGN IS APPROVED, 2026-09-21. Closed.
 

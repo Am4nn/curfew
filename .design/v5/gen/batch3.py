@@ -32,7 +32,7 @@ def rows_card(rows, margin=14):
 # --------------------------------------------------------------- Settings ---
 # Checked row for row against src/app/settings/page.tsx, plus what v4 adds.
 # Nothing the real screen has is missing from this one.
-H = 1660
+H = 1710
 st = [HEAD, root(H)]
 st.append(nav('Main.dc.html', 'Back to Today'))
 
@@ -80,6 +80,7 @@ st.append('  <p style="flex: none; margin: 10px 20px 0; font-size: 12.5px; line-
 st.append(eyebrow('REN AND YOUR FRIENDS', GREY, top=26))
 st.append(rows_card([
     ('Ren', 'ON', PINK, 'Switches.dc.html'),
+    ('What Ren remembers', '1 paragraph', '#ffffff', 'Memory.dc.html'),
     ('Nudges from friends', 'ON', PINK, 'Switches.dc.html'),
     ('Notifications', '2 devices', '#ffffff', 'Notifs.dc.html'),
 ], margin=12))
@@ -150,7 +151,7 @@ write('Settings.dc.html', st)
 # One screen for every group at once, because the question people actually ask
 # is "who can see my meals", and that answer is spread across three screens
 # otherwise.
-H = 1240
+H = 1300
 sh = [HEAD, root(H)]
 sh.append(nav('Settings.dc.html', 'Back to you'))
 sh.append(title('What you share', 'Per group, per activity. The camera icon is the second switch: it shares the photograph, and a shared photograph is read by that group&#39;s coaches too.'))
@@ -200,7 +201,11 @@ sh.append(logic(H, """  renderVals() {
       photoFg: photo ? '#ffffff' : (on ? '""" + GREY + """' : '""" + DIM + """'),
     }));
     return {
-      wing: paint([['Gym', true, true], ['Food', true, true], ['Sleep', true, false], ['Water', false, false]]),
+      // 1.29: Monk mode has a share toggle like anything else. It is
+      // comparable between members only because 1.16's requirements make it
+      // mean the same thing for everybody, which was the point of them. No
+      // camera switch on it: there is no photograph, only a percentage.
+      wing: paint([['Monk mode', true, false], ['Gym', true, true], ['Food', true, true], ['Sleep', true, false], ['Water', false, false]]),
       deep: paint([['Study', true, true], ['Screen', true, false], ['Reading', false, false]]),
       morning: paint([['Sleep', true, false], ['Cold shower', true, false]]),
     };
@@ -479,7 +484,7 @@ write('Away.dc.html', aw)
 # ----------------------------------------------------------------- Admin ---
 # SCHEDULER sits first, above Evidence and Drift, because a job that did not
 # run explains every other number under it.
-H = 1280
+H = 1620
 ad = [HEAD, root(H)]
 ad.append("""
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 9px;">
@@ -517,6 +522,28 @@ ad.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px;
     <span style="flex-grow: 1; font-size: 15.5px;">Nothing. No job has reported a failure.</span>
   </div>
 """ % (CARD, GREEN))
+
+# 1.26. The bill is a fact about the month and it belongs beside the jobs,
+# never on a provider dashboard somebody has to remember to open.
+ad.append(eyebrow('COACH', GREY, top=26))
+ad.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
+    <sc-for list="{{coach}}" as="c" hint-placeholder-count="4">
+      <div style="padding-left: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{c.sep}};">
+          <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 15.5px;">{{c.name}}</span>
+            <span style="font-size: 12px; color: %s;">{{c.note}}</span>
+          </span>
+          <span style="font-family: %s; font-size: 15px; font-weight: 600; color: {{c.tone}};">{{c.value}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 12px 20px 0; height: 6px; border-radius: 999px; background: %s; position: relative; overflow: hidden;">
+    <span class="fill" style="position: absolute; left: 0; top: 0; bottom: 0; width: 41%%; border-radius: 999px; background: %s;"></span>
+  </div>
+  <p style="flex: none; margin: 10px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Above the ceiling Ask Ren switches itself off and the nightly lines carry on, because those cost a known three a day. Admins are told when it fires.</p>
+""" % (CARD, GREY, MONO, CARD2, PINK, GREY))
 
 ad.append(eyebrow('EVIDENCE', GREY, top=26))
 ad.append("""  <div style="flex: none; margin: 12px 20px 0; display: flex; gap: 10px;">
@@ -571,6 +598,11 @@ ad.append(logic(H, """  renderVals() {
           dot: '""" + GREEN + """', tone: '#ffffff', sep: SEP },
         { name: 'Nightly', cron: '0 7 * * *  \\u2192  /api/cron/nightly', ago: '6h 41m', state: 'on time',
           dot: '""" + GREEN + """', tone: '#ffffff', sep: SEP },
+        // 1.23: the coach is its OWN schedule, not folded into nightly. A
+        // slow provider must not be able to make the full replay, the
+        // sweeps and verify run long.
+        { name: 'Coach', cron: '0 4 * * *  \u2192  /api/cron/coach', ago: '2h 51m', state: 'on time',
+          dot: '""" + GREEN + """', tone: '#ffffff', sep: SEP },
       ],
       figures: [
         { value: '148', label: 'photographs stored' },
@@ -583,6 +615,16 @@ ad.append(logic(H, """  renderVals() {
         { name: 'Streaks', value: 'none', tone: '""" + GREEN + """', sep: SEP },
         { name: 'Reputation', value: 'none', tone: '""" + GREEN + """', sep: SEP },
         { name: 'Monk mode', value: 'none', tone: '""" + GREEN + """', sep: SEP },
+      ],
+      coach: [
+        { name: 'Provider', note: 'COACH_PROVIDER, swappable from env', value: 'gemini',
+          tone: '#ffffff', sep: 'transparent' },
+        { name: 'Calls this month', note: '93 nightly, 218 asked', value: '311',
+          tone: '#ffffff', sep: SEP },
+        { name: 'Estimated spend', note: 'Against a \u20b9900 ceiling', value: '\u20b9372',
+          tone: '#ffffff', sep: SEP },
+        { name: 'Hard stop', note: 'Ask Ren off above the ceiling', value: 'ARMED',
+          tone: '""" + GREEN + """', sep: SEP },
       ],
       controls: [
         { name: 'Money', note: 'Fines and the ledger, everywhere', on: true, sep: 'transparent' },

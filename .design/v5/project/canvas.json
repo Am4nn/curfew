@@ -10,12 +10,12 @@
       "y": 0
     },
     "Admin.dc.html": {
-      "h": 1280,
+      "h": 1620,
       "is_interactive": true,
       "title": "Ops",
       "w": 390,
       "x": 0,
-      "y": 14868
+      "y": 15588
     },
     "Away.dc.html": {
       "h": 1010,
@@ -23,7 +23,7 @@
       "title": "Away days",
       "w": 390,
       "x": 1880,
-      "y": 9248
+      "y": 9918
     },
     "Capture.dc.html": {
       "h": 844,
@@ -31,15 +31,15 @@
       "title": "Check in · tap through it",
       "w": 390,
       "x": 0,
-      "y": 6920
+      "y": 7528
     },
     "Catalog.dc.html": {
-      "h": 1180,
+      "h": 1500,
       "is_interactive": true,
       "title": "Add an activity",
       "w": 390,
       "x": 1410,
-      "y": 2050
+      "y": 2278
     },
     "Coach.dc.html": {
       "h": 1010,
@@ -49,21 +49,29 @@
       "x": 470,
       "y": 0
     },
+    "CoachDown.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "title": "Ren, unavailable",
+      "w": 390,
+      "x": 940,
+      "y": 11948
+    },
     "Configure.dc.html": {
       "h": 1077,
       "is_interactive": true,
       "title": "Configure · Sleep",
       "w": 390,
       "x": 1880,
-      "y": 2050
+      "y": 2278
     },
     "Consent.dc.html": {
-      "h": 7722,
+      "h": 8083,
       "is_interactive": true,
       "title": "The consent gate",
       "w": 390,
       "x": 0,
-      "y": 16468
+      "y": 17528
     },
     "Data.dc.html": {
       "h": 1080,
@@ -71,7 +79,7 @@
       "title": "Your data",
       "w": 390,
       "x": 2350,
-      "y": 9248
+      "y": 9918
     },
     "Declare.dc.html": {
       "h": 844,
@@ -79,14 +87,14 @@
       "title": "Check in · no camera",
       "w": 390,
       "x": 470,
-      "y": 6920
+      "y": 7528
     },
     "Evidence.dc.html": {
       "h": 1150,
       "title": "What the group shared",
       "w": 390,
       "x": 940,
-      "y": 3550
+      "y": 4098
     },
     "Group.dc.html": {
       "h": 1108,
@@ -94,15 +102,15 @@
       "title": "One group",
       "w": 390,
       "x": 0,
-      "y": 3550
+      "y": 4098
     },
     "GroupSettings.dc.html": {
-      "h": 1330,
+      "h": 1390,
       "is_interactive": true,
       "title": "Group settings",
       "w": 390,
       "x": 2820,
-      "y": 3550
+      "y": 4098
     },
     "GroupStats.dc.html": {
       "h": 1210,
@@ -110,7 +118,7 @@
       "title": "The group’s week",
       "w": 390,
       "x": 470,
-      "y": 3550
+      "y": 4098
     },
     "Groups.dc.html": {
       "h": 900,
@@ -126,17 +134,17 @@
       "title": "An invitation",
       "w": 390,
       "x": 3290,
-      "y": 3550
+      "y": 4098
     },
     "Ledger.dc.html": {
       "h": 1130,
       "title": "The full ledger",
       "w": 390,
       "x": 2350,
-      "y": 3550
+      "y": 4098
     },
     "Main.dc.html": {
-      "h": 1730,
+      "h": 1958,
       "is_interactive": true,
       "title": "Home",
       "w": 390,
@@ -148,7 +156,15 @@
       "title": "The mark",
       "w": 390,
       "x": 0,
-      "y": 11228
+      "y": 11948
+    },
+    "Memory.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "What Ren remembers",
+      "w": 390,
+      "x": 1410,
+      "y": 11948
     },
     "Monk.dc.html": {
       "h": 1240,
@@ -156,7 +172,7 @@
       "title": "Monk mode",
       "w": 390,
       "x": 0,
-      "y": 5200
+      "y": 5808
     },
     "MonkLocked.dc.html": {
       "h": 924,
@@ -164,7 +180,7 @@
       "title": "Monk mode · not yet",
       "w": 390,
       "x": 940,
-      "y": 5200
+      "y": 5808
     },
     "MonkSetup.dc.html": {
       "h": 1400,
@@ -172,14 +188,14 @@
       "title": "Monk mode · set up",
       "w": 390,
       "x": 470,
-      "y": 5200
+      "y": 5808
     },
     "Notice.dc.html": {
       "h": 844,
       "title": "A release notice",
       "w": 390,
       "x": 2350,
-      "y": 2050
+      "y": 2278
     },
     "Notifs.dc.html": {
       "h": 1210,
@@ -187,7 +203,7 @@
       "title": "Notifications",
       "w": 390,
       "x": 940,
-      "y": 9248
+      "y": 9918
     },
     "Nudge.dc.html": {
       "h": 844,
@@ -195,21 +211,21 @@
       "title": "Nudge a friend",
       "w": 390,
       "x": 0,
-      "y": 8084
+      "y": 8692
     },
     "Nudged.dc.html": {
-      "h": 844,
+      "h": 906,
       "title": "Being nudged",
       "w": 390,
       "x": 470,
-      "y": 8084
+      "y": 8692
     },
     "Photos.dc.html": {
       "h": 1120,
       "title": "Your photographs",
       "w": 390,
       "x": 1410,
-      "y": 9248
+      "y": 9918
     },
     "Ranks.dc.html": {
       "h": 1127,
@@ -217,14 +233,14 @@
       "title": "How standing works",
       "w": 390,
       "x": 1880,
-      "y": 3550
+      "y": 4098
     },
     "Ren.dc.html": {
       "h": 1158,
       "title": "Ren, every mood",
       "w": 390,
       "x": 470,
-      "y": 11228
+      "y": 11948
     },
     "Restore.dc.html": {
       "h": 844,
@@ -232,44 +248,44 @@
       "title": "After a miss",
       "w": 390,
       "x": 1410,
-      "y": 6920
+      "y": 7528
     },
     "Settings.dc.html": {
-      "h": 1660,
+      "h": 1710,
       "is_interactive": true,
       "title": "You",
       "w": 390,
       "x": 0,
-      "y": 9248
+      "y": 9918
     },
     "Sharing.dc.html": {
-      "h": 1240,
+      "h": 1300,
       "is_interactive": true,
       "title": "What you share",
       "w": 390,
       "x": 470,
-      "y": 9248
+      "y": 9918
     },
     "Signin.dc.html": {
       "h": 844,
       "title": "Sign in",
       "w": 390,
       "x": 470,
-      "y": 2050
+      "y": 2278
     },
     "Splash.dc.html": {
       "h": 844,
       "title": "Opening Curfew",
       "w": 390,
       "x": 0,
-      "y": 2050
+      "y": 2278
     },
     "Stamp.dc.html": {
       "h": 844,
       "title": "The day is done",
       "w": 390,
       "x": 940,
-      "y": 6920
+      "y": 7528
     },
     "Standing.dc.html": {
       "h": 1115,
@@ -277,7 +293,7 @@
       "title": "Standing & money",
       "w": 390,
       "x": 1410,
-      "y": 3550
+      "y": 4098
     },
     "Stats.dc.html": {
       "h": 1271,
@@ -293,7 +309,7 @@
       "title": "Ren and nudges, off",
       "w": 390,
       "x": 2820,
-      "y": 9248
+      "y": 9918
     },
     "Welcome.dc.html": {
       "h": 872,
@@ -301,7 +317,7 @@
       "title": "First run",
       "w": 390,
       "x": 940,
-      "y": 2050
+      "y": 2278
     }
   },
   "createdOnFiles": {
@@ -337,7 +353,7 @@
       "text": "Getting in",
       "w": 640,
       "x": 0,
-      "y": 1800
+      "y": 2028
     },
     "t-2": {
       "color": "pink",
@@ -346,7 +362,7 @@
       "text": "In a group",
       "w": 640,
       "x": 0,
-      "y": 3300
+      "y": 3848
     },
     "t-3": {
       "color": "pink",
@@ -355,7 +371,7 @@
       "text": "Monk mode",
       "w": 640,
       "x": 0,
-      "y": 4950
+      "y": 5558
     },
     "t-4": {
       "color": "pink",
@@ -364,7 +380,7 @@
       "text": "The moments",
       "w": 640,
       "x": 0,
-      "y": 6670
+      "y": 7278
     },
     "t-5": {
       "color": "pink",
@@ -373,7 +389,7 @@
       "text": "Helping each other",
       "w": 640,
       "x": 0,
-      "y": 7834
+      "y": 8442
     },
     "t-6": {
       "color": "pink",
@@ -382,16 +398,16 @@
       "text": "You, and everything under it",
       "w": 640,
       "x": 0,
-      "y": 8998
+      "y": 9668
     },
     "t-7": {
       "color": "pink",
       "kind": "title1",
-      "maxW": 860,
+      "maxW": 1800,
       "text": "The mark, and Ren",
       "w": 640,
       "x": 0,
-      "y": 10978
+      "y": 11698
     },
     "t-8": {
       "color": "pink",
@@ -400,7 +416,7 @@
       "text": "Behind the glass",
       "w": 640,
       "x": 0,
-      "y": 14618
+      "y": 15338
     },
     "t-9": {
       "color": "pink",
@@ -409,7 +425,7 @@
       "text": "The gate",
       "w": 640,
       "x": 0,
-      "y": 16218
+      "y": 17278
     }
   },
   "order": [
@@ -450,6 +466,8 @@
     "Switches.dc.html",
     "Mark.dc.html",
     "Ren.dc.html",
+    "CoachDown.dc.html",
+    "Memory.dc.html",
     "Admin.dc.html",
     "Consent.dc.html"
   ],

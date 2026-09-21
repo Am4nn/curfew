@@ -65,7 +65,7 @@
   </style>
 </helmet>
 
-<div class="stage" style="width: 390px; height: 844px; box-sizing: border-box; background: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+<div class="stage" style="width: 390px; height: 906px; box-sizing: border-box; background: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
 
   <div style="flex: none; padding: 12px 20px 0;">
     <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">Today</h1>
@@ -135,6 +135,19 @@
   -->
   <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.5; color: #8e8e93;">This clears itself when Water is done. Aman is told you finished, not that you read it.</p>
 
+  <!--
+    1.28. Ren can see the nudge and may refer to it, which reverses 1.4a's
+    stand-down. What survives of 1.4a is the ONE LINE rule: this is his whole
+    contribution to this screen, and he is not also saying something about
+    Water underneath it. Two voices about one thing was the original objection
+    and it is still the thing to avoid.
+  -->
+  <a href="Coach.dc.html" style="flex: none; margin: 16px 20px 0; display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-radius: 14px; background: #1c1c1e; text-decoration: none;">
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9.3" fill="#ff375f"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.52)"/><ellipse cx="9.1" cy="12.2" rx="1.45" ry="2" fill="#33060f"/><ellipse cx="15.2" cy="12.2" rx="1.45" ry="2" fill="#33060f"/></svg>
+    <span style="flex-grow: 1; min-width: 0; font-size: 14.5px; font-weight: 500; line-height: 1.35; color: #ffffff;">She is right, and she is quicker than me.</span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
+  </a>
+
   <div style="flex-grow: 1;"></div>
 
   <!-- The rest of the day carries on underneath, unchanged. -->
@@ -176,7 +189,7 @@
 </div>
 </x-dc>
 
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":906}}'>
 class Component extends DCLogic {
   renderVals() {
     const ON = '#ff375f', OFF = '#8e8e93';

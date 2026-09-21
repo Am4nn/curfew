@@ -212,14 +212,12 @@ write('Welcome.dc.html', first)
 # ---------------------------------------------------------------- Catalog ---
 # /activities/add. Cold shower and no junk food are drawn here because Monk
 # mode aggregates activities and cannot count a condition that is not a type.
-H = 1180
+H = 1500
 cat = [HEAD, root(H)]
 cat.append(nav('Activities.dc.html', 'Back to your activities'))
 cat.append(title('Add an activity', 'Fourteen to choose from. Each one arrives with a default rule you can change before it starts.'))
 
 TYPES = [
-    ('Cold shower', 'Once a day, confirm window', 'NEW', 'M12 3v9M12 3c-3 2.6-5 5-5 7.2a5 5 0 0 0 10 0C17 8 15 5.6 12 3z'),
-    ('No junk food', 'Held or slipped, no photograph', 'NEW', 'M4 4l16 16M7.5 3.5v7a2.5 2.5 0 0 0 5 0v-7M10 10.5V20'),
     ('Gym', 'Three a week, photo on the way out', None, 'M6.5 8v8M17.5 8v8M3.5 10v4M20.5 10v4M6.5 12h11'),
     ('Study', 'Minutes a day, photo required', None, 'M3 7l9-4 9 4-9 4zM7 10.5V16c0 1.4 2.2 2.6 5 2.6s5-1.2 5-2.6v-5.5'),
     ('Steps', 'At or above a number', None, 'M8 4v7a3 3 0 0 0 6 0M9 18.5h6'),
@@ -253,6 +251,57 @@ for i, (name, rule, tag, path) in enumerate(TYPES):
     </div>
 """ % (sep, CARD2, path, name, badge, GREY, rule, name, PINK))
 cat.append('  </div>\n')
+
+
+# THE FIVE DO NOT GET FIVE ROWS, HERE OR ON HOME (1.19). They are five real
+# types with five streaks, and the catalog shows them the way Home does: one
+# entry, opened. Listing them flat is exactly the overload the decision exists
+# to avoid, and the catalog is where somebody meets them first.
+SIMPLE = [
+    ('Cold shower', 'BODY', 'M12 3v9M12 3c-3 2.6-5 5-5 7.2a5 5 0 0 0 10 0C17 8 15 5.6 12 3z'),
+    ('Morning sunlight', 'BODY', 'M12 4.2v2M12 17.8v2M4.2 12h2M17.8 12h2M6.7 6.7l1.4 1.4M15.9 15.9l1.4 1.4M17.3 6.7l-1.4 1.4M8.1 15.9l-1.4 1.4M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6z'),
+    ('No junk food', 'FOOD', 'M4 4l16 16M7.5 3.5v7a2.5 2.5 0 0 0 5 0v-7M10 10.5V20'),
+    ('No alcohol', 'FOOD', 'M4 4l16 16M7 3h10l-1 6a4 4 0 0 1-8 0zM12 13v7M8.5 20h7'),
+    ('No social media', 'MIND', 'M4 4l16 16M9 11.4a3.4 3.4 0 0 1 3.4-3.4M2.5 20a6.5 6.5 0 0 1 9.6-5.7M17 9a3 3 0 0 1 0 5'),
+]
+cat.append(section('Simple ones', top=28))
+cat.append('  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: ' + GREY
+           + ';">Held or slipped at the end of the day, nothing to photograph. Each keeps its own streak, and they share one row on Home rather than taking five.</p>\n')
+cat.append('  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: ' + CARD + '; overflow: hidden;">\n')
+for i, (name, cat_label, path) in enumerate(SIMPLE):
+    sep = 'transparent' if i == 0 else SEP
+    cat.append("""    <div style="display: flex; align-items: center; gap: 13px; padding-left: 16px;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 11px 16px 11px 0; border-top: 0.5px solid %s;">
+        <span style="flex: none; width: 30px; height: 30px; border-radius: 9px; background: %s; display: flex; align-items: center; justify-content: center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg>
+        </span>
+        <span style="flex-grow: 1; font-size: 15.5px;">%s</span>
+        <!-- OURS CARRY A CATEGORY, which is the only reason Monk mode can ask
+             for a body, a food, a mind and a sleep (1.16). -->
+        <span style="flex: none; font-family: %s; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: %s;">%s</span>
+        <a href="Configure.dc.html" aria-label="Add %s" style="flex: none; width: 30px; height: 30px; border-radius: 999px; background: %s; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>
+        </a>
+      </span>
+    </div>
+""" % (sep, CARD2, path, name, MONO, GREY, cat_label, name, PINK))
+
+# And your own, which is a different thing and is told so on the row.
+cat.append("""    <div style="display: flex; align-items: center; gap: 13px; padding-left: 16px;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 11px 16px 11px 0; border-top: 0.5px solid %s;">
+        <span style="flex: none; width: 30px; height: 30px; border-radius: 9px; border: 1px dashed #3a3a3c; display: flex; align-items: center; justify-content: center;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>
+        </span>
+        <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 15.5px;">Write your own</span>
+          <span style="font-size: 12px; color: %s;">Any condition, in your words</span>
+        </span>
+        <span style="flex: none; font-family: %s; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: %s;">NO CATEGORY</span>
+      </span>
+    </div>
+  </div>
+  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">One you write yourself has no category, so it keeps a streak and counts toward nothing else. Monk mode asks for a body, a food, a mind and a sleep, and nothing can tell which of those <span style="color:#ffffff;">no doomscroll</span> is.</p>
+""" % (SEP, GREY, GREY, MONO, DIM, GREY))
 
 cat.append(section('Already tracking', top=26))
 cat.append("""  <div style="flex: none; margin: 12px 20px 0; display: flex; flex-wrap: wrap; gap: 8px;">

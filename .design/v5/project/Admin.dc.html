@@ -68,7 +68,7 @@
   </style>
 </helmet>
 
-<div class="stage" style="width: 390px; height: 1280px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
+<div class="stage" style="width: 390px; height: 1620px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
 
   <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 9px;">
     <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #ff375f;">ADMIN</span>
@@ -102,6 +102,24 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
     <span style="flex-grow: 1; font-size: 15.5px;">Nothing. No job has reported a failure.</span>
   </div>
+  <div style="flex: none; margin: 26px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">COACH</span></div>
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <sc-for list="{{coach}}" as="c" hint-placeholder-count="4">
+      <div style="padding-left: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{c.sep}};">
+          <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 15.5px;">{{c.name}}</span>
+            <span style="font-size: 12px; color: #8e8e93;">{{c.note}}</span>
+          </span>
+          <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{c.tone}};">{{c.value}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="flex: none; margin: 12px 20px 0; height: 6px; border-radius: 999px; background: #2c2c2e; position: relative; overflow: hidden;">
+    <span class="fill" style="position: absolute; left: 0; top: 0; bottom: 0; width: 41%; border-radius: 999px; background: #ff375f;"></span>
+  </div>
+  <p style="flex: none; margin: 10px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Above the ceiling Ask Ren switches itself off and the nightly lines carry on, because those cost a known three a day. Admins are told when it fires.</p>
   <div style="flex: none; margin: 26px 20px 0;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8e8e93;">EVIDENCE</span></div>
   <div style="flex: none; margin: 12px 20px 0; display: flex; gap: 10px;">
     <sc-for list="{{figures}}" as="f" hint-placeholder-count="3">
@@ -144,7 +162,7 @@
 </div>
 </x-dc>
 
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1280}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1620}}'>
 class Component extends DCLogic {
   renderVals() {
     const SEP = 'rgba(255,255,255,0.08)';
@@ -155,6 +173,11 @@ class Component extends DCLogic {
         { name: 'Reminders', cron: '*/15 * * * *  \u2192  /api/cron/remind', ago: '4m', state: 'on time',
           dot: '#30d158', tone: '#ffffff', sep: SEP },
         { name: 'Nightly', cron: '0 7 * * *  \u2192  /api/cron/nightly', ago: '6h 41m', state: 'on time',
+          dot: '#30d158', tone: '#ffffff', sep: SEP },
+        // 1.23: the coach is its OWN schedule, not folded into nightly. A
+        // slow provider must not be able to make the full replay, the
+        // sweeps and verify run long.
+        { name: 'Coach', cron: '0 4 * * *  →  /api/cron/coach', ago: '2h 51m', state: 'on time',
           dot: '#30d158', tone: '#ffffff', sep: SEP },
       ],
       figures: [
@@ -168,6 +191,16 @@ class Component extends DCLogic {
         { name: 'Streaks', value: 'none', tone: '#30d158', sep: SEP },
         { name: 'Reputation', value: 'none', tone: '#30d158', sep: SEP },
         { name: 'Monk mode', value: 'none', tone: '#30d158', sep: SEP },
+      ],
+      coach: [
+        { name: 'Provider', note: 'COACH_PROVIDER, swappable from env', value: 'gemini',
+          tone: '#ffffff', sep: 'transparent' },
+        { name: 'Calls this month', note: '93 nightly, 218 asked', value: '311',
+          tone: '#ffffff', sep: SEP },
+        { name: 'Estimated spend', note: 'Against a ₹900 ceiling', value: '₹372',
+          tone: '#ffffff', sep: SEP },
+        { name: 'Hard stop', note: 'Ask Ren off above the ceiling', value: 'ARMED',
+          tone: '#30d158', sep: SEP },
       ],
       controls: [
         { name: 'Money', note: 'Fines and the ledger, everywhere', on: true, sep: 'transparent' },

@@ -245,7 +245,7 @@ write('Ledger.dc.html', led)
 
 
 # --------------------------------------------------------- Group settings ---
-H = 1330
+H = 1390
 gset = [HEAD, root(H)]
 gset.append(nav('Group.dc.html', 'Back to Wing'))
 gset.append(title('Wing', 'Three members. You joined 2 July.'))
@@ -310,12 +310,13 @@ gset.append(grow())
 gset.append(tabbar('Groups.dc.html'))
 gset.append(logic(H, """  constructor(props) {
     super(props);
-    this.state = { on: { gym: true, food: true, sleep: true, water: false, reading: true },
-                   photo: { gym: true, food: true, sleep: false, water: false, reading: false } };
+    this.state = { on: { monk: true, gym: true, food: true, sleep: true, water: false, reading: true },
+                   photo: { monk: false, gym: true, food: true, sleep: false, water: false, reading: false } };
   }
   renderVals() {
     const ON = '""" + PINK + """', OFF = '""" + CARD2 + """', SEP = '""" + SEP + """';
     const defs = [
+      { key: 'monk', name: 'Monk mode', note: 'Your percentage, not the parts' },
       { key: 'gym', name: 'Gym', note: 'Three a week' },
       { key: 'food', name: 'Food', note: 'Three meals, under 2,000 calories' },
       { key: 'sleep', name: 'Sleep', note: 'In bed 10:30 PM, up 6:30 AM' },

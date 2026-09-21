@@ -61,6 +61,19 @@ const raw = {
   // sets it. Compared as a string, not coerced: "0", "false" and "" all have to
   // mean off, and Boolean("0") does not.
   PUSH_REMINDERS: opt(process.env.PUSH_REMINDERS),
+
+  // The coach. All optional, and COACH_ENABLED unset means OFF, which is
+  // PUSH_REMINDERS' rule for the same reason: the cost of guessing here is a
+  // paid call to another company made by an environment nobody meant to enable.
+  //
+  // The provider is a value rather than a build-time choice (1.21), so swapping
+  // Gemini for DeepSeek is an env change and a redeploy, never a code edit.
+  COACH_ENABLED: opt(process.env.COACH_ENABLED),
+  COACH_PROVIDER: opt(process.env.COACH_PROVIDER),
+  COACH_MODEL: opt(process.env.COACH_MODEL),
+  COACH_API_KEY: opt(process.env.COACH_API_KEY),
+  COACH_DAILY_ASKS: opt(process.env.COACH_DAILY_ASKS),
+  COACH_MONTHLY_CEILING: opt(process.env.COACH_MONTHLY_CEILING),
 };
 
 const schema = z.object({
@@ -89,6 +102,15 @@ const schema = z.object({
   VAPID_SUBJECT: z.string().min(1).optional(),
 
   PUSH_REMINDERS: z.string().optional(),
+
+  COACH_ENABLED: z.string().optional(),
+  COACH_PROVIDER: z.enum(["gemini", "deepseek", "stub"]).optional(),
+  COACH_MODEL: z.string().optional(),
+  COACH_API_KEY: z.string().optional(),
+  // Both are read as numbers where they are used, never here: a malformed
+  // number should refuse one call, not refuse to boot the app.
+  COACH_DAILY_ASKS: z.string().optional(),
+  COACH_MONTHLY_CEILING: z.string().optional(),
 });
 
 // Read an optional key that a v3 code path requires. Throws naming the key

@@ -39,6 +39,37 @@ Money is optional and can be switched off entirely.
 
 ## Current phase
 
+**v4 is being built. Phase 0.** `3.4.8` is what production runs; everything
+below this block is v3's record and is still true of the deployed app.
+
+Read these three before touching anything:
+
+- `.planning/v4/DECIDED.md` — 1.1 to 1.32 settled, 3.3 open. **The authority.**
+  Every other v4 file cites it by number.
+- `.planning/v4/PLAN.md` — eight phases, each with a done condition, and the
+  four mechanisms that keep the build from drifting away from DECIDED.
+- `.planning/v4/SCHEMA.md` — six additive migrations, 0033 to 0038. **v4 has no
+  hostile migration and it must stay that way.**
+
+**What v4 is:** the app becomes a coach called Ren (1.1), one member can nudge
+another (1.5), Monk mode gives a day a percentage over what you already track
+(1.16), five new activity types arrive under one Home row (1.19, 3.1), and every
+screen is redrawn to the v5 canvas (1.8).
+
+**Two things to know before reading the older plans.** The monk bar was priced
+against a foreign key that migration 0012 deleted, so `SCHEMA.md` 0035 is one
+nullable column rather than the second scope 1.16 first described; and 1.19,
+1.20 and 3.1 were once silently truncated out of `DECIDED.md` by an append and
+had to be recovered from git. That is why `DECIDED.md` is now assembled from
+sorted blocks and why `check:decided` exists.
+
+**The design is done and approved**, 41 boards at
+https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, with sources in
+`.design/v5/`. `.planning/v4/SCREENS.md` is the review gate and **a phase cannot
+close with an unticked row it touched.**
+
+---
+
 **v3, Phases 0 to 9 done.** v1, v2 and v2.5 are built and deployed. v3 is fully
 designed and specified: twelve activity types with per-user schedules and
 thresholds, photo evidence, a 0 to 1000 reputation per group with six ranks,
@@ -439,23 +470,38 @@ These are not style preferences. Breaking one is a bug even if tests pass.
   enabled. `bun run sync:activities` reconciles the registry, disabled by
   default, and runs inside `bun run migrate`.
 
-## Not in v3
+## Not in v4
 
 Do not build these even if you're already in the area:
 
-- Objections, meaning flagging a shared log as false. Deferred to the release
-  after v3, and flag-only when it lands.
+- Objections, meaning flagging a shared log as false. Still deferred, and
+  flag-only when it lands.
 - Open signup. Groups stay invite-only.
-- A native app. Web only until there are real users.
-- AI-derived nutrition from a food photo.
+- A native app. `.planning/research/native-app/FINDINGS.md` says Google Play
+  takes the site as-is and Apple will not, and that an API over `src/server/` is
+  the real first deliverable. Not v4.
+- WhatsApp for anything. Researched and parked: no free allowance, and Meta
+  charges for utility messages inside the 24h window from 1 October 2026.
 - Evidence types beyond images, though the model leaves room.
 - Health integrations. Steps and Screen stay manual.
 - Paid tiers.
 - Any payment integration. Money is IOU tracking only (legal constraint,
   PRD §8).
-- An app-wide leaderboard. Reputation is per group and the global score is
-  visible only to its owner.
+- An app-wide leaderboard. Reputation is per group, the global score is visible
+  only to its owner, and Monk mode is shared only where its owner shares it.
 - RLS, still deferred.
+- A third verdict on a period. v4 has exactly two, your own and the monk bar,
+  and the shape chosen for the second one deliberately does not generalise. A
+  third is the day to pay for a discriminator column, with the read sites
+  already mapped in `.planning/v4/SCHEMA.md`.
+- A conversation history for Ren. 1.25 chose a rolling summary over the turns,
+  so there is nothing per-question to store, show or delete.
+- Per-person nudge muting. 1.13: one switch, because in a group of three a
+  blocklist is a thing people work out.
+
+**Removed from this list because v4 builds them:** AI-derived nutrition from a
+food photo (1.2 and 1.22 — Ren reads the pictures), and a coach voice anywhere
+but a push notification (1.1).
 
 ## Commands
 
@@ -698,38 +744,56 @@ Banned constructions:
 In chat: answer, then stop. No preamble, no recap of my request, no offer of
 next steps unless I asked. If the answer is one line, send one line.
 
-In the UI: Curfew is a clerk, not a coach. It states facts and consequences.
-No congratulation, no encouragement, no exclamation marks. "Window closes
-7:45 AM. Miss it and today does not count." is the register. "Great job on
-your streak!" is not. Times are 12-hour with AM or PM.
+In the UI: **Curfew is a coach, since v4 (DECIDED 1.1).** It notices, it says
+what it noticed, and it says what is next. Times are 12-hour with AM or PM.
 
-**Push notifications are the one exception, and it is deliberate (item 28).**
-They are written in the opposite register: encouraging, direct, peer names, the
-streak's stakes made vivid, exclamation marks allowed. "Rahul and Priya already
-logged Gym. Don't be the last one, 40 minutes left!" is correct there and would
-be wrong on every screen.
+**The clerk did not leave, it moved.** DECIDED 1.11: every number, time, money
+amount, balance, standing and ledger row stays flat. "Window closes 7:45 AM.
+Miss it and today does not count." is still exactly right on a row. What changed
+is the SENTENCES AROUND the numbers, and only those.
+
+So the rule that survives the register change is the one that matters most: **a
+warm writer is never handed the numbers.** That is not a style preference, it is
+the structure that stopped production telling somebody with nothing logged that
+they were almost there.
+
+**And no screen congratulates.** The day is done is the single exception
+(1.4a): it is the emotional peak and the only place Ren may be pleased.
+
+**Push notifications were the FIRST place this register appeared (item 28), and
+v3.3 is where it was argued.** Encouraging, direct, peer names, the streak's
+stakes made vivid, exclamation marks allowed. "Rahul and Priya already logged
+Gym. Don't be the last one, 40 minutes left!" was correct there and wrong on
+every screen, for as long as the app was a clerk.
 
 The reason is that the clerk has no business sending a push at all. A clerk
 answers when spoken to; a notification speaks first, unprompted, to a phone on a
 table. Writing it in the clerk's voice would have been a worse version of the
 feature, shipped to protect a rule the feature already breaks by existing.
 
-So the exception is the surface, not the sentence: **everything except a push
-notification is still the clerk.** Copy lives in one place,
-`src/server/notification-copy.ts`, so the boundary is a file rather than a
-judgement call. ROADMAP theme 3 decides whether the rest of the app follows, and
-until it does, do not carry this register onto a screen.
+**It is no longer an exception, because the rest of the app followed.** What
+survives is the boundary being a FILE rather than a judgement call: copy lives
+in `src/server/notification-copy.ts` and Ren's lives in `src/server/coach/`, and
+neither is ever handed a raw count. Two warm writers now, the same structure
+around both.
 
-**Theme 3 has now answered, and the answer is yes (2026-09-20).** v4 makes the
-app a coach, and `.planning/v4/DECIDED.md` is what replaces this section when v4
-starts. Nothing above changes YET: v4 is not being built and the v5 canvas still
-carries clerk copy on purpose, so this section governs every line written today.
+A push is still the only thing that speaks first to a phone on a table, so it
+stays the loudest of them. Exclamation marks are still for lock screens.
 
-**The clerk does survive, in one place.** DECIDED 1.11: every number, time,
-money amount, balance, standing and ledger row stays flat. Only the sentences
-around them get warm. So the rule that a warm writer is never handed the numbers
-holds in v4 too, and the two hard rules below outlive the register change that
-was supposed to retire them.
+**Theme 3 answered yes on 2026-09-20 and v4 is building it.**
+`.planning/v4/DECIDED.md` is the authority on voice now, 1.1 to 1.32. Read it
+before writing a line of UI copy; this section is the mechanical half and that
+file is the register.
+
+**Ren speaks in five places and is silent everywhere else** (1.4a): his own tab,
+Home, After a miss, Your record, and the day is done. He is silent on check-in
+and Declare, because time-to-press is on a six-second budget and he must never
+be in the way of one. He is silent in Groups, which is other people's space, and
+on Configure, Standing and Ranks, which are forms and reference.
+
+**One line per screen, never two.** That holds even where 1.28 lets him mention
+a nudge: what he says about it IS his line for that screen, not a second one on
+top. A voice that comments on everything is noise.
 
 **Two hard rules inside that file, both bought with a bad release (v3.4).**
 

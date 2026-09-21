@@ -74,6 +74,53 @@ tripwire: adding a type should make you visit every place that cares.
 **M2, as it is actually done:** each decision gains a `Built in` line at the
 moment it becomes true, in that phase's closing commit, alongside M4's re-read.
 
+
+## TWO BIG THINGS NOT IN THE PLAN YET, raised 2026-09-21
+
+Both are in `DECIDED.md` as 3.4 and 3.5. Neither is scheduled, and the second
+one can overturn settled decisions, so neither should be started without saying
+when it runs.
+
+### 3.4 The admin console. Nine routes, and v4 has drawn ONE
+
+My omission. 1.8 folded seven v3 admin boards into one on the canvas, which was
+fine for a design review and wrong for a build: **the routes exist and Phase 7
+has to render all nine.** `/admin`, `/users`, `/users/[id]`, `/groups`,
+`/groups/[id]`, `/insights`, `/reports`, `/controls`, `/ops`. Only `/ops` is
+drawn.
+
+It is not a restyle of the v3 boards either. Controls needs the Ren and Nudges
+kill switches and 1.26's hard stop; Users needs who has a coach, their cap and
+their spend; Reports has a new thing to report, a photograph a model read;
+Insights gains Monk mode and the bill.
+
+**Eight boards and eight routes. Decide whether it is a Phase 7 slice, a phase
+of its own, or after v4.**
+
+### 3.5 A simplification round
+
+Aman: *"very easy to use Curfew app without any confusions."* Named so far:
+sharing with a group, and group onboarding.
+
+**This is the one item allowed to overturn section 1**, so it is written down
+with what it will collide with: 1.2 and 1.18 (the photograph switch is how
+sharing a picture consents to a coach reading it), 1.16 (Monk mode's
+requirements exist so the number means the same for everybody), and most of the
+41 boards, since most of them are a switch or a list.
+
+**1.19 is the model to copy.** The overload was a Home problem and it was fixed
+on Home without touching the engine. A simplification that changes what is
+STORED is a different and far more expensive thing than one that changes what is
+DRAWN.
+
+**When: not inside a build phase.** A round whose aim is to change what the
+screens are cannot run while the phases that build them are running. Before
+Phase 1 or after Phase 8, and that is undecided.
+
+**And the thing to hold on to:** every switch in this app was argued for once
+and the argument is in `DECIDED.md`. The round's job is to find the ones where
+that argument was wrong, not to remove choices because there are many.
+
 ### Android push is VERIFIED, 2026-09-21. Closed.
 
 3.4.6 fixed a `.strict()` zod schema that accepted every iPhone and refused

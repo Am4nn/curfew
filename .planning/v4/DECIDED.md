@@ -1313,8 +1313,6 @@ Carried from `DIRECTION.md` §8. None of it was reopened on 2026-09-20.
 ## 3. Open
 
 ### 3.1 Which new activity types v4 adds. SETTLED 2026-09-21
-
-
 Five, all of them held-or-slipped with no photograph, which is the Sugar-free
 module's shape and needs nothing new from the engine:
 
@@ -1339,8 +1337,6 @@ of that decision.
 same day. It is the reason the file is now assembled rather than appended to.
 
 ### 3.2 What gets built first. SETTLED 2026-09-21
-
-
 **The engine first and the coach last.** Eight phases in `PLAN.md`.
 
 The instinct is to answer the riskiest thing first, and it is wrong here: Ren
@@ -1359,7 +1355,90 @@ prompt, the digest, the schedule or the provider, with no way to tell which. The
 stub stays for ever, because no test should need a network.
 
 ### 3.3 The limits on what Ren may say
-
-
 1.24 banned one thing and dated the rest. Revisit before anybody outside the
 three uses Curfew.
+
+### 3.4 The admin console is nine routes and v4 has drawn one
+Raised 2026-09-21. Aman: *"we need to design full Admin tabs, we had around 6-8
+tabs in admin for many things which are missing from v4 planning."*
+
+He is right and it is my omission. 1.8 says, in as many words, *"`V3Admin*` was
+seven boards and is one here, Ops, because the scheduler, drift and the controls
+are what the console is actually read for."* That was a reasonable call for a
+design review and a bad one for a build: **the routes exist and Phase 7 has to
+render them all.**
+
+**What is actually there**, nine routes and ten v3 artboards:
+
+| Route | v3 board | v4 board |
+|---|---|---|
+| `/admin` | `V3AdminOverview` | none |
+| `/admin/users` | `V3AdminUsers` | none |
+| `/admin/users/[id]` | `V3AdminUserOne` | none |
+| `/admin/groups` | `V3AdminGroups` | none |
+| `/admin/groups/[id]` | `V3AdminGroupOne` | none |
+| `/admin/insights` | `V3AdminInsights` | none |
+| `/admin/reports` | `V3AdminReports` | none |
+| `/admin/controls` | `V3AdminControls`, `V3AdminControlsConfirm` | none |
+| `/admin/ops` | `V3AdminOps` | `Admin` |
+
+**And v4 gives every one of them something new to show**, which is why this
+cannot be "restyle the v3 boards":
+
+- **Controls** gains the Ren and Nudges switches, which 1.14 and 1.13 require
+  to be real kill switches, and 1.26's hard stop is a state it has to render.
+- **Users** gains whether somebody has a coach, what their cap is, and what
+  they have spent.
+- **Reports** is the moderation queue, and a photograph read by a model is a
+  new thing to report.
+- **Insights** gains Monk mode and the coach's bill.
+- **Ops** already has the fourth job and the spend, which is the one piece that
+  is drawn.
+
+**Not decided:** whether this is a Phase 7 slice, a phase of its own, or work
+that follows v4. It is eight boards and eight routes, so it is not small.
+
+### 3.5 A simplification round, and it will reopen settled decisions
+Raised 2026-09-21. Aman: *"we have to do a round with simplifying some of the
+things like sharing with group, group onboarding, etc more. Mainly this round
+will affect a lot of designs and our decisions but its aim will be to simplify
+the UI and UX in such a way that it's very easy to use Curfew app without any
+confusions."*
+
+**This is the only item in this file allowed to overturn things in section 1**,
+and it is written here so that when it does, it does so deliberately and with
+the original reasoning to argue against.
+
+**Named so far:**
+
+- **Sharing with a group.** Today it is two switches per activity per group:
+  one for the fact, one for the photograph (1.2, and the consent gate turns on
+  it). With three groups and seventeen types that is a lot of switches, and
+  `Sharing` is the board that shows how many.
+- **Group onboarding.** The invite, choosing what to share, and an untracked
+  type offering setup, which is three decisions before somebody has seen the
+  group.
+
+**Where it will collide**, so nobody is surprised:
+
+- **1.2 and 1.18** — the photograph switch is the mechanism by which sharing a
+  picture consents to a coach reading it. Simplify the switch and that sentence
+  has to be rewritten, on the one screen nobody may mislead.
+- **1.19** — the grouped Home row is already a simplification of exactly this
+  kind, and it is the model: **the overload was a Home problem and it was fixed
+  on Home, without touching the engine.** A simplification that changes what is
+  stored is a different and much more expensive thing than one that changes
+  what is drawn.
+- **1.16** — Monk mode's requirements exist so the number means the same for
+  everybody. Simplifying them makes it comparable to nobody.
+- **The 41 boards.** Most of them are a switch or a list, so most of them are
+  in scope.
+
+**When.** Not inside a build phase: a round whose aim is to change what the
+screens are cannot run at the same time as the phases that build them. Either
+before Phase 1 or after Phase 8, and that is itself undecided.
+
+**One thing to hold on to when it runs.** Every switch in this app was argued
+for once, and the argument is in this file. Simplifying is removing a choice
+somebody decided was worth offering, so the round's job is to find the ones
+where that decision was wrong, not to remove choices because there are many.

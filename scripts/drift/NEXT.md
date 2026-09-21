@@ -30,32 +30,49 @@ https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, 39 boards in 10 rows, signed
 off by Aman. Sources are in `.design/v5/`, generators in `.design/v5/gen/`.
 Decisions are `.planning/v4/DECIDED.md`, 1.1 to 1.18. Nothing is owed here.
 
-## v4 BUILD — planning is done, Phase 0 is in progress
+## v4 BUILD — PHASE 0 IS DONE. Phase 1 next.
 
-**The plan is `.planning/v4/PLAN.md`.** Eight phases, six additive migrations,
-four anti-drift mechanisms. `SCHEMA.md` is the tables, `DECIDED.md` is 1.1 to
-1.32 plus 3.1 to 3.3.
+The plan is `.planning/v4/PLAN.md`. Eight phases, six additive migrations, four
+anti-drift mechanisms. `SCHEMA.md` is the tables, `DECIDED.md` is 1.1 to 1.32
+plus 3.1 to 3.3.
 
-**Phase 0's first job is done: the planning files were wrong and are corrected.**
+**Phase 0, closed 2026-09-21.** CI green on `149ba4e`, Preview deployed.
 
-- **The monk bar was priced against a foreign key deleted in migration 0012.**
-  The discriminator-in-the-primary-key shape would have been a HOSTILE migration
-  taking scoring down for the whole promote, and would have broken twelve read
-  sites silently. It is one nullable boolean, `monk_passed`, on the existing
-  row. Same feature, roughly a tenth of the cost. See 1.16 and `SCHEMA.md` 0035.
-- **`category` is a field in code, not a column.** `activity_types` is
-  append-only admin-toggle history with no unique constraint on `type_key`.
-- **1.19, 1.20 and 3.1 had been silently truncated** by an earlier append that
-  rewrote everything below `## 3. Open`. Recovered from commit `ec6bd71`.
-  `DECIDED.md` is now assembled from sorted blocks rather than appended to.
+- The planning files were wrong and are corrected. The monk bar was priced
+  against a foreign key deleted in migration 0012; it is one nullable boolean,
+  `monk_passed`, not a second row. `category` is a field in code, not a column.
+- **`DECIDED.md` had lost 1.19, 1.20 and 3.1** to an append that rewrote
+  everything below `## 3. Open`. Recovered from `ec6bd71`. The file is now
+  assembled from sorted blocks rather than appended to.
+- `CLAUDE.md` turned over: current phase is v4, the register is a coach, and
+  Not in v3 became Not in v4.
+- Six `COACH_*` keys in `env.ts`, `.env.example`, all three env files **and both
+  Vercel environments**. All `0` or `stub`, so nothing can spend money.
+- **`check:decided` and `check:member` exist, are in CI, and are both proven to
+  fail on the exact bug they exist for.** Proving the first one caught a hole in
+  itself: `1.20a` was satisfying the numbering for a deleted `1.20`.
+- `.planning/v4/SCREENS.md` is generated from `canvas.json`: 41 boards, 0
+  ticked. v3's gate is retired to `SCREENS-retired.md`.
 
-**Still to do in Phase 0:** `CLAUDE.md` (current phase, Voice replaced by
-`DECIDED.md`, "Not in v3"), retire `.planning/v4/SCREENS.md` and write the v4
-one, the six `COACH_*` env keys in all three files plus `.env.example` plus
-Vercel, and `check:decided` and `check:member`.
+**Phase 1 — the five new types.** Cold shower, Morning sunlight, No junk food,
+No alcohol, No social media (3.1). Each is about nineteen lines calling
+`abstinenceActivity({...})`, plus `register()`, plus an icon path — **a missing
+icon renders nothing, silently.**
 
-**Phase 0 is done when** CI is green on a branch that changed no behaviour and
-dev is *proven* unable to call a paid provider.
+Settled for it: **member-written conditions ARE in Phase 1** (migration 0033),
+because doing them with the five means one pass over the module system rather
+than two. Confirm windows are per type rather than one for all five: cold shower
+and sunlight confirm in the morning because that is when they happen, the three
+abstinences in the evening once the day is effectively done, which is
+Sugar-free's reasoning.
+
+**Three test files will fail on purpose and are updated by hand, never derived:**
+`catalog.test.ts:29` (`toHaveLength(12)`), `configure.test.ts:12-43` (a label
+per type, in order), `checkin.test.ts:38-62` (which types repeat). They are a
+tripwire: adding a type should make you visit every place that cares.
+
+**M2, as it is actually done:** each decision gains a `Built in` line at the
+moment it becomes true, in that phase's closing commit, alongside M4's re-read.
 
 ### Android push is VERIFIED, 2026-09-21. Closed.
 

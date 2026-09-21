@@ -56,8 +56,11 @@ and a header naming the bug it exists for.
 - **`check:coach`** — no digit in a line that is not in its digest (1.24).
 
 **M2 — every commit names its decision.** A phase commit cites the numbers it
-implements; `DECIDED.md` gains a **Built in** column. A convention, so it holds
-only while somebody remembers, which is why M1 exists.
+implements, and **each decision gains a `Built in` line at the moment it becomes
+true**, written in that phase's closing commit alongside M4's re-read. Not a
+column added now and left empty: forty-four rows saying "not yet" is noise until
+something fills them, and a line written when it becomes true is a line that
+stays true. A convention either way, which is why M1 exists.
 
 **M3 — `.planning/v4/SCREENS.md`.** All 41 boards, ticked by a person who opened
 the screen beside the board, in the same commit. **A phase cannot close with an
@@ -89,10 +92,13 @@ assertion can.
   and that has cost an afternoon before.
 - `check:decided` and `check:member` exist and pass.
 
-**Done when:** CI is green on a branch that changed no behaviour, and dev is
-*proven* unable to call a paid provider: hit the route with a valid `CRON_SECRET`
-and read `{ ok: true, skipped: "disabled" }` back, the way 3.3 proved the
-reminder tick rather than assuming it.
+**Done when:** CI is green on a branch that changed no behaviour.
+
+**The proof that dev cannot spend money moved to Phase 5**, where the route
+exists to prove it against. Writing the route in Phase 0 to satisfy a
+done-condition would be Phase 5 work done early because a checkbox asked for it,
+and the condition is not weakened by waiting: every `COACH_*` value in both
+Vercel environments is `0` or `stub` today.
 
 ## Phase 1 — The five new types (3.1)
 
@@ -207,7 +213,11 @@ than the first.
 - `bun run sim:coach` — a week of his lines, printed, no database, no network.
 
 **Done when:** the coach works end to end against the stub, the nightly job
-writes lines, `schedulerHealth()` shows four jobs, and no test needs a network.
+writes lines, `schedulerHealth()` shows four jobs, no test needs a network, and
+**dev is proven unable to call a paid provider**: hit `/api/cron/coach` on dev
+with a valid `CRON_SECRET` and read `{ ok: true, skipped: "disabled" }` back,
+the way 3.3 proved the reminder tick rather than assuming it. Moved here from
+Phase 0, which had no route to prove it against.
 
 ## Phase 6 — The model (1.21, 1.25, 1.26)
 

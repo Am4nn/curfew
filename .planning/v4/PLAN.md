@@ -1,237 +1,304 @@
 # PLAN.md — Build order for v4
 
-Eight phases. Each one ends with something that works and something you can
-look at, and no phase is done until its tests are green and its boards have
-been opened beside the running screen.
+Eight phases. Each ends with something that works and something you can look at,
+and no phase is done until its tests are green, its `SCREENS.md` rows are ticked
+and its decisions have been re-read.
 
-Read `DECIDED.md` for what and why, and this file only for the order. Every
-decision referenced here by number lives there. `SCHEMA.md` is the tables.
+Read `DECIDED.md` for what and why, `SCHEMA.md` for the tables, and this file
+only for the order. Every decision referenced here by number lives there.
 
 The canvas is https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, 41 boards,
-approved 2026-09-21 and caught up with the decisions the same day. Sources are
-in `.design/v5/`.
+approved 2026-09-21. Sources in `.design/v5/`.
 
-**v4 ships as one tag (1.30).** Not phased over two releases, and not with the
-coach dark behind the admin switch. The phases below are a build order, not a
-release order: nothing reaches production until all eight are done.
+**v4 ships as one tag (1.30).** Not phased over two releases, not with the coach
+dark behind the admin switch. The phases below are a build order, not a release
+order.
 
 ---
 
-## The order, and why it is this one
+## Why this order
 
-3.2 asked what gets built first and left it here. Three candidates were on the
-table and the argument settles it:
+3.2 settles it: **the engine first and the coach last.**
 
-**The engine first, the coach last.** Ren is the riskiest thing in v4 and the
-instinct is to answer the riskiest thing first. That instinct is wrong here,
-because he reads a digest (1.22) and the digest is built from activity
-outcomes, streaks and group shares. Building him first means building him
-against data that is about to change shape twice, and 1.19 changes what an
-activity list even looks like.
+The instinct is to answer the riskiest thing first, and it is wrong here. Ren
+reads a digest built from outcomes, streaks and group shares (1.22), and 1.19
+changes what an activity list even is. Build him first and you build him twice.
 
 **The design is not a phase.** v3 built screens phase by phase against
-`SCREENS.md` and that was right, because the screens were new. Here the routes
-exist and the look changes, so the redesign rides along inside each phase
-rather than being a phase of its own. A phase that is only "make it look right"
-is a phase that gets cut when time is short.
+`SCREENS.md` because the screens were new. Here the routes exist and the look
+changes, so the redesign rides inside each phase. A phase that is only "make it
+look right" is the phase that gets cut when time is short.
 
-**The one hard ordering constraint** is that Monk mode cannot be built before
-the five new types exist, because it aggregates them (1.16), and the five
-cannot be grouped on Home before they exist either (1.19). So Phase 1 is types,
-Phase 2 is the grouped row, Phase 3 is Monk mode, and nothing about the coach
-happens until Phase 5.
+**The one hard constraint:** Monk mode aggregates the new types (1.16) and the
+grouped row groups them (1.19), so types come first. Phase 1 types, Phase 2 the
+row, Phase 3 Monk mode, and nothing about the coach until Phase 5.
+
+---
+
+## How this does not drift (1.32)
+
+Four mechanisms, all four chosen, each catching what the others cannot.
+
+**M1 — checks that fail CI.** House shape is `scripts/check-money.ts`: a
+`check(what, ok, got)` helper, a counter, `process.exit(failed === 0 ? 0 : 1)`,
+and a header naming the bug it exists for.
+
+- **`check:decided`** — every mechanically checkable decision. The five types
+  registered with categories (3.1); no member-written condition has a category
+  (1.19); **no `anthropic` or `claude` string anywhere in `src/`** (1.21); the
+  coach job declared with its failure callback (1.23); the cap and the ceiling
+  read from env, never hardcoded (1.26); `monkPassed` in exactly five files
+  (1.29); `CONSENT_VERSION === 2` (1.30).
+- **`check:monk`** — seven assertions, listed in Phase 3.
+- **`check:member`** — invariant 10. Any exported function in `src/server/`
+  taking a `groupId` calls `assertMember` or sits on a named allowlist with a
+  reason. Crude, and it is the shape of the one leak this app has shipped.
+- **`check:coach`** — no digit in a line that is not in its digest (1.24).
+
+**M2 — every commit names its decision.** A phase commit cites the numbers it
+implements; `DECIDED.md` gains a **Built in** column. A convention, so it holds
+only while somebody remembers, which is why M1 exists.
+
+**M3 — `.planning/v4/SCREENS.md`.** All 41 boards, ticked by a person who opened
+the screen beside the board, in the same commit. **A phase cannot close with an
+unticked row it touched.** v3's file was never ticked once. No screenshot
+tooling: a reference capture is a capture of what was built, so it locks in
+drift rather than preventing it.
+
+**M4 — a phase closes by re-reading its decisions.** Walk that phase's entries
+in `DECIDED.md` line by line against what was built and write down what differs,
+in the closing commit. About an hour, and it catches interpretation drift no
+assertion can.
 
 ---
 
 ## Phase 0 — Ground
 
-- `CLAUDE.md`: "Current phase" becomes v4, the Voice section is replaced by
-  `DECIDED.md` as 1.1 promised, and the "Not in v3" list is replaced by v4's.
-- `.planning/v3/SCREENS.md` is re-pointed at the v5 canvas (1.8), or retired
-  and replaced by a v4 equivalent that names boards rather than `.design/`
-  artboards. Decide which in this phase, not later.
-- New environment keys in all three `.env` files and in Vercel, per
+- **Correct the planning files first.** `SCHEMA.md` priced the monk bar against
+  a foreign key deleted in `migrations/0012_group_model.sql:72`, and put
+  `category` on an append-only history table. Both corrected 2026-09-21; the
+  reasoning is preserved in `SCHEMA.md`'s opening section and in 1.16.
+- `CLAUDE.md`: current phase becomes v4, the Voice section is replaced by
+  `DECIDED.md` as 1.1 promised, "Not in v3" replaced by v4's own.
+- Retire `.planning/v3/SCREENS.md`; write the v4 one (M3).
+- New env keys in all three `.env` files, `.env.example` and Vercel per
   environment: `COACH_PROVIDER`, `COACH_MODEL`, `COACH_API_KEY`,
-  `COACH_MONTHLY_CEILING`, `COACH_DAILY_ASKS`. Added to `.env.example` in the
-  same commit, because a key missing from one file leaks in from `.env.local`
+  `COACH_MONTHLY_CEILING`, `COACH_DAILY_ASKS`, `COACH_ENABLED`. **A key missing
+  from one file does not fall back to a default, it leaks in from `.env.local`**,
   and that has cost an afternoon before.
-- **`PUSH_REMINDERS` stays 1 in production and 0 in Preview, and the coach gets
-  the same treatment.** Dev must never call a paid provider. Prove it the way
-  3.3 proved the reminder tick: hit the route on dev with a valid secret and
-  read `{ ok: true, skipped: "disabled" }` back.
+- `check:decided` and `check:member` exist and pass.
 
-**Done when:** `bun run check:deps`, `check:cron` and the full CI run are green
-on a branch that has changed no behaviour, and dev is proven unable to spend
-money.
+**Done when:** CI is green on a branch that changed no behaviour, and dev is
+*proven* unable to call a paid provider: hit the route with a valid `CRON_SECRET`
+and read `{ ok: true, skipped: "disabled" }` back, the way 3.3 proved the
+reminder tick rather than assuming it.
 
-## Phase 1 — The five new types
+## Phase 1 — The five new types (3.1)
 
-- Five declarative modules, all held-or-slipped with no evidence, which is
-  Sugar-free's shape: Cold shower, Morning sunlight, No junk food, No alcohol,
-  No social media (3.1).
-- **A `category` field on the module interface**: BODY, FOOD, MIND, SLEEP, and
-  null for a member-written one. This is what 1.16's required categories read
-  and it is the only engine change in this phase.
-- Backfill the category on the twelve existing modules.
-- Member-written conditions: same module, a row the member names, `category`
-  null (1.19). Nothing that reads category may assume one exists.
-- `bun run sync:activities` picks them up, disabled, as it does for everything.
+Five files in `src/domain/`, each about nineteen lines calling
+`abstinenceActivity({...})`, plus `register()` in `src/domain/index.ts` and an
+icon path in `src/app/activity-icon.tsx` — **a missing icon name renders
+nothing**, silently.
 
-**Done when:** all seventeen types appear in the catalog, a member-written one
-can be created and checked in, `check:offer` passes for every new type, and
-`bun run simulate` runs a week with all five without a drift row.
+`category?: "body" | "food" | "mind" | "sleep"` on `ActivityType` in
+`src/domain/types.ts`. Backfill the twelve. **It is a field in code and not a
+column** (see `SCHEMA.md`). Member-written conditions get a `user_conditions`
+row and no category (1.19).
 
-## Phase 2 — The grouped row
+**Three test files hard-code the type list and are updated by hand, never
+derived** — that is their job, and they are a tripwire rather than a chore:
+`catalog.test.ts:29` (`toHaveLength(12)`), `configure.test.ts:12-43` (a label
+per type, in order), `checkin.test.ts:38-62` (which types repeat).
 
-- Home draws every `checkin.kind` of held-or-slipped under one expandable row,
-  `Simple ones, 3 of 5` (1.19). It is presentation only: no new event, no new
-  score, no aggregate stored anywhere.
-- Each keeps its own streak, its own window and its own sharing toggle. The
-  group is a `<details>`-shaped thing and nothing else.
-- Catalog, Activities, Sharing and Settings list them the same way.
+**Done when:** seventeen types in the catalog, a member-written one can be
+created and checked in, `check:offer` passes for every new type, and `simulate`
+runs a week with all five and reports no drift.
 
-**Done when:** five types occupy one row on Home, opening it shows five
-streaks, and turning one off removes it from the group without touching the
-other four.
+## Phase 2 — The grouped row (1.19)
 
-## Phase 3 — Monk mode
+Home draws every held-or-slipped type under one expandable row,
+`Simple ones, 3 of 5`. **Presentation only**: no new event, no new score,
+nothing stored. Each keeps its own streak, window and sharing toggle. Catalog,
+Activities, Sharing and You list them the same way.
 
-- The aggregate: passed over scheduled, resolved as the set stood on the day
-  being read (1.16). It stores nothing and is rebuildable, because the things
-  under it already are.
-- The set is effective-dated, insert-only, with a future `effective_from`.
-  Invariant 4 applies to it unchanged.
-- Compulsory activities, and the four required categories, reading the field
-  Phase 1 added. **If a required category is uncovered, Monk mode does not
-  appear at all** and the screen says what is missing (1.16, `MonkLocked`).
-- A weekly counts on the days it was done and is not asked otherwise, so the
-  denominator moves daily. **0 of 0 renders as a dash and never as 0%.**
-- **The stricter monk bar (1.29), and this is the expensive part.** A second
-  scope on `activity_scores`, a second pass computing it, and `verify` diffing
-  both. The second verdict appears nowhere but Monk mode's own screen.
+**Done when:** five types occupy one row, opening it shows five streaks, and
+turning one off removes it from the group without touching the other four.
+
+## Phase 3 — Monk mode (1.16, 1.29)
+
+- `monk_sets`, effective-dated and insert-only. Invariant 4 applied to a view:
+  add Cold shower today and it counts from tomorrow.
+- `src/server/monk.ts`, the read layer and **the only file that reads
+  `monkPassed`**. Passed over scheduled. **0 of 0 returns null, never 0.**
+- `monkBar?(config): Config` on `ActivityType`. Water, Screen and Sleep
+  implement it and nothing else does. The module returns **the stricter of the
+  member's own setting and the bar**, so somebody already drinking twelve is not
+  handed ten. Invariant 6 survives: the engine never learns the field is called
+  `glasses`.
+- **A monotonicity property test lands in `registry.test.ts` BEFORE anything
+  writes the column.** `evaluate(monkBar(c)).passed` implies `evaluate(c).passed`,
+  and `configSchema.parse(monkBar(c))` does not throw. The second half is not
+  decoration: `split()` at `scoring.ts:150-156` hands config to `evaluate`
+  **unparsed**, so a monk config its own schema would reject reaches `evaluate`
+  and can throw mid-score, taking `scoreUser` down for that member.
+- **Three edits to `scoring.ts` and nothing else.** `ScoreRow` at `:193-203`
+  gains `monkPassed: boolean | null`; a guarded second `evaluate` after `:380-388`
+  reusing the already-resolved config, which satisfies invariant 5 for free; and
+  `monkPassed` in the upsert `set` block at `:855-866`. **`:647-653` and
+  `:670-679` are not touched, and that is the whole point of the shape.**
+- Four lines in `verify.ts:68-108`, the same shape as `settling` and `paused`.
+- Compulsory: Sleep, No junk food, Screen, Steps. Four required categories. If
+  one is uncovered, **Monk mode does not appear at all** (`MonkLocked`).
 - A share toggle per group (1.29). No camera switch: there is no photograph.
+- **No backfill.** Rows stay NULL until the nightly full replay fills them
+  within a night; the hourly resume only rescans from `dayFrom - 7`
+  (`scoring.ts:292`). Say so on screen, or press Rebuild in Ops once.
 
-**Done when:** `verify` diffs both scopes over a seeded month with no drift, a
-day with nothing scheduled shows a dash, and removing a required activity makes
-Monk mode disappear rather than degrade.
+`check:monk` asserts: no duplicate row; `monk_passed ⇒ passed` over every stored
+row; coverage is NULL exactly where `monkBar` is undefined; **money and streaks
+untouched** when a bar is swapped for something absurd; `monkPassed` occurs only
+in the five allowed files; the set is effective-dated; 0 of 0 is null.
 
-## Phase 4 — Nudges
+**Done when:** those seven pass, `verify` diffs `monkPassed` over a seeded month
+with no drift, a day with nothing scheduled shows a dash, and removing a
+required activity makes Monk mode disappear rather than degrade.
 
-- At-risk on Home: window open, closing soon, nothing logged. It is computed
-  per activity and never per person (1.5).
-- The nudge itself: four set messages, no typing. The first feature where one
-  member can put a notification on another member's phone.
-- **Delivery is push AND the card on Home** (1.27). Push is best-effort;
-  the card always lands.
-- **The window is the rate limit** (1.27). At-risk is the only state a nudge
-  can move, so there is no counter and no claim row. Quiet hours still win.
-- One switch to refuse them, and nobody is told you turned it off (1.13).
+## Phase 4 — Nudges (1.5, 1.13, 1.27)
 
-**Done when:** a seeded member at risk can be nudged, the target sees both the
-push and the card, the card clears when the activity is done, and a nudge is
-impossible outside an open window.
+At-risk on Home: window open, closing soon, nothing logged. **Per activity,
+never per person.** Four set messages stored by `message_key`, the words in code
+beside `notification-copy.ts` so they go through review — *Don't break it*,
+*You've got time*, *Mine's done*, *Come on*, which are the streak, the window,
+the example and the shove.
 
-## Phase 5 — The coach, without a model
+**Push AND the card on Home.** Push is best-effort and permission can be off;
+the card always lands. **The window is the rate limit**: no counter, no claim
+row. Quiet hours still win. One switch to refuse, and nobody is told (1.13).
 
-Everything about Ren except the call. This phase exists so that the model is
-the last variable rather than the first.
+**Done when:** a seeded at-risk member can be nudged, the target sees both, the
+card clears when the activity is done, and a nudge outside an open window is
+impossible.
 
-- `src/server/coach/digest.ts`: the structured summary the server builds from
-  outcomes, streaks, windows, group shares and **which photographs matter**
-  (1.22). Pure, testable, no network.
-- `src/server/coach/provider.ts`: one interface, `COACH_PROVIDER` picks the
-  implementation (1.21). A stub provider that returns fixed text ships in this
-  phase and stays for tests for ever.
-- `/api/cron/coach`, its own QStash schedule, `0 4 * * *` (1.23). Bearer check,
-  heartbeat, failure callback, declared in `JOBS` like the other three.
-- The lines table, the rolling summary table, the recompute claim.
+## Phase 5 — The coach, against a stub
+
+Everything about Ren except the call, so the model is the last variable rather
+than the first.
+
+- `src/server/coach/digest.ts` — the structured summary, and **which
+  photographs matter** (1.22). Pure, testable, no network.
+- `src/server/coach/provider.ts` — one interface, `COACH_PROVIDER` picks the
+  implementation (1.21). **A stub provider ships here and stays for ever**,
+  because no test should need a network.
+- `/api/cron/coach`, its own QStash schedule, `0 4 * * *`, declared in `JOBS`
+  with the forwarded secret and the failure callback, plus a slot claim
+  (`events_one_coach_run_idx`). Its heartbeat joins `HEARTBEATS` in
+  `src/server/ops.ts` so `schedulerHealth()` reports four jobs.
+- `coach_lines`, `coach_memory`, `coach_calls`.
 - Every screen that carries a line: Home, After a miss, Your record, the day is
-  done, and his tab (1.4a).
-- **The one hard rule, enforced here rather than in a prompt**: every number in
-  a line comes from the digest verbatim (1.24). A test walks the stub's output
-  and fails on a digit that is not in the input.
+  done, and his tab (1.4a). **One line per screen, never two** — that is the
+  half of 1.4a which survives 1.28's reversal.
+- **Copy `notification-copy.ts`'s three-layer pattern**, which is the best
+  machinery in this repo: the writer is handed an opaque pre-written string and
+  denied the raw numbers, so the bad sentence is *unwritable*; a
+  forbidden-substring list crossed with every writer and forty seeds, plus a
+  positive assertion that the opaque string survives verbatim; and the same list
+  re-applied in the simulator over composed output.
+- `bun run sim:coach` — a week of his lines, printed, no database, no network.
 
-**Done when:** the whole coach works end to end against the stub, the nightly
-job writes lines, `schedulerHealth()` shows four jobs, and no test anywhere
-needs a network.
+**Done when:** the coach works end to end against the stub, the nightly job
+writes lines, `schedulerHealth()` shows four jobs, and no test needs a network.
 
-## Phase 6 — The model
+## Phase 6 — The model (1.21, 1.25, 1.26)
 
-- Gemini Flash behind the seam, taking the digest and the photographs.
-- DeepSeek behind the same seam for Ask Ren, text only (1.21).
-- The rolling summary, rewritten nightly, with read, edit and clear (1.25).
-- **The failure path, proved rather than assumed** (1.23): retries, DLQ, no
-  line, and the recompute button that exists only when a failure is recorded.
-  Prove it on dev the way 3.4.7's failure callback was proved, by making a real
-  call fail rather than by writing a fake failure row.
-- The daily ask cap, and the monthly ceiling that switches Ask Ren off while
-  the nightly lines carry on (1.26). Every call writes an event; Ops reads them.
-- Ren off, and off is a real off: no tab, no lines, nothing sent (1.14).
+Gemini Flash behind the seam taking the digest and the photographs; DeepSeek
+behind the same seam for Ask Ren, text only. The rolling summary rewritten
+nightly, with read, edit and clear (1.25). The daily cap, and the ceiling that
+switches Ask Ren off while the nightly lines carry on. Ren off is a real off
+(1.14).
+
+**The failure path proved rather than assumed** (1.23): make a real call fail
+and watch retries, DLQ, the empty state and the guarded recompute — the way
+3.4.7's failure callback was proved on dev, rather than by writing a fake
+failure row into an append-only table.
 
 **Done when:** a real night produces real lines, unplugging the provider
-produces the empty state and a working retry, and the ceiling can be dropped to
-zero in Vercel and observed to stop Ask Ren and nothing else.
+produces the empty state and a working retry, and dropping the ceiling to zero
+in Vercel stops Ask Ren and nothing else.
 
 ## Phase 7 — The gate, and the rest of the surface
 
-- The consent gate at its real length: `CONSENT` and `TERMS` gain Ren, the
-  provider sentence, and the rolling summary in WHAT IS RECORDED and DELETING.
-  `CONSENT_VERSION` goes to 2, which is what makes all three re-accept.
-- **The accept button waits until the end** (1.8i), with the progress rule.
-- First run (1.15): deterministic, unskippable, and it carries the refusal
-  (1.15a) with the whole tutorial branching on it.
-- You: profile and settings on one page, reached from the avatar on Home, with
-  the memory row and the admin row (1.8e).
-- Splash, sign-in, the mark and the logotype.
-- Every remaining board opened beside its route.
+`CONSENT` and `TERMS` gain Ren, **the sentence saying the photographs leave to a
+third party**, and the rolling summary in WHAT IS RECORDED and DELETING.
+`CONSENT_VERSION` → 2, which is what makes all three re-accept. The accept
+button waits for the end (1.8i). First run, deterministic and unskippable,
+carrying the refusal (1.15). You: profile and settings on one page, from the
+avatar on Home (1.8e). Splash, sign-in, the mark.
 
 **Done when:** a new account can be created, gated, tutored and land on a Home
-that works, and all three existing members have re-accepted.
+that works, and all three members have re-accepted.
 
 ## Phase 8 — Before it ships
 
-- `bun run break-in` extended: the coach routes, the recompute guard, the nudge
-  path, and the member-written condition as an injection surface.
-- `bun run sim:push` extended to nudges, because a nudge is a notification and
-  v3.3 proved that a sentence nobody read before shipping is a sentence that
-  ships wrong.
-- A new check, `check:coach`: the digest contains no number the lines invented,
-  and a stub run produces no line over its length limit.
-- Read a real night of lines and a real day of nudges, word for word, the way
-  `check:push` is read after a release.
-- The release runbook: `.planning/RELEASE.md` gains the fourth schedule, the
-  new env keys, and `CONSENT_VERSION`.
+`break-in` extended: the coach routes, the recompute guard, the nudge path, and
+**a member-written condition as an injection surface**. New routes go into
+`http.ts`'s `routes()` and `apiRoutes()` **by hand** — the cron sweep is a
+hand-written list on purpose, because forgetting one looks like nothing.
+`sim:push` extended to nudges. Read a real night of lines and a real day of
+nudges word for word, the way `check:push` is read the morning after a release.
+`.planning/RELEASE.md` gains the fourth schedule, the new env keys and
+`CONSENT_VERSION`.
 
-**Done when:** every check is green on the same SHA, and a person has used it
-on a phone for a day.
+**Done when:** every check green on one SHA, every `SCREENS.md` row ticked, and
+a person has used it on a phone for a day.
 
 ---
 
+## Migrations
+
+| | | Phase |
+|---|---|---|
+| 0033 | `user_conditions` | 1 |
+| 0034 | `monk_sets` | 3 |
+| 0035 | `activity_scores.monk_passed` | 3 |
+| 0036 | `nudges`, `notification_settings.nudges_enabled` | 4 |
+| 0037 | `coach_lines`, `coach_memory`, `coach_calls` | 5 |
+| 0038 | `events_one_coach_run_idx` | 5 |
+
+**All additive, and v4 has no hostile migration.** Every one goes before the
+tag. `category` is not a migration and `CONSENT_VERSION` is not a migration.
+
 ## Order notes
 
-- **Phase 1 before 2 and 3.** Both read the types. Monk mode reads their
-  categories, which do not exist until Phase 1 adds the field.
-- **Phase 4 can overlap Phase 3.** Nudges touch groups and windows; Monk mode
-  touches scoring. They meet nowhere.
-- **Phase 5 before Phase 6, and the gap is the point.** Building the coach
+- **Phase 1 before 2 and 3.** Both read the types; Monk reads the category the
+  field adds.
+- **Phase 4 can overlap Phase 3.** Nudges touch groups and windows, Monk touches
+  scoring. They meet nowhere.
+- **Phase 5 before Phase 6, and the gap is the point.** Building the whole coach
   against a stub means the day the provider arrives, the only new thing is the
-  provider. Doing it the other way round means every bug is either the prompt,
-  the digest, the schedule or the provider, and no way to tell which.
-- **Phase 7 can start once Phase 5 is done**, because the gate's copy depends
-  on what the coach does rather than on which model does it.
+  provider. The other way round, every bug is the prompt, the digest, the
+  schedule or the provider, with no way to tell which.
+- **Phase 7 can start once Phase 5 is done**, because the gate's copy depends on
+  what the coach does rather than on which model does it.
 - **Phase 8 cannot start until everything else is finished**, and it is not the
   phase to compress.
 
-## Known cost, accepted before starting
+## Known costs, accepted before starting
 
-**The stricter monk bar is the largest single piece of engine work in v4** and
-it lands on the one activity in the app that cannot punish anybody (1.16). A
-second scope on `activity_scores`, a second pass, and `verify` diffing both.
-The cheap alternative, letting a member set a harder target on the activity
-itself, was offered and refused. This is written here so that if Phase 3 runs
-long, nobody is surprised about which part.
+**Changing a monk bar later rewrites history.** `monk_passed` is a pure function
+of code and `activity_scores` has no per-module logic version. Moving Water's
+bar from 10 to 11 makes `verify` report every historical row as drift and the
+nightly replay rewrite them. Not new — `passed` already behaves this way when a
+module's `evaluate` changes — but a bar is a number somebody will be tempted to
+tune, so the warning goes in the `monkBar` doc comment.
+
+**A member whose types all lack a bar** gets a monk percentage identical to a
+plain pass rate. Correct and intended under 1.29's NULL rule, and the screen
+must not imply otherwise.
 
 **`settleFines` is still O(lifetime) per run** and hourly scoring multiplies it
-by 24. Three members and fifteen uncharged rows make it free today. It is the
-first thing that will hurt, and bounding it is its own change with its own
-correctness argument about late settlement. Not in v4.
+by 24. Free at three members and fifteen uncharged rows. It is the first thing
+that will hurt, and bounding it is its own change with its own correctness
+argument about late settlement. Not in v4.
+
+**3.3 is still open.** 1.24 banned one thing, that no number may be invented,
+and dated the rest. Revisit before anybody outside the three uses Curfew.

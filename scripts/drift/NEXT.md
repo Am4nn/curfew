@@ -30,33 +30,32 @@ https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, 39 boards in 10 rows, signed
 off by Aman. Sources are in `.design/v5/`, generators in `.design/v5/gen/`.
 Decisions are `.planning/v4/DECIDED.md`, 1.1 to 1.18. Nothing is owed here.
 
-## v4 BUILD
+## v4 BUILD — planning is done, Phase 0 is in progress
 
-**`.planning/v4/PLAN.md` and `SCHEMA.md` are written, 2026-09-21.** Eight
-phases, seven migrations, all of them additive.
+**The plan is `.planning/v4/PLAN.md`.** Eight phases, six additive migrations,
+four anti-drift mechanisms. `SCHEMA.md` is the tables, `DECIDED.md` is 1.1 to
+1.32 plus 3.1 to 3.3.
 
-**3.2 is answered inside PLAN.md: the engine first and the coach last.** The
-instinct is to answer the riskiest thing first, and it is wrong here, because
-Ren reads a digest built from outcomes, streaks and group shares, and 1.19
-changes what an activity list even looks like. Building him first means
-building him twice.
+**Phase 0's first job is done: the planning files were wrong and are corrected.**
 
-**The order:** 0 ground, 1 the five types plus the category field, 2 the
-grouped row, 3 Monk mode including the expensive second scope, 4 nudges, 5 the
-coach against a STUB, 6 the real model, 7 the gate and the surface, 8 before it
-ships.
+- **The monk bar was priced against a foreign key deleted in migration 0012.**
+  The discriminator-in-the-primary-key shape would have been a HOSTILE migration
+  taking scoring down for the whole promote, and would have broken twelve read
+  sites silently. It is one nullable boolean, `monk_passed`, on the existing
+  row. Same feature, roughly a tenth of the cost. See 1.16 and `SCHEMA.md` 0035.
+- **`category` is a field in code, not a column.** `activity_types` is
+  append-only admin-toggle history with no unique constraint on `type_key`.
+- **1.19, 1.20 and 3.1 had been silently truncated** by an earlier append that
+  rewrote everything below `## 3. Open`. Recovered from commit `ec6bd71`.
+  `DECIDED.md` is now assembled from sorted blocks rather than appended to.
 
-**The gap between 5 and 6 is the point.** Build the whole coach against a stub
-provider, so the day the model arrives the only new thing is the model.
-Otherwise every bug is the prompt, the digest, the schedule or the provider and
-there is no way to tell which.
+**Still to do in Phase 0:** `CLAUDE.md` (current phase, Voice replaced by
+`DECIDED.md`, "Not in v3"), retire `.planning/v3/SCREENS.md` and write the v4
+one, the six `COACH_*` env keys in all three files plus `.env.example` plus
+Vercel, and `check:decided` and `check:member`.
 
-**Start at Phase 0**, which is documentation and environment keys and proving
-dev cannot spend money. Nothing in it changes behaviour.
-
-**One thing Phase 0 has to decide rather than defer:** whether
-`.planning/v3/SCREENS.md` is re-pointed at the v5 canvas or retired for a v4
-equivalent. 1.8 said re-point it in the first v4 commit.
+**Phase 0 is done when** CI is green on a branch that changed no behaviour and
+dev is *proven* unable to call a paid provider.
 
 ### Android push is VERIFIED, 2026-09-21. Closed.
 

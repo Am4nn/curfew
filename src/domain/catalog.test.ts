@@ -25,10 +25,16 @@ function check(step: string, hhmm: string, evidence?: Record<string, unknown>) {
 }
 
 describe("the catalog is complete", () => {
-  it("registers all seventeen types", () => {
-    // Twelve from v3 plus 3.1's five. A number rather than a list, because the
-    // list is asserted three times over in configure.test.ts.
-    expect(registeredKeys()).toHaveLength(17);
+  it("registers all seventeen types, plus the condition template", () => {
+    // Twelve from v3, 3.1's five, and `condition`, which is REGISTERED but is
+    // not one of the seventeen: it is the shape behind every condition
+    // somebody writes themselves (1.19), tracked as `condition:<uuid>`.
+    //
+    // It is in the registry so `sync:activities` gives it an `activity_types`
+    // row and an admin can switch the whole feature off in one place. The
+    // catalog leaves it out and draws "Write your own" instead.
+    expect(registeredKeys()).toHaveLength(18);
+    expect(registeredKeys().filter((k) => k !== "condition")).toHaveLength(17);
   });
 
   it("covers all five check-in kinds", () => {

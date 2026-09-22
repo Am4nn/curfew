@@ -2,11 +2,12 @@ import { cache } from "react";
 import { and, eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { db } from "@/db";
-import { userActivities, userActivityConfig, memberShares } from "@/db/schema";
+import { userActivities, userActivityConfig, memberShares, userConditions } from "@/db/schema";
 import {
   resolveAt,
   resolveConfig,
   getActivityType,
+  CONDITION_PREFIX,
   scheduleConfigSchema,
   type ScheduleConfig,
 } from "@/domain";
@@ -76,7 +77,7 @@ export const listUserActivities = cache(async function listUserActivities(
   const timezone = (await timezoneHistory(userId)).at(instant);
   const today = isoDate(instant, timezone);
 
-  const [switches, configs] = await Promise.all([
+  const [switches, configs, conditions] = await Promise.all([
     db
       .select({
         id: userActivities.id,
@@ -95,7 +96,21 @@ export const listUserActivities = cache(async function listUserActivities(
       })
       .from(userActivityConfig)
       .where(eq(userActivityConfig.userId, userId)),
+    // 1.19. The label of every condition this person has written, retired ones
+    // included: a retired condition still has a switched-off activity and a
+    // history, and both have to be readable by name.
+    db
+      .select({ id: userConditions.id, label: userConditions.label })
+      .from(userConditions)
+      .where(eq(userConditions.userId, userId)),
   ]);
+
+  // `user_conditions` is the one source of truth for a label, and this is
+  // where it wins. The config blob carries a copy so that a raw row parses on
+  // its own, and the copy is overwritten here on every read, so it can never
+  // be read stale: a rename is one UPDATE rather than a rewrite of every
+  // historical config row.
+  const labels = new Map(conditions.map((c) => [CONDITION_PREFIX + c.id, c.label]));
 
   const keys = new Set(switches.map((s) => s.typeKey));
   const out: UserActivity[] = [];
@@ -111,7 +126,14 @@ export const listUserActivities = cache(async function listUserActivities(
     if (!configRow) continue;
 
     const { schedule, config } = splitConfig(configRow.config);
-    out.push({ typeKey, enabled: row.enabled, schedule, config });
+    const label = labels.get(typeKey);
+    out.push({
+      typeKey,
+      enabled: row.enabled,
+      schedule,
+      config:
+        label === undefined ? config : { ...(config as Record<string, unknown>), label },
+    });
   }
 
   return out;
@@ -155,10 +177,30 @@ export async function catalogFor(userId: string) {
     listUserActivities(userId),
   ]);
   const tracked = new Set(mine.filter((a) => a.enabled).map((a) => a.typeKey));
-  return enabledTypes.map((key) => ({
-    type: getActivityType(key),
-    tracked: tracked.has(key),
-  }));
+  return (
+    enabledTypes
+      // `condition` is registered so it has an `activity_types` row and an
+      // admin can switch the whole feature off in one place (1.19). It is not
+      // a thing to track: what the catalog draws in its place is "Write your
+      // own", and each condition somebody writes becomes its own
+      // `condition:<uuid>` activity.
+      .filter((key) => key !== "condition")
+      .map((key) => ({
+        type: getActivityType(key),
+        tracked: tracked.has(key),
+      }))
+  );
+}
+
+/**
+ * Is writing your own condition available?
+ *
+ * The same admin switch as any other type: `condition` has a row in
+ * `activity_types`, and switching it off takes "Write your own" off the
+ * catalog without touching a condition anybody already tracks (invariant 11).
+ */
+export async function conditionsEnabled(): Promise<boolean> {
+  return (await getAppConfig()).enabledTypes.includes("condition");
 }
 
 export interface SaveActivityInput {

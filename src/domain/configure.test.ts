@@ -34,6 +34,11 @@ const LABELS: Record<string, string[]> = {
   junkfree: ["Confirmed between"],
   alcoholfree: ["Confirmed between"],
   socialfree: ["Nothing after", "Confirmed between"],
+
+  // The template behind a condition somebody writes themselves. Its label is
+  // chosen when it is created and is not a control here, which is why this
+  // reads the same as the four plain ones.
+  condition: ["Confirmed between"],
 };
 
 // Every one of these is a whole label, not a word the screen pads out. The

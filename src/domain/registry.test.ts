@@ -22,11 +22,18 @@ describe("registry", () => {
   // reaches the registry: it is a `user_conditions` row read at runtime.
   it("every registered type belongs to one of the four categories", () => {
     const seen = new Set<Category>();
+    const uncategorised: string[] = [];
     for (const key of registeredKeys()) {
       const category = getActivityType(key).category;
-      expect(category, `${key} category`).toBeDefined();
-      seen.add(category as Category);
+      if (category === undefined) uncategorised.push(key);
+      else seen.add(category);
     }
+    // `condition` is the ONLY one, and 1.19 is why: nothing can know whether
+    // "no doomscroll" is a MIND thing, and Monk mode's four requirements exist
+    // so the number means the same for everybody. Asserted as an exact list
+    // rather than an allowance, so a real type that forgets its category
+    // cannot hide behind the exemption.
+    expect(uncategorised).toEqual(["condition"]);
     // Monk mode cannot be built at all unless all four are reachable.
     expect([...seen].sort()).toEqual(["body", "food", "mind", "sleep"]);
   });

@@ -61,14 +61,32 @@ different label, so it needs a place to keep the label. Per user, not global:
 CREATE TABLE user_conditions (
     id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type_key    text NOT NULL,          -- the shared held-or-slipped module
     label       text NOT NULL,
     created_at  timestamptz NOT NULL DEFAULT now(),
     retired_at  timestamptz
 );
 CREATE UNIQUE INDEX user_conditions_live_idx
     ON user_conditions (user_id, lower(label)) WHERE retired_at IS NULL;
+CREATE INDEX user_conditions_user_idx
+    ON user_conditions (user_id) WHERE retired_at IS NULL;
 ```
+
+**`type_key` was in this draft and is not in the table.** It was described as
+"the shared held-or-slipped module", which would have been the same literal
+string `condition` on every row: a column with one value is not a column. The
+key is **derived** the other way, `condition:<id>`, and `getActivityType`
+strips the prefix, so one module stands behind all of them and the hundred-odd
+callers of that function never learn there is such a thing.
+
+Storing it would also have been a second place the key lives, and the two could
+disagree. Built 2026-09-22.
+
+**The label is written into the config blob as well**, which looks like two
+sources for one fact and is not: `listUserActivities` merges this table's label
+over the blob's on every read, so the copy can never be read stale. What the
+copy buys is that a raw `user_activity_config` row parses on its own, without a
+join, anywhere that has one in hand. A rename is one UPDATE here rather than a
+rewrite of every historical config row.
 
 **Retired rather than deleted**, because a check-in made against it is an event
 and events do not go away. A retired condition stops being offered and its

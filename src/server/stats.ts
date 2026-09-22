@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/db";
 import { activityScores } from "@/db/schema";
-import { getActivityType, graceMonth, type ChartSpec } from "@/domain";
+import { getActivityType, displayNameOf, graceMonth, type ChartSpec } from "@/domain";
 import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
 import { graceState } from "./restore";
@@ -154,7 +154,7 @@ export async function overviewFor(userId: string): Promise<Overview> {
     }
     byActivity.push({
       typeKey: a.typeKey,
-      name: type.name,
+      name: displayNameOf(type, a.config),
       icon: type.icon,
       percent:
         its.length === 0
@@ -240,7 +240,10 @@ export async function chartFor(
   const standing = await standingFor(userId, typeKey);
   return {
     typeKey,
-    name: type.name,
+    // `all` is this user's own activities, so the condition's merged label is
+    // already on its config. A key with no row is one they do not track, and
+    // `type.name` is the honest answer for it.
+    name: displayNameOf(type, all.find((a) => a.typeKey === typeKey)?.config),
     icon: type.icon,
     spec: type.chart,
     points: rows.map((r) => ({
@@ -256,7 +259,7 @@ export async function chartFor(
       .filter((a) => a.typeKey !== typeKey)
       .map((a) => {
         const t = getActivityType(a.typeKey);
-        return { typeKey: a.typeKey, name: t.name, icon: t.icon };
+        return { typeKey: a.typeKey, name: displayNameOf(t, a.config), icon: t.icon };
       }),
   };
 }

@@ -53,6 +53,7 @@ describe("every type can be checked in", () => {
     expect(repeating.sort()).toEqual([
       "alcoholfree",
       "coldshower",
+      "condition",
       "food",
       "gym",
       "junkfree",

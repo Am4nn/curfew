@@ -315,6 +315,17 @@ export interface ActivityType<Config, Evidence> {
   checkin: { kind: CheckinKind; answers?: DeclareAnswers };
   /** 1.16. Undefined on a condition somebody wrote themselves. */
   category?: Category;
+  /**
+   * What to CALL this activity on screen, when `name` is not it.
+   *
+   * One module stands behind every condition somebody writes themselves
+   * (1.19), so its `name` is the same string for all of them. This is how the
+   * one that is being drawn says which it is.
+   *
+   * Symmetric with `summary(config)`, and read the same way: the engine
+   * renders the string and never inspects it, so invariant 6 holds.
+   */
+  displayName?(config: Config): string;
   chart: ChartSpec;
   /**
    * How the configure screen draws this module's own settings.

@@ -18,6 +18,7 @@ import {
   type EvidenceRule,
   type Schedule,
   daysDoneIn,
+  displayNameOf,
   DEFAULT_ANSWERS,
 } from "@/domain";
 import { getUserActivity } from "./activities";
@@ -369,7 +370,9 @@ export async function getCheckinState(
 
   return {
     typeKey,
-    name: type.name,
+    // The label, for a condition somebody wrote (1.19). `type.name` is the
+    // same string for every one of them.
+    name: displayNameOf(type, activity.config),
     kind: type.checkin.kind,
     answers: type.checkin.answers ?? DEFAULT_ANSWERS,
     evidence: type.evidence,

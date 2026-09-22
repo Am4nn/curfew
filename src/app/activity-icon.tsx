@@ -117,6 +117,15 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="M4.5 20 19.5 4" />
     </>
   ),
+  // The template behind a condition somebody writes themselves. A blank tag:
+  // the one icon in the set that deliberately depicts nothing, because only
+  // the person who wrote it knows what it is.
+  condition: (
+    <>
+      <path d="M4.5 10.2 10.2 4.5h7.3a2 2 0 0 1 2 2v7.3l-5.7 5.7a2 2 0 0 1-2.8 0l-6.5-6.5a2 2 0 0 1 0-2.8Z" />
+      <path d="M15.6 8.4h.01" />
+    </>
+  ),
   socialfree: (
     <>
       <path d="M4.5 6.2h15v9.6H12l-4.4 3.4v-3.4H4.5Z" />

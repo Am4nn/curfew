@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { catalogFor } from "@/server/activities";
+import { catalogFor, conditionsEnabled } from "@/server/activities";
 import { ActivityIcon } from "../../activity-icon";
 import { BackLink } from "@/app/back-link";
+import { WriteYourOwn } from "./write-your-own";
 
 // The catalog. A type appears only when it has an enabled row in
 // activity_types (decision 63), so an admin switching one off removes it from
@@ -13,7 +14,7 @@ export default async function CatalogPage() {
   if (!user) redirect("/signin");
   if ((await getApprovalStatus(user.id)) !== "approved") redirect("/pending");
 
-  const catalog = await catalogFor(user.id);
+  const [catalog, canWrite] = await Promise.all([catalogFor(user.id), conditionsEnabled()]);
   const available = catalog.filter((c) => !c.tracked);
   const already = catalog.filter((c) => c.tracked);
 
@@ -44,6 +45,10 @@ export default async function CatalogPage() {
               <span className="flex-none text-[18px] leading-none">+</span>
             </Link>
           ))}
+
+          {/* Last, under everything we offer. Somebody looking for a condition
+              looks through what exists before writing one (1.19). */}
+          {canWrite ? <WriteYourOwn /> : null}
         </div>
 
         {already.length > 0 ? (
@@ -75,7 +80,9 @@ export default async function CatalogPage() {
         ) : null}
 
         <div className="text-[11.5px] leading-[1.55] text-muted">
-          Missing something you track? Ask an admin to add it.
+          {canWrite
+            ? "Missing something you track? Write your own, or ask an admin to add it."
+            : "Missing something you track? Ask an admin to add it."}
         </div>
       </div>
     </main>

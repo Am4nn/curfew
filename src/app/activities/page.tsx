@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, getApprovalStatus } from "@/lib/session";
-import { getActivityType, rankFor, isImmaculate, type ScheduleConfig } from "@/domain";
+import {
+  getActivityType,
+  displayNameOf,
+  isConditionKey,
+  rankFor,
+  isImmaculate,
+  type ScheduleConfig,
+} from "@/domain";
 import { listUserActivities } from "@/server/activities";
+import { RetireCondition } from "./retire-condition";
 import { standingFor } from "@/server/standing";
 import { globalScore } from "@/server/scoring";
 import { cleanRunIn } from "@/server/clean-run";
@@ -53,6 +61,9 @@ export default async function ActivitiesPage() {
     tracked.map(async (a) => ({
       typeKey: a.typeKey,
       type: getActivityType(a.typeKey),
+      // The label, for a condition somebody wrote (1.19).
+      name: displayNameOf(getActivityType(a.typeKey), a.config),
+      written: isConditionKey(a.typeKey),
       streak: (await standingFor(user.id, a.typeKey))?.streak ?? 0,
       grey: (await standingFor(user.id, a.typeKey))?.grey ?? false,
       summary: summarise(a.typeKey, a.schedule, a.config),
@@ -92,18 +103,26 @@ export default async function ActivitiesPage() {
           <section className="flex flex-col gap-[10px]">
             <span className="text-[10px] tracking-[0.16em] text-muted">YOURS</span>
             <div className="flex flex-col">
+              {/* The row is a div with a Link inside it rather than a Link
+                  with everything inside that, because a condition somebody
+                  wrote carries its own control and a button inside a link is
+                  two interactive elements in one: Tab reaches one of them and
+                  a screen reader reads the pair as a single confused thing. */}
               {rows.map((row) => (
-                <Link
+                <div
                   key={row.typeKey}
+                  className="flex items-center gap-3 border-b border-rule"
+                >
+                <Link
                   href={`/activities/${row.typeKey}`}
-                  className="flex items-center gap-3 border-b border-rule py-[13px]"
+                  className="flex min-w-0 flex-1 items-center gap-3 py-[13px]"
                 >
                   <span className="flex flex-none">
                     <ActivityIcon name={row.type.icon} size={20} />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                     <div className="flex items-center gap-[9px]">
-                      <span className="text-[14px]">{row.type.name}</span>
+                      <span className="text-[14px]">{row.name}</span>
                       {/* Grey first, for the same reason as on Home: a run
                           that came short holds its number, so a positive count
                           is not enough to earn a live flame. */}
@@ -127,6 +146,13 @@ export default async function ActivitiesPage() {
                   </div>
                   <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
                 </Link>
+                {/* A condition somebody wrote is the one thing here that can
+                    be put away rather than only switched off: its label stops
+                    being offered, and its history stays (1.19). */}
+                {row.written ? (
+                  <RetireCondition typeKey={row.typeKey} label={row.name} />
+                ) : null}
+                </div>
               ))}
             </div>
           </section>

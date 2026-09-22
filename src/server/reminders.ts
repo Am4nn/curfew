@@ -9,7 +9,7 @@ import {
   userApprovals,
   users,
 } from "@/db/schema";
-import { getActivityType, periodUnit } from "@/domain";
+import { getActivityType, displayNameOf, periodUnit } from "@/domain";
 import { now } from "@/lib/clock";
 import { listUserActivities } from "./activities";
 import { getCheckinState } from "./checkin";
@@ -518,7 +518,7 @@ export async function reminderSettings(userId: string): Promise<
     const type = getActivityType(a.typeKey);
     return {
       typeKey: a.typeKey,
-      name: type.name,
+      name: displayNameOf(type, a.config),
       chosen: (chosen.get(a.typeKey) ?? []).sort(),
       // The module's own times, or nothing when it has none and the engine
       // works backwards from the window instead. Shown as placeholders so a

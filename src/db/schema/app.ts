@@ -382,6 +382,27 @@ export const userActivities = pgTable("user_activities", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// A condition somebody wrote themselves (1.19). The LABEL, and nothing else:
+// its window, its schedule and its sharing toggle are the same tables every
+// other tracked activity uses, keyed by `condition:<id>`, because it IS a
+// tracked activity.
+//
+// It carries no category on purpose. Nothing can know whether "no doomscroll"
+// is a MIND thing, and Monk mode's four required categories exist so the
+// number means the same for everybody.
+//
+// Retired, never deleted: a check-in against one is an event, and events do not
+// go away. See migrations/0033.
+export const userConditions = pgTable("user_conditions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  retiredAt: timestamp("retired_at", { withTimezone: true }),
+});
+
 // Evidence photos. The row is written when the browser asks for an upload URL,
 // and confirmed when the check-in that carries its key is recorded. Whether a
 // photo is confirmed is derivable from events (invariant 1); this table holds

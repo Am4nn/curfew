@@ -266,6 +266,29 @@ if (FIVE.length > 0 && FIVE.some(registered)) {
   console.log("skip  3.1  the five new types do not exist yet (Phase 1)");
 }
 
+// 1.19 — a condition somebody writes themselves has NO category, because
+// nothing can know whether "no doomscroll" is a MIND thing, and Monk mode's
+// four requirements exist so the number means the same for everybody.
+//
+// The registry test asserts the exact list of uncategorised types. This is the
+// other half: the template is registered, so an admin can switch the whole
+// feature off in one place, and the catalog leaves it out because it is the
+// shape of a thing to track rather than one.
+if (existsSync("src/domain/condition/index.ts")) {
+  const condition = read("src/domain/condition/index.ts");
+  check(
+    "1.19  the condition template declares no category",
+    !/^\s*category:/m.test(condition),
+  );
+  check("1.19  it is registered, so the admin switch reaches it", registered("condition"));
+  check(
+    "1.19  the catalog leaves the template out",
+    read("src/server/activities.ts").includes('key !== "condition"'),
+  );
+} else {
+  console.log("skip  1.19  member-written conditions do not exist yet (Phase 1)");
+}
+
 // 1.23 — the coach is its own schedule, and a job that breaks says so.
 const jobs = read("scripts/schedule-jobs.ts");
 if (jobs.includes("/api/cron/coach")) {

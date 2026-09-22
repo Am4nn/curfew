@@ -1,5 +1,6 @@
 import {
   getActivityType,
+  displayNameOf,
   periodUnit,
   DEFAULT_ANSWERS,
   type CheckinKind,
@@ -171,7 +172,7 @@ export async function todayFor(userId: string): Promise<Today> {
 
     rows.push({
       typeKey: activity.typeKey,
-      name: type.name,
+      name: displayNameOf(type, activity.config),
       icon: type.icon,
       kind: type.checkin.kind,
       answers: type.checkin.answers ?? DEFAULT_ANSWERS,

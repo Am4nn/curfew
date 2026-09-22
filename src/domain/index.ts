@@ -17,6 +17,7 @@ import { sunlightActivity } from "./sunlight";
 import { junkfreeActivity } from "./junkfree";
 import { alcoholfreeActivity } from "./alcoholfree";
 import { socialfreeActivity } from "./socialfree";
+import { conditionActivity } from "./condition";
 
 // Seventeen since v4 (3.1). Order here is only the order they were written;
 // the catalog sorts them itself.
@@ -40,6 +41,12 @@ register(sunlightActivity);
 register(junkfreeActivity);
 register(alcoholfreeActivity);
 register(socialfreeActivity);
+
+// The template behind every condition somebody writes themselves (1.19).
+// Registered so `sync:activities` gives it a row and an admin can switch
+// the whole feature off; the catalog leaves it out, because it is not a
+// thing to track but the shape of one.
+register(conditionActivity);
 
 export { periodStart, daysInPeriod, weekdayOf, graceMonth } from "./period";
 export {
@@ -86,7 +93,14 @@ export {
   nextRank,
   type RankKey,
 } from "./ranks";
-export { getActivityType, registeredKeys, daysDoneIn } from "./registry";
+export { getActivityType, registeredKeys, daysDoneIn, displayNameOf } from "./registry";
+export {
+  conditionActivity,
+  isConditionKey,
+  conditionIdOf,
+  CONDITION_PREFIX,
+  LABEL_MAX,
+} from "./condition";
 export { ruleFor, howOften, dayStarts } from "./rule";
 export { consequencesOf, STOP_FOOTNOTE, type StopCost, type Consequence } from "./stop-cost";
 export type {

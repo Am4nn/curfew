@@ -85,13 +85,13 @@ st.append(rows_card([
     ('Notifications', '2 devices', '#ffffff', 'Notifs.dc.html'),
 ], margin=12))
 
-# HOW YOU ARE JUDGED. Grace and away days sit here rather than on a configure
+# HOW YOU ARE JUDGED. Repairs and away days sit here rather than on a configure
 # screen, because they are rules the app applies to you and not numbers you set.
 st.append(eyebrow('HOW YOU ARE JUDGED', GREY, top=26))
 st.append(rows_card([
     ('Activities', '7 tracked', '#ffffff', 'Activities.dc.html'),
     ('Monk mode', '71% today', '#ffffff', 'MonkSetup.dc.html'),
-    ('Grace', '2 of 14 left', '#ffffff', 'Restore.dc.html'),
+    ('Repairs', '2 of 14 left', '#ffffff', 'Restore.dc.html'),
     ('Away days', '2 left this month', '#ffffff', 'Away.dc.html'),
     ('How standing works', None, None, 'Ranks.dc.html'),
 ], margin=12))
@@ -418,7 +418,7 @@ write('Data.dc.html', dt)
 
 # ------------------------------------------------------------- Away days ---
 # Declared in advance and capped, so it is a plan rather than an excuse made
-# after a miss. Grace is the one you spend afterwards, and it is a different
+# after a miss. A repair is the one you spend afterwards, and it is a different
 # thing on a different screen.
 H = 1010
 aw = [HEAD, root(H)]

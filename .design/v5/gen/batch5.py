@@ -172,7 +172,7 @@ mk.append('  <div style="flex: none; margin: 10px 20px 0; border-radius: 12px; b
 STATES = [
     (mark(52), 'AT REST', 'White. What ships.', '#0d0d0f', 'transparent'),
     (mark(52, PINK), 'ALIVE', 'A run that is still running.', '#0d0d0f', 'transparent'),
-    (mark(52, AMBER), 'IN GRACE', 'Unreachable this week, not yet gone.', '#0d0d0f', 'transparent'),
+    (mark(52, AMBER), 'UNREACHABLE', 'Still standing, and it cannot be saved.', '#0d0d0f', 'transparent'),
     (mark(52, hollow=True, fill='#5a5a5e'), 'BROKEN', 'Hollow. The shape holds, the fill does not.', '#0d0d0f', 'transparent'),
     (mark(52, tint=('#7a0d26', '#d81e46', '#ff5c7f')), 'LONG RUN', 'Three depths reading as momentum.', '#0d0d0f', 'transparent'),
     (mark(52, GOLD, glow=True), 'IMMACULATE', 'The only glow in the app, kept for the only rank that earns it.', '#0d0d0f', 'rgba(255,210,63,0.3)'),

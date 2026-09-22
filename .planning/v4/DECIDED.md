@@ -1474,6 +1474,111 @@ easiest kind of number to be wrong.
 The v5 `Invite` board never drew it, so this constrains the build rather than
 the design.
 
+### 1.42 Two you do, three that happen
+
+Settled 2026-09-22, and it closes the simplification round.
+
+Five things could make a day not count against you, each with its own rule,
+spread over eight boards with nothing relating them. The fix is not a screen
+that explains all five. It is noticing that they are two different kinds of
+thing and only one kind has to be learned.
+
+**Things you do.** Away days, declared in advance. Repairs, spent afterwards
+(1.43). Two, and both are a press.
+
+**Things that happen.** Grey, a run that can no longer be saved. Your first day
+in a group. Each says itself on the row where it appears and nowhere else, which
+is what 1.37 already proved for grey: nothing to remember and nothing to look
+up, because you only ever meet it in the one place it is true.
+
+**Settling is not one of these at all.** It was in my own list of five and it
+should never have been. See 1.44.
+
+### 1.43 Grace becomes Repair, and one thing stops having three names
+
+Settled 2026-09-22.
+
+"Grace" does not say when to use it. Worse, the thing had **three names**: the
+resource was Grace, the screen was Restore, and the Home button said Come back.
+Three words for one mechanism is the round's test failing in the plainest way
+there is, and renaming the resource is what collapses it.
+
+**Repair** is what the button already does. A run has ended and you put it back.
+Beside "Away days", which you declare ahead, the pair reads as two directions in
+time without a sentence explaining either.
+
+| Was | Is |
+|---|---|
+| `Spend 1 grace` | `Repair yesterday` |
+| `Grace left this month` | `Repairs left this month` |
+| `Grace a month` (group setting) | `Repairs a month` |
+| `Grace` (Settings, Activities rows) | `Repairs` |
+
+**`Come back` on the Home row stays.** It is the door, not the action: the
+screen behind it offers a repair OR starting again tonight, so labelling the
+entrance "Repair" would pre-commit you to one of two branches before you have
+seen either.
+
+**The code and the event keep the word `grace`.** `grace.spent` is a namespaced
+event type, and the convention is that those are stable because renaming one
+means a `CASE` mapping forever. `grace.ts`, `spendGrace` and `graceState` stay
+with it rather than half the stack saying one thing and half the other. The
+surface is the rename; the storage is not.
+
+This is a **copy change with no logic behind it**: two a month per activity
+tracked, spent by hand after a run has ended, streak only, nothing stored.
+
+### 1.44 Settling is not a way a day does not count
+
+Corrected 2026-09-22, against my own framing of it.
+
+I had settling in the family and proposed putting it on the Home row while it
+was true. Reading `scoring.ts:682` says otherwise. **A settling period is scored
+and it can still fine you.** The only thing it holds still is reputation:
+
+> `// A settling period is scored but does not move reputation (decision 54).`
+
+So it does not belong beside away days and repairs, which are about a day not
+counting. It is a fact about **one number**, for seven days, and it only ever
+works in your favour.
+
+**It stays exactly where it is**, on the configure screen as you set the
+activity up, which is the moment it becomes true, plus the WHAT MOVES, AND WHEN
+table on Standing (1.45) where the number it holds already lives. **Nothing is
+added to Home.**
+
+That is also the answer to why it has been nearly invisible for a year without
+anybody noticing: there was nothing to notice. The one time it looked like a
+defect, somebody who had missed everything was told they had five clean days,
+the fault was in `cleanDays` counting a settling day as clean, and it was fixed
+in 3.4.1 where it belonged.
+
+### 1.45 The Home status line holds one short phrase
+
+Settled 2026-09-22, after Aman: *"make sure you dont over populate the home
+screen row under each activity as its already small and can hold only some
+text."*
+
+Measured rather than judged. The line is 13px in a column beside a right-hand
+control, so it has roughly **34 characters** before it wraps and changes the
+row's height. What is drawn there today: `5 of 8 today` (12), `Both doses` (10),
+`7h 12m, confirmed` (17), `3 meals, 1,640 calories` (23).
+
+**A state REPLACES the progress, it is never appended to it**, and it is written
+to the same budget. 1.37's grey line was written at 54 and was the only thing on
+Home over the limit: it is now `Cannot reach three this week` (28), which says
+the rule and its impossibility while the dead flame beside it says the run is
+over. Two carriers, one line, no wrap.
+
+This is why 1.44's settling note has nowhere to go on Home even if it deserved
+one: during settling the progress line is the useful one, and there is no room
+for both.
+
+**The WHAT MOVES, AND WHEN table on Standing stays** (Aman, 2026-09-22). With
+each state now explaining itself where it happens, that table stops being the
+explanation and becomes the summary: the one surface that puts all of them side
+by side, for the once you want the whole picture.
+
 ---
 
 ## 2. Confirmed unchanged

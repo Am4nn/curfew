@@ -45,7 +45,7 @@ SCREENS = {
     'Capture':       ('/checkin/[key]', 1, 'Aim, review, done. Live camera only. The real meal photograph.'),
     'Declare':       ('/checkin/[key]', 1, 'It held or I slipped, the streak at stake, the correction window.'),
     'Stamp':         ('/', 2, 'The stamp LANDS: falls, hits, the page flinches, the square ring leaves on the impact frame.'),
-    'Restore':       ('/', 3, 'After a miss. Grace offered, and what it costs.'),
+    'Restore':       ('/', 3, 'After a miss. A repair offered, and what it costs.'),
     'Nudge':         ('/group/[id]', 4, 'Four set messages, no typing, and the sent state.'),
     'Nudged':        ('/', 4, 'One card, not an inbox. No reply button. Ren defers in one line.'),
     'Settings':      ('/settings', 7, 'Profile and settings on one page. Seven groups, checked row for row against the real screen. Admin only for an admin.'),

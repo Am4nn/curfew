@@ -235,7 +235,7 @@ led.append(logic(H, """  renderVals() {
         amount: '\\u2212\\u20b920', tone: '#ffffff', when: 'WED 17', dot: '""" + RED + """' },
       { what: 'Paid in person', detail: 'Rahul marked \\u20b9100 as handed over. Both of you confirmed.',
         amount: '+\\u20b9100', tone: '""" + GREEN + """', when: 'TUE 16', dot: '#ffffff' },
-      { what: 'Group started', detail: 'Wing opened with a \\u20b920 fine and grace switched on.',
+      { what: 'Group started', detail: 'Wing opened with a \\u20b920 fine and repairs switched on.',
         amount: '\\u2014', tone: '""" + DIM + """', when: 'JUL 02', dot: '""" + DIM + """' },
     ];
     return { entries: rows.map((r, i) => ({ ...r, sep: i === 0 ? 'transparent' : SEP,
@@ -340,7 +340,7 @@ gset.append(logic(H, """  constructor(props) {
       ],
       rules: [
         { name: 'Fine for a miss', value: '\\u20b920', tone: '#ffffff', sep: 'transparent' },
-        { name: 'Grace a month', value: '2', tone: '#ffffff', sep: SEP },
+        { name: 'Repairs a month', value: '2', tone: '#ffffff', sep: SEP },
         { name: 'Away days a month', value: '4', tone: '#ffffff', sep: SEP },
         { name: 'Money', value: 'ON', tone: '""" + PINK + """', sep: SEP },
       ],
@@ -364,7 +364,7 @@ inv.append("""  <div style="flex: none; padding: 4px 20px 0; display: flex; flex
       </sc-for>
     </div>
     <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15;">Mira asked you<br>to join Wing</h1>
-    <span style="font-size: 15px; line-height: 1.45; color: %s;">Three members. A &#8377;20 fine for a miss, split between whoever passed, and two grace a month.</span>
+    <span style="font-size: 15px; line-height: 1.45; color: %s;">Three members. A &#8377;20 fine for a miss, split between whoever passed, and two repairs a month.</span>
   </div>
 """ % GREY)
 

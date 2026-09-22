@@ -63,7 +63,7 @@ the board and this row deliberately, and say which in the commit.
 | `Monk` | `/monk` | The percentage, no flame and no closes-at. Today, the week, a dash for 0 of 0. Ren reads the number. | [ ] |
 | `MonkSetup` | `/monk/setup` | Compulsory, four kinds covered, the stricter bar for Water, Screen and Sleep, effective-dated. | [ ] |
 | `MonkLocked` | `/monk` | Two of four kinds missing, with Add on each. Monk mode does not appear at all. | [ ] |
-| `Restore` | `/` | After a miss. Grace offered, and what it costs. | [ ] |
+| `Restore` | `/` | After a miss. A repair offered, and what it costs. | [ ] |
 | `Away` | `/settings/pause` | Four a month, what an away day does and the one thing it does not. | [ ] |
 
 ## Phase 4 — nudges, and the group
@@ -119,7 +119,7 @@ because a reference sheet that drifts from the app is worse than none.
 
 ## What this replaces
 
-`.planning/v3/SCREENS-retired.md`, retired on 2026-09-21 and kept as the record of what
+`.planning/v3/SCREENS.md`, retired on 2026-09-21 and kept as the record of what
 v3 built. It is keyed to the `.design/` artboards, which are the old design, and
 two of its rows were never ticked on purpose: Configure and Check-in, whose
 three known differences it lists.

@@ -33,7 +33,7 @@ STORES = [
     ("WHAT IS RECORDED", [
         "Every check-in you press, with the time the server saw it. Client clocks are never trusted.",
         "The photos you attach, where the activity asks for one.",
-        "What you configure: which activities you track, their windows, targets and grace.",
+        "What you configure: which activities you track, their windows, targets and repairs.",
         "Your streaks, and a reputation score for each group you are in.",
         "The paragraph Ren keeps about you. Not what you asked him: he rewrites the summary each night and the previous one is gone.",
     ]),
@@ -47,7 +47,7 @@ STORES = [
         "A score from 0 to 1000 in each group, worked out from whether you passed the periods you share with it.",
         "Sharing fewer of the activities a group accepts sets a ceiling below the top. Sharing more raises it.",
         "Doing nothing for a week starts a slow decay. A high score is a record you keep, not one you reach.",
-        "Grace protects a streak. It never protects reputation and it never waives a fine.",
+        "A repair protects a streak. It never protects reputation and it never waives a fine.",
     ]),
     ("A SCORE ONLY YOU SEE", [
         "Curfew also keeps one score for you across everything you track, which nobody else ever sees, in any group or anywhere else.",

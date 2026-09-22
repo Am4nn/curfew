@@ -97,7 +97,7 @@
          again on the screen. Flat and white, as it is everywhere inside. -->
     <svg viewBox="0 0 32 32" width="17" height="17" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg>
     <span style="flex-grow: 1; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #8e8e93;">THU 17 SEPTEMBER</span>
-    <span style="flex: none; display: flex; align-items: center; gap: 4px; padding: 5px 10px 5px 8px; border-radius: 999px; background: #1c1c1e;" aria-label="2 grace left">
+    <span style="flex: none; display: flex; align-items: center; gap: 4px; padding: 5px 10px 5px 8px; border-radius: 999px; background: #1c1c1e;" aria-label="2 repairs left">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.8A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 3.5c0 5.2-7.5 9.8-7.5 9.8z"/></svg>
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #c7c7cc;">2</span>
     </span>
@@ -466,6 +466,10 @@ class Component extends DCLogic {
         { name: 'Water', ...icon('water'),
           streak: '31', flame: ON, glyph: '#ffffff', nameTone: '#ffffff', status: '5 of 8 today',
           plus: true, broken: false, done: false, sep: 'transparent' },
+        // 1.37 GREY says why, 1.45 says it in 34 characters or fewer.
+        // The status line is 13px beside a right-hand control, so a longer
+        // sentence wraps and changes the row height. A state REPLACES the
+        // progress here, never joins it.
         // 1.37. GREY, and it SAYS SO. A weekly run that cannot reach its
         // minimum keeps its number, so 15 beside a dead flame reads as a live
         // streak to everybody who has not been told otherwise. It was drawn
@@ -473,7 +477,7 @@ class Component extends DCLogic {
         // the BROKEN state, and grey is the one that needed the sentence.
         { name: 'Reading', ...icon('book'),
           streak: '15', flame: '#48484a', glyph: '#8e8e93', nameTone: '#ffffff',
-          status: 'Three a week, two days left. This run cannot be saved.',
+          status: 'Cannot reach three this week',
           plus: false, broken: true, done: false, sep: SEP },
         { name: 'Food', ...icon('food'),
           streak: '6', flame: ON, glyph: '#8e8e93', nameTone: '#8e8e93', status: '3 meals, 1,640 calories',

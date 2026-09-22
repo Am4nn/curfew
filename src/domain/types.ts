@@ -146,6 +146,32 @@ export interface EvidenceRule {
 // in a module.
 export type CheckinKind = "tap" | "counter" | "number" | "camera" | "declare";
 
+/**
+ * What kind of thing a type is about, for Monk mode's four requirements (1.16).
+ *
+ * It is a field on the module and NOT a column on `activity_types`: that table
+ * is append-only admin-toggle history with no unique constraint on `type_key`,
+ * so a per-type attribute stored there would have as many answers as the admin
+ * has switched it. The module is the one place a type is defined once.
+ *
+ * A condition somebody writes themselves has NO category (1.19). Nothing can
+ * know whether "no doomscroll" is a MIND thing, and Monk mode's requirements
+ * exist so the number means the same for everybody.
+ */
+export type Category = "body" | "food" | "mind" | "sleep";
+
+/**
+ * The two answers a `declare` type offers, in its own words.
+ *
+ * The engine draws them and never reads what they say, so invariant 6 holds.
+ * It defaults to "It held" and "I slipped", which is right for an abstinence
+ * and wrong for Morning sunlight: you did not hold sunlight, you either got
+ * out in it or you did not.
+ */
+export type DeclareAnswers = { yes: string; no: string };
+
+export const DEFAULT_ANSWERS: DeclareAnswers = { yes: "It held", no: "I slipped" };
+
 // A module names its chart and the engine draws it, the same way it draws the
 // check-in affordance.
 type ChartKind = "windowed" | "numeric" | "weekly" | "binary";
@@ -286,7 +312,9 @@ export interface ActivityType<Config, Evidence> {
   evidenceSchema: ZodType<Evidence>;
 
   evidence: EvidenceRule;
-  checkin: { kind: CheckinKind };
+  checkin: { kind: CheckinKind; answers?: DeclareAnswers };
+  /** 1.16. Undefined on a condition somebody wrote themselves. */
+  category?: Category;
   chart: ChartSpec;
   /**
    * How the configure screen draws this module's own settings.

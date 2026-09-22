@@ -1606,13 +1606,36 @@ Carried from `DIRECTION.md` §8. None of it was reopened on 2026-09-20.
 Five, all of them held-or-slipped with no photograph, which is the Sugar-free
 module's shape and needs nothing new from the engine:
 
-| Type | Category |
-|---|---|
-| Cold shower | BODY |
-| Morning sunlight | BODY |
-| No junk food | FOOD |
-| No alcohol | FOOD |
-| No social media | MIND |
+| Type | Key | Category |
+|---|---|---|
+| Cold shower | `coldshower` | BODY |
+| Morning sunlight | `sunlight` | BODY |
+| No junk food | `junkfree` | FOOD |
+| No alcohol | `alcoholfree` | FOOD |
+| No social media | `socialfree` | MIND |
+
+**The keys are here because they are permanent.** An event type is built from
+one, `checkin.junkfree.declare`, and renaming one means a `CASE` mapping
+forever. They were settled on 2026-09-22 when Phase 1 built the modules, and
+`check:decided` reads this table rather than a list of its own: the first
+version of that check carried three keys nobody had ever agreed (`nojunkfood`,
+`noalcohol`, `nosocial`), which is a check asserting its own invention.
+
+The four `*free` keys follow `sugarfree`, which is the module they copy.
+
+**Two of the five are not abstinences**, and the module system needed one small
+thing for them. Cold shower and Morning sunlight are things you DO, in the
+declare shape, so the engine's hardcoded "It held" and "I slipped" were wrong:
+you did not hold sunlight. `checkin.answers` lets a module name its own two
+buttons and the engine renders them without reading them, so invariant 6 holds.
+`said` is a second pair for the report under the row, because a first-person
+button is not a second-person report by any rule a function can apply:
+lowercasing "I slipped" gives "you said i slipped".
+
+**One v3 decision falls here.** Decision 36 said a type's name is one word, and
+three of these cannot be. What that rule was protecting is the Home row, so
+`registry.test.ts` now asserts a LENGTH, 20 characters, rather than a word
+count. Longest today is "Morning sunlight" at 16.
 
 **No social media is not Screen.** Screen is total device time, and somebody can
 be under two hours and have spent all of it scrolling. They are different

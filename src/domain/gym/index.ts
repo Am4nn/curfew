@@ -70,6 +70,7 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   name: "Gym",
   description: "Sessions counted over a week",
   icon: "gym",
+  category: "body",
 
   defaults: {
     schedule: { kind: "minimum", perWeek: 3 },

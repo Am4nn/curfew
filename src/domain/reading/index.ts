@@ -31,6 +31,7 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
   name: "Reading",
   description: "Minutes or pages, your choice",
   icon: "reading",
+  category: "mind",
 
   defaults: {
     schedule: EVERY_DAY,

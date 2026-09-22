@@ -21,6 +21,7 @@ export const officeActivity: ActivityType<OfficeConfig, OfficeEvidence> = {
   name: "Office",
   description: "In by the time you said",
   icon: "office",
+  category: "mind",
 
   defaults: {
     schedule: WEEKDAYS,

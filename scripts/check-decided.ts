@@ -221,15 +221,46 @@ if (consent.includes("CONSENT_VERSION")) {
 }
 
 // 3.1 and 1.19 — the five types, and the category that Monk mode's required
-// kinds read. Skipped until Phase 1 lands.
-const index = read("src/domain/index.ts");
-const FIVE = ["coldshower", "sunlight", "nojunkfood", "noalcohol", "nosocial"];
-if (FIVE.some((k) => index.includes(k))) {
-  const missing = FIVE.filter((k) => !index.includes(k));
+// kinds read.
+//
+// The keys come OUT OF 3.1's table rather than out of this file. The first
+// version held three of its own invention (nojunkfood, noalcohol, nosocial),
+// which had never been agreed anywhere and would have passed against whatever
+// the modules happened to be called.
+// Comments stripped, because "// register(socialfreeActivity);" satisfied the
+// first version of this: it asked whether the KEY appeared in the file, and an
+// import line carries it whether or not anything registers it. Proved by
+// commenting one out and watching the check stay green.
+const index = read("src/domain/index.ts").replace(/^\s*\/\/.*$/gm, "");
+const FIVE = [...DECIDED.matchAll(/^\| [A-Z][^|]*\| `([a-z]+)` \| [A-Z]+ \|$/gm)].map(
+  (m) => m[1],
+);
+check("3.1  names five types, with a key each", FIVE.length === 5, FIVE.join(", "));
+const registered = (k: string) => index.includes(`register(${k}Activity)`);
+if (FIVE.length > 0 && FIVE.some(registered)) {
+  const missing = FIVE.filter((k) => !registered(k));
   check("3.1  all five new types are registered", missing.length === 0, missing.join(", "));
   check(
     "1.16  ActivityType carries a category, which the required kinds read",
-    read("src/domain/types.ts").includes("category"),
+    read("src/domain/types.ts").includes("category?: Category"),
+  );
+  // 1.16 needs a BODY, a FOOD, a MIND and a SLEEP to exist at all. The domain
+  // test asserts every registered type has one; this asserts the four are
+  // reachable, which is what makes Monk mode buildable.
+  const modules = walk("src/domain")
+    .map((p) => readFileSync(p, "utf8"))
+    .join(" ");
+  const declared = new Set(
+    [...modules.matchAll(/category: "([a-z]+)"/g)].map((m) => m[1]),
+  );
+  for (const kind of ["body", "food", "mind", "sleep"]) {
+    check(`1.16  a ${kind.toUpperCase()} type exists`, declared.has(kind));
+  }
+  // The answers a declare module names are rendered, never read. Hardcoding
+  // them back into the engine is the drift this catches.
+  check(
+    "3.1  the engine draws a declare type's own two answers",
+    !read("src/app/activity-row.tsx").includes('label="It held"'),
   );
 } else {
   console.log("skip  3.1  the five new types do not exist yet (Phase 1)");

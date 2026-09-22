@@ -9,6 +9,7 @@ export const nightfastActivity = abstinenceActivity({
   name: "Nightfast",
   description: "Nothing after your cut-off",
   icon: "nightfast",
+  category: "food",
   label: "Confirm",
   window: { open: "06:00", close: "11:00" },
   cutoff: { label: "Nothing after", default: "20:00" },

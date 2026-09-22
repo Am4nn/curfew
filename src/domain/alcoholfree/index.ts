@@ -1,18 +1,18 @@
 import { abstinenceActivity } from "../abstinence";
 
-// Sugar-free. Declared in the evening, once the day is effectively done. The
-// only type whose name carries a hyphen, which is why the key does not.
-export const sugarfreeActivity = abstinenceActivity({
-  key: "sugarfree",
-  name: "Sugar-free",
-  description: "A day without sugar",
-  icon: "sugarfree",
+// No alcohol. The plainest of the five: the condition needs no definition and
+// the answer needs no qualification.
+export const alcoholfreeActivity = abstinenceActivity({
+  key: "alcoholfree",
+  name: "No alcohol",
+  description: "A day without a drink",
+  icon: "alcoholfree",
   category: "food",
   label: "Confirm",
   window: { open: "20:00", close: "23:59" },
   cutoff: null,
-  rule: () => "no sugar",
-  prompt: () => "No sugar today. Did it hold?",
+  rule: () => "no alcohol",
+  prompt: () => "No alcohol today. Did it hold?",
   chartHeading: "DAYS THAT HELD",
   windowHint: "End of the day you say whether it held.",
   evidenceDetail: "Nothing can prove absence. This one runs on your word.",

@@ -1,5 +1,11 @@
 import { z } from "zod";
-import type { ActivityType, EvaluateInput } from "./types";
+import type {
+  ActivityType,
+  Category,
+  DeclareAnswers,
+  EvaluateInput,
+} from "./types";
+import { DEFAULT_ANSWERS } from "./types";
 import { EVERY_DAY } from "./schedule";
 import {
   windowSchema,
@@ -26,8 +32,16 @@ import {
 // Nightfast and Sugar-free differ only in their words and their window, so they
 // share this factory. A third abstinence type is one call, not another file of
 // copied logic.
+//
+// v4 adds five more through it (3.1), and two of them are not abstinences at
+// all: Cold shower and Morning sunlight are things you DO, with the same shape.
+// That is what `answers` is for. "It held" is right for a condition you kept
+// and wrong for sunlight you either got out in or did not, and the module is
+// where a type's own words belong.
 
 export const DECLARE_STEP = "declare";
+
+const DEFAULT_SAID = { yes: "You said it held.", no: "You said you slipped." };
 
 // The window is when you CONFIRM. The cut-off is the time the abstinence
 // starts, which only some of these types have: nightfast has a "nothing after"
@@ -47,6 +61,18 @@ export function abstinenceActivity(spec: {
   description: string;
   icon: string;
   label: string;
+  /** 1.16. Left off only by a condition somebody wrote themselves. */
+  category?: Category;
+  /** The two buttons, first person. Defaults to "It held" and "I slipped". */
+  answers?: DeclareAnswers;
+  /**
+   * The same two answers reported back under the row, second person.
+   *
+   * A separate pair rather than a transformation of `answers`, because there
+   * is no transformation: "I slipped" is not "you slipped" by any rule a
+   * function can apply, and lowercasing it gives "you said i slipped".
+   */
+  said?: { yes: string; no: string };
   window: Window;
   /** The "nothing after" time, when the type has one. */
   cutoff: { label: string; default: string } | null;
@@ -68,6 +94,7 @@ export function abstinenceActivity(spec: {
     name: spec.name,
     description: spec.description,
     icon: spec.icon,
+    category: spec.category,
 
     defaults: {
       schedule: EVERY_DAY,
@@ -79,7 +106,7 @@ export function abstinenceActivity(spec: {
     evidenceSchema: abstinenceEvidenceSchema,
 
     evidence: { level: "none", source: "live", detail: spec.evidenceDetail },
-    checkin: { kind: "declare" },
+    checkin: { kind: "declare", answers: spec.answers ?? DEFAULT_ANSWERS },
     chart: { kind: "binary", heading: spec.chartHeading },
 
     note: spec.note,
@@ -134,9 +161,10 @@ export function abstinenceActivity(spec: {
         .sort((a, b) => a.at.getTime() - b.at.getTime())
         .at(-1);
       if (!declared) return null;
+      const said = spec.said ?? DEFAULT_SAID;
       return declared.evidence?.held === true
-        ? "You said it held."
-        : "You said you slipped. Today does not count.";
+        ? said.yes
+        : `${said.no} Today does not count.`;
     },
 
     remind(input) {

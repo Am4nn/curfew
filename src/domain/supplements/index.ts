@@ -22,6 +22,7 @@ export const supplementsActivity: ActivityType<SupplementsConfig, SupplementsEvi
   name: "Supplements",
   description: "A photo of what you took",
   icon: "supplements",
+  category: "body",
 
   defaults: {
     schedule: EVERY_DAY,

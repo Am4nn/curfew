@@ -12,9 +12,14 @@ import { readingActivity } from "./reading";
 import { screenActivity } from "./screen";
 import { nightfastActivity } from "./nightfast";
 import { sugarfreeActivity } from "./sugarfree";
+import { coldshowerActivity } from "./coldshower";
+import { sunlightActivity } from "./sunlight";
+import { junkfreeActivity } from "./junkfree";
+import { alcoholfreeActivity } from "./alcoholfree";
+import { socialfreeActivity } from "./socialfree";
 
-// The twelve. Order here is only the order they were written; the catalog
-// sorts them itself.
+// Seventeen since v4 (3.1). Order here is only the order they were written;
+// the catalog sorts them itself.
 register(sleepActivity);
 register(gymActivity);
 register(foodActivity);
@@ -27,6 +32,14 @@ register(readingActivity);
 register(screenActivity);
 register(nightfastActivity);
 register(sugarfreeActivity);
+
+// The five v4 adds, all of them declare types drawn under one Home row
+// (1.19). Adding them edits this file and nothing in the engine.
+register(coldshowerActivity);
+register(sunlightActivity);
+register(junkfreeActivity);
+register(alcoholfreeActivity);
+register(socialfreeActivity);
 
 export { periodStart, daysInPeriod, weekdayOf, graceMonth } from "./period";
 export {
@@ -77,6 +90,8 @@ export { getActivityType, registeredKeys, daysDoneIn } from "./registry";
 export { ruleFor, howOften, dayStarts } from "./rule";
 export { consequencesOf, STOP_FOOTNOTE, type StopCost, type Consequence } from "./stop-cost";
 export type {
+  Category,
+  DeclareAnswers,
   CheckinStep,
   CheckinWindow,
   Checkin,
@@ -86,5 +101,6 @@ export type {
   CheckinKind,
   ChartSpec,
 } from "./types";
+export { DEFAULT_ANSWERS } from "./types";
 export { sleepConfigSchema } from "./sleep";
 export { WATER_STEP } from "./water";

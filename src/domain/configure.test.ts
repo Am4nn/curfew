@@ -5,7 +5,7 @@ import { screenActivity } from "./screen";
 import { stepsActivity } from "./steps";
 import { readingActivity } from "./reading";
 
-// One screen, twelve types, so what each screen says belongs to its module.
+// One screen, seventeen types, so what each screen says belongs to its module.
 // These assertions are the mocks: a label changing here means a mock changed
 // with it, deliberately.
 
@@ -25,6 +25,15 @@ const LABELS: Record<string, string[]> = {
   screen: ["Pass when", "Hours a day"],
   nightfast: ["Nothing after", "Confirmed between"],
   sugarfree: ["Confirmed between"],
+
+  // 3.1's five. Three of them ask nothing but when you confirm, which is the
+  // whole point of the shape: they arrive under one Home row (1.19) and a
+  // configure screen with one control is what makes five of them bearable.
+  coldshower: ["Confirmed between"],
+  sunlight: ["Counts as morning until", "Confirmed between"],
+  junkfree: ["Confirmed between"],
+  alcoholfree: ["Confirmed between"],
+  socialfree: ["Nothing after", "Confirmed between"],
 };
 
 // Every one of these is a whole label, not a word the screen pads out. The
@@ -33,7 +42,7 @@ const LABELS: Record<string, string[]> = {
 // what they wanted. A label that reads as a question and as a row label is the
 // bar.
 
-describe("the twelve configure screens", () => {
+describe("the seventeen configure screens", () => {
   it("draw the controls their artboards draw, in that order", () => {
     for (const key of registeredKeys()) {
       const type = getActivityType(key);

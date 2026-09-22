@@ -13,10 +13,12 @@ import {
   type CheckinStep,
   type CheckinWindow,
   type CheckinKind,
+  type DeclareAnswers,
   type ConfigField,
   type EvidenceRule,
   type Schedule,
   daysDoneIn,
+  DEFAULT_ANSWERS,
 } from "@/domain";
 import { getUserActivity } from "./activities";
 import { timezoneHistory } from "./config";
@@ -131,6 +133,8 @@ export interface ActivityCheckinState {
   typeKey: string;
   name: string;
   kind: CheckinKind;
+  /** A `declare` type's two buttons, in its own words. See TodayRow. */
+  answers: DeclareAnswers;
   evidence: EvidenceRule;
   period: string;
   timezone: string;
@@ -367,6 +371,7 @@ export async function getCheckinState(
     typeKey,
     name: type.name,
     kind: type.checkin.kind,
+    answers: type.checkin.answers ?? DEFAULT_ANSWERS,
     evidence: type.evidence,
     period,
     timezone,

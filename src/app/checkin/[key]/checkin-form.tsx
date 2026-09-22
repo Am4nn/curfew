@@ -388,7 +388,7 @@ export function CheckinForm({
             onClick={() => send({ held: true })}
             className="h-[52px] w-full border border-fg bg-fg text-[15px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
           >
-            {busy ? "Recording" : "It held"}
+            {busy ? "Recording" : state.answers.yes}
           </button>
           <button
             type="button"
@@ -397,7 +397,7 @@ export function CheckinForm({
             onClick={() => send({ held: false })}
             className="h-[52px] w-full border border-rule bg-transparent text-[15px] text-penalty active:opacity-70 disabled:opacity-40"
           >
-            {busy ? "Recording" : "I slipped"}
+            {busy ? "Recording" : state.answers.no}
           </button>
         </div>
 

@@ -220,6 +220,7 @@ export const sleepActivity: ActivityType<SleepConfig, SleepEvidence> = {
   name: "Sleep",
   description: "Three timed check-ins a night",
   icon: "sleep",
+  category: "sleep",
 
   // Sleep is the reason dayBoundary exists: a 00:30 press belongs to the night
   // that just ended, so its day runs noon to noon.

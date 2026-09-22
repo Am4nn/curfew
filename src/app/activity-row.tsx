@@ -213,7 +213,7 @@ export function ActivityRow({
       {declaring && row.step ? (
         <div className="flex gap-[10px] pb-[14px]">
           <CheckinButton
-            label="It held"
+            label={row.answers.yes}
             busyLabel="Saving"
             typeKey={row.typeKey}
             step={row.step}
@@ -228,7 +228,7 @@ export function ActivityRow({
             }
           />
           <CheckinButton
-            label="I slipped"
+            label={row.answers.no}
             busyLabel="Saving"
             typeKey={row.typeKey}
             step={row.step}

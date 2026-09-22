@@ -1,4 +1,10 @@
-import { getActivityType, periodUnit, type CheckinKind } from "@/domain";
+import {
+  getActivityType,
+  periodUnit,
+  DEFAULT_ANSWERS,
+  type CheckinKind,
+  type DeclareAnswers,
+} from "@/domain";
 import { listUserActivities } from "./activities";
 import { getCheckinState } from "./checkin";
 import { standingsFor } from "./standing";
@@ -17,6 +23,14 @@ export interface TodayRow {
   name: string;
   icon: string;
   kind: CheckinKind;
+  /**
+   * What a `declare` type's two buttons say, in its own words.
+   *
+   * The engine renders these and never reads them, which is what keeps
+   * invariant 6: "It held" is right for an abstinence and wrong for Morning
+   * sunlight, and only the module can know which.
+   */
+  answers: DeclareAnswers;
   streak: number;
   /** Not one of this activity's days: shown greyed, and not counted. */
   scheduled: boolean;
@@ -160,6 +174,7 @@ export async function todayFor(userId: string): Promise<Today> {
       name: type.name,
       icon: type.icon,
       kind: type.checkin.kind,
+      answers: type.checkin.answers ?? DEFAULT_ANSWERS,
       streak: standings.get(activity.typeKey)?.streak ?? 0,
       grey: standings.get(activity.typeKey)?.grey ?? false,
       scheduled: state.scheduled,

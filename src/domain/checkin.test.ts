@@ -47,15 +47,23 @@ describe("every type can be checked in", () => {
     // sessions in it. That gym is also limited to one a day is countsNow's
     // job, not this flag's, and reading it as "one a day" here is what let the
     // engine refuse every gym session after the first in a week.
+    // 3.1's five repeat for the reason nightfast and sugarfree do: a
+    // correction is allowed, and somebody who answers and then answers again
+    // is telling the truth the second time.
     expect(repeating.sort()).toEqual([
+      "alcoholfree",
+      "coldshower",
       "food",
       "gym",
+      "junkfree",
       "nightfast",
       "reading",
       "screen",
+      "socialfree",
       "steps",
       "study",
       "sugarfree",
+      "sunlight",
       "supplements",
       "water",
     ]);

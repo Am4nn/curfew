@@ -1,4 +1,5 @@
-// The twelve activity icons, exactly as drawn in `.design/build-v3.mjs`. One
+// The seventeen activity icons. The twelve are exactly as drawn in
+// `.design/build-v3.mjs`; the five v4 adds follow the same rules. One
 // 24-box grid, square caps, stroke 1.6, currentColor. No emoji, no icon font.
 const PATHS: Record<string, React.ReactNode> = {
   sleep: <path d="M20 14.5A8 8 0 0 1 9.5 4a8.2 8.2 0 1 0 10.5 10.5Z" />,
@@ -77,6 +78,49 @@ const PATHS: Record<string, React.ReactNode> = {
     <>
       <path d="M4.6 8.6 12 4.4l7.4 4.2v6.8L12 19.6 4.6 15.4Z" />
       <path d="M6 18.4 18 5.6" />
+    </>
+  ),
+
+  // The five v4 adds (3.1). Same grid, same stroke, no new idiom: four of them
+  // are a shape with a stroke through it, which is how this set already says
+  // "without".
+  coldshower: (
+    <>
+      <path d="M4 5h9a5 5 0 0 1 5 5v1" />
+      <path d="M14.5 11h7" />
+      <path d="M16 14.5v2" />
+      <path d="M18 14.5v3.5" />
+      <path d="M20 14.5v2" />
+    </>
+  ),
+  sunlight: (
+    <>
+      <path d="M12 15.5a4 4 0 0 1 8 0" />
+      <path d="M2.5 19.5h19" />
+      <path d="M16 8v2.2" />
+      <path d="M9.9 10.6l1.6 1.6" />
+      <path d="M4 15.5h2.2" />
+    </>
+  ),
+  junkfree: (
+    <>
+      <path d="M6.6 9.5h8.8l-1 9.4a1.6 1.6 0 0 1-1.6 1.4H9.2a1.6 1.6 0 0 1-1.6-1.4Z" />
+      <path d="M5.4 9.5 8 5.2h6l2.6 4.3" />
+      <path d="M4.5 20 19.5 4.5" />
+    </>
+  ),
+  alcoholfree: (
+    <>
+      <path d="M6.5 4.5h9l-4.5 6.6Z" />
+      <path d="M11 11.1V19" />
+      <path d="M7.6 19h6.8" />
+      <path d="M4.5 20 19.5 4" />
+    </>
+  ),
+  socialfree: (
+    <>
+      <path d="M4.5 6.2h15v9.6H12l-4.4 3.4v-3.4H4.5Z" />
+      <path d="M4.5 20 19.5 4" />
     </>
   ),
 };

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getActivityType, registeredKeys, daysDoneIn } from "./index";
+import { getActivityType, registeredKeys, daysDoneIn, type Category } from "./index";
 import { scheduleConfigSchema } from "./schedule";
 
 describe("registry", () => {
@@ -14,12 +14,39 @@ describe("registry", () => {
     expect(() => getActivityType("kitesurfing")).toThrow();
   });
 
+  // 1.16 requires Monk mode to cover a BODY, a FOOD, a MIND and a SLEEP, and
+  // 1.19 says a condition somebody writes themselves has none, because nothing
+  // can know whether "no doomscroll" is a MIND thing.
+  //
+  // So every type in the REGISTRY has one. A member-written condition never
+  // reaches the registry: it is a `user_conditions` row read at runtime.
+  it("every registered type belongs to one of the four categories", () => {
+    const seen = new Set<Category>();
+    for (const key of registeredKeys()) {
+      const category = getActivityType(key).category;
+      expect(category, `${key} category`).toBeDefined();
+      seen.add(category as Category);
+    }
+    // Monk mode cannot be built at all unless all four are reachable.
+    expect([...seen].sort()).toEqual(["body", "food", "mind", "sleep"]);
+  });
+
   it("every registered type declares a complete envelope", () => {
     // The engine renders every screen from this declaration, so a module that
     // omits part of it fails at render time rather than here. Catch it here.
     for (const key of registeredKeys()) {
       const type = getActivityType(key);
-      expect(type.name, `${key} name`).toMatch(/^\S+$/); // one word (decision 36)
+      // v3 decision 36 said one word, and 3.1 reverses it: "Morning sunlight"
+      // and "No social media" cannot be said in one, and Screen already proves
+      // a one-word name can be the wrong one (3.1 keeps it apart from No
+      // social media for exactly that reason).
+      //
+      // What the rule was protecting is the Home row, where the name sits at
+      // 16px beside the streak pill and a control. That is a LENGTH, so this
+      // asserts the length. Twenty leaves room on the narrowest phone and
+      // still refuses a sentence. Longest today is "Morning sunlight", 16.
+      expect(type.name.length, `${key} name`).toBeLessThanOrEqual(20);
+      expect(type.name.trim(), `${key} name`).toBe(type.name);
       expect(type.description.length, `${key} description`).toBeGreaterThan(0);
       expect(type.icon.length, `${key} icon`).toBeGreaterThan(0);
       expect(["none", "optional", "required"]).toContain(type.evidence.level);

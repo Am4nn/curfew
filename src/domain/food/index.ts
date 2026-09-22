@@ -37,6 +37,7 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
   name: "Food",
   description: "A photo and the calories, every meal",
   icon: "food",
+  category: "food",
 
   defaults: {
     schedule: EVERY_DAY,

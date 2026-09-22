@@ -25,8 +25,10 @@ function check(step: string, hhmm: string, evidence?: Record<string, unknown>) {
 }
 
 describe("the catalog is complete", () => {
-  it("registers all twelve types", () => {
-    expect(registeredKeys()).toHaveLength(12);
+  it("registers all seventeen types", () => {
+    // Twelve from v3 plus 3.1's five. A number rather than a list, because the
+    // list is asserted three times over in configure.test.ts.
+    expect(registeredKeys()).toHaveLength(17);
   });
 
   it("covers all five check-in kinds", () => {

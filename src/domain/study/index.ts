@@ -25,6 +25,7 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
   name: "Study",
   description: "Time at the desk, with proof",
   icon: "study",
+  category: "mind",
 
   defaults: {
     schedule: EVERY_DAY,

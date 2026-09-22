@@ -1540,6 +1540,10 @@ prompt, the digest, the schedule or the provider, with no way to tell which. The
 stub stays for ever, because no test should need a network.
 
 ### 3.3 The limits on what Ren may say
+**A likely mechanism for closing this, found 2026-09-22.** Aman asked whether
+Jev could be used. It cannot be Ren, and it may be the thing that finally makes
+this section closable. See 3.7.
+
 1.24 banned one thing and dated the rest. Revisit before anybody outside the
 three uses Curfew.
 
@@ -1582,30 +1586,6 @@ cannot be "restyle the v3 boards":
 
 **Not decided:** whether this is a Phase 7 slice, a phase of its own, or work
 that follows v4. It is eight boards and eight routes, so it is not small.
-
-### 3.6 Three defects the simplification round found. FILED, not fixed
-
-Found 2026-09-21 while mapping sharing and onboarding. None was being looked
-for. They are written down with file and line so they cannot be lost the way
-1.19 was, and each names the phase that fixes it.
-
-**1. A photograph is tagged to a group that no longer accepts the type.**
-`groupsSeeingEvidence` (`src/server/sharing.ts:138-156`) checks only
-`mine?.shareEvidence` and never consults `acceptedTypes`. So a check-in tags a
-photograph to a group that dropped that type. **Phase 4**, and 1.33's one-switch
-change touches this exact function.
-
-**2. Un-accepting a type, then re-accepting it, silently turns everyone's
-sharing back on.** `setAccepted` (`sharing.ts:220`) writes one row and does not
-revoke member shares. Those rows stay in `member_shares`, invisible on every
-screen, and `sharesAsOf` resolves the latest one. **Phase 4.**
-
-**3. The join screen loses everything you set.** `JoinForm`'s state is a
-`useState` initializer over the server rows (`join-form.tsx:44-48`). Pressing
-"Set it up first" leaves for the configure wizard and `router.push` back
-remounts it, resetting every toggle to its default. Three untracked types is
-three resets. Worse, "Add for myself only" pushes to `/activities` rather than
-back to the invite, so the person falls out of the flow entirely. **Phase 7.**
 
 ### 3.5 A simplification round, and it will reopen settled decisions
 Raised 2026-09-21. Aman: *"we have to do a round with simplifying some of the
@@ -1698,3 +1678,93 @@ own rule about what it protects.
 for once, and the argument is in this file. Simplifying is removing a choice
 somebody decided was worth offering, so the round's job is to find the ones
 where that decision was wrong, not to remove choices because there are many.
+
+### 3.6 Three defects the simplification round found. FILED, not fixed
+Found 2026-09-21 while mapping sharing and onboarding. None was being looked
+for. They are written down with file and line so they cannot be lost the way
+1.19 was, and each names the phase that fixes it.
+
+**1. A photograph is tagged to a group that no longer accepts the type.**
+`groupsSeeingEvidence` (`src/server/sharing.ts:138-156`) checks only
+`mine?.shareEvidence` and never consults `acceptedTypes`. So a check-in tags a
+photograph to a group that dropped that type. **Phase 4**, and 1.33's one-switch
+change touches this exact function.
+
+**2. Un-accepting a type, then re-accepting it, silently turns everyone's
+sharing back on.** `setAccepted` (`sharing.ts:220`) writes one row and does not
+revoke member shares. Those rows stay in `member_shares`, invisible on every
+screen, and `sharesAsOf` resolves the latest one. **Phase 4.**
+
+**3. The join screen loses everything you set.** `JoinForm`'s state is a
+`useState` initializer over the server rows (`join-form.tsx:44-48`). Pressing
+"Set it up first" leaves for the configure wizard and `router.push` back
+remounts it, resetting every toggle to its default. Three untracked types is
+three resets. Worse, "Add for myself only" pushes to `/activities` rather than
+back to the invite, so the person falls out of the flow entirely. **Phase 7.**
+
+### 3.7 Jev, and the three places it would fit
+Looked into 2026-09-22 because Aman asked whether it could be used for the
+coach. **It cannot**, and the reason is worth keeping so nobody re-reads the
+marketing and hopes.
+
+**What it is.** `typesafe-ai/jev`, from TypeSafe AI, reachable through Vercel's
+AI Gateway. It is a CLASSIFIER, not a language model and not an agent framework.
+Pydantic's documentation puts it plainly: *"Jev is not a language model. You give
+it a text and typed questions, and it answers each one with a confidence."*
+
+| | |
+|---|---|
+| Input | **$0.042 / 1M tokens** |
+| **Max output tokens** | **0** |
+| Context | 32,000 |
+| Returns | booleans, choices and ordinal scores, each with a confidence |
+| Modalities | text only, no image |
+
+**Why it cannot be Ren.** Max output is zero: it does not write a sentence. And
+it takes no images, which 1.22 requires for the photograph insight. Those are
+not limitations to work around, they are what it is.
+
+**Where it fits, in order of how much it buys:**
+
+**1. 3.3, the limits on what Ren may say.** The strongest fit, and the reason
+this entry exists. 1.24 banned one thing and dated the rest because enforcing
+the others was not worth the machinery for three friends. Jev makes the
+machinery a rounding error: Ren writes a line, Jev is asked *is this medical
+advice*, *does this predict the future*, *does this judge another member*, and
+a line that fails is dropped. **A guard on the OUTPUT is structurally stronger
+than an instruction in a prompt**, which is the same argument that made 1.24's
+number rule a test rather than a sentence in the prompt.
+
+The fallback already exists: 1.23 says no line, and yesterday's stands.
+
+**2. Phase 8's injection surface.** A member-written condition (1.19) is the one
+place free text enters this app, and Phase 8 already names it as something
+`break-in` has to probe. *"Is this text trying to instruct a model?"* is exactly
+a boolean-with-confidence question.
+
+**3. Moderation, if reports ever need triage.** The Reports queue in 3.4 is
+admin-read today. Jev could route or rank a text report. **It cannot look at the
+photograph**, which is what most reports will be about, so this is the weakest
+of the three.
+
+**What it costs, computed rather than guessed.** A guard call is Ren's line plus
+a few questions, call it 150 tokens. Nine a night for three members is about
+40,000 tokens a month, which at $0.042 per million is **under a fifth of a
+rupee**. My first instinct was that it would double the coach's call count and
+therefore its bill; that was wrong by three orders of magnitude, and the
+correction is why the numbers are written down here rather than recalled.
+
+**What it costs that is not money.** A third provider and a third key, though
+the Vercel AI Gateway means one endpoint rather than a new account. It also
+sits inside 1.21's seam like anything else: it is an HTTP call, so no SDK and no
+change to `check:decided`.
+
+**Not now.** Nothing about it changes Phase 1, and it belongs with 3.3, which is
+dated *"before anybody outside the three uses Curfew."* Recorded so the decision
+is made from the numbers rather than from a search result.
+
+Sources read 2026-09-22: `pydantic.dev/docs/ai/models/typesafe/`,
+`developers.cloudflare.com/ai/models/typesafe/jev/`,
+`vercel.com/ai-gateway/models/jev`. The first two disagree on the context
+window, 64k for state plus questions against 32k; Vercel says 32,000 and that is
+the number above.

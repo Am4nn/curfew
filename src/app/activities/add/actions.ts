@@ -10,6 +10,7 @@ import { conditionsEnabled } from "@/server/activities";
 // a page load.
 export async function writeCondition(
   label: string,
+  kind: "do" | "avoid",
 ): Promise<{ typeKey: string; error?: undefined } | { typeKey?: undefined; error: string }> {
   const user = await getSessionUser();
   if (!user) return { error: "Sign in again." };
@@ -19,7 +20,7 @@ export async function writeCondition(
   if (!(await conditionsEnabled())) return { error: "That is switched off." };
 
   try {
-    const condition = await createCondition(user.id, label);
+    const condition = await createCondition(user.id, label, kind);
     revalidatePath("/activities");
     revalidatePath("/activities/add");
     revalidatePath("/");

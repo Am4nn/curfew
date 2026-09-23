@@ -39,7 +39,11 @@ export class ConditionError extends Error {}
  * the module's defaults with the label written in. A first setup lands TODAY
  * (`saveUserActivity`), so it can be confirmed tonight.
  */
-export async function createCondition(userId: string, raw: string): Promise<Condition> {
+export async function createCondition(
+  userId: string,
+  raw: string,
+  kind: "do" | "avoid",
+): Promise<Condition> {
   const label = raw.trim().replace(/\s+/g, " ");
   if (label.length === 0) throw new ConditionError("Give it a name.");
   if (label.length > LABEL_MAX) {
@@ -74,7 +78,7 @@ export async function createCondition(userId: string, raw: string): Promise<Cond
       dayBoundary: conditionActivity.defaults.dayBoundary,
       minGap: conditionActivity.defaults.minGap ?? 0,
     },
-    config: { ...conditionActivity.defaults.config, label },
+    config: { ...conditionActivity.defaults.config, label, kind },
   });
 
   return { id: row.id, typeKey, label };

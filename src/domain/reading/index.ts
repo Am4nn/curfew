@@ -31,6 +31,10 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
   name: "Reading",
   description: "Minutes or pages, your choice",
   icon: "reading",
+  // C6. The reminder time is the CUE: when you do this, when Curfew asks,
+  // and what C1 measures a press against. Without one the engine works
+  // backwards from the window, and an all-day window gives it nothing.
+  reminderCues: ["21:00"],
   category: "mind",
 
   defaults: {

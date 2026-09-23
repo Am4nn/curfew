@@ -17,6 +17,11 @@ export function WriteYourOwn() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState("");
+  // C7. Something you DO, or something you AVOID. An abstinence has no
+  // moment to repeat, so it cannot form a habit the way a thing you do
+  // can, and the two get different screens. Asked rather than guessed:
+  // nothing can read "no doomscroll" reliably.
+  const [kind, setKind] = useState<"do" | "avoid" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -25,7 +30,8 @@ export function WriteYourOwn() {
   function save() {
     setError(null);
     startTransition(async () => {
-      const result = await writeCondition(trimmed);
+      if (!kind) return;
+      const result = await writeCondition(trimmed, kind);
       if (result.error) {
         setError(result.error);
         return;
@@ -76,6 +82,33 @@ export function WriteYourOwn() {
         />
       </label>
 
+      <fieldset className="flex flex-col gap-[6px] border-0 p-0">
+        <legend className="text-[11px] tracking-[0.14em] text-muted">
+          WHICH IS IT
+        </legend>
+        <div className="flex gap-[10px] pt-[6px]">
+          {(
+            [
+              ["do", "Something I do"],
+              ["avoid", "Something I avoid"],
+            ] as const
+          ).map(([value, text]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={kind === value}
+              onClick={() => setKind(value)}
+              className={
+                "h-10 flex-1 border text-[13px] " +
+                (kind === value ? "border-fg bg-fg text-bg" : "border-rule text-fg")
+              }
+            >
+              {text}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
       {/* Said here rather than after the fact, because it is the one thing
           about a condition somebody writes that is different from ours, and
           finding out later that it counted toward nothing would read as a
@@ -92,7 +125,7 @@ export function WriteYourOwn() {
         <button
           type="button"
           onClick={save}
-          disabled={trimmed.length === 0 || pending}
+          disabled={trimmed.length === 0 || kind === null || pending}
           className="h-11 flex-1 border border-fg bg-fg text-[14px] font-semibold text-bg disabled:opacity-40"
         >
           {pending ? "Saving" : "Add it"}

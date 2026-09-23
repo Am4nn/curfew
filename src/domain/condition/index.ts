@@ -27,6 +27,19 @@ const conditionConfigSchema = z
      * type for both. A config with no label is a bug, not a blank to fill in.
      */
     label: z.string().min(1).max(LABEL_MAX),
+    /**
+     * C7. Something you DO, or something you AVOID.
+     *
+     * Six of the eighteen types cannot form a habit in Lally's sense, because
+     * an abstinence has no moment to repeat and inhibition is not
+     * automaticity. A condition somebody writes can be either, so it has to
+     * say which: it decides whether the activity screen offers a cue or a
+     * coping plan, and whether C1 computes a percentage at all.
+     *
+     * Asked rather than guessed from the label, for the same reason 1.19 gives
+     * these no category: nothing can read "no doomscroll" reliably.
+     */
+    kind: z.enum(["do", "avoid"]),
     window: windowSchema,
     cutoff: HHMM.nullable(),
   })
@@ -73,20 +86,30 @@ export const conditionActivity: ActivityType<ConditionConfig, AbstinenceEvidence
   // which for this module is the confirm window and nothing else.
   defaults: {
     ...base.defaults,
-    config: conditionConfigSchema.parse({ ...base.defaults.config, label: "Your condition" }),
+    config: conditionConfigSchema.parse({
+      ...base.defaults.config,
+      label: "Your condition",
+      kind: "avoid",
+    }),
   },
 
   // The one thing this module has that no other does. Every screen that draws
   // a type's name asks here first, and the engine never reads what comes back.
   displayName: (config) => config.label,
 
+  // C7. "It held" for something you avoid, "I did" for something you do.
+  answersFor: (config) => CONDITION_ANSWERS[config.kind],
+
   // The prompt says the label rather than "the condition you set", because a
   // check-in screen that does not name what it is asking about is the digest
   // problem in miniature.
   steps(config, periodStart) {
+    // "Did it hold?" is an abstinence question and reads wrong for something
+    // you do, the same way "It held" was wrong for Morning sunlight (3.1).
+    const asked = config.kind === "do" ? "Did you?" : "Did it hold?";
     return base.steps(config, periodStart).map((step) => ({
       ...step,
-      prompt: `${config.label} today. Did it hold?`,
+      prompt: `${config.label} today. ${asked}`,
     }));
   },
 
@@ -97,6 +120,12 @@ export const conditionActivity: ActivityType<ConditionConfig, AbstinenceEvidence
 
 /** `condition:<uuid>` is one of these; `condition` is the module itself. */
 export const CONDITION_PREFIX = "condition:";
+
+/** What a written condition's two buttons say, per C7. */
+const CONDITION_ANSWERS = {
+  do: { yes: "I did", no: "I did not" },
+  avoid: { yes: "It held", no: "I slipped" },
+} as const;
 
 export function isConditionKey(key: string): boolean {
   return key.startsWith(CONDITION_PREFIX);

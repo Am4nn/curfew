@@ -224,6 +224,109 @@ from abstracts. Read it properly before building the classifier.
 
 ---
 
+## 8. The activities review, 2026-09-23
+
+All eighteen, against C5. **It corrected C5**, which is why the wrong version
+is left standing above rather than quietly replaced.
+
+### Three kinds, and only two can hold a habit
+
+- **Do at a time.** Sleep, office, gym, study, reading, cold shower, sunlight.
+  A cue exists and is worth asking for.
+- **Do N times.** Water, steps, food, supplements. The cue is per repetition,
+  and what matters is anchoring the first.
+- **Don't do.** No alcohol, no junk food, no social media, sugar-free,
+  nightfast, screen. **No cue is possible, because there is no moment.**
+
+Abstinence is inhibition, not automaticity. Lally's curve does not describe it,
+and narrowing a window does nothing for it. What it needs is **coping
+planning**, which promotes Job 2 from a Phase 5 nice-to-have to the thing
+carrying six of the eighteen.
+
+### Where C5 was wrong
+
+C5 said the 20:00 to 23:59 default was a compliance window that should be
+narrowed. The default is a **reporting** window, and tightening when somebody
+reports does not help a habit form. It only makes it easier to miss.
+
+The real fault is different and it is C1's problem: **Cold shower and Morning
+sunlight confirm at 8 PM for something done at 7 AM.** Their press timestamps
+measure when a person remembers to log, not when they act. Feed that to a
+cue-consistency measure and it measures nothing.
+
+**Sleep already solves this and nobody generalised it.** Its confirm window is
+anchored to the wake PRESS rather than a clock time, built in v3.3 for a
+different reason, and it is the only event-anchored cue in the app.
+
+### C6. The reminder time is the cue, and it already exists
+
+**Aman, 2026-09-23:** *"ask user's when is their preferred time so they can be
+disturbed and coach can also bug the users at the same time."*
+
+That field is built. `activity_reminders` stores a per-user, per-activity list
+of times, `chosenCues()` reads it, and the configure surface already offers it.
+It is presented as **when to remind me** and it is really **when I do this**.
+
+One field, three jobs:
+
+1. **The cue.** C1 measures press times against it.
+2. **The reminder.** Already what it does.
+3. **When Ren speaks.** Job 4's trigger, for free.
+
+**So there is no new control and no new table.** The simplification round's
+test passes rather than fails: the configure screen does not get longer,
+because the thing being added was there all along under another name.
+
+What is missing is only a default. Three modules declare `reminderCues`, all of
+them "do N times": food, supplements and water. **Every do-at-a-time type
+declares none**, so the engine falls back to working backwards from the window,
+which for a four-hour reporting window is a guess.
+
+### What changes, type by type
+
+| Type | Kind | Today | Change |
+|---|---|---|---|
+| Sleep | do at time | anchored to wake press | none, it is the model |
+| Office | do at time | 10:00 to 14:00 | none |
+| Nightfast | don't | confirm 06:00 to 11:00 | none, already right |
+| Food | do N | all day, cues declared | none, meals cue themselves |
+| Steps | do N | all day | none, ambient |
+| Water | do N | all day, cues declared | none |
+| Screen | don't | all day | none, no cue possible |
+| Sugar-free | don't | confirm 20:00 | none, no cue possible |
+| No junk food | don't | confirm 20:00 | none, no cue possible |
+| No alcohol | don't | confirm 20:00 | none, no cue possible |
+| No social media | don't | confirm 20:00 | none, no cue possible |
+| **Cold shower** | do at time | confirm 20:00 | **morning confirm, plus a cue** |
+| **Morning sunlight** | do at time | confirm 20:00 | **morning confirm, plus a cue** |
+| **Reading** | do at time | all day | **a cue** |
+| **Study** | do at time | all day | **a cue** |
+| **Supplements** | do N | all day | **already has one** |
+| **Gym** | weekly | no window | **a cue** |
+| **Condition** | either | confirm 20:00 | **ask which kind when written** |
+
+### C7. A written condition says which kind it is
+
+Six of the eighteen cannot hold a habit and the person writing their own has to
+land on one side of that. One question at creation, two buttons: **something
+you do**, or **something you avoid**.
+
+It decides what the activity screen shows, whether C1 computes a percentage at
+all, and whether the thing offered is a cue or a coping plan. Guessing it from
+the label was considered and refused: nothing can read "no doomscroll" reliably,
+which is the same reason 1.19 gives them no category.
+
+### C8. Abstinence types say what they are, rather than showing a number
+
+The activity screen shows **Established, 62%** for a do-something type and
+**days held** plus the coping plan for a don't type.
+
+Computing the percentage from days-held for both was the tempting shortcut and
+it is the settling-day bug again: a number that measures one thing while its
+label claims another. 3.4.1 already cost a release to that.
+
+---
+
 ## Sources, read 2026-09-23
 
 - Bloom: Designing for LLM-Augmented Behavior Change Interactions, CHI 2026

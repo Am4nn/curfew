@@ -88,6 +88,12 @@ export function abstinenceActivity(spec: {
   evidenceDetail: string;
   /** The footnote above the stop control. */
   note: string;
+  /**
+   * C6. When you do this, which is also when Curfew asks and what C1 measures
+   * a press against. Only a DO-something type has one: an abstinence has no
+   * moment, so there is nothing to be consistent about.
+   */
+  reminderCues?: string[];
 }): ActivityType<AbstinenceConfig, AbstinenceEvidence> {
   return {
     key: spec.key,
@@ -95,6 +101,7 @@ export function abstinenceActivity(spec: {
     description: spec.description,
     icon: spec.icon,
     category: spec.category,
+    reminderCues: spec.reminderCues,
 
     defaults: {
       schedule: EVERY_DAY,

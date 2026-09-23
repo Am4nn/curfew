@@ -25,6 +25,10 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
   name: "Study",
   description: "Time at the desk, with proof",
   icon: "study",
+  // C6. The reminder time is the CUE: when you do this, when Curfew asks,
+  // and what C1 measures a press against. Without one the engine works
+  // backwards from the window, and an all-day window gives it nothing.
+  reminderCues: ["19:00"],
   category: "mind",
 
   defaults: {

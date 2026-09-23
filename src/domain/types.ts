@@ -326,6 +326,15 @@ export interface ActivityType<Config, Evidence> {
    * renders the string and never inspects it, so invariant 6 holds.
    */
   displayName?(config: Config): string;
+  /**
+   * The two declare answers, when they depend on the CONFIG rather than the
+   * module. Same shape and same reason as `displayName`.
+   *
+   * A written condition is the only user of it: C7 asks whether it is
+   * something you do or something you avoid, and "It held" is as wrong for
+   * the first as it was for Morning sunlight.
+   */
+  answersFor?(config: Config): DeclareAnswers;
   chart: ChartSpec;
   /**
    * How the configure screen draws this module's own settings.

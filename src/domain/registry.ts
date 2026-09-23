@@ -1,4 +1,5 @@
-import type { ActivityType, EvaluateInput } from "./types";
+import type { ActivityType, DeclareAnswers, EvaluateInput } from "./types";
+import { DEFAULT_ANSWERS } from "./types";
 
 // key -> implementation. Adding a type is a register() call and nothing else.
 // The engine looks a module up by key and consumes { passed, detail }; it never
@@ -43,6 +44,27 @@ export function getActivityType(key: string): ActivityType<unknown, unknown> {
  * somebody wrote. Everything that draws a name goes through here, so a module
  * that starts answering for itself does not need those sites changed again.
  */
+/**
+ * The two answers a declare type offers, for the config in hand.
+ *
+ * `checkin.answers` for a module whose words are fixed, and the module's own
+ * answer when they depend on config. Same fallback and same try/catch as
+ * `displayNameOf`: a config that will not parse is not a reason to 500.
+ */
+export function answersOf(
+  activity: ActivityType<unknown, unknown>,
+  config: unknown,
+): DeclareAnswers {
+  if (activity.answersFor) {
+    try {
+      return activity.answersFor(config);
+    } catch {
+      // fall through
+    }
+  }
+  return activity.checkin.answers ?? DEFAULT_ANSWERS;
+}
+
 export function displayNameOf(
   activity: ActivityType<unknown, unknown>,
   config: unknown,

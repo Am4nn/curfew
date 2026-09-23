@@ -19,7 +19,7 @@ import {
   type Schedule,
   daysDoneIn,
   displayNameOf,
-  DEFAULT_ANSWERS,
+  answersOf,
 } from "@/domain";
 import { getUserActivity } from "./activities";
 import { timezoneHistory } from "./config";
@@ -374,7 +374,7 @@ export async function getCheckinState(
     // same string for every one of them.
     name: displayNameOf(type, activity.config),
     kind: type.checkin.kind,
-    answers: type.checkin.answers ?? DEFAULT_ANSWERS,
+    answers: answersOf(type, activity.config),
     evidence: type.evidence,
     period,
     timezone,

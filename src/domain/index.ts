@@ -93,7 +93,13 @@ export {
   nextRank,
   type RankKey,
 } from "./ranks";
-export { getActivityType, registeredKeys, daysDoneIn, displayNameOf } from "./registry";
+export {
+  getActivityType,
+  registeredKeys,
+  daysDoneIn,
+  displayNameOf,
+  answersOf,
+} from "./registry";
 export {
   conditionActivity,
   isConditionKey,
@@ -115,6 +121,5 @@ export type {
   CheckinKind,
   ChartSpec,
 } from "./types";
-export { DEFAULT_ANSWERS } from "./types";
 export { sleepConfigSchema } from "./sleep";
 export { WATER_STEP } from "./water";

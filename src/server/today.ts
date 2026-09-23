@@ -1,8 +1,8 @@
 import {
   getActivityType,
   displayNameOf,
+  answersOf,
   periodUnit,
-  DEFAULT_ANSWERS,
   type CheckinKind,
   type DeclareAnswers,
 } from "@/domain";
@@ -175,7 +175,7 @@ export async function todayFor(userId: string): Promise<Today> {
       name: displayNameOf(type, activity.config),
       icon: type.icon,
       kind: type.checkin.kind,
-      answers: type.checkin.answers ?? DEFAULT_ANSWERS,
+      answers: answersOf(type, activity.config),
       streak: standings.get(activity.typeKey)?.streak ?? 0,
       grey: standings.get(activity.typeKey)?.grey ?? false,
       scheduled: state.scheduled,

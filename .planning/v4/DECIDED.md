@@ -1579,6 +1579,58 @@ each state now explaining itself where it happens, that table stops being the
 explanation and becomes the summary: the one surface that puts all of them side
 by side, for the once you want the whole picture.
 
+### 1.46 Ren offers, he never instructs
+
+Settled 2026-09-23, from the evidence rather than from taste.
+Self-determination theory: autonomy-supportive language outperforms
+controlling language.
+
+> "You might try the morning session." NOT "Move it to mornings."
+
+It also fits who is reading. Somebody using Curfew chose their own activities,
+their own targets, their own windows and their own fines. **A coach who
+commands a person who set their own rules is arguing with them.**
+
+This sits UNDER 1.11 rather than over it: every number, time, money amount,
+balance and ledger row stays flat. Only the sentences around them offer.
+
+`.planning/v4/COACH.md` is the research behind it, and holds the rest: what
+Curfew already delivers without a model, the four jobs left for Ren, and five
+proposals numbered C1 to C5 that are not decisions yet.
+
+### 1.47 Curfew moves toward being a habit tracker, and the foundation is open
+
+Settled 2026-09-23. Aman: *"we can think about this how we can go for being
+more habit tracker and its ok we touch foundation."*
+
+**What prompted it.** Lally found a new behaviour takes a median of 66 days to
+become automatic, and that **missing a single day has no measurable impact**.
+Curfew breaks the run on one miss, greys it and fines it.
+
+Those are two different instruments. A streak is a **commitment device**, which
+has its own evidence base and is what groups and money hang off. Automaticity
+is a **habit measure**. Curfew built the first and has been describing it as
+the second.
+
+**The direction is settled. The mechanics are not.** C1 to C5 in `COACH.md`
+are the proposals, and the first two touch scoring:
+
+- **C1**, a second number beside the streak: how established this is, derived
+  from repetitions and the consistency of WHEN they land. Every check-in event
+  already carries `at` and nothing reads it except to test window membership,
+  so the data is in `events` today.
+- **C2**, a miss stops resetting that number. It still breaks the run, still
+  costs the fine, still moves the standing.
+
+Neither needs a hostile migration: both are derived reads over `events`, so
+invariant 1 holds and the streak tables are untouched. **The real risk is two
+numbers on one Home row and nobody knowing which to look at.**
+
+**The activities review comes next and is part of this**, because C5 is a
+question about every type: every declare type ships a 20:00 to 23:59 window,
+and four hours is a compliance window rather than a cue. "Sometime in the
+evening" cannot become automatic.
+
 ---
 
 ## 2. Confirmed unchanged

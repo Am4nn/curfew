@@ -10,7 +10,19 @@ import type { Checkin } from "./types";
 // check-ins in the day, and calories at or below the limit.
 
 export interface CountRule {
-  /** At least this many check-ins in the period. */
+  /**
+   * At least this many check-ins in the period.
+   *
+   * C9: this is the FLOOR, the number below which the day is a miss. It is not
+   * the target. `checkins.length >= rule.min` was being fed a target, so
+   * somebody aiming for three meals and eating two scored the same as somebody
+   * who ate none, and a missed third meal is a normal day rather than a
+   * failure of the behaviour.
+   *
+   * The target is the module's business and belongs in its detail, where the
+   * habit measure and the coach can read it. Only the floor decides a pass,
+   * and only a pass moves a streak, a standing or money.
+   */
   min: number;
   /** When set, require at least one check-in on each of these named steps. */
   steps?: string[];

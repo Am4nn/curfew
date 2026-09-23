@@ -327,6 +327,103 @@ label claims another. 3.4.1 already cost a release to that.
 
 ---
 
+## 9. Two faults found by using it, 2026-09-23
+
+**Aman:** *"Food is a thing which I have selected to have 3 times but sometimes
+I eat 2 times only and that just counts streak broken and sometimes I forget to
+log Food too so thats a bummer for curfew as it skips."*
+
+Both are the same mistake in two places: **Curfew punishes things that are not
+failures of the behaviour.** Eating slightly less, and being human about a
+phone.
+
+### C9. A target is not a bar. Do-N types get a floor
+
+`pass.ts:33` is `checkins.length >= rule.min`, so a configured 3 is a **hard
+bar** and eating two scores identically to eating nothing.
+
+That is right for a commitment device and wrong for a habit tracker, which is
+what 1.47 says the app is becoming. A missed third meal is a normal day.
+
+> **Meals a day: 3.** Counts as a miss under **2**.
+
+Only the floor breaks a streak or costs money. The target feeds C1 and gives
+Ren something true to say, which is the first thing in the app that uses a
+number for coaching rather than for judging.
+
+**The default floor is the target minus one**, so it forgives exactly one and
+is never decorative. A floor equal to the target is the old behaviour and stays
+available for somebody who wants it.
+
+`floor` is **optional and null-by-default in the schema**, so every config row
+written before it existed parses unchanged and is judged exactly as it was
+(invariant 4 and 5 both hold, and there is no migration).
+
+The same shape fits Water, Steps, Reading and Study. Food first, because that
+is where it was felt.
+
+### C10. A late log, with the camera, and the photo need not be the food
+
+Food is `evidence: { level: "required", source: "live" }`. A meal you forgot to
+photograph **cannot be logged at all**, ever, because a live camera cannot
+photograph a meal you already ate. The rule that makes Food trustworthy makes
+forgetting unrecoverable.
+
+**Aman:** *"log it with camera where photo can be not food."*
+
+That is the right instinct and it makes the mechanism honest about itself. **The
+live camera was never proving the meal.** Nothing in the app has ever inspected
+a photograph. What it proves is that somebody was present and deliberate at the
+moment of logging, and that is worth keeping: it is what stops a week being
+backfilled in one sitting.
+
+So a late log:
+
+- is allowed until the period has been closed a few hours, and no longer,
+- takes a live photo like any other press, of whatever is in front of you,
+- carries `late: true`, and its evidence is **never shared to a group and never
+  sent to Ren** (1.22), because it is not a picture of the meal,
+- **does not feed C1's cue measure.** A press at 11 PM for a lunch is exactly
+  the timestamp the cue measure must not read, which is the same fault the
+  activities review found in Cold shower.
+
+Every invariant survives: still an explicit press (9), still a server timestamp
+(8), still one event (1), still scored from `checkin.*` alone (2).
+
+### C11. Same as yesterday
+
+Lifesum's cheapest good idea. One tap repeats the last period's entry, for
+every type that takes a number: Food, Water, Steps, Reading, Study, Screen.
+
+It attacks forgetting at the source by **making the honest path the fast path**,
+and it needs no new data, since it reads the previous period's own check-ins.
+
+The objection is real and worth writing down: invariant 9 exists because a
+press should be a deliberate act, and a one-tap repeat is the nearest thing in
+the app to logging without looking. What keeps it honest is that it still
+requires the press, and for Food it still requires the camera, so it saves
+typing rather than attention.
+
+### C12. Take Lifesum's mechanics, not its database
+
+**Learnable and cheap**, all of it serving 1.47:
+
+- **Degrade rather than break.** Its Life Score falls; nothing snaps. C9 is the
+  first step and C1 is the rest.
+- **Same as yesterday.** C11.
+- **More ways to log.** Photo, voice, barcode, text, quick-track. Curfew has
+  exactly one path per type, and friction is why people forget.
+
+**Not taken:** the food database, barcode scanning, macros, recipes, meal plans
+and wearable integrations. That is a different product and a subscription
+business, and it overturns two entries on the "Not in v4" list rather than
+extending one. If it is ever wanted it gets its own theme and its own argument,
+the way ROADMAP holds everything else.
+
+**Curfew stays a habit tracker that happens to handle food well.**
+
+---
+
 ## Sources, read 2026-09-23
 
 - Bloom: Designing for LLM-Augmented Behavior Change Interactions, CHI 2026

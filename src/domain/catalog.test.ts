@@ -66,8 +66,31 @@ describe("Food, the only type needing both pass shapes", () => {
     expect(r.detail.calories).toBe(1800);
   });
 
-  it("fails on too few meals even when calories are fine", () => {
-    expect(evaluate([meal("08:00", 400), meal("13:00", 400)]).passed).toBe(false);
+  // C9, and the reason it exists. Aman set three meals, ate two, and Curfew
+  // scored that identically to eating nothing. The default is now an aim of
+  // three with the bar one under it, so a normal day passes and the aim is
+  // still what the habit measure and the coach read.
+  it("passes at the floor, under the aim, when calories are fine", () => {
+    const r = evaluate([meal("08:00", 400), meal("13:00", 400)]);
+    expect(r.passed).toBe(true);
+    expect(r.detail.meals).toBe(2);
+    expect(r.detail.aim).toBe(3);
+    expect(r.detail.required).toBe(2);
+  });
+
+  it("fails below the floor", () => {
+    expect(evaluate([meal("08:00", 400)]).passed).toBe(false);
+  });
+
+  // Somebody who wants the old behaviour sets the two equal, and the floor
+  // being absent entirely means the same thing: every config row written
+  // before C9 is judged exactly as it was (invariants 4 and 5).
+  it("an equal floor, and no floor at all, are both the old hard bar", () => {
+    const two = [meal("08:00", 400), meal("13:00", 400)];
+    expect(evaluate(two, { meals: 3, mealsFloor: 3, calorieLimit: 2000 }).passed).toBe(false);
+    expect(
+      evaluate(two, foodActivity.configSchema.parse({ meals: 3, calorieLimit: 2000 })).passed,
+    ).toBe(false);
   });
 
   it("fails on enough meals over the limit", () => {
@@ -77,7 +100,7 @@ describe("Food, the only type needing both pass shapes", () => {
   });
 
   it("with no limit set, only the meal count binds", () => {
-    const config = { meals: 3, calorieLimit: null };
+    const config = { meals: 3, mealsFloor: 3, calorieLimit: null };
     const r = evaluate([meal("08:00", 5000), meal("13:00", 5000), meal("19:00", 5000)], config);
     expect(r.passed).toBe(true);
     expect(r.detail.limit).toBeNull();

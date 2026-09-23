@@ -15,7 +15,8 @@ const LABELS: Record<string, string[]> = {
   // press and is not a time anybody types (item 17).
   sleep: ["Night window", "Wake window", "Confirm window"],
   gym: [],
-  food: ["Meals a day", "Calorie limit"],
+  // C9 put the bar under the aim, so the screen asks for both.
+  food: ["Meals a day", "Counts as a miss under", "Calorie limit"],
   supplements: ["Doses a day"],
   office: ["Hours in the office"],
   study: ["Minutes a day"],

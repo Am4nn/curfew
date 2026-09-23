@@ -1631,6 +1631,49 @@ question about every type: every declare type ships a 20:00 to 23:59 window,
 and four hours is a compliance window rather than a cue. "Sometime in the
 evening" cannot become automatic.
 
+### 1.48 A target is not a bar, and forgetting is not failing
+
+Settled 2026-09-23, from using it. Aman: *"Food is a thing which I have
+selected to have 3 times but sometimes I eat 2 times only and that just counts
+streak broken and sometimes I forget to log Food too."*
+
+Both are the same mistake in two places: **Curfew punishes things that are not
+failures of the behaviour.** Eating slightly less, and being human about a
+phone. `.planning/v4/COACH.md` section 9 has the reasoning; C9 to C12 are the
+four changes.
+
+**C9 is built.** `pass.ts` was being handed a target and using it as a bar, so
+two meals of three scored exactly like none. Food now carries an aim and a
+floor, the floor decides the day, and the aim is carried in `detail` where the
+habit measure and Ren can read it. The default floor is one under the aim.
+
+`mealsFloor` is **nullish**, so every config row written before it existed
+parses unchanged and is judged exactly as it was. Invariants 4 and 5 hold and
+there is no migration. An equal floor is the old behaviour and stays
+available.
+
+**Two follow-ons that were not obvious.** `remind()` had to count down to the
+FLOOR: counting to the aim would ask for a third meal on a day that already
+passes, which is v3.4's shape exactly, every function correct and the sentence
+false. And `summary()` has to say both numbers once they differ, because "3
+meals" alone describes a rule the app is no longer applying.
+
+**C10 is specified, not built.** Food is `evidence: required, source: live`, so
+a meal you forgot to photograph cannot be logged later at all. Aman: *"log it
+with camera where photo can be not food."* That is right, and it makes the
+mechanism honest about itself: **the live camera was never proving the meal**,
+nothing has ever inspected a photograph. What it proves is presence and
+deliberateness at the moment of logging, which is what stops a week being
+backfilled in one sitting. A late log keeps the camera, carries `late: true`,
+is never shared and never sent to Ren, and **does not feed C1's cue measure**.
+
+**C11, same as yesterday**, and **C12, take Lifesum's mechanics and not its
+database.** Degrade rather than break, one-tap repeat, more ways to log. The
+food database, barcode, macros, recipes and wearables are a different product
+and a subscription business, and they overturn two entries on the Not in v4
+list rather than extending one. Curfew stays a habit tracker that happens to
+handle food well.
+
 ---
 
 ## 2. Confirmed unchanged

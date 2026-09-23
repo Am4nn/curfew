@@ -17,6 +17,19 @@ export const FOOD_STEP = "meal";
 const foodConfigSchema = z
   .object({
     meals: z.number().int().min(1).max(10),
+    /**
+     * C9. The number below which the day is a miss.
+     *
+     * `meals` is what you AIM for. This is the bar. Eating two of three is a
+     * normal day and used to score exactly like eating none, because the
+     * target was being used as the bar.
+     *
+     * NULL means the old behaviour, the bar and the aim being the same number,
+     * and it is the default in the schema so that every config row written
+     * before this existed parses unchanged and is judged exactly as it was
+     * (invariants 4 and 5). There is no migration.
+     */
+    mealsFloor: z.number().int().min(1).max(10).nullish(),
     // Null means the user tracks meals but not calories. The photo is still
     // required; the number simply stops binding anything.
     calorieLimit: z.number().int().min(1).max(20000).nullable(),
@@ -45,7 +58,9 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
     // An hour and a half between meals. Longer than water's, because two meals
     // inside ninety minutes is one meal photographed twice.
     minGap: 90,
-    config: { meals: 3, calorieLimit: 2000 },
+    // C9. The aim, and the bar one under it. A new setup forgives exactly
+    // one missed meal; somebody who wants the old behaviour sets them equal.
+    config: { meals: 3, mealsFloor: 2, calorieLimit: 2000 },
   },
 
   configSchema: foodConfigSchema,
@@ -74,9 +89,13 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
 
   summary(config) {
     const meals = `${config.meals} ${config.meals === 1 ? "meal" : "meals"}`;
+    // C9. The aim, then the bar, and only when they differ. Saying "3 meals"
+    // alone when two is enough describes a rule the app is not applying.
+    const floor = config.mealsFloor ?? config.meals;
+    const aimed = floor === config.meals ? meals : `${meals}, a miss under ${floor}`;
     return config.calorieLimit === null
-      ? meals
-      : `${meals}, under ${config.calorieLimit.toLocaleString("en-US")} calories`;
+      ? aimed
+      : `${aimed}, under ${config.calorieLimit.toLocaleString("en-US")} calories`;
   },
 
   fields() {
@@ -88,6 +107,15 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
         min: 1,
         max: 10,
         unit: "meals",
+      },
+      {
+        kind: "number",
+        key: "mealsFloor",
+        label: "Counts as a miss under",
+        min: 1,
+        max: 10,
+        unit: "meals",
+        hint: "Eating fewer than your aim is a normal day. This is the bar.",
       },
       {
         kind: "number",
@@ -165,7 +193,12 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
     const calories = sumField(meals, "calories");
     if (limit !== null && calories > limit) return null;
 
-    const left = input.config.meals - meals.length;
+    // C9. Down to the FLOOR, not the aim. `remind` is read on a lock screen
+    // and counts down to what is needed, and after C9 what is needed is the
+    // bar. Counting to the aim would ask for a third meal on a day that
+    // already passes: every function correct, the sentence false, which is
+    // the shape v3.4 cost a release to.
+    const left = (input.config.mealsFloor ?? input.config.meals) - meals.length;
     if (left <= 0) return null;
     const ask = `${left} ${left === 1 ? "meal" : "meals"} to go.`;
     // The calorie budget only once some of it has been spent. "3 meals to go.
@@ -190,7 +223,11 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
 
   evaluate(input) {
     const meals = input.checkins.filter((c) => c.step === FOOD_STEP);
-    const count = countPass(meals, { min: input.config.meals });
+    // C9. The FLOOR decides the day. The aim is carried in detail, where the
+    // habit measure and Ren can read it, and it moves nothing on its own.
+    const aim = input.config.meals;
+    const floor = input.config.mealsFloor ?? aim;
+    const count = countPass(meals, { min: floor });
     const calories = sumField(meals, "calories");
 
     // Calories only bind when a limit is set. Both tests combine with AND.
@@ -204,7 +241,8 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
       passed: count.passed && withinLimit.passed,
       detail: {
         meals: count.count,
-        required: input.config.meals,
+        required: floor,
+        aim,
         calories,
         limit,
       },

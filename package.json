@@ -56,7 +56,8 @@
     "browser": "node scripts/browser/run.mjs",
     "check:cors": "dotenv -e .env.preview -- bun run scripts/check-r2-cors.ts",
     "check:cors:production": "dotenv -e .env.production -- bun run scripts/check-r2-cors.ts",
-    "doc:activities": "bun run scripts/write-activities.ts"
+    "doc:activities": "bun run scripts/write-activities.ts",
+    "check:activities": "bun run scripts/write-activities.ts --check"
   },
   "overrides": {
     "postcss": "^8.5.26"

@@ -98,6 +98,44 @@ check(
   dangling.join(", "),
 );
 
+// COACH.md's proposals, C1 upward. THE BUG THIS EXISTS FOR was found by a
+// verification round on 2026-09-24: C3, C4 and C8 were cited nowhere outside
+// COACH.md, and C8 had been APPROVED. An approved proposal with no phase is a
+// decision that quietly does not happen, which is the same failure this file
+// catches one level up for numbered decisions.
+//
+// So every C has to be spoken for somewhere that is not the file proposing it:
+// DECIDED.md if it is settled, PLAN.md if it is built, and both is normal.
+const COACH = read(".planning/v4/COACH.md");
+if (COACH.length > 0) {
+  const proposed = new Set(
+    [...COACH.matchAll(/^(?:\*\*|### )C(\d+)\./gm)].map((m) => m[1]),
+  );
+  const placed = new Set<string>();
+  for (const text of [DECIDED, PLAN]) {
+    for (const m of text.matchAll(/\bC(\d+)\b/g)) placed.add(m[1]);
+  }
+  const orphaned = [...proposed]
+    .filter((c) => !placed.has(c))
+    .sort((a, b) => Number(a) - Number(b))
+    .map((c) => `C${c}`);
+  check(
+    "every COACH.md proposal is settled in DECIDED or placed in PLAN",
+    orphaned.length === 0,
+    orphaned.length ? `${orphaned.join(", ")} cited only in COACH.md` : undefined,
+  );
+  // And the reverse: a phase that cites a proposal nobody wrote.
+  const dangling = [...placed]
+    .filter((c) => !proposed.has(c))
+    .sort((a, b) => Number(a) - Number(b))
+    .map((c) => `C${c}`);
+  check(
+    "every C cited by DECIDED or PLAN exists in COACH.md",
+    dangling.length === 0,
+    dangling.join(", "),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // 1.21 — the model is somebody else's, and the provider comes from the
 // environment. The one assertion here that is about a business decision rather

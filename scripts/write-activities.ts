@@ -10,7 +10,7 @@
 // it ask. That question is currently answered by reading eighteen files.
 //
 // Run: bun run doc:activities
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import {
   getActivityType,
   registeredKeys,
@@ -119,5 +119,22 @@ out.push("  properties OF a streak, so they need no rule naming types.\n");
 out.push("- **Nothing outside a module knows what a type means** (invariant 6). Every\n");
 out.push("  column above is read through the registry, never by a `switch` on a key.\n");
 
-writeFileSync(OUT, out.join(""));
-console.log(`${OUT}: ${keys.length} activities`);
+const text = out.join("");
+
+// `--check` is what CI runs. A generated file that nothing regenerates goes
+// stale silently, and this one describes eighteen modules that change one at a
+// time, so the first reader of a wrong row would be somebody trusting it.
+// Same argument as check:shards: a check that cannot fail is not a check.
+if (process.argv.includes("--check")) {
+  const current = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
+  if (current !== text) {
+    console.log(
+      `FAIL  ${OUT} is out of date. Run: bun run doc:activities`,
+    );
+    process.exit(1);
+  }
+  console.log(`ok    ${OUT} matches the registry (${keys.length} activities)`);
+} else {
+  writeFileSync(OUT, text);
+  console.log(`${OUT}: ${keys.length} activities`);
+}

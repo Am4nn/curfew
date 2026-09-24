@@ -44,8 +44,13 @@ below this block is v3's record and is still true of the deployed app.
 
 Read these three before touching anything:
 
-- `.planning/v4/DECIDED.md` — 1.1 to 1.51 settled, 3.3 open. **The authority.**
+- `.planning/v4/DECIDED.md` — 1.1 to 1.54 settled, 3.3 open. **The authority.**
   Every other v4 file cites it by number.
+- `.planning/v4/ACTIVITIES.md` — **what every activity actually is**: the
+  number it carries, its schedule, how often it can be fined, what it asks for,
+  whether it wants a photograph, and when. **Generated** by
+  `bun run doc:activities` from `src/domain/`, so it cannot drift. If a row
+  looks wrong, the module is wrong.
 - `.planning/v4/COACH.md` — why Ren is a coach and not a chatbot, and the
   research behind 1.46 to 1.51. C1 to C12 are proposals in it, not decisions;
   a proposal becomes one only when `DECIDED.md` says so. It also records where
@@ -558,6 +563,8 @@ cors       bun run check:cors      — can a browser upload from this origin
 signin     bun run check:signin    — can a stranger see the sign-in page
 shards     bun run check:shards    — CI still runs every browser suite
 dead       bun run check:dead      — nothing is exported that nothing imports
+acts       bun run doc:activities  — rewrite ACTIVITIES.md from the registry
+sheet      bun run check:activities — and CI fails if it went stale
 notice     bun run publish:notice  — announce a release to the people already here
 sleep      bun run migrate:sleep   — move existing members onto the anchored confirm
 remind     bun run check:reminders — a reminder is sent only when a press would count
@@ -805,7 +812,7 @@ A push is still the only thing that speaks first to a phone on a table, so it
 stays the loudest of them. Exclamation marks are still for lock screens.
 
 **Theme 3 answered yes on 2026-09-20 and v4 is building it.**
-`.planning/v4/DECIDED.md` is the authority on voice now, 1.1 to 1.32. Read it
+`.planning/v4/DECIDED.md` is the authority on voice now, 1.1 to 1.54. Read it
 before writing a line of UI copy; this section is the mechanical half and that
 file is the register.
 

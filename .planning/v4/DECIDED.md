@@ -1806,6 +1806,69 @@ the row now and the number three phases later and looking at Home twice.
 
 C1 lands here too, because the percentage is what the row draws.
 
+### 1.52 Where C3, C4 and C8 land
+
+Settled 2026-09-24, by a verification round that found all three cited nowhere
+outside `COACH.md`. **An approved proposal with no phase is a decision that
+quietly does not happen**, which is the same failure `check:decided` exists for
+one level up.
+
+**C8 was approved and had nowhere to go.** An abstinence type shows **days held
+and its coping plan**, never a consistency percentage. Computing a percentage
+from days-held for both kinds was the tempting shortcut and it is the
+settling-day bug again: a number measuring one thing while its label claims
+another, which cost a release in 3.4.1. **It is Phase 2**, beside 1.49, because
+it is the other half of the same screen: 1.49 says what a `streak` type draws
+instead of a percentage, and this says what it draws instead of nothing.
+
+**C3 is narrower than it was written.** "Never miss twice" was Ren's line the
+morning after a break, written when every type could break. After 1.49 only the
+six abstinence types can, so C3 applies to those and to nothing else. For the
+twelve there is no morning after: a percentage dips and recovers, and a line
+about it would be a line about an ordinary Tuesday. **Phase 5**, with Ren.
+
+**C4 was never asked and is now decided here.** The configure screen says what
+it is: one line, where the window is set, naming it as the plan rather than a
+setting. The effect size in implementation intentions comes from the person
+FORMING the intention, so a form nobody reads as a commitment does not carry
+it. **Phase 2**, because the alternative is opening the configure screen in a
+later phase for one sentence.
+
+### 1.53 Screen carries a streak, and it is the one judgement call
+
+Settled 2026-09-24, written down because the verification round found it
+asserted in `registry.test.ts` and argued nowhere.
+
+The other sixteen sort themselves. Screen does not: it is a THRESHOLD, "under
+two hours", logged as a number every day, so it looks like the do-something
+types it sits beside in `checkin.kind`.
+
+**It carries a streak** because 1.49's test is not what you press, it is
+whether a consecutive count is the achievement or an artifact. "Thirty days
+under my limit" is the first: one heavy day genuinely breaks something, the
+habit of reaching for the phone, in the way one missed gym session does not
+break gym. It is inhibition wearing a number.
+
+**If this turns out wrong it is one word in one module**, which is the whole
+point of `measure` being a declaration rather than a rule about kinds.
+
+### 1.54 Two things left open on purpose, so they are not left open by accident
+
+Both found by the same round, both previously living only in a commit message.
+
+**A written condition shared with a group still shows the template's name.**
+`acceptedTypesAsOf` and `group-view` draw `type.name`, which for every written
+condition is "Your own". The owner sees their label everywhere; the group does
+not. **Phase 7**, where the sharing model is rebuilt anyway, and it is the last
+piece of 1.19.
+
+**Grey is now nearly unreachable, and it is left in place.** After 1.50 it
+needs a weekly schedule on a type that carries a streak, and all six
+abstinences are daily. It costs nothing to leave: it is a property of a streak
+and is computed with one. Deleting it would be removing a correct mechanism
+because it is rarely reached, which is a different argument from the one that
+demoted the streak, and it has not been made.
+
 ---
 
 ## 2. Confirmed unchanged

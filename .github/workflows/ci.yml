@@ -70,6 +70,13 @@ jobs:
       - name: The code still says what DECIDED.md says
         run: bun run check:decided
 
+      # ACTIVITIES.md is GENERATED from the registry, and a generated file that
+      # nothing regenerates goes stale silently. It describes eighteen modules
+      # that change one at a time, so the first reader of a wrong row would be
+      # somebody trusting it. Same argument as check:shards.
+      - name: The activity sheet still matches the registry
+        run: bun run check:activities
+
       # Invariant 10. break-in proves the EXISTING routes refuse a stranger, by
       # sweeping a hand-maintained list, so it catches a new leak exactly when
       # somebody remembered to add the route to the list. This needs no memory,

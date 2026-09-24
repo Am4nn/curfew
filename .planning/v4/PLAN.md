@@ -187,6 +187,22 @@ central number is changing under them, so the reversal has to be cheap.
 fines come from `activity_outcomes` and the curve from daily completion.
 `scoring.ts:660`: *"Grace protects the streak, never the fine."*
 
+### What a streak type draws instead (C8, 1.52)
+
+A `streak` type shows **days held and its coping plan**, never a percentage.
+Computing one from days-held for both kinds is the settling-day bug again: a
+number measuring one thing while its label claims another, which cost a release
+in 3.4.1. The plan itself is Phase 5's; what lands here is the shape that holds
+it.
+
+### The configure screen says what it is (C4, 1.52)
+
+One line, where the window is set, naming it as the plan rather than a setting.
+The effect in implementation intentions comes from the person FORMING the
+intention, and a form nobody reads as a commitment does not carry it. It rides
+here rather than in a later phase, because the alternative is opening that
+screen again for one sentence.
+
 ### Repair and grey follow the streak (1.50)
 
 Neither needs a rule naming which types. Both are properties OF a streak, so

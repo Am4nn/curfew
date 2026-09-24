@@ -99,6 +99,7 @@ export {
   daysDoneIn,
   displayNameOf,
   answersOf,
+  measureOf,
 } from "./registry";
 export {
   conditionActivity,

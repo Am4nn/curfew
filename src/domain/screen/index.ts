@@ -33,6 +33,7 @@ export const screenActivity: ActivityType<ScreenConfig, ScreenEvidence> = {
   description: "Time on the phone, under your limit",
   icon: "screen",
   category: "mind",
+  measure: "streak",
 
   defaults: {
     schedule: EVERY_DAY,

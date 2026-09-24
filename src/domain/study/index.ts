@@ -30,6 +30,7 @@ export const studyActivity: ActivityType<StudyConfig, StudyEvidence> = {
   // backwards from the window, and an all-day window gives it nothing.
   reminderCues: ["19:00"],
   category: "mind",
+  measure: "consistency",
 
   defaults: {
     schedule: EVERY_DAY,

@@ -36,6 +36,7 @@ export const readingActivity: ActivityType<ReadingConfig, ReadingEvidence> = {
   // backwards from the window, and an all-day window gives it nothing.
   reminderCues: ["21:00"],
   category: "mind",
+  measure: "consistency",
 
   defaults: {
     schedule: EVERY_DAY,

@@ -1,4 +1,9 @@
-import type { ActivityType, DeclareAnswers, EvaluateInput } from "./types";
+import type {
+  ActivityType,
+  DeclareAnswers,
+  EvaluateInput,
+  Measure,
+} from "./types";
 import { DEFAULT_ANSWERS } from "./types";
 
 // key -> implementation. Adding a type is a register() call and nothing else.
@@ -63,6 +68,28 @@ export function answersOf(
     }
   }
   return activity.checkin.answers ?? DEFAULT_ANSWERS;
+}
+
+/**
+ * The one number this activity carries (1.49).
+ *
+ * Every surface calls this and renders what comes back. None of them branches
+ * on a type key, which is invariant 6 applied to a number rather than to a
+ * verdict.
+ */
+export function measureOf(
+  activity: ActivityType<unknown, unknown>,
+  config: unknown,
+): Measure {
+  if (activity.measureFor) {
+    try {
+      return activity.measureFor(config);
+    } catch {
+      // A config that will not parse is not a reason to 500, and the module's
+      // own declaration is always a true thing to fall back to.
+    }
+  }
+  return activity.measure;
 }
 
 export function displayNameOf(

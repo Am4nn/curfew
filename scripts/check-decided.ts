@@ -266,6 +266,32 @@ if (FIVE.length > 0 && FIVE.some(registered)) {
   console.log("skip  3.1  the five new types do not exist yet (Phase 1)");
 }
 
+// 1.49 — an activity declares which number it carries, and every surface draws
+// that. The failure this catches is a SURFACE deciding for itself: a Home row
+// that branches on a type key, or a group hub that always draws a flame.
+//
+// The exact split lives in registry.test.ts, which can run the modules. This
+// half is the part a test cannot see, that no surface has its own opinion.
+if (read("src/domain/types.ts").includes("measure: Measure")) {
+  const SURFACES = [
+    "src/server/today.ts",
+    "src/server/group-view.ts",
+    "src/server/stats.ts",
+    "src/server/stop-cost.ts",
+  ];
+  const branching = SURFACES.filter((f) => {
+    const text = read(f);
+    return /typeKey === "|key === "(sleep|gym|food|water|screen|nightfast|sugarfree)"/.test(text);
+  });
+  check(
+    "1.49  no surface decides which number to draw by looking at a type key",
+    branching.length === 0,
+    branching.join(", "),
+  );
+} else {
+  console.log("skip  1.49  measure does not exist yet (Phase 2)");
+}
+
 // 1.19 — a condition somebody writes themselves has NO category, because
 // nothing can know whether "no doomscroll" is a MIND thing, and Monk mode's
 // four requirements exist so the number means the same for everybody.

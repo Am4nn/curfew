@@ -1711,11 +1711,32 @@ both and doing the second badly, and the five patches are the evidence.
 
 ### The decision
 
-- **Home leads with a consistency percentage** for the twelve do-something
-  types. It dips on a miss and it does not break.
-- **The flame stays** on the six abstinence types.
-- **Groups see whichever their member's type carries**, so `"Sleep 15 · Gym 24"`
-  becomes a percentage for a do-type and a flame for an abstinence one.
+**An activity declares which number it carries, and every surface draws that.**
+Corrected 2026-09-24 after Aman: *"Groups also dont show streak, like what
+groups see is what an activity tracks... same consistent behaviour and is
+derived from each activity."*
+
+The first version of this entry said Home leads with a percentage and groups
+see "whichever their member's type carries", which reads as two rules that
+happen to agree. It is ONE rule:
+
+```
+measure: "consistency" | "streak"
+```
+
+on `ActivityType`, beside `category`. The twelve do-something types declare
+`consistency`; the six abstinence types declare `streak`. **No surface branches
+on anything.** Home, the group hub, the activity screen, Stats and the ledger
+all ask the activity and render the answer, which is invariant 6 applied to a
+number instead of to a verdict.
+
+So `"Sleep 15 · Gym 24"` in `group-view.ts:70` becomes `"Sleep 15 · Gym 78%"`
+because Sleep declares `streak` and Gym declares `consistency`, not because the
+group hub knows anything about either.
+
+**A consistency type shows no streak ANYWHERE**, including to a group, in
+Stats, and on the stop-cost screen that lists what you give up by untracking
+something. One number per activity, the same one everywhere it appears.
 
 ### Why this is safe, and how it is reversible
 
@@ -1757,6 +1778,10 @@ The five are not five of a kind, and the audit says so:
 | **Restore screen** | the break moment | survives, scoped the same way |
 | **Settling** | reputation, for 7 days | **untouched, it was never about streaks** |
 | **Away days** | everything, in advance | **untouched, same reason** |
+
+Each row is decided by `measure` and by nothing else, so none of them needs a
+rule naming types: repair is offered where a streak exists, grey describes a
+streak, and the Restore screen is the break moment of one.
 
 **Two of the five shrink to the abstinence types. Two were never streak
 mechanisms at all**, which 1.44 already established for settling and which is

@@ -4,6 +4,7 @@ import type {
   Category,
   DeclareAnswers,
   EvaluateInput,
+  Measure,
 } from "./types";
 import { DEFAULT_ANSWERS } from "./types";
 import { EVERY_DAY } from "./schedule";
@@ -63,6 +64,16 @@ export function abstinenceActivity(spec: {
   label: string;
   /** 1.16. Left off only by a condition somebody wrote themselves. */
   category?: Category;
+  /**
+   * 1.49. Required, and NOT defaulted to "streak" even though five of this
+   * factory's seven callers want that.
+   *
+   * Cold shower and Morning sunlight are things you DO wearing the declare
+   * shape, and a default would have handed them a flame silently. The whole
+   * point of the field is that a module says which number it carries, so the
+   * factory asks rather than guessing.
+   */
+  measure: Measure;
   /** The two buttons, first person. Defaults to "It held" and "I slipped". */
   answers?: DeclareAnswers;
   /**
@@ -101,6 +112,7 @@ export function abstinenceActivity(spec: {
     description: spec.description,
     icon: spec.icon,
     category: spec.category,
+    measure: spec.measure,
     reminderCues: spec.reminderCues,
 
     defaults: {

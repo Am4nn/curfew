@@ -20,6 +20,7 @@ export const coldshowerActivity = abstinenceActivity({
   description: "Cold, once a day",
   icon: "coldshower",
   category: "body",
+  measure: "consistency",
   label: "Confirm",
   window: { open: "07:00", close: "11:00" },
   cutoff: null,

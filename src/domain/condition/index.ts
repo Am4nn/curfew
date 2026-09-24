@@ -67,6 +67,12 @@ const base = abstinenceActivity({
   description: "A condition you write yourself",
   icon: "condition",
   label: "Confirm",
+  // Overridden by `measureFor` below, which is the one that runs. The
+  // factory requires a value and this is the safe half of the pair:
+  // a streak shown for something that should carry a percentage is a
+  // wrong number, and a percentage shown for an abstinence is a wrong
+  // idea. Neither is reached, because C7 always asks.
+  measure: "streak",
   window: { open: "20:00", close: "23:59" },
   cutoff: null,
   rule: () => "the condition you set",
@@ -95,6 +101,12 @@ export const conditionActivity: ActivityType<ConditionConfig, AbstinenceEvidence
 
   // The one thing this module has that no other does. Every screen that draws
   // a type's name asks here first, and the engine never reads what comes back.
+  // 1.49 with 1.19's twist: one module stands behind every written
+  // condition, so its measure depends on the CONFIG rather than the module.
+  // C7 asks whether it is something you do or something you avoid, and this
+  // is the other half of what that answer buys.
+  measureFor: (config) => (config.kind === "do" ? "consistency" : "streak"),
+
   displayName: (config) => config.label,
 
   // C7. "It held" for something you avoid, "I did" for something you do.

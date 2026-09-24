@@ -34,6 +34,7 @@ export const stepsActivity: ActivityType<StepsConfig, StepsEvidence> = {
   description: "The number your phone says",
   icon: "steps",
   category: "body",
+  measure: "consistency",
 
   defaults: {
     schedule: EVERY_DAY,

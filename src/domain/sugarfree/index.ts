@@ -8,6 +8,7 @@ export const sugarfreeActivity = abstinenceActivity({
   description: "A day without sugar",
   icon: "sugarfree",
   category: "food",
+  measure: "streak",
   label: "Confirm",
   window: { open: "20:00", close: "23:59" },
   cutoff: null,

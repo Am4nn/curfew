@@ -51,6 +51,7 @@ export const foodActivity: ActivityType<FoodConfig, FoodEvidence> = {
   description: "A photo and the calories, every meal",
   icon: "food",
   category: "food",
+  measure: "consistency",
 
   defaults: {
     schedule: EVERY_DAY,

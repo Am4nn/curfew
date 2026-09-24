@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { getActivityType, registeredKeys, daysDoneIn, type Category } from "./index";
+import {
+  getActivityType,
+  registeredKeys,
+  daysDoneIn,
+  measureOf,
+  type Category,
+} from "./index";
 import { scheduleConfigSchema } from "./schedule";
 
 describe("registry", () => {
@@ -20,6 +26,40 @@ describe("registry", () => {
   //
   // So every type in the REGISTRY has one. A member-written condition never
   // reaches the registry: it is a `user_conditions` row read at runtime.
+  // 1.49. Every activity declares ONE number it carries, and every surface
+  // draws that rather than deciding for itself. A type that forgets is a type
+  // whose Home row, group line and stats page could each answer differently.
+  it("every registered type declares which number it carries", () => {
+    const streaks: string[] = [];
+    for (const key of registeredKeys()) {
+      const measure = getActivityType(key).measure;
+      expect(["consistency", "streak"], `${key} measure`).toContain(measure);
+      if (measure === "streak") streaks.push(key);
+    }
+    // The six abstinences, where a consecutive count IS the achievement,
+    // plus the condition template whose real answer comes from `measureFor`.
+    // Asserted as an exact list, because the failure this catches is a
+    // do-something type quietly handed a flame: Cold shower and Morning
+    // sunlight both wear the declare shape and both would have been.
+    expect(streaks.sort()).toEqual([
+      "alcoholfree",
+      "condition",
+      "junkfree",
+      "nightfast",
+      "screen",
+      "socialfree",
+      "sugarfree",
+    ]);
+  });
+
+  // 1.19 and C7: one module, and the answer comes from the config.
+  it("a written condition takes its measure from what it is", () => {
+    const type = getActivityType("condition");
+    const base = type.defaults.config as Record<string, unknown>;
+    expect(measureOf(type, { ...base, kind: "do" })).toBe("consistency");
+    expect(measureOf(type, { ...base, kind: "avoid" })).toBe("streak");
+  });
+
   it("every registered type belongs to one of the four categories", () => {
     const seen = new Set<Category>();
     const uncategorised: string[] = [];

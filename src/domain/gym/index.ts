@@ -76,6 +76,7 @@ export const gymActivity: ActivityType<GymConfig, GymEvidence> = {
   // a weekly period still has a daily cue: the session lands at a time.
   reminderCues: ["07:00"],
   category: "body",
+  measure: "consistency",
 
   defaults: {
     schedule: { kind: "minimum", perWeek: 3 },

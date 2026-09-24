@@ -153,11 +153,29 @@ cue, which is the fault the activities review found in Cold shower.
 
 ### The demotion (1.49)
 
-- Home leads with the percentage for the twelve **do-something** types.
-- The flame stays on the six **abstinence** types, where a consecutive count is
-  the achievement rather than an artifact.
-- `group-view.ts:70` builds `"Sleep 15 · Gym 24"` and draws whichever the
-  member's type carries.
+**One rule, declared on the activity, drawn by every surface.** `measure` is on
+`ActivityType` beside `category`, and `measureOf(type, config)` is what a
+surface calls. Nothing branches on a type key.
+
+- Home draws the percentage for a `consistency` type, the flame for a `streak`
+  one.
+- `group-view.ts:70` builds `"Sleep 15 · Gym 24"` today and becomes
+  `"Sleep 15 · Gym 78%"`, because Sleep declares `streak` and Gym declares
+  `consistency`, not because the group hub knows anything about either.
+- Stats and `stop-cost.ts` the same.
+- **A `consistency` type shows no streak anywhere at all**, including in a
+  group, in Stats, and in what you are told you give up by untracking it.
+
+**The field is already declared**, on all seventeen plus the condition
+template, with `measureFor(config)` on the last because one module stands
+behind every written condition and C7 is what asks which kind it is.
+`registry.test.ts` asserts the exact list of `streak` types, because the
+failure worth catching is a do-something type quietly handed a flame: Cold
+shower and Morning sunlight both wear the declare shape and both would have
+been. `check:decided` asserts the other half, that no surface has its own
+opinion.
+
+**What is left for this phase is the surfaces**, and `consistency.ts` itself.
 
 **`activity_streaks` keeps being written for every type, including the twelve.**
 The number stops being shown, not computed. `verify` is untouched, nothing

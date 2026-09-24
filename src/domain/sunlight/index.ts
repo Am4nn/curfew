@@ -17,6 +17,7 @@ export const sunlightActivity = abstinenceActivity({
   description: "Outside, early",
   icon: "sunlight",
   category: "body",
+  measure: "consistency",
   label: "Confirm",
   window: { open: "10:00", close: "12:00" },
   cutoff: { label: "Counts as morning until", default: "10:00" },

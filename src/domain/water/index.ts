@@ -26,6 +26,7 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
   description: "Glasses through the day",
   icon: "water",
   category: "body",
+  measure: "consistency",
 
   defaults: {
     schedule: EVERY_DAY,

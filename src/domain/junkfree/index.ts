@@ -9,6 +9,7 @@ export const junkfreeActivity = abstinenceActivity({
   description: "A day without it",
   icon: "junkfree",
   category: "food",
+  measure: "streak",
   label: "Confirm",
   window: { open: "20:00", close: "23:59" },
   cutoff: null,

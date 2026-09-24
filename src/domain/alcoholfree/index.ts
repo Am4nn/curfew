@@ -8,6 +8,7 @@ export const alcoholfreeActivity = abstinenceActivity({
   description: "A day without a drink",
   icon: "alcoholfree",
   category: "food",
+  measure: "streak",
   label: "Confirm",
   window: { open: "20:00", close: "23:59" },
   cutoff: null,

@@ -161,6 +161,28 @@ export type CheckinKind = "tap" | "counter" | "number" | "camera" | "declare";
 export type Category = "body" | "food" | "mind" | "sleep";
 
 /**
+ * Which number this activity carries, EVERYWHERE it appears (1.49).
+ *
+ * Home, the group hub, the activity screen, Stats and the stop-cost screen all
+ * ask the activity and render the answer. No surface branches on a type key or
+ * on a category, which is invariant 6 applied to a number rather than to a
+ * verdict.
+ *
+ * `"streak"` for an abstinence, where a consecutive count IS the achievement:
+ * one lapse genuinely restarts something, and "47 days no alcohol" is the
+ * thing somebody is proud of.
+ *
+ * `"consistency"` for anything you DO, where a consecutive count is an
+ * artifact: four sessions a week for a year is a stronger habit than twelve
+ * days of a daily run, and a streak ranks the second higher.
+ *
+ * Repair, grey and the Restore screen follow this and need no rule of their
+ * own: all three are properties OF a streak, so they exist wherever one does
+ * (1.50).
+ */
+export type Measure = "consistency" | "streak";
+
+/**
  * The two answers a `declare` type offers, in its own words.
  *
  * The engine draws them and never reads what they say, so invariant 6 holds.
@@ -315,6 +337,17 @@ export interface ActivityType<Config, Evidence> {
   checkin: { kind: CheckinKind; answers?: DeclareAnswers };
   /** 1.16. Undefined on a condition somebody wrote themselves. */
   category?: Category;
+  /** 1.49. The one number this activity carries, on every surface. */
+  measure: Measure;
+  /**
+   * The same thing when it depends on the CONFIG rather than the module.
+   *
+   * Only a written condition uses it: one module stands behind all of them
+   * (1.19) and C7 asks whether each is something you do or something you
+   * avoid, which is exactly the question `measure` answers for the other
+   * seventeen. Same shape as `displayName` and `answersFor`.
+   */
+  measureFor?(config: Config): Measure;
   /**
    * What to CALL this activity on screen, when `name` is not it.
    *

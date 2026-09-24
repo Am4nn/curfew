@@ -12,6 +12,7 @@ export const socialfreeActivity = abstinenceActivity({
   description: "A day off the feeds",
   icon: "socialfree",
   category: "mind",
+  measure: "streak",
   label: "Confirm",
   window: { open: "20:00", close: "23:59" },
   cutoff: { label: "Nothing after", default: "18:00" },

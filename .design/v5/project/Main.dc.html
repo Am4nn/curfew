@@ -175,7 +175,23 @@
           <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
             <div style="display: flex; align-items: center; gap: 7px;">
               <span style="font-size: 16px; font-weight: 500; color: {{r.nameTone}};">{{r.name}}</span>
-              <sc-if value="{{r.alive}}" hint-placeholder-val="{{true}}">
+              <!--
+                1.49. ONE number, and the ACTIVITY decides which. A thing you
+                do carries a consistency percentage, because four sessions a
+                week for a year is a stronger habit than twelve days of a daily
+                run and a streak ranks the second higher. An abstinence keeps
+                the flame, because "47 days" is the achievement there.
+
+                This screen does not choose. It draws `measure`, and so does
+                the group hub, and so does Stats.
+              -->
+              <sc-if value="{{r.pct}}" hint-placeholder-val="{{true}}">
+                <span style="display: flex; align-items: center; gap: 3px;">
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; font-weight: 600; color: #ffffff;">{{r.pctLabel}}</span>
+                  <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="{{r.trendTone}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.trendPath}}"/></svg>
+                </span>
+              </sc-if>
+              <sc-if value="{{r.alive}}" hint-placeholder-val="{{false}}">
                 <span style="display: flex; align-items: center; gap: 2px;">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="{{r.flame}}" aria-hidden="true"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
                   <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; font-weight: 600; color: {{r.flame}};">{{r.streak}}</span>
@@ -253,11 +269,25 @@
           <div style="display: flex; align-items: center; gap: 11px; padding: 0 16px 0 63px;">
             <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 11px; padding: 10px 0; border-top: 0.5px solid rgba(255,255,255,0.08);">
               <span style="flex-grow: 1; font-size: 15px; color: {{s.nameTone}};">{{s.name}}</span>
-              <!-- its OWN streak. that is the whole reason these stayed five types -->
-              <span style="flex: none; display: flex; align-items: center; gap: 3px;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="{{s.flame}}" aria-hidden="true"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
-                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: {{s.flame}};">{{s.streak}}</span>
-              </span>
+              <!--
+                Its OWN number, which is the whole reason these stayed five
+                types. 1.49 is why two of the five read differently: Cold
+                shower and Morning sunlight are things you DO wearing the
+                declare shape, so they carry a percentage, and the three
+                abstinences beside them keep the flame.
+
+                This is the hardest case for the rule and the best test of it.
+                If a mixed list reads clearly here it reads clearly anywhere.
+              -->
+              <sc-if value="{{s.pct}}" hint-placeholder-val="{{true}}">
+                <span style="flex: none; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: {{s.pctTone}};">{{s.pctLabel}}</span>
+              </sc-if>
+              <sc-if value="{{s.alive}}" hint-placeholder-val="{{false}}">
+                <span style="flex: none; display: flex; align-items: center; gap: 3px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="{{s.flame}}" aria-hidden="true"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: {{s.flame}};">{{s.streak}}</span>
+                </span>
+              </sc-if>
               <span style="flex: none; min-width: 52px; text-align: right; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: {{s.stateTone}};">{{s.state}}</span>
             </span>
           </div>
@@ -439,14 +469,19 @@ class Component extends DCLogic {
     });
     const done = 4, of = 7;
     const open = this.state.simpleOpen;
-    // 1.19: five types, five streaks, one row. Morning sunlight has never been
-    // held, so it carries no flame rather than a zero.
+    // 1.19 and 1.49: five types, one row, and TWO kinds of number in it.
+    // Cold shower and Morning sunlight are things you DO in the declare shape,
+    // so they carry a consistency percentage; the three abstinences keep the
+    // flame, because there a consecutive count is the achievement.
+    //
+    // Morning sunlight has never been done, so it carries an em-dash rather
+    // than a 0%: nought per cent of nothing is a number about no days.
     const simple = [
-      { name: 'Cold shower',      state: 'HELD', streak: '12', on: true },
+      { name: 'Cold shower',      state: 'HELD', pct: '84', on: true },
       { name: 'No junk food',     state: 'HELD', streak: '40', on: true },
       { name: 'No alcohol',       state: 'HELD', streak: '6',  on: true },
       { name: 'No social media',  state: '\u2014', streak: '0', on: false },
-      { name: 'Morning sunlight', state: '\u2014', streak: '0', on: false },
+      { name: 'Morning sunlight', state: '\u2014', on: false },
     ];
     return {
       simpleOpen: open,
@@ -454,7 +489,14 @@ class Component extends DCLogic {
       chevA: open ? 'chev chev-open' : 'chev',
       toggleSimple: () => this.setState({ simpleOpen: !open }),
       simple: simple.map((s) => ({
-        name: s.name, state: s.state, streak: s.streak,
+        name: s.name, state: s.state, streak: s.streak ?? '0',
+        // Exactly one of these is true. A percentage type never has a flame
+        // and a streak type never has a percentage, which is 1.49 drawn
+        // rather than described.
+        pct: s.pct !== undefined,
+        alive: s.pct === undefined && s.streak !== '0',
+        pctLabel: s.pct === undefined ? '' : s.pct + '%',
+        pctTone: s.on ? '#ffffff' : '#8e8e93',
         nameTone: s.on ? '#ffffff' : '#8e8e93',
         stateTone: s.on ? '#30d158' : '#48484a',
         flame: s.on ? ON : '#48484a',
@@ -464,34 +506,51 @@ class Component extends DCLogic {
       })),
       rows: ([
         { name: 'Water', ...icon('water'),
-          streak: '31', flame: ON, glyph: '#ffffff', nameTone: '#ffffff', status: '5 of 8 today',
+          pct: '91', trend: 'flat', glyph: '#ffffff', nameTone: '#ffffff', status: '5 of 8 today',
           plus: true, broken: false, done: false, sep: 'transparent' },
-        // 1.37 GREY says why, 1.45 says it in 34 characters or fewer.
-        // The status line is 13px beside a right-hand control, so a longer
-        // sentence wraps and changes the row height. A state REPLACES the
-        // progress here, never joins it.
-        // 1.37. GREY, and it SAYS SO. A weekly run that cannot reach its
-        // minimum keeps its number, so 15 beside a dead flame reads as a live
-        // streak to everybody who has not been told otherwise. It was drawn
-        // with a dead flame and the words "Run ended yesterday at 15", which is
-        // the BROKEN state, and grey is the one that needed the sentence.
+        // GREY IS GONE FROM THIS ROW, and 1.50 is why rather than a change
+        // of mind. Grey is a property OF a streak: a run that cannot reach its
+        // minimum, holding its number. Reading carries a percentage now, and a
+        // percentage has no run to be unable to save. It simply falls.
+        //
+        // 1.37 put grey here and 1.45 got it inside 34 characters. Both were
+        // right about the row they were written for, and the row changed.
+        //
+        // What replaces it is the honest version of the same warning: a number
+        // that is dropping, with the reason under it. 1.45's budget still
+        // holds, and "Two of three, two days left" is 27.
         { name: 'Reading', ...icon('book'),
-          streak: '15', flame: '#48484a', glyph: '#8e8e93', nameTone: '#ffffff',
-          status: 'Cannot reach three this week',
-          plus: false, broken: true, done: false, sep: SEP },
+          pct: '54', trend: 'down', glyph: '#8e8e93', nameTone: '#ffffff',
+          status: 'Two of three, two days left',
+          plus: false, broken: false, done: false, sep: SEP },
+        // C9: the aim is three and the bar is two, so this day counts.
         { name: 'Food', ...icon('food'),
-          streak: '6', flame: ON, glyph: '#8e8e93', nameTone: '#8e8e93', status: '3 meals, 1,640 calories',
+          pct: '88', trend: 'up', glyph: '#8e8e93', nameTone: '#8e8e93', status: '2 meals, 1,180 calories',
           at: '7:04 PM', plus: false, broken: false, done: true, sep: SEP },
         { name: 'Supplements', ...icon('pill'),
-          streak: '27', flame: ON, glyph: '#8e8e93', nameTone: '#8e8e93', status: 'Both doses',
+          pct: '96', trend: 'flat', glyph: '#8e8e93', nameTone: '#8e8e93', status: 'Both doses',
           at: '8:15 AM', plus: false, broken: false, done: true, sep: SEP },
         { name: 'Sleep', ...icon('moon'),
-          streak: '19', flame: ON, glyph: '#8e8e93', nameTone: '#8e8e93', status: '7h 12m, confirmed',
+          pct: '79', trend: 'up', glyph: '#8e8e93', nameTone: '#8e8e93', status: '7h 12m, confirmed',
           at: '8:02 AM', plus: false, broken: false, done: true, sep: SEP },
+        // The one row on this screen that keeps a flame, and it earns it:
+        // an abstinence is where a consecutive count IS the achievement.
         { name: 'Nightfast', ...icon('night'),
           streak: '14', flame: ON, glyph: '#8e8e93', nameTone: '#8e8e93', status: 'It held',
           at: '9:10 AM', plus: false, broken: false, done: true, sep: SEP },
-      ]).map((r) => ({ ...r, alive: r.streak !== '0' })),
+      ]).map((r) => ({
+        ...r,
+        pct: r.pct !== undefined,
+        pctLabel: r.pct === undefined ? '' : r.pct + '%',
+        // The caret says which way it is going, so direction is never carried
+        // by colour alone. The NUMBER stays flat white either way: 1.11
+        // survives the register change, and a percentage is a number.
+        trendPath: r.trend === 'up' ? 'M2 8l4-4 4 4'
+          : r.trend === 'down' ? 'M2 4l4 4 4-4'
+          : 'M2 6h8',
+        trendTone: r.trend === 'flat' ? '#48484a' : '#8e8e93',
+        alive: r.pct === undefined && r.streak !== '0',
+      })),
       // Two friends whose windows are still open. Names taken from the feed
       // below, so the screen reads as one group rather than two casts.
       risk: [

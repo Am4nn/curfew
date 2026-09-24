@@ -139,8 +139,15 @@
             <span style="font-size: 16px; font-weight: 500; color: #ffffff;">{{a.name}}</span>
             <span style="font-size: 13px; font-weight: 400; color: #8e8e93;">{{a.rule}}</span>
           </div>
+          <!--
+            1.49. The flame is drawn only where the activity carries a streak,
+            which here is Nightfast alone. This list does not decide that: it
+            draws `measure`, the same as Home and the group hub.
+          -->
           <span style="flex: none; display: flex; align-items: center; gap: 3px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="{{a.tone}}"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+            <sc-if value="{{a.isStreak}}" hint-placeholder-val="{{false}}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="{{a.tone}}"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
+            </sc-if>
             <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600; color: {{a.tone}};">{{a.streak}}</span>
           </span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
@@ -213,21 +220,31 @@
 class Component extends DCLogic {
   renderVals() {
     const SEP = 'rgba(255,255,255,0.08)', ON = '#ff375f', OFF = '#48484a';
+    // 1.11 survives the register change: a percentage is a number, so it
+    // is drawn flat white rather than in the flame's pink. The flame is
+    // the only thing on this screen that was ever coloured for feeling.
+    const PCT = '#ffffff';
     const kinds = ['isMoon','isGym','isFood','isWater','isPill','isDesk','isBook','isNight'];
     const one = (k) => Object.fromEntries(kinds.map((x) => [x, x === k]));
     const row = (k, name, rule, streak, tone, sep, href) =>
-      ({ ...one(k), name, rule, streak, tone, sep, href: href || '#' });
+      ({ ...one(k), name, rule, streak, tone, sep, href: href || '#',
+         isStreak: tone !== PCT });
     return {
-      // The same six activities, the same streaks, as Home and Your record.
-      // The rule under each name is the module's own summary of its config.
+      // The same seven activities as Home and Your record, carrying the same
+      // numbers. 1.49: six show a consistency percentage and only Nightfast
+      // keeps a flame, because only an abstinence is a thing where a
+      // consecutive count is the achievement.
+      //
+      // The rule under each name is the module's own summary of its config,
+      // and Food's now carries both of C9's numbers.
       list: [
-        row('isMoon',  'Sleep',       'In bed by 10:30 PM, up by 6:30 AM', '19', ON,  'transparent', 'Configure.dc.html'),
-        row('isGym',   'Gym',         '3 days a week, any days',           '12', ON,  SEP),
-        row('isFood',  'Food',        '3 meals, under 2,000 calories',     '6',  ON,  SEP),
-        row('isWater', 'Water',       '8 glasses a day',                   '31', ON,  SEP),
-        row('isPill',  'Supplements', '2 doses a day',                     '27', ON,  SEP),
-        row('isNight', 'Nightfast',   'Nothing after 8:00 PM',             '14', ON,  SEP),
-        row('isBook',  'Reading',     '30 minutes a day',                  '0',  OFF, SEP),
+        row('isMoon',  'Sleep',       'In bed by 10:30 PM, up by 6:30 AM',        '79%', PCT, 'transparent', 'Configure.dc.html'),
+        row('isGym',   'Gym',         '3 days a week, any days',                  '78%', PCT, SEP),
+        row('isFood',  'Food',        '3 meals, a miss under 2, under 2,000 cal', '88%', PCT, SEP),
+        row('isWater', 'Water',       '8 glasses a day',                          '91%', PCT, SEP),
+        row('isPill',  'Supplements', '2 doses a day',                            '96%', PCT, SEP),
+        row('isNight', 'Nightfast',   'Nothing after 8:00 PM',                    '14',  ON,  SEP),
+        row('isBook',  'Reading',     '30 minutes a day',                         '54%', PCT, SEP),
       ],
     };
   }

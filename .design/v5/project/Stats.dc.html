@@ -256,7 +256,11 @@ class Component extends DCLogic {
     return {
       tiles: [
         { value: '84%', label: 'PERIODS PASSED, 30 DAYS', flame: false },
-        { value: '31', label: 'LONGEST RUNNING STREAK', flame: true },
+        // 1.49. This read LONGEST RUNNING STREAK, which after the
+        // demotion is a fact about the six abstinence types and nothing
+        // else. 66 days is Lally's median to automatic, and the tile now
+        // says how far the strongest one has got.
+        { value: '41/66', label: 'DAYS TO AUTOMATIC, WATER', flame: false },
         { value: '2', label: 'REPAIRS LEFT THIS MONTH', flame: false },
       ],
       weeks: grid.map((week) => ({ days: week.map(cell) })),

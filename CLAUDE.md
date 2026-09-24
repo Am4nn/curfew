@@ -44,8 +44,13 @@ below this block is v3's record and is still true of the deployed app.
 
 Read these three before touching anything:
 
-- `.planning/v4/DECIDED.md` — 1.1 to 1.32 settled, 3.3 open. **The authority.**
+- `.planning/v4/DECIDED.md` — 1.1 to 1.51 settled, 3.3 open. **The authority.**
   Every other v4 file cites it by number.
+- `.planning/v4/COACH.md` — why Ren is a coach and not a chatbot, and the
+  research behind 1.46 to 1.51. C1 to C12 are proposals in it, not decisions;
+  a proposal becomes one only when `DECIDED.md` says so. It also records where
+  C5 was wrong, because a proposal that was corrected is worth more standing
+  than quietly replaced.
 - `.planning/v4/PLAN.md` — eight phases, each with a done condition, and the
   four mechanisms that keep the build from drifting away from DECIDED.
 - `.planning/v4/SCHEMA.md` — six additive migrations, 0033 to 0038. **v4 has no
@@ -55,6 +60,23 @@ Read these three before touching anything:
 another (1.5), Monk mode gives a day a percentage over what you already track
 (1.16), five new activity types arrive under one Home row (1.19, 3.1), and every
 screen is redrawn to the v5 canvas (1.8).
+
+**And since 2026-09-24, the streak stops being the headline (1.49).** Home leads
+with a consistency percentage for the twelve do-something types and keeps the
+flame for the six abstinence types, where a consecutive count is the
+achievement rather than an artifact.
+
+The argument is in this repo rather than in a paper: **five mechanisms exist to
+soften one.** Repair, grey, settling, away days and the Restore screen. When a
+rule needs five exceptions it is wrong for something it is being asked to do.
+Two of the five shrink to the abstinence types and two were never streak
+mechanisms at all (1.50).
+
+**It touches no scoring, verified rather than assumed.** Money and reputation
+never read a streak: fines come from `activity_outcomes` and the curve from
+daily completion. `activity_streaks` keeps being written for every type, so the
+number stops being SHOWN rather than computed, `verify` is unaffected, and
+putting it back is one commit.
 
 **Two things to know before reading the older plans.** The monk bar was priced
 against a foreign key that migration 0012 deleted, so `SCHEMA.md` 0035 is one

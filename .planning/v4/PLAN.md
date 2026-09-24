@@ -30,8 +30,13 @@ changes, so the redesign rides inside each phase. A phase that is only "make it
 look right" is the phase that gets cut when time is short.
 
 **The one hard constraint:** Monk mode aggregates the new types (1.16) and the
-grouped row groups them (1.19), so types come first. Phase 1 types, Phase 2 the
-row, Phase 3 Monk mode, and nothing about the coach until Phase 5.
+grouped row groups them (1.19), so types come first. Phase 1 types, Phase 2
+Home, Phase 3 Monk mode, and nothing about the coach until Phase 5.
+
+**Phase 2 grew on 2026-09-24** (1.51). It was the grouped row; it is now the
+row AND the consistency percentage that replaces the streak on Home for the
+twelve do-something types. Both are presentation-only changes to one screen,
+and splitting them means reviewing Home twice.
 
 ---
 
@@ -121,15 +126,64 @@ per type, in order), `checkin.test.ts:38-62` (which types repeat).
 created and checked in, `check:offer` passes for every new type, and `simulate`
 runs a week with all five and reports no drift.
 
-## Phase 2 — The grouped row (1.19)
+## Phase 2 — Home, rebuilt around consistency (1.19, 1.49, 1.50, 1.51)
+
+Two changes to one screen, done together because they are the same screen and
+the same kind of change. 1.51 is why they share a phase: doing the row now and
+the number three phases later means looking at Home twice and reviewing it
+twice.
+
+**Presentation only, both halves**: no new event, no new score, nothing stored.
+
+### The grouped row (1.19)
 
 Home draws every held-or-slipped type under one expandable row,
-`Simple ones, 3 of 5`. **Presentation only**: no new event, no new score,
-nothing stored. Each keeps its own streak, window and sharing toggle. Catalog,
+`Simple ones, 3 of 5`. Each keeps its own window and sharing toggle. Catalog,
 Activities, Sharing and You list them the same way.
 
-**Done when:** five types occupy one row, opening it shows five streaks, and
-turning one off removes it from the group without touching the other four.
+### The consistency percentage (1.49, C1)
+
+`src/domain/consistency.ts`, pure, derived from check-in times and periods.
+Rate of doing it, weighted by how tightly the presses cluster around the cue
+that C6 established. **Nothing new is stored**: every input is already in
+`events`, so invariant 1 holds and there is no migration.
+
+**A late log does not feed it** (C10), and neither does a press far from the
+cue, which is the fault the activities review found in Cold shower.
+
+### The demotion (1.49)
+
+- Home leads with the percentage for the twelve **do-something** types.
+- The flame stays on the six **abstinence** types, where a consecutive count is
+  the achievement rather than an artifact.
+- `group-view.ts:70` builds `"Sleep 15 · Gym 24"` and draws whichever the
+  member's type carries.
+
+**`activity_streaks` keeps being written for every type, including the twelve.**
+The number stops being shown, not computed. `verify` is untouched, nothing
+migrates, and putting it back is one commit. Three people use this and the
+central number is changing under them, so the reversal has to be cheap.
+
+**Scoring is not touched, and this was verified rather than assumed
+(2026-09-24).** `scoring.ts` imports `closeStreaks` only to maintain the table;
+fines come from `activity_outcomes` and the curve from daily completion.
+`scoring.ts:660`: *"Grace protects the streak, never the fine."*
+
+### Repair and grey follow the streak (1.50)
+
+Neither needs a rule naming which types. Both are properties OF a streak, so
+they apply wherever one is shown and nowhere else. Repair's pool is already
+"two a month for each activity tracked"; the set it counts over is simply
+smaller.
+
+**Settling and away days are untouched.** Neither was ever a streak mechanism:
+both move reputation and fines and neither touches a counter (1.44).
+
+**Done when:** five types occupy one row and turning one off removes it without
+touching the other four; a do-something type shows a percentage that dips on a
+miss and recovers; an abstinence type still shows a flame; a group sees the
+right one for each shared type; `verify` reports no drift, because nothing it
+reads has changed.
 
 ## Phase 3 — Monk mode (1.16, 1.29)
 

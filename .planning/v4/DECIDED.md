@@ -1674,6 +1674,113 @@ and a subscription business, and they overturn two entries on the Not in v4
 list rather than extending one. Curfew stays a habit tracker that happens to
 handle food well.
 
+### 1.49 The streak is demoted, not deleted
+
+Settled 2026-09-24. Aman: *"I dont think streak for our habbit is a good idea."*
+
+**The strongest argument is not in a paper, it is in this repo.** Curfew has
+FIVE mechanisms that exist to soften one: repair, grey, settling, away days,
+and the Restore screen with its abstinence-violation research. A session on
+2026-09-22 went on simplifying that family. When a rule needs five exceptions,
+the rule is wrong for something it is being asked to do.
+
+The evidence agrees. One missed day has no measurable effect on habit formation
+(Lally), and a streak announces the opposite with a number. A streak also
+rewards LOGGING, which is the exact failure invariant 2 exists to prevent from
+the other direction.
+
+**But it is right for a third of the app.** Yesterday's review split the
+eighteen into three kinds, and the streak question does not answer uniformly:
+
+- **"47 days no alcohol" is the achievement.** For an abstinence the
+  consecutive count IS the thing, because one lapse genuinely restarts
+  something. The streak is the correct instrument.
+- **"47 days gym" is an artifact.** Somebody doing gym four times a week for a
+  year has a stronger habit than somebody twelve days into a daily run, and
+  Curfew ranks the second higher.
+
+**The streak is right for exactly the six types where a habit measure is wrong,
+and wrong for the twelve where it works.**
+
+### What Curfew actually is
+
+Two products sharing one number. A **commitment device**, which needs a crisp
+daily binary because you cannot fine a percentage. And a **habit tracker**,
+which needs a measure that degrades rather than snapping. The streak was doing
+both and doing the second badly, and the five patches are the evidence.
+
+### The decision
+
+- **Home leads with a consistency percentage** for the twelve do-something
+  types. It dips on a miss and it does not break.
+- **The flame stays** on the six abstinence types.
+- **Groups see whichever their member's type carries**, so `"Sleep 15 · Gym 24"`
+  becomes a percentage for a do-type and a flame for an abstinence one.
+
+### Why this is safe, and how it is reversible
+
+**Money and reputation never read a streak, verified 2026-09-24.**
+`scoring.ts` imports `closeStreaks` only to maintain the table; fines come from
+`activity_outcomes` and the curve from daily completion. `scoring.ts:660` says
+it in as many words: *"Grace protects the streak, never the fine."*
+
+So this touches no scoring, no fine, no rank and no ledger row. It is a
+DISPLAY change from end to end.
+
+**And it is built as one.** `activity_streaks` keeps being written for every
+type, including the twelve. The number stops being SHOWN, not computed. Nothing
+migrates, `verify` is unaffected, and putting it back is one commit. Three
+people use this app and the central number is changing under them, so the
+reversal has to be cheap.
+
+### The risk, stated rather than argued away
+
+**A streak is the most effective engagement mechanic in consumer software.**
+The evidence against it is about habit FORMATION, not about engagement, and
+those are different questions. Somebody may simply use Curfew less.
+
+What is being kept in its place is a number that can still be protected: "do
+not let it fall under 80" pulls in the same direction without the cliff. That
+is the bet, and it is a bet.
+
+### 1.50 What happens to the five, decided now
+
+Aman: *"Lets fix this here now so nothing is pending and we forget to do later,
+there is no later always now."*
+
+The five are not five of a kind, and the audit says so:
+
+| | What it softens | After 1.49 |
+|---|---|---|
+| **Repair** | a broken streak | survives, **only where a streak survives** |
+| **Grey** | a run that cannot be saved | survives, **only where a streak survives** |
+| **Restore screen** | the break moment | survives, scoped the same way |
+| **Settling** | reputation, for 7 days | **untouched, it was never about streaks** |
+| **Away days** | everything, in advance | **untouched, same reason** |
+
+**Two of the five shrink to the abstinence types. Two were never streak
+mechanisms at all**, which 1.44 already established for settling and which is
+equally true of away days: both move reputation and fines, neither touches a
+counter.
+
+So nothing is deleted and nothing is left pending. **Repair's pool follows its
+own existing rule**, two a month for each activity tracked that has a streak,
+which needs no new arithmetic: the set it counts over is smaller.
+
+**Grey needs no special case either.** It is a property of a streak, so it
+applies wherever one does and nowhere else, without a rule naming which types.
+
+### 1.51 Phase 2 becomes Home, rebuilt around consistency
+
+Settled 2026-09-24, and it is the natural place. Phase 2 was 1.19's grouped row
+and is described as **presentation only: no new event, no new score, nothing
+stored.** 1.49 is the same sentence.
+
+One phase, one Home rebuild, one `SCREENS.md` review gate, rather than doing
+the row now and the number three phases later and looking at Home twice.
+
+C1 lands here too, because the percentage is what the row draws.
+
 ---
 
 ## 2. Confirmed unchanged

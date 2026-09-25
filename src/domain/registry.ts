@@ -77,6 +77,30 @@ export function answersOf(
  * on a type key, which is invariant 6 applied to a number rather than to a
  * verdict.
  */
+/**
+ * What the check-in screen says under the prompt, and what it says answering
+ * costs (1.58).
+ *
+ * ONE PLACE. Before this, eight declare modules carried the same two
+ * sentences: ~40 words each, identical, and the second of them false for two
+ * of the eight. A module says what is true of ITSELF; the engine says what is
+ * true of a kind, which is the rule `summary` has stated since v3.
+ */
+export function stepVoice(
+  activity: ActivityType<unknown, unknown>,
+  config: unknown,
+): { aside?: string; consequence?: string } {
+  if (activity.checkin.kind !== "declare") return {};
+  const carries = measureOf(activity, config);
+  return {
+    aside: "Nobody can check this one. The record is only worth your answer.",
+    consequence:
+      carries === "streak"
+        ? "A slip breaks the streak, and costs your standing in any group you share this with."
+        : "A slip costs your standing in any group you share this with. It does not undo what you have already built.",
+  };
+}
+
 export function measureOf(
   activity: ActivityType<unknown, unknown>,
   config: unknown,

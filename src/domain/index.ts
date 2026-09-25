@@ -100,6 +100,7 @@ export {
   displayNameOf,
   answersOf,
   measureOf,
+  stepVoice,
 } from "./registry";
 export {
   conditionActivity,

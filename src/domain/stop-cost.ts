@@ -71,14 +71,31 @@ function sameAgain(names: string[], named: string[]): string {
  * has to be read.
  */
 export function consequencesOf(typeKey: string, cost: StopCost): Consequence[] {
-  const name = getActivityType(typeKey).name;
+  const type = getActivityType(typeKey);
+  const name = type.name;
   const out: Consequence[] = [];
 
-  if (cost.streak > 0) {
+  // 1.49 and 1.57. This said "Your 31 day streak goes to 0" for every type,
+  // and after the demotion that sentence is false for the twelve that carry a
+  // percentage: they have no streak to lose and nothing on any screen shows
+  // them one. It was a bug written before the phase that would have shipped
+  // it, which is why it is fixed here rather than there.
+  //
+  // What a consistency type actually loses is the repetitions. They are not
+  // deleted, because events are not deleted, but the count stops.
+  if (cost.streak > 0 && type.measure === "streak") {
     out.push({
       what: `Your ${cost.streak} day streak goes to 0.`,
       detail:
-        "Starting again starts at 1. Grace cannot restore a streak you ended yourself.",
+        "Starting again starts at 1. A repair cannot restore a streak you ended yourself.",
+    });
+  }
+
+  if (type.measure === "consistency") {
+    out.push({
+      what: `${name} stops counting toward how established it is.`,
+      detail:
+        "What you have already done is kept. Nothing new is added while it is off, so the number falls as the days age out.",
     });
   }
 

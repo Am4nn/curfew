@@ -16,27 +16,52 @@ const cost = (over: Partial<StopCost> = {}): StopCost => ({
   ...over,
 });
 
+// 1.49 split this in two, and the split is the point of the test now. Gym
+// carries a consistency percentage and has no streak to lose; No alcohol
+// carries a streak and does. The same helper against both is what catches a
+// sentence that is true of one and false of the other, which is exactly what
+// was shipped before this round found it.
 const text = (c: StopCost) => consequencesOf("gym", c).map((x) => x.what);
+const streakText = (c: StopCost) =>
+  consequencesOf("alcoholfree", c).map((x) => x.what);
+
+const KEEPS_COUNTING = "Gym stops counting toward how established it is.";
 
 describe("what stopping costs, in words", () => {
   it("names all four when all four apply", () => {
     expect(text(cost())).toEqual([
-      "Your 24 day streak goes to 0.",
+      KEEPS_COUNTING,
       "Gym stops being shared with Morning Crew and Founders.",
       "The 18 photographs both groups have seen go for good.",
       "Your ceiling in both groups drops.",
     ]);
   });
 
-  it("says nothing about groups to somebody in none", () => {
+  // THE BUG THIS ROUND FOUND, 1.57. The line was "Your 24 day streak goes to
+  // 0" for every type, and after 1.49 that is false for the twelve carrying a
+  // percentage: they have no streak, and no screen shows them one. It was
+  // written before the phase that would have shipped it.
+  it("never claims a streak from a type that carries a percentage", () => {
+    const lines = text(cost({ streak: 24 }));
+    expect(lines.some((l) => l.includes("streak"))).toBe(false);
+    expect(lines[0]).toBe(KEEPS_COUNTING);
+  });
+
+  it("says what a percentage type actually loses, which is the counting", () => {
+    expect(text(cost({ groups: [], photoGroups: [], photos: 0, ceilingDrops: [] }))).toEqual([
+      KEEPS_COUNTING,
+    ]);
+  });
+
+  it("still names the streak for a type that carries one", () => {
     expect(
-      text(cost({ groups: [], photoGroups: [], photos: 0, ceilingDrops: [] })),
+      streakText(cost({ groups: [], photoGroups: [], photos: 0, ceilingDrops: [] })),
     ).toEqual(["Your 24 day streak goes to 0."]);
   });
 
   it("does not claim a streak that is not there", () => {
-    expect(text(cost({ streak: 0 }))[0]).toBe(
-      "Gym stops being shared with Morning Crew and Founders.",
+    expect(streakText(cost({ streak: 0 }))[0]).toBe(
+      "No alcohol stops being shared with Morning Crew and Founders.",
     );
   });
 

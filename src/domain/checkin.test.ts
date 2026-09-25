@@ -1,6 +1,6 @@
 import type { Schedule } from "./schedule";
 import { describe, it, expect } from "vitest";
-import { getActivityType, registeredKeys } from "./index";
+import { getActivityType, registeredKeys, stepVoice } from "./index";
 import { foodActivity, FOOD_STEP } from "./food";
 import { studyActivity, STUDY_STEP } from "./study";
 import { stepsActivity, STEPS_STEP } from "./steps";
@@ -208,11 +208,49 @@ describe("the abstinence question", () => {
     expect(step.key).toBe(DECLARE_STEP);
   });
 
-  it("carries the same two lines under and beneath it", () => {
+  // 1.58. A module says what is true of ITSELF. The two lines under the
+  // prompt are true of the KIND, and eight modules were each carrying their
+  // own copy: ~40 identical words apiece, which is eight chances to word it
+  // differently and, as it turned out, two chances to be wrong.
+  it("carries only its own question, and leaves the rest to the engine", () => {
     const [step] = sugarfreeActivity.steps(sugarfreeActivity.defaults.config, DAY);
     expect(step.prompt).toBe("No sugar today. Did it hold?");
-    expect(step.aside).toContain("Nobody can check this one.");
-    expect(step.consequence).toContain("breaks the streak");
+    expect(step.aside).toBeUndefined();
+    expect(step.consequence).toBeUndefined();
+  });
+
+  it("no declare module writes either line for itself", () => {
+    const guilty = registeredKeys().filter((key) => {
+      const type = getActivityType(key);
+      if (type.checkin.kind !== "declare") return false;
+      const [first] = type.steps(type.defaults.config, DAY);
+      return first?.aside !== undefined || first?.consequence !== undefined;
+    });
+    expect(guilty).toEqual([]);
+  });
+
+  // THE BUG THIS FIXES. The one sentence said "a slip breaks the streak", in
+  // all eight copies, and after 1.49 that is false for the two declare types
+  // that carry a percentage: you cannot break a streak you do not have.
+  // Written from `measure` it cannot be wrong, because nothing hands a
+  // consistency type that sentence.
+  it("tells you what a slip actually costs, per the number the type carries", () => {
+    const abstinence = getActivityType("sugarfree");
+    const doing = getActivityType("coldshower");
+
+    const forStreak = stepVoice(abstinence, abstinence.defaults.config);
+    expect(forStreak.aside).toContain("Nobody can check this one.");
+    expect(forStreak.consequence).toContain("breaks the streak");
+
+    const forPercent = stepVoice(doing, doing.defaults.config);
+    expect(forPercent.aside).toBe(forStreak.aside);
+    expect(forPercent.consequence).not.toContain("streak");
+    expect(forPercent.consequence).toContain("standing");
+  });
+
+  it("says nothing at all for a type that is not a declare", () => {
+    const water = getActivityType("water");
+    expect(stepVoice(water, water.defaults.config)).toEqual({});
   });
 
   it("sugar-free has no cut-off, nightfast does", () => {

@@ -1877,6 +1877,142 @@ and is computed with one. Deleting it would be removing a correct mechanism
 because it is rarely reached, which is a different argument from the one that
 demoted the streak, and it has not been made.
 
+### 1.55 Phase 2's preflight, and the four things it had not decided
+
+Settled 2026-09-25, from a sweep asked for before building: is everything
+decided, will the build drift from the designs, and are there bugs waiting.
+Seven things. Three were already wrong and four were undecided.
+
+**The number's detail lives on Configure, above the controls.** It had no board
+at all: "Established", "Usually" and the countdown appear on zero artboards,
+and there is no activity DETAIL screen, because `/activities/[key]` IS the
+configure screen. Putting it there is one visit rather than two: C4 is already
+adding a line to that screen, it already states the rule above the controls,
+and it is where somebody goes when they are thinking about one activity.
+
+**The grouped row is every STREAK type**, not every declare-kind type. 1.19
+said "held-or-slipped", which was the same set until 1.49 split it. It is now
+three different sets:
+
+| Rule | Set |
+|---|---|
+| declare kind | nightfast, sugarfree, **coldshower**, **sunlight**, junkfree, alcoholfree, socialfree, condition |
+| **streak measure** | **screen**, nightfast, sugarfree, junkfree, alcoholfree, socialfree, condition |
+| what Main drew | the five 3.1 added, which is a hardcoded list of keys |
+
+`measure` wins. Cold shower and Morning sunlight carry percentages and belong
+with the rows above; Screen carries a streak and belongs in the row even though
+it is a number and not a declare. **Home becomes the things you do, plus one
+row of the things you avoid.** The third option was a hardcoded list of five
+type keys, which is the switch-on-a-key invariant 6 exists to prevent.
+
+**Settling counts as a repetition, paused does not count at all.** A settling
+day you passed is a real repetition: settling holds REPUTATION still and never
+the behaviour (1.44). An away day is one you told Curfew not to judge, so it
+leaves the denominator rather than counting as a miss, which is the whole point
+of declaring it.
+
+**The trend caret compares the number with itself seven periods ago.** Same
+function run twice, no new arithmetic. A week is long enough that the arrow
+does not flicker daily, which "against yesterday" would.
+
+### 1.56 Where the consistency read lives
+
+Settled 2026-09-25, because the sweep found the data path did not exist and
+nothing said where it would go.
+
+**`standingsFor` grows to carry it.** That function already batches every
+type's streak for one member in one pass and is already cached per request, and
+a second parallel read would be a second place the same question is asked.
+`Standing` gains `consistency: Consistency | null`, null for a `streak` type.
+
+**Two reads, both batched.** `activity_scores` for the last thirty scheduled
+periods per type, and `events` for the press that decided each, converted to
+minutes past midnight in the member's own zone. Neither is per row: Home draws
+seven and would otherwise issue fourteen queries, which is the shape of the
+problem `listUserActivities` already has a comment about.
+
+**Nothing is stored.** Every input is in `events` and `activity_scores`
+already, so invariant 1 holds, there is no migration, and `verify` has nothing
+new to diff.
+
+### 1.57 Three things that were already wrong
+
+**`stop-cost.ts` says "Your 31 day streak goes to 0."** It tells somebody what
+they give up by untracking an activity, and for a `consistency` type that
+sentence is false from the moment Phase 2 ships. Fixed now rather than in the
+phase, because it is a bug in code that exists and not a decision about code
+that does not.
+
+**A preview approved on 2026-09-24 contradicts 1.49.** The menu sketch that
+settled where the number goes showed Gym with `Streak 14` AND `Established
+62%`, drawn before the demotion settled. A `consistency` type shows no streak
+anywhere. **The sketch is superseded**, and it is written down here rather than
+quietly not built, because it was approved and somebody could reasonably build
+from it.
+
+**Main's grouped row was a hardcoded list of five keys.** See 1.55.
+
+### 1.58 Less explaining, and the engine says what is true of a kind
+
+Settled 2026-09-25. Aman: *"an other non vibe coded app does is they dont have
+so much so explaining text and have proper spacing and less text."*
+
+**Measured before it was agreed with.** 41 boards, median 82 visible words,
+which is fine. The modules were not:
+
+| | |
+|---|---|
+| the eight `declare` types | **73 to 90 words** of explanation each |
+| the ten older types | **2 to 43 words** each |
+
+Adding five conditions in Phase 1 multiplied the same sentences by eight.
+
+**Four sentences, repeated.** `aside` identical in all eight, `consequence`
+identical in all eight, `evidence.detail` in five, `note` in four. Somebody
+tracking five conditions read the same two sentences five times.
+
+**And one of them was false.** `consequence` said *"a slip breaks the
+streak"*, and after 1.49 Cold shower and Morning sunlight carry a percentage
+and have no streak to break. Eight copies, two of them wrong, found by counting
+words rather than by reading code.
+
+### The rule, which already existed
+
+`ActivityType.summary`'s own documentation has said it since v3:
+
+> ONLY the module's own half. How often, when the day starts and how many
+> misses are forgiven are the engine's, **written once by the engine in one
+> voice**, because they read the same for all twelve types and a module writing
+> them again would be twelve chances to word it differently.
+
+The declare types broke it. `aside` and `consequence` are not facts about Cold
+shower; they are facts about **what a declare type is** and **which number it
+carries**.
+
+**`stepVoice(activity, config)` in the registry writes both**, one sentence per
+kind and one per measure. The modules carry neither. **652 words across the
+eight became 301**, and the bug is not fixed so much as made unwritable:
+nothing hands a `consistency` type a sentence about its streak.
+
+### Explained once, at setup, then not again
+
+The evidence rule and the module's note rendered on the configure screen every
+time somebody opened it to change a target. Same two paragraphs, every visit.
+**A sentence read fifty times is furniture rather than information.**
+
+Both still appear in the SETUP flow, where they are new and where somebody is
+deciding whether to track the thing at all. The rule itself stays on both,
+because the rule is what the screen is about; what goes is the explanation OF
+the rule.
+
+### Spacing comes after, not with
+
+Removing forty words from a screen changes the rhythm of every board, so
+measuring gutters and line-height before the cut would be measuring a layout
+that is about to change. The boards get redrawn, then spacing gets its own
+pass.
+
 ---
 
 ## 2. Confirmed unchanged

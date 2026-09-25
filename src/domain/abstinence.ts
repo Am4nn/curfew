@@ -160,10 +160,10 @@ export function abstinenceActivity(spec: {
           // corrects themselves is telling the truth the second time.
           repeats: true,
           prompt: spec.prompt(config),
-          aside:
-            "Nobody can check this one. The record is only worth what your answer is worth.",
-          consequence:
-            "A slip breaks the streak and costs your standing in any group you share this with. It costs nothing else.",
+          // `aside` and `consequence` were here, identical in all eight
+          // callers, and the engine writes them now (1.58). The second was
+          // also false for Cold shower and Morning sunlight, which carry a
+          // percentage and have no streak to break.
         },
       ];
     },

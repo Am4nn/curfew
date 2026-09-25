@@ -20,6 +20,7 @@ import {
   daysDoneIn,
   displayNameOf,
   answersOf,
+  stepVoice,
 } from "@/domain";
 import { getUserActivity } from "./activities";
 import { timezoneHistory } from "./config";
@@ -249,6 +250,11 @@ export async function getCheckinState(
   for (const row of rows) row.atLabel = label(new Date(row.at), timezone);
 
   const steps = type.steps(activity.config, period);
+  // 1.58. One voice for what is true of a KIND, resolved once rather than
+  // per step: eight declare modules were each carrying the same two
+  // sentences, and one of them was false for the two that carry a
+  // percentage rather than a streak.
+  const voice = stepVoice(type, activity.config);
   // With the check-ins, because a window can be anchored to a press: sleep's
   // confirm opens half an hour after Wake. Without them the module comes back
   // marked `waitingOn`, which is the right answer for a press that has not
@@ -322,8 +328,11 @@ export async function getCheckinState(
       repeats: step.repeats ?? false,
       fields: step.fields ?? [],
       prompt: step.prompt ?? null,
-      aside: step.aside ?? null,
-      consequence: step.consequence ?? null,
+      // 1.58. The module says what is true of ITSELF; the engine says what
+      // is true of a kind, so a module can no longer word it differently
+      // or be wrong about which number it carries.
+      aside: voice.aside ?? step.aside ?? null,
+      consequence: voice.consequence ?? step.consequence ?? null,
       hint:
         type.hint?.({
           periodStart: period,

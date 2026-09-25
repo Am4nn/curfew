@@ -37,9 +37,26 @@ export interface CheckinStep {
   fields?: ConfigField[];
   /** The question a `declare` step asks. */
   prompt?: string;
-  /** The small grey line under the prompt. */
+  /**
+   * The small grey line under the prompt.
+   *
+   * WRITTEN BY THE ENGINE, not by a module (1.58). It says what is true of the
+   * KIND, and eight declare modules were each carrying the same sentence:
+   * "Nobody can check this one." Somebody tracking five conditions read it
+   * five times, and eight copies are eight chances to word it differently.
+   *
+   * Same rule `summary` already states for how often and when the day starts.
+   */
   aside?: string;
-  /** What answering costs, stated as a fact at the foot of the screen. */
+  /**
+   * What answering costs, stated as a fact at the foot of the screen.
+   *
+   * WRITTEN BY THE ENGINE from `measure` (1.58). The eight copies said "a slip
+   * breaks the streak", which after 1.49 is FALSE for Cold shower and Morning
+   * sunlight: both carry a percentage and have no streak to break. Written
+   * from the measure it cannot be wrong, because nothing hands a consistency
+   * type that sentence.
+   */
   consequence?: string;
 }
 

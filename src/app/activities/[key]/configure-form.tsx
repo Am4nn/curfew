@@ -753,8 +753,19 @@ export function ConfigureForm({
         )}
       </div>
 
-      <EvidenceFact rule={type.evidence} />
-      {type.note ? <Note>{type.note}</Note> : null}
+      {/*
+        1.58. EXPLAINED ONCE, AT SETUP, THEN NOT AGAIN.
+
+        The evidence rule and the module's note used to render here too, on
+        the screen somebody opens every time they change a target. They are
+        the same two paragraphs every visit, and a sentence read fifty times
+        is furniture rather than information.
+
+        Both still appear in the setup flow above, which is where they are
+        new and where somebody is deciding whether to track this at all. The
+        rule itself stays on both, because the rule is what the screen is
+        about; what goes is the explanation OF the rule.
+      */}
       {error ? <Note tone="penalty">{error}</Note> : null}
 
       {/* Four things happen on this press and it used to name none of them

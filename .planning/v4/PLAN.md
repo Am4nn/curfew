@@ -142,7 +142,12 @@ the same kind of change. 1.51 is why they share a phase: doing the row now and
 the number three phases later means looking at Home twice and reviewing it
 twice.
 
-**Presentation only, both halves**: no new event, no new score, nothing stored.
+**Presentation only, all of it**: no new event, no new score, nothing stored.
+Every input is already in `events` and `activity_scores`, so invariant 1 holds,
+nothing migrates, and `verify` has nothing new to diff.
+
+**The grouped row is every STREAK type** (1.55), which is seven and includes
+Screen. Home becomes the things you do, plus one row of the things you avoid.
 
 ### The grouped row (1.19)
 
@@ -165,6 +170,21 @@ window, so a missed day simply adds nothing and old ones age out. That is the
 whole difference from a streak, and it is a property of the arithmetic rather
 than a rule laid over it: there is no branch anywhere that says what a miss
 does.
+
+### Where the number comes from (1.56)
+
+`standingsFor` grows `consistency: Consistency | null`, null for a `streak`
+type. Two batched reads, not two per row: `activity_scores` for the last thirty
+scheduled periods per type, and `events` for the press that decided each,
+converted to minutes past midnight in the member's own zone.
+
+**Settling counts as a repetition; paused does not count at all** (1.55).
+
+### Where its detail is drawn (1.55)
+
+Configure, above the controls, beside C4's line. There is no activity detail
+screen and `/activities/[key]` is Configure, so this is one visit rather than
+two: the percentage, the usual time, and the countdown in repetitions.
 
 ### The demotion (1.49)
 

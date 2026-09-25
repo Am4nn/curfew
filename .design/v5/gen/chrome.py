@@ -290,9 +290,9 @@ def top_action(label, icon=ADD_ICON, href=None, aria=None, indent='    '):
     people do not read, and every board that had one had a different one."""
     svg = ('<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" '
            'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg>' % icon)
-    inner = ('style="flex: none; height: 34px; margin-right: -2px; padding: 0 14px; border-radius: 999px; '
+    inner = ('style="flex: none; height: 34px; margin-right: -2px; padding: 0 12px; border-radius: 999px; '
              'border: 0; background: %s; color: #ffffff; font-family: inherit; font-size: 15px; '
-             'font-weight: 600; display: flex; align-items: center; gap: 7px; text-decoration: none;"'
+             'font-weight: 600; display: flex; align-items: center; gap: 8px; text-decoration: none;"'
              % PINK)
     label_span = '<span>%s</span>' % label
     if href:
@@ -312,7 +312,7 @@ def wordmark(size=13, colour=None, gap=10, mark_size=None):
 def nav(href, label, right=''):
     """44px nav bar. The 44x44 target is offset -12px so the chevron's optical
     left edge lands on the 20px margin, above the large title's first letter."""
-    return ("""  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+    return ("""  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center;">
     <a href="%s" aria-label="%s" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
     </a>
@@ -325,7 +325,7 @@ def title(text, sub=None, top=4):
     out = '  <div style="flex: none; padding: %dpx 20px 0;">\n' % top
     out += '    <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">%s</h1>\n' % text
     if sub:
-        out += ('    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: %s;">%s</span>\n'
+        out += ('    <span style="display: block; margin-top: 4px; font-size: 15px; line-height: 1.45; color: %s;">%s</span>\n'
                 % (GREY, sub))
     out += '  </div>\n'
     return out
@@ -384,7 +384,7 @@ def tabbar(active=None):
     these artboards do not draw. The active tab is FILLED as well as tinted, so
     the state is never carried by colour alone."""
     out = ('  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); '
-           'border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">\n')
+           'border-top: 0.5px solid #2c2c2e; padding: 0 4px 8px;">\n')
     for href, label, filled, stroked in _TABS:
         on = (href == active)
         colour = PINK if on else GREY

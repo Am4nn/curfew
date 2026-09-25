@@ -76,22 +76,22 @@
     No circle on an opaque screen: the disc is only for a chevron over a
     photograph, where a bare glyph would be illegible.
   -->
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center;">
     <a href="Standing.dc.html" aria-label="Back to Standing" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
     </a>
     <span style="flex-grow: 1;"></span>
   </div>
 
-  <div style="flex: none; padding: 4px 20px 0;">
+  <div style="flex: none; padding: 4px 16px 0;">
     <span style="font-size: 34px; font-weight: 700; letter-spacing: 0.01em;">How standing works</span>
   </div>
 
   <!-- where you are -->
-  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 16px; display: flex; flex-direction: column; gap: 13px;">
-    <div style="display: flex; align-items: flex-end; gap: 10px;">
+  <div style="flex: none; margin: 20px 16px 0; border-radius: 14px; background: #1c1c1e; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: flex-end; gap: 8px;">
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1;">692</span>
-      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #6ba17f; padding-bottom: 5px;">DISCIPLINE</span>
+      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #6ba17f; padding-bottom: 4px;">DISCIPLINE</span>
     </div>
     <div style="position: relative; height: 6px; border-radius: 999px; background: #2c2c2e;">
       <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 69.2%; border-radius: 999px; background: #6ba17f;"></div>
@@ -100,13 +100,13 @@
   </div>
 
   <!-- the ladder -->
-  <div style="flex: none; margin: 26px 20px 0;">
+  <div style="flex: none; margin: 24px 16px 0;">
     <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">The five bands</span>
   </div>
 
-  <div style="flex: none; margin: 12px 20px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
+  <div style="flex: none; margin: 12px 16px 0; border-radius: 12px; background: #1c1c1e; overflow: hidden;">
     <sc-for list="{{bands}}" as="b" hint-placeholder-count="5">
-      <div style="display: flex; align-items: center; gap: 13px; padding-left: 16px; background: {{b.bg}};">
+      <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px; background: {{b.bg}};">
         
         <sc-if value="{{b.isDoubt}}" hint-placeholder-val="{{true}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bd736a" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" style="flex: none;"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M7 18 17 6.6"/></svg></sc-if>
         <sc-if value="{{b.isIntent}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" style="flex: none;"><path d="M12 21v-8"/><path d="M12 13C12 9.2 9.2 7 5.5 7c0 3.8 2.7 6 6.5 6Z"/><path d="M12.5 13c0-3.2 2.4-5.2 5.8-5.2 0 3.2-2.4 5.2-5.8 5.2Z"/></svg></sc-if>
@@ -114,7 +114,7 @@
         <sc-if value="{{b.isDiscipline}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6ba17f" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" style="flex: none;"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M8.7 11.8 11.2 14.3 15.6 9.8"/></svg></sc-if>
         <sc-if value="{{b.isUnbroken}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff7a2f" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" style="flex: none;"><path d="M2.5 20 9 7.5 12.4 14 15 9.6 21.5 20Z"/><path d="M6.6 14.2h4.6"/></svg></sc-if>
        
-        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{b.sep}};">
+        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{b.sep}};">
           <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
             <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.09em; color: {{b.tone}};">{{b.name}}</span>
             <span style="font-size: 13.5px; font-weight: 400; color: #8e8e93;">{{b.meaning}}</span>
@@ -126,7 +126,7 @@
   </div>
 
   <!-- the one glow in the app -->
-  <div style="flex: none; margin: 26px 20px 0;">
+  <div style="flex: none; margin: 24px 16px 0;">
     <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">And one title</span>
   </div>
 
@@ -142,7 +142,7 @@
     A hairline in the same gold marks the card instead, and the halo on the
     emblem is strengthened slightly now that it carries the meaning alone.
   -->
-  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; border: 1px solid rgba(255,210,63,0.30); padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 11px;">
+  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: #1c1c1e; border: 1px solid rgba(255,210,63,0.30); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
     <span style="width: 54px; height: 54px; border-radius: 999px; border: 2px solid #ffd23f; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 26px rgba(255,210,63,0.52);">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" style="flex: none; filter: drop-shadow(0 0 6px #ffd23f);"><path d="M3.2 7.6 7.4 13l4.6-7.6L16.6 13l4.2-5.4V19H3.2Z"/><path d="M3.2 19h17.6"/></svg>
     </span>
@@ -154,15 +154,15 @@
       notch inside a ten does. The gold FILLS, it does not glow: the halo on
       the emblem is the glow, and a second one would make the first mean less.
     -->
-    <div style="align-self: stretch; margin-top: 7px; display: flex; flex-direction: column; gap: 9px;">
-      <div style="display: flex; gap: 3px;">
+    <div style="align-self: stretch; margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; gap: 2px;">
         <sc-for list="{{tens}}" as="t" hint-placeholder-count="6">
           <span style="flex: 1 1 0; height: 6px; border-radius: 999px; background: #2c2c2e; display: block; overflow: hidden;">
             <span style="display: block; height: 6px; border-radius: 999px; background: #ffd23f; width: {{t.fill}};"></span>
           </span>
         </sc-for>
       </div>
-      <div style="display: flex; align-items: baseline; gap: 10px;">
+      <div style="display: flex; align-items: baseline; gap: 8px;">
         <span style="flex-grow: 1; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8e8e93;">41 OF 60 CLEAN DAYS</span>
         <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #8e8e93;">19 TO GO</span>
       </div>
@@ -170,14 +170,14 @@
   </div>
 
   <!-- the honest note -->
-  <div style="flex: none; margin: 22px 20px 0; display: flex; gap: 11px;">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
+  <div style="flex: none; margin: 20px 16px 0; display: flex; gap: 12px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" style="flex: none; margin-top: 2px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
     <span style="font-size: 14px; font-weight: 400; color: #8e8e93; line-height: 1.45;">Per group. A day nobody scheduled is not a day anybody failed.</span>
   </div>
 
   <div style="flex-grow: 1;"></div>
 
-  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 4px 8px;">
     <a href="Main.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
       <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2.5v3M16 2.5v3M3 9.5h18"/></svg>
       <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Today</span>

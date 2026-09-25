@@ -28,7 +28,7 @@ a.append("""
     reading under which a glow is honest in this app.
   -->
   <div style="flex-grow: 1;"></div>
-  <div style="flex: none; display: flex; flex-direction: column; align-items: center; padding: 0 30px;">
+  <div style="flex: none; display: flex; flex-direction: column; align-items: center; padding: 0 32px;">
 """)
 a.append(hero(176, 'lvspa', 0))
 a.append("""
@@ -47,7 +47,7 @@ a.append("""
       </sc-for>
     </div>
 
-    <p class="sp-line" style="margin: 18px 0 0; font-family: %s; font-size: 12.5px; font-weight: 600; letter-spacing: 0.2em; line-height: 1.45; color: %s; text-align: center; text-transform: uppercase;">Windows close. Be there.</p>
+    <p class="sp-line" style="margin: 16px 0 0; font-family: %s; font-size: 12.5px; font-weight: 600; letter-spacing: 0.2em; line-height: 1.45; color: %s; text-align: center; text-transform: uppercase;">Windows close. Be there.</p>
   </div>
   <div style="flex-grow: 1.25;"></div>
 """ % (DISPLAY, LOGOTYPE, MONO, GREY))

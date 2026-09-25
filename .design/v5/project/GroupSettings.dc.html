@@ -69,7 +69,7 @@
 </helmet>
 
 <div class="stage" style="width: 390px; height: 1390px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center;">
     <a href="Group.dc.html" aria-label="Back to Wing" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
     </a>
@@ -77,14 +77,14 @@
   </div>
   <div style="flex: none; padding: 4px 20px 0;">
     <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">Wing</h1>
-    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">Three members. You joined 2 July.</span>
+    <span style="display: block; margin-top: 4px; font-size: 15px; line-height: 1.45; color: #8e8e93;">Three members. You joined 2 July.</span>
   </div>
   <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">What you share here</span></div>
-  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: #8e8e93;">On means Wing sees it, photographs included.</p>
-  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+  <p style="flex: none; margin: 8px 16px 0; font-size: 13.5px; line-height: 1.45; color: #8e8e93;">On means Wing sees it, photographs included.</p>
+  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
     <sc-for list="{{shares}}" as="s" hint-placeholder-count="5">
       <div style="padding-left: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{s.sep}};">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{s.sep}};">
           <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
             <span style="font-size: 16px; font-weight: 500;">{{s.name}}</span>
             <span style="font-size: 12.5px; color: #8e8e93;">{{s.note}}</span>
@@ -97,7 +97,7 @@
     </sc-for>
   </div>
   <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Who runs Wing</span></div>
-  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
     <sc-for list="{{people}}" as="p" hint-placeholder-count="3">
       <div style="padding-left: 16px;">
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{p.sep}};">
@@ -109,24 +109,24 @@
     </sc-for>
   </div>
   <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">The rules here</span></div>
-  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
     <sc-for list="{{rules}}" as="r" hint-placeholder-count="4">
       <div style="padding-left: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{r.sep}};">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{r.sep}};">
           <span style="flex-grow: 1; font-size: 16px;">{{r.name}}</span>
           <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: {{r.tone}};">{{r.value}}</span>
         </div>
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Only Mira can change these. Changes start tomorrow.</p>
-  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
-    <button type="button" style="width: 100%; border: 0; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: #ffffff;">Invite somebody</button>
-    <button type="button" style="width: 100%; border: 0; border-top: 0.5px solid rgba(255,255,255,0.08); background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: #ff453a;">Leave Wing</button>
+  <p style="flex: none; margin: 12px 16px 0; font-size: 12.5px; line-height: 1.45; color: #8e8e93;">Only Mira can change these. Changes start tomorrow.</p>
+  <div style="flex: none; margin: 24px 16px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <button type="button" style="width: 100%; border: 0; background: transparent; padding: 16px 16px; text-align: left; font-family: inherit; font-size: 16px; color: #ffffff;">Invite somebody</button>
+    <button type="button" style="width: 100%; border: 0; border-top: 0.5px solid rgba(255,255,255,0.08); background: transparent; padding: 16px 16px; text-align: left; font-family: inherit; font-size: 16px; color: #ff453a;">Leave Wing</button>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Leaving stops the sharing. What you owe stays.</p>
+  <p style="flex: none; margin: 12px 16px 0; font-size: 12.5px; line-height: 1.45; color: #8e8e93;">Leaving stops the sharing. What you owe stays.</p>
   <div style="flex-grow: 1;"></div>
-  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 4px 8px;">
     <a href="Main.dc.html" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
       <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2.5v3M16 2.5v3M3 9.5h18"/></svg>
       <span style="font-size: 10px; font-weight: 500; color: #8e8e93;">Today</span>

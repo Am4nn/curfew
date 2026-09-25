@@ -70,7 +70,7 @@
 
 <div class="stage" style="width: 390px; height: 872px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
 
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 6px;">
+  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center; gap: 4px;">
     <sc-for list="{{pips}}" as="p" hint-placeholder-count="3">
       <span style="width: 26px; height: 3px; border-radius: 999px; background: {{p.fill}};"></span>
     </sc-for>
@@ -86,7 +86,7 @@
 
   <!-- 1. He arrives, and the refusal is on the same screen. -->
   <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
-    <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
+    <div style="padding: 40px 24px 0; display: flex; flex-direction: column; align-items: center;">
       <div style="position: relative; width: 130px; height: 130px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
@@ -102,15 +102,15 @@
       </div>
 
       <h1 style="margin: 28px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
-      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He reads what you log and what your groups share.</p>
-      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He never decides whether a day counted.</p>
+      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.45; color: #8e8e93; text-align: center;">He reads what you log and what your groups share.</p>
+      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.45; color: #8e8e93; text-align: center;">He never decides whether a day counted.</p>
     </div>
   </sc-if>
 
   <!-- 2. Something is asked for, rather than more explaining. -->
   <sc-if value="{{isPick}}" hint-placeholder-val="{{false}}">
-    <div style="padding: 20px 20px 0; display: flex; flex-direction: column;">
-      <div style="display: flex; align-items: flex-start; gap: 13px;">
+    <div style="padding: 20px 16px 0; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
         <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
         <div style="flex: none; position: relative; width: 44px; height: 44px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
@@ -129,13 +129,13 @@
         <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
           <span style="flex: none; margin-top: 4px;"><svg viewBox="0 0 32 32" width="26" height="26" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg></span>
         </sc-if>
-        <p style="margin: 0; flex-grow: 1; font-size: 19px; line-height: 1.42; font-weight: 500;">{{pickLine}}</p>
+        <p style="margin: 0; flex-grow: 1; font-size: 19px; line-height: 1.45; font-weight: 500;">{{pickLine}}</p>
       </div>
 
-      <div style="margin-top: 22px; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+      <div style="margin-top: 20px; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
         <sc-for list="{{picks}}" as="p" hint-placeholder-count="5">
-          <button type="button" onClick="{{p.toggle}}" style="width: 100%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; align-items: center; gap: 13px; font-family: inherit; text-align: left;">
-            <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 14px 16px 14px 0; border-top: 0.5px solid {{p.sep}};">
+          <button type="button" onClick="{{p.toggle}}" style="width: 100%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; align-items: center; gap: 12px; font-family: inherit; text-align: left;">
+            <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{p.sep}};">
               <span style="flex: none; width: 34px; height: 34px; border-radius: 10px; background: {{p.chipBg}}; display: flex; align-items: center; justify-content: center;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{p.chipFg}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{p.path}}"/></svg>
               </span>
@@ -150,13 +150,13 @@
           </button>
         </sc-for>
       </div>
-      <p style="margin: 14px 2px 0; font-size: 13px; line-height: 1.45; color: #8e8e93;">Defaults are filled in. Nothing here is permanent.</p>
+      <p style="margin: 12px 2px 0; font-size: 13px; line-height: 1.45; color: #8e8e93;">Defaults are filled in. Nothing here is permanent.</p>
     </div>
   </sc-if>
 
   <!-- 3. Something has already been helped with, which is the point of 1.15. -->
   <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
-    <div style="padding: 38px 26px 0; display: flex; flex-direction: column; align-items: center;">
+    <div style="padding: 38px 24px 0; display: flex; flex-direction: column; align-items: center;">
       <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
       <div style="position: relative; width: 100px; height: 100px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 33% 25%, #ffffff 0%, #ffccd8 18%, #ff5c7f 44%, #c11a3e 72%, #380813 100%);"></div>
@@ -173,15 +173,15 @@
       </div>
       </sc-if>
       <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
-        <span style="margin-top: 14px;"><svg viewBox="0 0 32 32" width="62" height="62" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg></span>
+        <span style="margin-top: 12px;"><svg viewBox="0 0 32 32" width="62" height="62" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg></span>
       </sc-if>
 
-      <h1 style="margin: 26px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
-      <p style="margin: 11px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">{{doneLine}}</p>
+      <h1 style="margin: 24px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
+      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.45; color: #8e8e93; text-align: center;">{{doneLine}}</p>
 
-      <div style="margin-top: 24px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="margin-top: 24px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 16px 16px; display: flex; flex-direction: column; gap: 8px;">
         <sc-for list="{{chosen}}" as="c" hint-placeholder-count="3">
-          <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="20 6 9 17 4 12"/></svg>
             <span style="flex-grow: 1; font-size: 15px; font-weight: 500;">{{c.name}}</span>
             <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; color: #8e8e93;">{{c.when}}</span>
@@ -192,21 +192,21 @@
       <!-- Said once, and only to somebody who said no. Nagging a person about
            a thing they declined is how a switch stops being a real switch. -->
       <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
-        <div style="margin-top: 16px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 14px 16px; display: flex; gap: 12px;">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
+        <div style="margin-top: 16px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 12px 16px; display: flex; gap: 12px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
           <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: #8e8e93;">Ren is off. Nothing goes to a model. Switch him on any time.</span>
         </div>
       </sc-if>
     </div>
   </sc-if>
   <div style="flex-grow: 1;"></div>
-  <div style="flex: none; padding: 0 20px 30px;">
+  <div style="flex: none; padding: 0 16px 32px;">
     <sc-if value="{{notLast}}" hint-placeholder-val="{{true}}">
       <button type="button" onClick="{{next}}" style="width: 100%; height: 54px; border: 0; border-radius: 15px; background: {{nextBg}}; color: {{nextFg}}; font-family: inherit; font-size: 17px; font-weight: 600;">{{nextLabel}}</button>
     </sc-if>
     <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
-      <button type="button" onClick="{{decline}}" style="margin-top: 6px; width: 100%; height: 44px; border: 0; background: transparent; color: #8e8e93; font-family: inherit; font-size: 15px;">I do not want a coach</button>
-      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: #48484a;">Switch him on later in Settings.</p>
+      <button type="button" onClick="{{decline}}" style="margin-top: 4px; width: 100%; height: 44px; border: 0; background: transparent; color: #8e8e93; font-family: inherit; font-size: 15px;">I do not want a coach</button>
+      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.35; color: #48484a;">Switch him on later in Settings.</p>
     </sc-if>
     <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
       <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 54px; border-radius: 15px; background: #ff375f; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Go to Today</a>

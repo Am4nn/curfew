@@ -110,7 +110,7 @@ def patch_board(stem):
     if SCROLLBAR.strip() in s:
         s = s.replace(SCROLLBAR.strip(), SCROLLBAR.strip() + '\n' + MOTION, 1)
     else:
-        # A couple of the early boards style body{margin:0} and nothing else.
+        # A couple of the early boards style body{margin: 0} and nothing else.
         m = re.search(r'(<helmet>.*?<style>\n)', s, re.S)
         if not m:
             return '%s: no <helmet><style> to extend' % stem

@@ -92,22 +92,22 @@
 -->
 <div class="stage" style="width: 390px; height: 973px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
 
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center;">
     <a href="Settings.dc.html" aria-label="Back to you" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4.5 7.5 12 15 19.5"/></svg>
     </a>
   </div>
 
-  <div style="flex: none; padding: 4px 20px 0;">
+  <div style="flex: none; padding: 4px 16px 0;">
     <span style="font-size: 34px; font-weight: 700; letter-spacing: -0.01em;">Ren and nudges</span>
   </div>
 
-  <div style="flex-grow: 1; min-height: 0; margin-top: 22px; padding: 0 20px; display: flex; flex-direction: column;">
+  <div style="flex-grow: 1; min-height: 0; margin-top: 20px; padding: 0 16px; display: flex; flex-direction: column;">
 
     <!-- ================= REN ================= -->
     <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; color: #8e8e93;">THE COACH</span>
 
-    <div style="margin-top: 11px; display: flex; align-items: center; gap: 13px;">
+    <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
       <div class="b-breath" style="flex: none; position: relative; width: 44px; height: 44px;">
         <div style="position: absolute; inset: 0; border-radius: 999px; background: {{renSkin}};"></div>
         <div style="position: absolute; inset: 0; border-radius: 999px; background: radial-gradient(circle at 50% 50%, transparent 56%, rgba(0,0,0,0.30) 84%, rgba(0,0,0,0.54) 100%);"></div>
@@ -126,7 +126,7 @@
       </button>
     </div>
 
-    <p style="margin: 13px 0 0; font-size: 14px; line-height: 1.5; color: #8e8e93;">{{renBody}}</p>
+    <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.45; color: #8e8e93;">{{renBody}}</p>
 
     <!--
       Named in full, because "off" on a settings row is a word and this is a
@@ -134,9 +134,9 @@
       know whether the camera stops too, and the honest answer is the reason
       the switch is worth trusting.
     -->
-    <div style="margin-top: 13px; border-radius: 14px; background: #1c1c1e; padding: 13px 15px; display: flex; flex-direction: column; gap: 7px;">
+    <div style="margin-top: 12px; border-radius: 14px; background: #1c1c1e; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;">
       <sc-for list="{{gone}}" as="g" hint-placeholder-count="4">
-        <div style="display: flex; align-items: center; gap: 9px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{g.tone}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="{{g.mark}}"/></svg>
           <span style="flex-grow: 1; font-size: 13.5px; color: {{g.tone}};">{{g.what}}</span>
         </div>
@@ -144,26 +144,26 @@
     </div>
 
     <!-- ================= NUDGES ================= -->
-    <div style="margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 13px;">
+    <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px;">
       <span style="flex-grow: 1; font-size: 17px; font-weight: 500;">Nudges from friends</span>
       <button type="button" onClick="{{toggleNudge}}" role="switch" aria-checked="{{nudgeOn}}" aria-label="Nudges from friends" style="flex: none; width: 51px; height: 31px; border-radius: 999px; border: none; padding: 0; background: {{nudgeTrack}}; position: relative; cursor: pointer;">
         <span style="position: absolute; top: 2px; left: {{nudgeKnob}}; width: 27px; height: 27px; border-radius: 999px; background: #ffffff;"></span>
       </button>
     </div>
 
-    <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.5; color: #8e8e93;">{{nudgeBody}}</p>
+    <p style="margin: 12px 0 0; font-size: 14px; line-height: 1.45; color: #8e8e93;">{{nudgeBody}}</p>
 
     <!--
       One switch, never a list of people. 1.13: in a group of three, muting one
       friend is a thing they will work out, and a per-person list is a blocklist
       with a friendly name on it.
     -->
-    <p style="margin: 9px 0 0; font-size: 12.5px; line-height: 1.5; color: #48484a;">Off for everybody. Nobody is told.</p>
+    <p style="margin: 8px 0 0; font-size: 12.5px; line-height: 1.45; color: #48484a;">Off for everybody. Nobody is told.</p>
 
     <!-- Quiet hours are not one of these switches and saying so matters: a
          person turning nudges off may believe that is what was protecting
          their sleep. It never was. -->
-    <div style="margin-top: 16px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #1c1c1e;">
+    <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px; padding: 12px 12px; border-radius: 12px; background: #1c1c1e;">
       <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
         <span style="font-size: 14.5px; font-weight: 500;">Quiet hours</span>
         <span style="font-size: 12.5px; color: #8e8e93;">Nothing reaches you, whatever is on above.</span>
@@ -175,9 +175,9 @@
 
     <!-- THE CONSEQUENCE, live. Toggle Ren above and watch a tab leave. -->
     <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; color: #48484a;">YOUR TAB BAR</span>
-    <div style="margin-top: 9px; margin-bottom: 20px; border-radius: 14px; background: rgba(18,18,20,0.96); border: 1px solid #2c2c2e; display: flex; padding: 6px 4px 8px;">
+    <div style="margin-top: 8px; margin-bottom: 20px; border-radius: 14px; background: rgba(18,18,20,0.96); border: 1px solid #2c2c2e; display: flex; padding: 4px 4px 8px;">
       <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
-        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;">
           <span style="width: 21px; height: 21px; border-radius: {{t.round}}; background: {{t.fill}};"></span>
           <span style="font-size: 9.5px; font-weight: 500; color: {{t.tone}};">{{t.label}}</span>
         </div>
@@ -185,7 +185,7 @@
     </div>
   </div>
 
-  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 4px 8px;">
     <a href="Main.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
       <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="4" fill="#ff375f"/><path d="M8 2.5v3M16 2.5v3" stroke="#ff375f" stroke-width="2" stroke-linecap="round"/></svg>
       <span style="font-size: 10px; font-weight: 500; color: #ff375f;">Today</span>

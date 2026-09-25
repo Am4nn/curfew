@@ -25,8 +25,8 @@ TINTS = {'M': 'linear-gradient(150deg, #4a7fb8, #27486b)',
 for heading, shots in SHOTS:
     ev.append(eyebrow(heading.upper(), GREY, top=24))
     for initial, name, what, when, src, badge in shots:
-        ev.append("""  <div style="flex: none; margin: 12px 20px 0; display: flex; flex-direction: column; gap: 9px;">
-    <div style="display: flex; align-items: center; gap: 10px;">
+        ev.append("""  <div style="flex: none; margin: 12px 16px 0; display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
       <span style="flex: none; width: 30px; height: 30px; border-radius: 999px; background: %s; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">%s</span>
       <span style="font-size: 15px; font-weight: 600;">%s</span>
       <span style="font-size: 15px; color: %s;">logged %s</span>
@@ -36,7 +36,7 @@ for heading, shots in SHOTS:
     <div style="height: 196px; border-radius: 14px; background: %s; position: relative; overflow: hidden;">
       <img src="%s" alt="%s&#39;s %s" style="position: absolute; inset: 0; width: 100%%; height: 100%%; object-fit: cover;">
       <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 74px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%%, rgba(0,0,0,0.74) 82%%);"></span>
-      <span style="position: absolute; left: 12px; bottom: 11px; display: flex; align-items: center; gap: 5px;">
+      <span style="position: absolute; left: 12px; bottom: 11px; display: flex; align-items: center; gap: 4px;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="%s" aria-hidden="true"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
         <span style="font-family: %s; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; color: #ffffff;">%s</span>
       </span>
@@ -45,7 +45,7 @@ for heading, shots in SHOTS:
 """ % (TINTS[initial], initial, name, GREY, what, MONO, DIM, when,
        CARD, src, name, what, PINK, MONO, badge))
 
-ev.append("""  <div style="flex: none; margin: 22px 20px 0;">
+ev.append("""  <div style="flex: none; margin: 20px 16px 0;">
     <button type="button" style="width: 100%%; height: 46px; border: 1px solid #3a3a3c; border-radius: 13px; background: transparent; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 500;">Load older</button>
   </div>
   <!--
@@ -53,7 +53,7 @@ ev.append("""  <div style="flex: none; margin: 22px 20px 0;">
     limit: a group used to see a member's whole back catalogue the moment they
     joined.
   -->
-  <p style="flex: none; margin: 16px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Nothing from before you joined.</p>
+  <p style="flex: none; margin: 16px 16px 0; font-size: 12.5px; line-height: 1.45; color: %s;">Nothing from before you joined.</p>
 """ % GREY)
 ev.append(grow())
 ev.append(tabbar('Groups.dc.html'))
@@ -67,11 +67,11 @@ gs = [HEAD, root(H)]
 gs.append(nav('Group.dc.html', 'Back to Wing'))
 gs.append(title('Wing this week', 'Mon 15 to Sun 21 September. Everything counted here is something a member chose to share.'))
 
-gs.append("""  <div style="flex: none; margin: 20px 20px 0; display: flex; gap: 10px;">
+gs.append("""  <div style="flex: none; margin: 20px 16px 0; display: flex; gap: 8px;">
     <sc-for list="{{figures}}" as="f" hint-placeholder-count="3">
-      <div style="flex-grow: 1; flex-basis: 0; border-radius: 14px; background: %s; padding: 14px 13px; display: flex; flex-direction: column; gap: 4px;">
+      <div style="flex-grow: 1; flex-basis: 0; border-radius: 14px; background: %s; padding: 12px 12px; display: flex; flex-direction: column; gap: 4px;">
         <span style="font-family: %s; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: {{f.tone}};">{{f.value}}</span>
-        <span style="font-size: 12px; line-height: 1.3; color: %s;">{{f.label}}</span>
+        <span style="font-size: 12px; line-height: 1.35; color: %s;">{{f.label}}</span>
       </div>
     </sc-for>
   </div>
@@ -80,28 +80,28 @@ gs.append("""  <div style="flex: none; margin: 20px 20px 0; display: flex; gap: 
 # Day by day. One hue, two states, and the count is written on the column
 # rather than left to the height, so nothing depends on colour alone.
 gs.append(section('Day by day', top=26))
-gs.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; padding: 16px 14px 12px;">
-    <div style="display: flex; align-items: flex-end; gap: 7px; height: 124px;">
+gs.append("""  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; padding: 16px 12px 12px;">
+    <div style="display: flex; align-items: flex-end; gap: 8px; height: 124px;">
       <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
-        <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%%; justify-content: flex-end;">
+        <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%%; justify-content: flex-end;">
           <span style="font-family: %s; font-size: 11px; font-weight: 600; color: {{d.tone}};">{{d.count}}</span>
           <span style="width: 100%%; height: {{d.h}}px; border-radius: 4px 4px 0 0; background: {{d.fill}};"></span>
         </div>
       </sc-for>
     </div>
-    <div style="margin-top: 8px; display: flex; gap: 7px; border-top: 0.5px solid %s; padding-top: 8px;">
+    <div style="margin-top: 8px; display: flex; gap: 8px; border-top: 0.5px solid %s; padding-top: 8px;">
       <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
         <span style="flex-grow: 1; flex-basis: 0; text-align: center; font-family: %s; font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; color: {{d.labelTone}};">{{d.label}}</span>
       </sc-for>
     </div>
-    <span style="display: block; margin-top: 11px; font-size: 12.5px; color: %s;">Out of 21 shared activities a day. Sunday has not finished.</span>
+    <span style="display: block; margin-top: 12px; font-size: 12.5px; color: %s;">Out of 21 shared activities a day. Sunday has not finished.</span>
   </div>
 """ % (CARD, MONO, SEP, MONO, GREY))
 
 gs.append(section('Who carried it', top=26))
-gs.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; padding: 6px 16px 14px;">
+gs.append("""  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; padding: 4px 16px 12px;">
     <sc-for list="{{members}}" as="m" hint-placeholder-count="3">
-      <div style="padding-top: 14px; display: flex; flex-direction: column; gap: 7px;">
+      <div style="padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
         <div style="display: flex; align-items: baseline; gap: 8px;">
           <span style="font-size: 15px; font-weight: 500;">{{m.name}}</span>
           <span style="flex-grow: 1;"></span>
@@ -119,10 +119,10 @@ gs.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px;
 # Not a scoreboard of failure: it names the ACTIVITY the group finds hard, and
 # never the member who missed it most.
 gs.append(section('What Wing finds hard', top=26))
-gs.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
+gs.append("""  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{hard}}" as="h" hint-placeholder-count="3">
       <div style="padding-left: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{h.sep}};">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{h.sep}};">
           <span style="flex-grow: 1; font-size: 16px; font-weight: 500;">{{h.name}}</span>
           <span style="font-family: %s; font-size: 14px; font-weight: 600; color: {{h.tone}};">{{h.miss}}</span>
           <span style="font-size: 13px; color: %s;">missed</span>
@@ -130,7 +130,7 @@ gs.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px;
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Across the group, never per person.</p>
+  <p style="flex: none; margin: 12px 16px 0; font-size: 12.5px; line-height: 1.45; color: %s;">Across the group, never per person.</p>
 """ % (CARD, MONO, GREY, GREY))
 gs.append(grow())
 gs.append(tabbar('Groups.dc.html'))
@@ -179,12 +179,12 @@ led = [HEAD, root(H)]
 led.append(nav('Standing.dc.html', 'Back to your standing'))
 led.append(title('Wing ledger', 'Every entry since the group started. Nothing here is ever edited or removed.'))
 
-led.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: %s; padding: 16px; display: flex; align-items: baseline; gap: 10px;">
-    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+led.append("""  <div style="flex: none; margin: 20px 16px 0; border-radius: 14px; background: %s; padding: 16px; display: flex; align-items: baseline; gap: 8px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
       <span style="font-size: 13px; color: %s;">You are owed</span>
       <span style="font-family: %s; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: %s;">&#8377;140</span>
     </div>
-    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
       <span style="font-size: 13px; color: %s;">You owe</span>
       <span style="font-family: %s; font-size: 30px; font-weight: 700; letter-spacing: -0.02em;">&#8377;60</span>
     </div>
@@ -192,21 +192,21 @@ led.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px
 """ % (CARD, GREY, MONO, GREEN, GREY, MONO))
 
 led.append(eyebrow('EVERY ENTRY', GREY, top=26))
-led.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
+led.append("""  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{entries}}" as="e" hint-placeholder-count="8">
       <div style="padding-left: 16px;">
-        <div style="display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{e.sep}};">
-          <span style="flex: none; margin-top: 3px; width: 7px; height: 7px; border-radius: 999px; background: {{e.dot}};"></span>
-          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
-            <div style="display: flex; align-items: center; gap: 7px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{e.sep}};">
+          <span style="flex: none; margin-top: 2px; width: 7px; height: 7px; border-radius: 999px; background: {{e.dot}};"></span>
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 15px; font-weight: 500;">{{e.what}}</span>
               <sc-if value="{{e.isCorrection}}" hint-placeholder-val="{{false}}">
-                <span style="font-family: %s; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: %s; border: 1px solid %s; border-radius: 5px; padding: 1px 5px;">CORRECTION</span>
+                <span style="font-family: %s; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; color: %s; border: 1px solid %s; border-radius: 5px; padding: 2px 4px;">CORRECTION</span>
               </sc-if>
             </div>
-            <span style="font-size: 13px; line-height: 1.4; color: %s;">{{e.detail}}</span>
+            <span style="font-size: 13px; line-height: 1.35; color: %s;">{{e.detail}}</span>
           </div>
-          <div style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+          <div style="flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
             <span style="font-family: %s; font-size: 15px; font-weight: 600; color: {{e.tone}};">{{e.amount}}</span>
             <span style="font-family: %s; font-size: 11px; color: %s;">{{e.when}}</span>
           </div>
@@ -214,7 +214,7 @@ led.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 16px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Curfew moves no money. You settle between yourselves.</p>
+  <p style="flex: none; margin: 16px 16px 0; font-size: 12.5px; line-height: 1.45; color: %s;">Curfew moves no money. You settle between yourselves.</p>
 """ % (CARD, MONO, ORANGE, ORANGE, GREY, MONO, MONO, DIM, GREY))
 led.append(grow())
 led.append(tabbar('Groups.dc.html'))
@@ -251,11 +251,11 @@ gset.append(nav('Group.dc.html', 'Back to Wing'))
 gset.append(title('Wing', 'Three members. You joined 2 July.'))
 
 gset.append(section('What you share here', top=26))
-gset.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">On means Wing sees it, photographs included.</p>
-  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
+gset.append("""  <p style="flex: none; margin: 8px 16px 0; font-size: 13.5px; line-height: 1.45; color: %s;">On means Wing sees it, photographs included.</p>
+  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{shares}}" as="s" hint-placeholder-count="5">
       <div style="padding-left: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{s.sep}};">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{s.sep}};">
           <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
             <span style="font-size: 16px; font-weight: 500;">{{s.name}}</span>
             <span style="font-size: 12.5px; color: %s;">{{s.note}}</span>
@@ -270,7 +270,7 @@ gset.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; li
 """ % (GREY, CARD, GREY))
 
 gset.append(section('Who runs Wing', top=26))
-gset.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
+gset.append("""  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{people}}" as="p" hint-placeholder-count="3">
       <div style="padding-left: 16px;">
         <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{p.sep}};">
@@ -284,24 +284,24 @@ gset.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14p
 """ % (CARD, MONO))
 
 gset.append(section('The rules here', top=26))
-gset.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
+gset.append("""  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{rules}}" as="r" hint-placeholder-count="4">
       <div style="padding-left: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{r.sep}};">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{r.sep}};">
           <span style="flex-grow: 1; font-size: 16px;">{{r.name}}</span>
           <span style="font-family: %s; font-size: 15px; font-weight: 600; color: {{r.tone}};">{{r.value}}</span>
         </div>
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Only Mira can change these. Changes start tomorrow.</p>
+  <p style="flex: none; margin: 12px 16px 0; font-size: 12.5px; line-height: 1.45; color: %s;">Only Mira can change these. Changes start tomorrow.</p>
 """ % (CARD, MONO, GREY))
 
-gset.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
-    <button type="button" style="width: 100%%; border: 0; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: #ffffff;">Invite somebody</button>
-    <button type="button" style="width: 100%%; border: 0; border-top: 0.5px solid %s; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: %s;">Leave Wing</button>
+gset.append("""  <div style="flex: none; margin: 24px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">
+    <button type="button" style="width: 100%%; border: 0; background: transparent; padding: 16px 16px; text-align: left; font-family: inherit; font-size: 16px; color: #ffffff;">Invite somebody</button>
+    <button type="button" style="width: 100%%; border: 0; border-top: 0.5px solid %s; background: transparent; padding: 16px 16px; text-align: left; font-family: inherit; font-size: 16px; color: %s;">Leave Wing</button>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Leaving stops the sharing. What you owe stays.</p>
+  <p style="flex: none; margin: 12px 16px 0; font-size: 12.5px; line-height: 1.45; color: %s;">Leaving stops the sharing. What you owe stays.</p>
 """ % (CARD, SEP, RED, GREY))
 gset.append(grow())
 gset.append(tabbar('Groups.dc.html'))
@@ -353,27 +353,27 @@ write('GroupSettings.dc.html', gset)
 H = 1080
 inv = [HEAD, root(H)]
 inv.append("""
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center;">
     <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: %s;">INVITATION</span>
   </div>
 """ % (MONO, PINK))
-inv.append("""  <div style="flex: none; padding: 4px 20px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 14px;">
+inv.append("""  <div style="flex: none; padding: 4px 16px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 12px;">
     <div style="display: flex; align-items: center;">
       <sc-for list="{{faces}}" as="f" hint-placeholder-count="3">
-        <span style="width: 42px; height: 42px; margin-right: -11px; border-radius: 999px; border: 2px solid #000000; background: {{f.tint}}; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600;">{{f.initial}}</span>
+        <span style="width: 42px; height: 42px; margin-right: -12px; border-radius: 999px; border: 2px solid #000000; background: {{f.tint}}; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600;">{{f.initial}}</span>
       </sc-for>
     </div>
-    <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15;">Mira asked you<br>to join Wing</h1>
+    <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.2;">Mira asked you<br>to join Wing</h1>
     <span style="font-size: 15px; line-height: 1.45; color: %s;">Three members. A &#8377;20 fine for a miss, split between whoever passed, and two repairs a month.</span>
   </div>
 """ % GREY)
 
 inv.append(section('What Wing tracks', top=26))
-inv.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Choose what they see. Changeable later.</p>
-  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
+inv.append("""  <p style="flex: none; margin: 8px 16px 0; font-size: 13.5px; line-height: 1.45; color: %s;">Choose what they see. Changeable later.</p>
+  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
       <div style="padding-left: 16px;">
-        <div style="display: flex; align-items: center; gap: 12px; padding: 13px 16px 13px 0; border-top: 0.5px solid {{r.sep}};">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{r.sep}};">
           <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
             <span style="font-size: 16px; font-weight: 500;">{{r.name}}</span>
             <span style="font-size: 12.5px; color: {{r.noteTone}};">{{r.note}}</span>
@@ -389,7 +389,7 @@ inv.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; lin
             is joining a group and being silently absent from a third of it.
           -->
           <sc-if value="{{r.untracked}}" hint-placeholder-val="{{false}}">
-            <a href="Configure.dc.html" style="flex: none; height: 32px; padding: 0 13px; border-radius: 999px; background: %s; display: flex; align-items: center; text-decoration: none; color: #ffffff; font-size: 14px; font-weight: 600;">Set up</a>
+            <a href="Configure.dc.html" style="flex: none; height: 32px; padding: 0 12px; border-radius: 999px; background: %s; display: flex; align-items: center; text-decoration: none; color: #ffffff; font-size: 14px; font-weight: 600;">Set up</a>
           </sc-if>
         </div>
       </div>
@@ -402,8 +402,8 @@ inv.append("""  <!--
     common case is one press. The switches are here to turn something OFF,
     which is the rarer thing and the one worth a decision.
   -->
-  <div style="flex: none; margin: 22px 20px 0; border-radius: 14px; background: %s; padding: 15px 16px; display: flex; gap: 12px;">
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M8.7 11.8 11.2 14.3 15.6 9.8"/></svg>
+  <div style="flex: none; margin: 20px 16px 0; border-radius: 14px; background: %s; padding: 16px 16px; display: flex; gap: 12px;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M8.7 11.8 11.2 14.3 15.6 9.8"/></svg>
     <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
       <span style="font-size: 15px; font-weight: 600;">On means they see it, pictures included</span>
       <span style="font-size: 13px; line-height: 1.45; color: %s;">One switch each. Photographs included.</span>
@@ -412,7 +412,7 @@ inv.append("""  <!--
 """ % (CARD, ORANGE, GREY))
 
 inv.append(grow())
-inv.append("""  <div style="flex: none; padding: 0 20px 30px; display: flex; flex-direction: column; gap: 11px;">
+inv.append("""  <div style="flex: none; padding: 0 16px 32px; display: flex; flex-direction: column; gap: 12px;">
     <a href="Group.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%%; height: 54px; border-radius: 15px; background: %s; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Join Wing</a>
     <button type="button" style="width: 100%%; height: 48px; border: 0; background: transparent; color: %s; font-family: inherit; font-size: 16px;">Not now</button>
   </div>

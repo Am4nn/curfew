@@ -98,16 +98,16 @@
 
   <!-- Home behind, dimmed but legible, so the sheet reads as something that
        happened to the screen you were on. -->
-  <div style="position: absolute; inset: 0; opacity: 0.4; display: flex; flex-direction: column; padding: 20px 20px 0;">
-    <div style="display: flex; align-items: center; gap: 10px;">
+  <div style="position: absolute; inset: 0; opacity: 0.4; display: flex; flex-direction: column; padding: 20px 16px 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
       <span style="flex-grow: 1; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #8e8e93;">THU 17 SEPTEMBER</span>
       <span style="width: 30px; height: 30px; border-radius: 999px; background: #3a3a3c;"></span>
     </div>
-    <div style="margin-top: 12px; display: flex; align-items: baseline; gap: 7px;">
+    <div style="margin-top: 12px; display: flex; align-items: baseline; gap: 8px;">
       <span style="font-size: 44px; font-weight: 700; line-height: 1;">4</span>
       <span style="font-size: 22px; font-weight: 600; color: #48484a;">of 7 today</span>
     </div>
-    <div style="margin-top: 13px; display: flex; gap: 4px;">
+    <div style="margin-top: 12px; display: flex; gap: 4px;">
       <sc-for list="{{segments}}" as="s" hint-placeholder-count="7">
         <span style="flex-grow: 1; height: 5px; border-radius: 999px; background: {{s.fill}};"></span>
       </sc-for>
@@ -126,7 +126,7 @@
   <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.58);"></div>
 
   <!-- the sheet -->
-  <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #1c1c1e; border-radius: 22px 22px 0 0; padding: 10px 20px 34px; display: flex; flex-direction: column;">
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #1c1c1e; border-radius: 22px 22px 0 0; padding: 8px 16px 32px; display: flex; flex-direction: column;">
 
     <span style="align-self: center; width: 36px; height: 5px; border-radius: 999px; background: #48484a;"></span>
 
@@ -139,21 +139,21 @@
       with its consequence underneath in plain words rather than on the
       button, where 13px white on a saturated fill gets busy.
     -->
-    <a href="Main.dc.html" style="margin-top: 22px; height: 52px; border-radius: 14px; background: #d81e46; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+    <a href="Main.dc.html" style="margin-top: 20px; height: 52px; border-radius: 14px; background: #d81e46; text-decoration: none; display: flex; align-items: center; justify-content: center;">
       <span style="font-size: 17px; font-weight: 600; color: #ffffff;">Repair yesterday</span>
     </a>
-    <span style="margin-top: 9px; font-size: 13.5px; line-height: 19px; color: #8e8e93;">Yesterday counts and Reading stays at 15 days.</span>
+    <span style="margin-top: 8px; font-size: 13.5px; line-height: 19px; color: #8e8e93;">Yesterday counts and Reading stays at 15 days.</span>
 
     <a href="Capture.dc.html" style="margin-top: 16px; height: 52px; border-radius: 14px; background: #3a3a3c; text-decoration: none; display: flex; align-items: center; justify-content: center;">
       <span style="font-size: 17px; font-weight: 600; color: #ffffff;">Start again tonight</span>
     </a>
-    <span style="margin-top: 9px; font-size: 13.5px; line-height: 19px; color: #8e8e93;">Keep the repair. Reading starts again from 1, if you log it before 11:59 PM.</span>
+    <span style="margin-top: 8px; font-size: 13.5px; line-height: 19px; color: #8e8e93;">Keep the repair. Reading starts again from 1, if you log it before 11:59 PM.</span>
 
     <!-- 3. WHAT DOES IT COST. The numbers, mono and right aligned, so the
          three of them read as a column rather than as three sentences. -->
-    <div style="margin-top: 22px; border-radius: 14px; background: #2c2c2e; overflow: hidden;">
+    <div style="margin-top: 20px; border-radius: 14px; background: #2c2c2e; overflow: hidden;">
       <sc-for list="{{facts}}" as="f" hint-placeholder-count="3">
-        <div style="display: flex; align-items: baseline; gap: 12px; padding: 13px 15px; border-top: 0.5px solid {{f.sep}};">
+        <div style="display: flex; align-items: baseline; gap: 12px; padding: 12px 16px; border-top: 0.5px solid {{f.sep}};">
           <span style="flex-grow: 1; min-width: 0; font-size: 14.5px; font-weight: 400; color: #8e8e93;">{{f.label}}</span>
           <span style="flex: none; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 500; color: #ffffff;">{{f.value}}</span>
         </div>
@@ -161,10 +161,10 @@
     </div>
 
     <!-- the group is told about the return, never about the gap -->
-    <div style="margin-top: 18px; display: flex; align-items: flex-start; gap: 10px;">
-      <span style="flex: none; display: flex; margin-top: 1px;">
+    <div style="margin-top: 16px; display: flex; align-items: flex-start; gap: 8px;">
+      <span style="flex: none; display: flex; margin-top: 2px;">
         <span style="width: 20px; height: 20px; border-radius: 999px; background: linear-gradient(150deg, #4a6fb8, #2a4270); border: 2px solid #1c1c1e; box-sizing: border-box;"></span>
-        <span style="width: 20px; height: 20px; border-radius: 999px; background: linear-gradient(150deg, #7a4ab8, #432a70); border: 2px solid #1c1c1e; box-sizing: border-box; margin-left: -7px;"></span>
+        <span style="width: 20px; height: 20px; border-radius: 999px; background: linear-gradient(150deg, #7a4ab8, #432a70); border: 2px solid #1c1c1e; box-sizing: border-box; margin-left: -8px;"></span>
       </span>
       <span style="flex-grow: 1; font-size: 13px; line-height: 18px; color: #8e8e93;">Mira and Anya are not shown the day you missed.</span>
     </div>
@@ -174,7 +174,7 @@
     comments on everything is noise, and the tab is where he says more.
     Tapping it opens him, so the line is an entrance rather than a notice.
   -->
-  <a href="Coach.dc.html" style="flex: none; margin: 20px 0 0; display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-radius: 14px; background: #2c2c2e; text-decoration: none;">
+  <a href="Coach.dc.html" style="flex: none; margin: 20px 0 0; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border-radius: 14px; background: #2c2c2e; text-decoration: none;">
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9.3" fill="#e08a45"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.42)"/><ellipse cx="9.1" cy="12.6" rx="1.5" ry="1.1" fill="#3b1505"/><ellipse cx="15.2" cy="12.6" rx="1.5" ry="1.1" fill="#3b1505"/><path d="M6.9 9.1 11 10.9 M17.4 9.1 13.3 10.9" fill="none" stroke="#3b1505" stroke-width="1.5" stroke-linecap="round"/></svg>
     <span style="flex-grow: 1; min-width: 0; font-size: 14.5px; font-weight: 500; line-height: 1.35; color: #ffffff;">You have rebuilt this one eleven times. It comes back.</span>
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>

@@ -238,21 +238,21 @@ c = [HEAD, root(H)]
 # the same sentence twice and the second one is better. The mark stays, small,
 # because this is the one screen with no chrome of any other kind on it.
 c.append("""
-  <div style="flex: none; padding: 26px 20px 0;">
+  <div style="flex: none; padding: 24px 16px 0;">
     <svg viewBox="0 0 32 32" width="17" height="17" shape-rendering="crispEdges" aria-hidden="true" style="display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg>
-    <h1 style="margin: 18px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.12;">{{title}}</h1>
-    <p style="margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: %s;">{{intro}}</p>
+    <h1 style="margin: 16px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.2;">{{title}}</h1>
+    <p style="margin: 12px 0 0; font-size: 14.5px; line-height: 1.45; color: %s;">{{intro}}</p>
   </div>
 """ % GREY)
 
 # The summary card.
-c.append('  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; overflow: hidden;">\n' % CARD)
+c.append('  <div style="flex: none; margin: 20px 16px 0; border-radius: 16px; background: %s; overflow: hidden;">\n' % CARD)
 for i, (colour, path, head, body) in enumerate(SUMMARY):
     sep = 'transparent' if i == 0 else SEP
-    c.append("""    <div style="display: flex; gap: 13px; padding: 15px 16px; border-top: 0.5px solid %s;">
+    c.append("""    <div style="display: flex; gap: 12px; padding: 16px 16px; border-top: 0.5px solid %s;">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="%s"/></svg>
       <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
-        <span style="font-size: 15px; font-weight: 600; line-height: 1.3;">%s</span>
+        <span style="font-size: 15px; font-weight: 600; line-height: 1.35;">%s</span>
         <span style="font-size: 13px; line-height: 1.45; color: %s;">%s</span>
       </div>
     </div>
@@ -264,16 +264,16 @@ def part(label, note, sections, tint, top):
     """A labelled part, then one card per section. The tint separates the two
     documents at a glance; the label says which is which, so the colour is
     never the only thing carrying it."""
-    out = ('  <div style="flex: none; margin: %dpx 20px 0; display: flex; align-items: center; gap: 11px;">\n'
+    out = ('  <div style="flex: none; margin: %dpx 20px 0; display: flex; align-items: center; gap: 12px;">\n'
            '    <span style="font-family: %s; font-size: 11.5px; font-weight: 700; letter-spacing: 0.16em; '
            'color: #ffffff;">%s</span>\n'
            '    <span style="flex-grow: 1; height: 1px; background: %s;"></span>\n'
            '    <span style="font-family: %s; font-size: 10.5px; font-weight: 600; color: %s;">%s</span>\n'
            '  </div>\n' % (top, MONO, label, SEP, MONO, DIM, note))
     for heading, lines in sections:
-        out += ('  <div style="flex: none; margin: 12px 20px 0; border-radius: 16px; background: %s; '
+        out += ('  <div style="flex: none; margin: 12px 16px 0; border-radius: 16px; background: %s; '
                 'padding: 16px;">\n'
-                '    <div style="display: flex; align-items: center; gap: 11px;">\n'
+                '    <div style="display: flex; align-items: center; gap: 12px;">\n'
                 '      <span style="flex: none; width: 30px; height: 30px; border-radius: 9px; background: %s; '
                 'display: flex; align-items: center; justify-content: center;">\n'
                 '        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" '
@@ -282,11 +282,11 @@ def part(label, note, sections, tint, top):
                 '      <span style="flex-grow: 1; font-family: %s; font-size: 10.5px; font-weight: 700; '
                 'letter-spacing: 0.13em; color: #ffffff;">%s</span>\n'
                 '    </div>\n'
-                '    <div style="margin-top: 13px; display: flex; flex-direction: column; gap: 12px;">\n'
+                '    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">\n'
                 % (CARD, tint[0], tint[1], ICONS[heading], MONO, heading))
         for text in lines:
-            out += ('      <div style="display: flex; gap: 10px;">\n'
-                    '        <span style="flex: none; margin-top: 7px; width: 3px; height: 3px; border-radius: 999px; '
+            out += ('      <div style="display: flex; gap: 8px;">\n'
+                    '        <span style="flex: none; margin-top: 8px; width: 3px; height: 3px; border-radius: 999px; '
                     'background: %s;"></span>\n'
                     '        <span style="flex-grow: 1; font-size: 12.5px; line-height: 1.6; color: %s;">%s</span>\n'
                     '      </div>\n' % (tint[1], GREY, text))
@@ -314,23 +314,23 @@ c.append(grow())
 # and fine is judged in it and a wrong one is wrong from the first day.
 c.append("""  <div style="flex: none; margin-top: 28px; border-top: 0.5px solid %s; position: relative;">
     <span style="position: absolute; left: 0; top: -1px; height: 2px; width: {{progress}}; background: {{progressTone}};"></span>
-    <div style="padding: 20px 20px 30px; display: flex; flex-direction: column; gap: 15px;">
+    <div style="padding: 20px 16px 32px; display: flex; flex-direction: column; gap: 16px;">
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <label for="zone" style="font-family: %s; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: %s;">YOUR TIME ZONE</label>
-        <div style="display: flex; align-items: center; gap: 11px; height: 50px; padding: 0 15px; border-radius: 14px; background: %s;">
+        <div style="display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 16px; border-radius: 14px; background: %s;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>
           <input id="zone" type="text" value="Asia/Kolkata" readonly style="flex-grow: 1; min-width: 0; border: 0; background: transparent; color: #ffffff; font-family: inherit; font-size: 16px; padding: 0;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="6 9.5 12 15.5 18 9.5"/></svg>
         </div>
       </div>
 
-      <button type="button" aria-disabled="{{waitingStr}}" style="width: 100%%; height: 54px; border: 0; border-radius: 15px; background: {{buttonBg}}; color: {{buttonFg}}; font-family: inherit; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 9px;">
+      <button type="button" aria-disabled="{{waitingStr}}" style="width: 100%%; height: 54px; border: 0; border-radius: 15px; background: {{buttonBg}}; color: {{buttonFg}}; font-family: inherit; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
         <sc-if value="{{waiting}}" hint-placeholder-val="{{true}}">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{buttonFg}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5v14M6 13l6 6 6-6"/></svg>
         </sc-if>
         {{buttonLabel}}
       </button>
-      <span style="text-align: center; font-size: 12.5px; line-height: 1.4; color: {{noteTone}};">{{note}}</span>
+      <span style="text-align: center; font-size: 12.5px; line-height: 1.35; color: {{noteTone}};">{{note}}</span>
     </div>
   </div>
 """ % (SEP, MONO, GREY, CARD, GREY, DIM))

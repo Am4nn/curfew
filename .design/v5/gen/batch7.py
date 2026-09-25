@@ -49,23 +49,23 @@ cd.append("""
     So the face is QUIET's, grey, eyes shut. That mood already means "his hours
     are your quiet hours" and it costs nothing to mean this too.
   -->
-  <div style="flex: none; padding: 30px 26px 0; display: flex; flex-direction: column; align-items: center;">
+  <div style="flex: none; padding: 32px 24px 0; display: flex; flex-direction: column; align-items: center;">
     """ + sphere(104, grey=True) + """
-    <h1 style="margin: 26px 0 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">Nothing from last night.</h1>
-    <p style="margin: 11px 0 0; font-size: 15.5px; line-height: 1.5; color: %s; text-align: center;">The job that reads your week did not finish.</p>
+    <h1 style="margin: 24px 0 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">Nothing from last night.</h1>
+    <p style="margin: 12px 0 0; font-size: 15.5px; line-height: 1.45; color: %s; text-align: center;">The job that reads your week did not finish.</p>
   </div>
 """ % GREY)
 
 # The recompute. It exists ONLY because a failure is on record.
-cd.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 16px; background: %s; padding: 16px; display: flex; flex-direction: column; gap: 13px;">
-    <div style="display: flex; align-items: center; gap: 11px;">
+cd.append("""  <div style="flex: none; margin: 24px 16px 0; border-radius: 16px; background: %s; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
       <span style="flex: none; width: 30px; height: 30px; border-radius: 9px; background: rgba(255,159,10,0.14); display: flex; align-items: center; justify-content: center;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 21.2 19.5H2.8zM12 10v4.2M12 16.8v.01"/></svg>
       </span>
       <span style="flex-grow: 1; font-family: %s; font-size: 10.5px; font-weight: 700; letter-spacing: 0.13em; color: #ffffff;">FAILED 04:12, RETRIED 3 TIMES</span>
     </div>
-    <span style="font-size: 13.5px; line-height: 1.5; color: %s;">The failure was recorded.</span>
-    <button type="button" style="width: 100%%; height: 48px; border: 0; border-radius: 14px; background: %s; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 9px;">
+    <span style="font-size: 13.5px; line-height: 1.45; color: %s;">The failure was recorded.</span>
+    <button type="button" style="width: 100%%; height: 48px; border: 0; border-radius: 14px; background: %s; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.7-5.7L21 9"/><path d="M21 4v5h-5"/></svg>
       Try again
     </button>
@@ -73,8 +73,8 @@ cd.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 16px;
 """ % (CARD, AMBER, MONO, GREY, PINK))
 
 # And the box, off, for one of two reasons that look the same and are not.
-cd.append("""  <div style="flex: none; margin: 22px 20px 0; display: flex; flex-direction: column; gap: 9px;">
-    <div style="display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-radius: 16px; background: %s; opacity: 0.55;">
+cd.append("""  <div style="flex: none; margin: 20px 16px 0; display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 16px; background: %s; opacity: 0.55;">
       <span style="flex-grow: 1; font-size: 15.5px; color: %s;">Ask Ren</span>
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none;"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
     </div>
@@ -82,7 +82,7 @@ cd.append("""  <div style="flex: none; margin: 22px 20px 0; display: flex; flex-
   </div>
 """ % (CARD, DIM, DIM, GREY))
 
-cd.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12px; line-height: 1.5; color: %s;">Every other number is arithmetic over your check-ins.</p>
+cd.append("""  <p style="flex: none; margin: 20px 16px 0; font-size: 12px; line-height: 1.45; color: %s;">Every other number is arithmetic over your check-ins.</p>
 """ % DIM)
 cd.append(grow())
 cd.append(tabbar('Coach.dc.html'))
@@ -107,8 +107,8 @@ mm.append(nav('Settings.dc.html', 'Back to you'))
 mm.append(title('What Ren remembers',
                 'One paragraph, rewritten every night.'))
 
-mm.append("""  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; padding: 17px 16px; display: flex; flex-direction: column; gap: 13px;">
-    <div style="display: flex; align-items: center; gap: 9px;">
+mm.append("""  <div style="flex: none; margin: 20px 16px 0; border-radius: 16px; background: %s; padding: 16px 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
       <span style="font-family: %s; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: %s;">REWRITTEN LAST NIGHT, 04:07</span>
     </div>
     <!--
@@ -116,11 +116,11 @@ mm.append("""  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px;
       obvious that this is a thing you can change, because being able to change
       it is the whole answer to "a model wrote a paragraph about me".
     -->
-    <p style="margin: 0; font-size: 14.5px; line-height: 1.62; color: #ffffff;">Aman is steady on Water, Sleep and Food and has been for months. Gym is the one that goes, and it goes on Tuesdays, which he has said is because the day runs long rather than because of the gym. He asked once whether the streak or the standing mattered more and preferred the answer that it was the standing. He does not want to be told he is nearly there.</p>
+    <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #ffffff;">Aman is steady on Water, Sleep and Food and has been for months. Gym is the one that goes, and it goes on Tuesdays, which he has said is because the day runs long rather than because of the gym. He asked once whether the streak or the standing mattered more and preferred the answer that it was the standing. He does not want to be told he is nearly there.</p>
   </div>
 """ % (CARD, MONO, GREY))
 
-mm.append("""  <div style="flex: none; margin: 14px 20px 0; display: flex; gap: 11px;">
+mm.append("""  <div style="flex: none; margin: 12px 16px 0; display: flex; gap: 12px;">
     <button type="button" style="flex-grow: 1; height: 46px; border: 1px solid #3a3a3c; border-radius: 13px; background: transparent; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/></svg>
       Edit it
@@ -146,13 +146,13 @@ NOTES = [
      'It goes when your data goes',
      'Deleting your account deletes this with everything else, and Delete data lists it by name before you confirm.'),
 ]
-mm.append('  <div style="flex: none; margin: 24px 20px 0; border-radius: 16px; background: %s; overflow: hidden;">\n' % CARD)
+mm.append('  <div style="flex: none; margin: 24px 16px 0; border-radius: 16px; background: %s; overflow: hidden;">\n' % CARD)
 for i, (colour, path, head, body) in enumerate(NOTES):
     sep = 'transparent' if i == 0 else SEP
-    mm.append("""    <div style="display: flex; gap: 13px; padding: 14px 16px; border-top: 0.5px solid %s;">
+    mm.append("""    <div style="display: flex; gap: 12px; padding: 12px 16px; border-top: 0.5px solid %s;">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="%s"/></svg>
       <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
-        <span style="font-size: 14.5px; font-weight: 600; line-height: 1.3;">%s</span>
+        <span style="font-size: 14.5px; font-weight: 600; line-height: 1.35;">%s</span>
         <span style="font-size: 12.5px; line-height: 1.45; color: %s;">%s</span>
       </div>
     </div>

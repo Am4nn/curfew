@@ -92,12 +92,12 @@
 <div class="stage" style="width: 390px; height: 1958px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; overflow: hidden; color: #ffffff;">
 
   <!-- top bar -->
-  <div style="flex: none; padding: 20px 20px 0; display: flex; align-items: center; gap: 10px;">
+  <div style="flex: none; padding: 20px 16px 0; display: flex; align-items: center; gap: 8px;">
     <!-- The mark, small, where an app puts itself: top left, once, and never
          again on the screen. Flat and white, as it is everywhere inside. -->
     <svg viewBox="0 0 32 32" width="17" height="17" shape-rendering="crispEdges" aria-hidden="true" style="flex: none; display: block;"><rect x="2" y="2" width="13" height="13" fill="#ffffff"/><rect x="17" y="2" width="13" height="13" fill="#ffffff"/><rect x="2" y="17" width="13" height="13" fill="#ffffff"/></svg>
     <span style="flex-grow: 1; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #8e8e93;">THU 17 SEPTEMBER</span>
-    <span style="flex: none; display: flex; align-items: center; gap: 4px; padding: 5px 10px 5px 8px; border-radius: 999px; background: #1c1c1e;" aria-label="2 repairs left">
+    <span style="flex: none; display: flex; align-items: center; gap: 4px; padding: 4px 8px 4px 8px; border-radius: 999px; background: #1c1c1e;" aria-label="2 repairs left">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.8A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 3.5c0 5.2-7.5 9.8-7.5 9.8z"/></svg>
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #c7c7cc;">2</span>
     </span>
@@ -105,12 +105,12 @@
   </div>
 
   <!-- the day. Kept: this reads better than a hero alone. -->
-  <div style="flex: none; padding: 12px 20px 0;">
-    <div style="display: flex; align-items: baseline; gap: 7px;">
+  <div style="flex: none; padding: 12px 16px 0;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
       <span style="font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1;">4</span>
       <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.01em; color: #48484a;">of 7 today</span>
     </div>
-    <div style="margin-top: 13px; display: flex; gap: 4px;">
+    <div style="margin-top: 12px; display: flex; gap: 4px;">
       <sc-for list="{{segments}}" as="s" hint-placeholder-count="7">
         <span class="seg" style="animation-delay: {{s.delay}}; flex-grow: 1; height: 5px; border-radius: 999px; background: {{s.fill}};"></span>
       </sc-for>
@@ -122,7 +122,7 @@
     comments on everything is noise, and the tab is where he says more.
     Tapping it opens him, so the line is an entrance rather than a notice.
   -->
-  <a href="Coach.dc.html" style="flex: none; margin: 16px 20px 0; display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-radius: 14px; background: #1c1c1e; text-decoration: none;">
+  <a href="Coach.dc.html" style="flex: none; margin: 16px 20px 0; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border-radius: 14px; background: #1c1c1e; text-decoration: none;">
     <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="flex: none;"><circle cx="12" cy="12" r="9.3" fill="#ff375f"/><ellipse cx="8.5" cy="8" rx="3.6" ry="2.5" transform="rotate(-32 8.5 8)" fill="rgba(255,255,255,0.52)"/><ellipse cx="9.1" cy="12.2" rx="1.45" ry="2" fill="#33060f"/><ellipse cx="15.2" cy="12.2" rx="1.45" ry="2" fill="#33060f"/></svg>
     <span style="flex-grow: 1; min-width: 0; font-size: 14.5px; font-weight: 500; line-height: 1.35; color: #ffffff;">Mira beat me to Water. Start with Gym, then: Tuesday is the one day you drop it.</span>
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#48484a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><polyline points="9 5 16 12 9 19"/></svg>
@@ -140,7 +140,7 @@
       <span style="flex-grow: 1;"></span>
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: #ff9f0a;">CLOSES 8:00 PM</span>
     </div>
-    <span style="font-size: 14px; font-weight: 400; color: #8e8e93; line-height: 1.4;">One more day this week. Mira and Kabir have both been.</span>
+    <span style="font-size: 14px; font-weight: 400; color: #8e8e93; line-height: 1.35;">One more day this week. Mira and Kabir have both been.</span>
     <a href="Capture.dc.html" style="height: 50px; border-radius: 14px; background: #d81e46; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg>
       <span style="font-size: 16px; font-weight: 600; color: #ffffff;">Log it</span>
@@ -148,9 +148,9 @@
   </div>
 
   <!-- the other six, each with its icon and its own streak -->
-  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
     <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
-      <div style="display: flex; align-items: center; gap: 12px; padding-left: 15px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px;">
         <span style="flex: none; color: {{r.glyph}};" aria-hidden="true">
           <sc-if value="{{r.isWater}}" hint-placeholder-val="{{true}}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.6 6 10.4A6 6 0 0 1 6 13.4C6 9.6 12 3 12 3z"/></svg>
@@ -171,9 +171,9 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3 2"/><path d="M4 4l16 16"/></svg>
           </sc-if>
         </span>
-        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 11px 15px 11px 0; border-top: 0.5px solid {{r.sep}};">
-          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
-            <div style="display: flex; align-items: center; gap: 7px;">
+        <div style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{r.sep}};">
+          <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 16px; font-weight: 500; color: {{r.nameTone}};">{{r.name}}</span>
               <!--
                 1.49. ONE number, and the ACTIVITY decides which. A thing you
@@ -186,7 +186,7 @@
                 the group hub, and so does Stats.
               -->
               <sc-if value="{{r.pct}}" hint-placeholder-val="{{true}}">
-                <span style="display: flex; align-items: center; gap: 3px;">
+                <span style="display: flex; align-items: center; gap: 2px;">
                   <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; font-weight: 600; color: #ffffff;">{{r.pctLabel}}</span>
                   <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="{{r.trendTone}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.trendPath}}"/></svg>
                 </span>
@@ -205,7 +205,7 @@
             <button type="button" style="flex: none; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid #ff375f; background: transparent; color: #ff375f; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600;">+1</button>
           </sc-if>
           <sc-if value="{{r.broken}}" hint-placeholder-val="{{false}}">
-            <a href="Restore.dc.html" style="flex: none; padding: 7px 12px; border-radius: 999px; border: 1px solid #3a3a3c; background: transparent; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600;">Come back</a>
+            <a href="Restore.dc.html" style="flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid #3a3a3c; background: transparent; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600;">Come back</a>
           </sc-if>
           <!-- the time it landed, beside the tick, in tabular mono so the column lines up -->
           <sc-if value="{{r.done}}" hint-placeholder-val="{{false}}">
@@ -247,8 +247,8 @@
     So this expands. It is not a summary of five things, it is five things with
     a lid on.
   -->
-  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
-    <button type="button" onClick="{{toggleSimple}}" aria-expanded="{{simpleOpenStr}}" style="width: 100%; border: 0; background: transparent; padding: 13px 16px; display: flex; align-items: center; gap: 13px; font-family: inherit; text-align: left;">
+  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
+    <button type="button" onClick="{{toggleSimple}}" aria-expanded="{{simpleOpenStr}}" style="width: 100%; border: 0; background: transparent; padding: 12px 16px; display: flex; align-items: center; gap: 12px; font-family: inherit; text-align: left;">
       <span style="flex: none; width: 34px; height: 34px; border-radius: 10px; background: #2c2c2e; display: flex; align-items: center; justify-content: center;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.4 6.1l1.7 1.7L8.1 4.8M3.4 12.05l1.7 1.7L8.1 10.75M3.4 18l1.7 1.7L8.1 16.7"/></svg>
       </span>
@@ -266,8 +266,8 @@
     <sc-if value="{{simpleOpen}}" hint-placeholder-val="{{true}}">
       <div style="padding: 0 0 4px;">
         <sc-for list="{{simple}}" as="s" hint-placeholder-count="5">
-          <div style="display: flex; align-items: center; gap: 11px; padding: 0 16px 0 63px;">
-            <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 11px; padding: 10px 0; border-top: 0.5px solid rgba(255,255,255,0.08);">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 0 16px 0 63px;">
+            <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 0.5px solid rgba(255,255,255,0.08);">
               <span style="flex-grow: 1; font-size: 15px; color: {{s.nameTone}};">{{s.name}}</span>
               <!--
                 Its OWN number, which is the whole reason these stayed five
@@ -283,7 +283,7 @@
                 <span style="flex: none; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: {{s.pctTone}};">{{s.pctLabel}}</span>
               </sc-if>
               <sc-if value="{{s.alive}}" hint-placeholder-val="{{false}}">
-                <span style="flex: none; display: flex; align-items: center; gap: 3px;">
+                <span style="flex: none; display: flex; align-items: center; gap: 2px;">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="{{s.flame}}" aria-hidden="true"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
                   <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: {{s.flame}};">{{s.streak}}</span>
                 </span>
@@ -302,18 +302,18 @@
     no flame, no "closes at", no button. It cannot be missed, so there is
     nothing here to dread.
   -->
-  <a href="Monk.dc.html" style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 14px 16px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;">
+  <a href="Monk.dc.html" style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: #1c1c1e; padding: 12px 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
     <span style="flex: none; position: relative; width: 44px; height: 44px;">
       <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
         <circle cx="22" cy="22" r="18.5" fill="none" stroke="#2c2c2e" stroke-width="5"/>
         <circle cx="22" cy="22" r="18.5" fill="none" stroke="#ff375f" stroke-width="5" stroke-linecap="round" stroke-dasharray="82.5 116.2" transform="rotate(-90 22 22)"/>
       </svg>
     </span>
-    <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+    <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
       <span style="font-size: 16px; font-weight: 500;">Monk mode</span>
       <span style="font-size: 13px; color: #8e8e93;">5 of 7 counted today</span>
     </span>
-    <span style="flex: none; display: flex; align-items: baseline; gap: 1px;">
+    <span style="flex: none; display: flex; align-items: baseline; gap: 2px;">
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 22px; font-weight: 700; letter-spacing: -0.02em;">71</span>
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #8e8e93;">&#37;</span>
     </span>
@@ -329,15 +329,15 @@
     activities and never appear here. An empty list means nothing is visible to
     you, not that everybody is fine.
   -->
-  <span style="flex: none; margin: 5px 20px 0; font-size: 12.5px; color: #8e8e93;">What they share with you</span>
+  <span style="flex: none; margin: 4px 20px 0; font-size: 12.5px; color: #8e8e93;">What they share with you</span>
 
-  <div style="flex: none; margin-top: 10px; padding: 0 20px; display: flex; flex-direction: column;">
+  <div style="flex: none; margin-top: 8px; padding: 0 16px; display: flex; flex-direction: column;">
     <sc-for list="{{risk}}" as="p" hint-placeholder-count="2">
-      <div style="display: flex; align-items: center; gap: 11px; padding: 11px 0; border-top: 1px solid {{p.sep}};">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid {{p.sep}};">
         <span style="flex: none; width: 36px; height: 36px; border-radius: 999px; background: {{p.tint}}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">{{p.initial}}</span>
         <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
           <span style="font-size: 16px; font-weight: 500;">{{p.name}}</span>
-          <div style="display: flex; align-items: center; gap: 7px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 13px; color: #8e8e93;">{{p.activity}}</span>
             <span style="width: 3px; height: 3px; border-radius: 999px; background: #48484a;"></span>
             <!--
@@ -353,7 +353,7 @@
           screen, and on Home that is your own hero press. Helping somebody else
           is an offer, not the thing you opened the app to do.
         -->
-        <a href="Nudge.dc.html" style="flex: none; padding: 7px 14px; border-radius: 999px; border: 1px solid #3a3a3c; background: transparent; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600;">Nudge</a>
+        <a href="Nudge.dc.html" style="flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid #3a3a3c; background: transparent; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600;">Nudge</a>
       </div>
     </sc-for>
   </div>
@@ -361,18 +361,18 @@
   <!-- friends -->
   <div style="flex: none; margin: 24px 20px 0; display: flex; align-items: baseline; gap: 8px;">
     <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">Happening now</span>
-    <span style="display: flex; align-items: center; gap: 5px;">
+    <span style="display: flex; align-items: center; gap: 4px;">
       <span style="width: 6px; height: 6px; border-radius: 999px; background: #30d158;"></span>
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 500; color: #8e8e93;">9 TODAY</span>
     </span>
   </div>
 
-  <div style="flex: none; margin-top: 12px; padding: 0 20px; display: flex; flex-direction: column; gap: 16px;">
+  <div style="flex: none; margin-top: 12px; padding: 0 16px; display: flex; flex-direction: column; gap: 16px;">
     <sc-for list="{{feed}}" as="f" hint-placeholder-count="2">
-      <div style="display: flex; gap: 11px;">
+      <div style="display: flex; gap: 12px;">
         <span style="flex: none; width: 36px; height: 36px; border-radius: 999px; background: {{f.tint}}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;">{{f.initial}}</span>
-        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px;">
-          <div style="display: flex; align-items: baseline; gap: 6px;">
+        <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: baseline; gap: 4px;">
             <span style="font-size: 15px; font-weight: 600;">{{f.name}}</span>
             <span style="font-size: 15px; font-weight: 400; color: #8e8e93;">{{f.did}}</span>
             <span style="flex-grow: 1;"></span>
@@ -387,16 +387,16 @@
               <img src="/_blob/4d06b38a5688b46932db3a0f6f241639" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
             </sc-if>
             <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 82px; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.72) 78%, rgba(0,0,0,0.82) 100%);"></span>
-            <span style="position: absolute; left: 12px; right: 12px; bottom: 11px; display: flex; align-items: center; gap: 5px;">
+            <span style="position: absolute; left: 12px; right: 12px; bottom: 11px; display: flex; align-items: center; gap: 4px;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff375f" aria-hidden="true"><path d="M12 2c0 4.2-5 5.2-5 10.2a5 5 0 0 0 10 0c0-2.1-1-3.2-1-3.2s-1 2-2.1 2c-1.1 0 1.1-4.2-1.9-9z"/></svg>
               <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: #ffffff;">{{f.badge}}</span>
               <span style="flex-grow: 1;"></span>
               <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: rgba(255,255,255,0.72);">{{f.group}}</span>
             </span>
           </div>
-          <div style="display: flex; align-items: center; gap: 7px;">
-            <button type="button" style="height: 30px; padding: 0 11px; border-radius: 999px; border: none; background: #1c1c1e; font-family: inherit; font-size: 13px; font-weight: 500; color: #c7c7cc;">Nice one</button>
-            <button type="button" style="height: 30px; padding: 0 11px; border-radius: 999px; border: none; background: #1c1c1e; font-family: inherit; font-size: 13px; font-weight: 500; color: #c7c7cc;">Respect</button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" style="height: 30px; padding: 0 12px; border-radius: 999px; border: none; background: #1c1c1e; font-family: inherit; font-size: 13px; font-weight: 500; color: #c7c7cc;">Nice one</button>
+            <button type="button" style="height: 30px; padding: 0 12px; border-radius: 999px; border: none; background: #1c1c1e; font-family: inherit; font-size: 13px; font-weight: 500; color: #c7c7cc;">Respect</button>
             <span style="flex-grow: 1;"></span>
             <span style="font-size: 12.5px; color: #48484a;">{{f.reacted}}</span>
           </div>
@@ -418,7 +418,7 @@
     bottom, and reserving the strip with nothing in it just reads as a gap. The
     real app adds it back with env(safe-area-inset-bottom).
   -->
-  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
+  <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 4px 8px;">
     <a href="Main.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
       <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v2.4M17 2v2.4" stroke="#ff375f" stroke-width="2" stroke-linecap="round"/><rect x="3" y="4" width="18" height="17" rx="4" fill="#ff375f"/></svg>
       <span style="font-size: 10px; font-weight: 500; color: #ff375f;">Today</span>

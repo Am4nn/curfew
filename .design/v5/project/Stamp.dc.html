@@ -150,42 +150,42 @@
 
   <!-- Home underneath, dimmed rather than blacked out, so it reads as something
        that happened to the screen you were on rather than a place you were sent. -->
-  <div style="position: absolute; inset: 0; opacity: 0.17; display: flex; flex-direction: column; padding: 20px 20px 0;">
-    <div style="display: flex; align-items: center; gap: 10px;">
+  <div style="position: absolute; inset: 0; opacity: 0.17; display: flex; flex-direction: column; padding: 20px 16px 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; flex-grow: 1; font-size: 13px; font-weight: 600; color: #8e8e93;">THU 17 SEPTEMBER</span>
       <span style="width: 30px; height: 30px; border-radius: 999px; background: #3a3a3c;"></span>
     </div>
-    <div style="margin-top: 12px; display: flex; align-items: baseline; gap: 7px;">
+    <div style="margin-top: 12px; display: flex; align-items: baseline; gap: 8px;">
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 44px; font-weight: 700; line-height: 1;">7</span>
       <span style="font-size: 22px; font-weight: 600; color: #48484a;">of 7 today</span>
     </div>
-    <div style="margin-top: 13px; display: flex; gap: 4px;">
+    <div style="margin-top: 12px; display: flex; gap: 4px;">
       <sc-for list="{{segments}}" as="s" hint-placeholder-count="7">
         <span style="flex-grow: 1; height: 5px; border-radius: 999px; background: #ff375f;"></span>
       </sc-for>
     </div>
     <div style="margin-top: 20px; border-radius: 14px; background: #1c1c1e; height: 220px;"></div>
-    <div style="margin-top: 14px; border-radius: 14px; background: #1c1c1e; height: 180px;"></div>
+    <div style="margin-top: 12px; border-radius: 14px; background: #1c1c1e; height: 180px;"></div>
   </div>
 
   <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.55);"></div>
 
   <!-- The stamp lands on the DATE, not on a line item: a clerk stamps the form.
        The day's activities compress to one row of icons beneath it. -->
-  <div class="st-flinch st-cycle" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 0 30px;">
+  <div class="st-flinch st-cycle" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 0 32px;">
 
     <div style="position: relative; display: flex; align-items: center; justify-content: center;">
       <!-- The ring leaves on the same frame the stamp hits. It is a square,
            not a circle: what struck the page was a square. -->
       <span class="st-ring" style="position: absolute; width: 208px; height: 108px; border: 2px solid #ff375f; border-radius: 12px; pointer-events: none;"></span>
-    <div class="st-fall" style="border: 3px solid #ff375f; border-radius: 10px; padding: 16px 26px 18px; display: flex; flex-direction: column; align-items: center; gap: 3px; background: rgba(0,0,0,0.35);">
+    <div class="st-fall" style="border: 3px solid #ff375f; border-radius: 10px; padding: 16px 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: rgba(0,0,0,0.35);">
       <span class="st-ink" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.22em; color: #ff375f;">COMPLETE</span>
-      <span style="font-size: 30px; font-weight: 700; letter-spacing: -0.01em; color: #ffffff; line-height: 1.15;">17 September</span>
+      <span style="font-size: 30px; font-weight: 700; letter-spacing: -0.01em; color: #ffffff; line-height: 1.2;">17 September</span>
       <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; font-weight: 600; letter-spacing: 0.14em; color: rgba(255,55,95,0.75);">SEVEN OF SEVEN</span>
     </div>
     </div>
 
-    <div class="st-icons" style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; max-width: 300px;">
+    <div class="st-icons" style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; max-width: 300px;">
       <sc-for list="{{icons}}" as="i" hint-placeholder-count="7">
         <span style="color: rgba(255,255,255,0.62);" aria-hidden="true">
           <sc-if value="{{i.isWater}}" hint-placeholder-val="{{true}}">
@@ -240,7 +240,7 @@
           </g>
         </svg>
       </div>
-      <span style="flex-grow: 1; font-size: 16px; font-weight: 500; color: #ffffff; line-height: 1.4;">Whole day. Nothing&#39;s chasing you tonight.</span>
+      <span style="flex-grow: 1; font-size: 16px; font-weight: 500; color: #ffffff; line-height: 1.35;">Whole day. Nothing&#39;s chasing you tonight.</span>
     </div>
   </div>
 

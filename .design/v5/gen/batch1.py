@@ -16,7 +16,7 @@ from chrome import *
 H = 872
 first = [HEAD, root(H)]
 first.append("""
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center; gap: 6px;">
+  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center; gap: 4px;">
     <sc-for list="{{pips}}" as="p" hint-placeholder-count="3">
       <span style="width: 26px; height: 3px; border-radius: 999px; background: {{p.fill}};"></span>
     </sc-for>
@@ -54,30 +54,30 @@ MARK = ('<svg viewBox="0 0 32 32" width="{size}" height="{size}" shape-rendering
 first.append("""
   <!-- 1. He arrives, and the refusal is on the same screen. -->
   <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
-    <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
+    <div style="padding: 40px 24px 0; display: flex; flex-direction: column; align-items: center;">
 """ + REN_SPHERE.replace('{size}', '130') + """
       <h1 style="margin: 28px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
-      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He reads what you log and what your groups share.</p>
-      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He never decides whether a day counted.</p>
+      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.45; color: %s; text-align: center;">He reads what you log and what your groups share.</p>
+      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.45; color: %s; text-align: center;">He never decides whether a day counted.</p>
     </div>
   </sc-if>
 
   <!-- 2. Something is asked for, rather than more explaining. -->
   <sc-if value="{{isPick}}" hint-placeholder-val="{{false}}">
-    <div style="padding: 20px 20px 0; display: flex; flex-direction: column;">
-      <div style="display: flex; align-items: flex-start; gap: 13px;">
+    <div style="padding: 20px 16px 0; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: flex-start; gap: 12px;">
         <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
 """ % (GREY, GREY) + REN_SPHERE.replace('{size}', '44').replace('      <div style="position: relative; width: 44px', '        <div style="flex: none; position: relative; width: 44px') + """        </sc-if>
         <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
           <span style="flex: none; margin-top: 4px;">""" + MARK.replace('{size}', '26') + """</span>
         </sc-if>
-        <p style="margin: 0; flex-grow: 1; font-size: 19px; line-height: 1.42; font-weight: 500;">{{pickLine}}</p>
+        <p style="margin: 0; flex-grow: 1; font-size: 19px; line-height: 1.45; font-weight: 500;">{{pickLine}}</p>
       </div>
 
-      <div style="margin-top: 22px; border-radius: 14px; background: %s; overflow: hidden;">
+      <div style="margin-top: 20px; border-radius: 14px; background: %s; overflow: hidden;">
         <sc-for list="{{picks}}" as="p" hint-placeholder-count="5">
-          <button type="button" onClick="{{p.toggle}}" style="width: 100%%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; align-items: center; gap: 13px; font-family: inherit; text-align: left;">
-            <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 14px 16px 14px 0; border-top: 0.5px solid {{p.sep}};">
+          <button type="button" onClick="{{p.toggle}}" style="width: 100%%; border: 0; background: transparent; padding: 0 0 0 16px; display: flex; align-items: center; gap: 12px; font-family: inherit; text-align: left;">
+            <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid {{p.sep}};">
               <span style="flex: none; width: 34px; height: 34px; border-radius: 10px; background: {{p.chipBg}}; display: flex; align-items: center; justify-content: center;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{p.chipFg}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{p.path}}"/></svg>
               </span>
@@ -92,25 +92,25 @@ first.append("""
           </button>
         </sc-for>
       </div>
-      <p style="margin: 14px 2px 0; font-size: 13px; line-height: 1.45; color: %s;">Defaults are filled in. Nothing here is permanent.</p>
+      <p style="margin: 12px 2px 0; font-size: 13px; line-height: 1.45; color: %s;">Defaults are filled in. Nothing here is permanent.</p>
     </div>
   </sc-if>
 
   <!-- 3. Something has already been helped with, which is the point of 1.15. -->
   <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
-    <div style="padding: 38px 26px 0; display: flex; flex-direction: column; align-items: center;">
+    <div style="padding: 38px 24px 0; display: flex; flex-direction: column; align-items: center;">
       <sc-if value="{{ren}}" hint-placeholder-val="{{true}}">
 """ % (CARD, GREY, GREY) + REN_SPHERE.replace('{size}', '100') + """      </sc-if>
       <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
-        <span style="margin-top: 14px;">""" + MARK.replace('{size}', '62') + """</span>
+        <span style="margin-top: 12px;">""" + MARK.replace('{size}', '62') + """</span>
       </sc-if>
 
-      <h1 style="margin: 26px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
-      <p style="margin: 11px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">{{doneLine}}</p>
+      <h1 style="margin: 24px 0 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">{{count}} set up.</h1>
+      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.45; color: %s; text-align: center;">{{doneLine}}</p>
 
-      <div style="margin-top: 24px; width: 100%%; border-radius: 14px; background: %s; padding: 15px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="margin-top: 24px; width: 100%%; border-radius: 14px; background: %s; padding: 16px 16px; display: flex; flex-direction: column; gap: 8px;">
         <sc-for list="{{chosen}}" as="c" hint-placeholder-count="3">
-          <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><polyline points="20 6 9 17 4 12"/></svg>
             <span style="flex-grow: 1; font-size: 15px; font-weight: 500;">{{c.name}}</span>
             <span style="font-family: %s; font-size: 12.5px; color: %s;">{{c.when}}</span>
@@ -121,8 +121,8 @@ first.append("""
       <!-- Said once, and only to somebody who said no. Nagging a person about
            a thing they declined is how a switch stops being a real switch. -->
       <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
-        <div style="margin-top: 16px; width: 100%%; border-radius: 14px; background: %s; padding: 14px 16px; display: flex; gap: 12px;">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
+        <div style="margin-top: 16px; width: 100%%; border-radius: 14px; background: %s; padding: 12px 16px; display: flex; gap: 12px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
           <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: %s;">Ren is off. Nothing goes to a model. Switch him on any time.</span>
         </div>
       </sc-if>
@@ -134,13 +134,13 @@ first.append(grow())
 
 # THE REFUSAL SITS UNDER THE PRIMARY, not beside it. Side by side makes two
 # equal choices out of one obvious one and one honest escape.
-first.append("""  <div style="flex: none; padding: 0 20px 30px;">
+first.append("""  <div style="flex: none; padding: 0 16px 32px;">
     <sc-if value="{{notLast}}" hint-placeholder-val="{{true}}">
       <button type="button" onClick="{{next}}" style="width: 100%%; height: 54px; border: 0; border-radius: 15px; background: {{nextBg}}; color: {{nextFg}}; font-family: inherit; font-size: 17px; font-weight: 600;">{{nextLabel}}</button>
     </sc-if>
     <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
-      <button type="button" onClick="{{decline}}" style="margin-top: 6px; width: 100%%; height: 44px; border: 0; background: transparent; color: %s; font-family: inherit; font-size: 15px;">I do not want a coach</button>
-      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: %s;">Switch him on later in Settings.</p>
+      <button type="button" onClick="{{decline}}" style="margin-top: 4px; width: 100%%; height: 44px; border: 0; background: transparent; color: %s; font-family: inherit; font-size: 15px;">I do not want a coach</button>
+      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.35; color: %s;">Switch him on later in Settings.</p>
     </sc-if>
     <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
       <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%%; height: 54px; border-radius: 15px; background: %s; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Go to Today</a>
@@ -232,20 +232,20 @@ TYPES = [
     ('Supplements', 'Once a day, no window', None, 'M8.5 4.5h7l-1 15h-5zM8 9.5h8'),
 ]
 cat.append(section('Not tracking yet', top=26))
-cat.append('  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">\n' % CARD)
+cat.append('  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: %s; overflow: hidden;">\n' % CARD)
 for i, (name, rule, tag, path) in enumerate(TYPES):
     sep = 'transparent' if i == 0 else SEP
     badge = ''
     if tag:
         badge = ('<span style="flex: none; font-family: %s; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; '
-                 'color: %s; border: 1px solid %s; border-radius: 5px; padding: 1px 5px;">%s</span>' % (MONO, PINK, PINK, tag))
-    cat.append("""    <div style="display: flex; align-items: center; gap: 13px; padding-left: 16px;">
-      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 12px 16px 12px 0; border-top: 0.5px solid %s;">
+                 'color: %s; border: 1px solid %s; border-radius: 5px; padding: 2px 4px;">%s</span>' % (MONO, PINK, PINK, tag))
+    cat.append("""    <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid %s;">
         <span style="flex: none; width: 34px; height: 34px; border-radius: 10px; background: %s; display: flex; align-items: center; justify-content: center;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg>
         </span>
         <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
-          <span style="display: flex; align-items: center; gap: 7px;"><span style="font-size: 16px; font-weight: 500;">%s</span>%s</span>
+          <span style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 16px; font-weight: 500;">%s</span>%s</span>
           <span style="font-size: 13px; color: %s;">%s</span>
         </span>
         <a href="Configure.dc.html" aria-label="Add %s" style="flex: none; width: 32px; height: 32px; border-radius: 999px; background: %s; display: flex; align-items: center; justify-content: center; text-decoration: none;">
@@ -269,13 +269,13 @@ SIMPLE = [
     ('No social media', 'MIND', 'M4 4l16 16M9 11.4a3.4 3.4 0 0 1 3.4-3.4M2.5 20a6.5 6.5 0 0 1 9.6-5.7M17 9a3 3 0 0 1 0 5'),
 ]
 cat.append(section('Simple ones', top=28))
-cat.append('  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: ' + GREY
+cat.append('  <p style="flex: none; margin: 8px 16px 0; font-size: 13.5px; line-height: 1.45; color: ' + GREY
            + ';">Held or slipped. Each keeps its own streak.</p>\n')
-cat.append('  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: ' + CARD + '; overflow: hidden;">\n')
+cat.append('  <div style="flex: none; margin: 12px 16px 0; border-radius: 14px; background: ' + CARD + '; overflow: hidden;">\n')
 for i, (name, cat_label, path) in enumerate(SIMPLE):
     sep = 'transparent' if i == 0 else SEP
-    cat.append("""    <div style="display: flex; align-items: center; gap: 13px; padding-left: 16px;">
-      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 11px 16px 11px 0; border-top: 0.5px solid %s;">
+    cat.append("""    <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid %s;">
         <span style="flex: none; width: 30px; height: 30px; border-radius: 9px; background: %s; display: flex; align-items: center; justify-content: center;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg>
         </span>
@@ -291,8 +291,8 @@ for i, (name, cat_label, path) in enumerate(SIMPLE):
 """ % (sep, CARD2, path, name, MONO, GREY, cat_label, name, PINK))
 
 # And your own, which is a different thing and is told so on the row.
-cat.append("""    <div style="display: flex; align-items: center; gap: 13px; padding-left: 16px;">
-      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 13px; padding: 11px 16px 11px 0; border-top: 0.5px solid %s;">
+cat.append("""    <div style="display: flex; align-items: center; gap: 12px; padding-left: 16px;">
+      <span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 16px 12px 0; border-top: 0.5px solid %s;">
         <span style="flex: none; width: 30px; height: 30px; border-radius: 9px; border: 1px dashed #3a3a3c; display: flex; align-items: center; justify-content: center;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>
         </span>
@@ -304,19 +304,19 @@ cat.append("""    <div style="display: flex; align-items: center; gap: 13px; pad
       </span>
     </div>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Yours alone. It counts toward its own streak and nothing else. <span style="color:#ffffff;">no doomscroll</span> is.</p>
+  <p style="flex: none; margin: 12px 16px 0; font-size: 12.5px; line-height: 1.45; color: %s;">Yours alone. It counts toward its own streak and nothing else. <span style="color:#ffffff;">no doomscroll</span> is.</p>
 """ % (SEP, GREY, GREY, MONO, DIM, GREY))
 
 cat.append(section('Already tracking', top=26))
-cat.append("""  <div style="flex: none; margin: 12px 20px 0; display: flex; flex-wrap: wrap; gap: 8px;">
+cat.append("""  <div style="flex: none; margin: 12px 16px 0; display: flex; flex-wrap: wrap; gap: 8px;">
     <sc-for list="{{have}}" as="h" hint-placeholder-count="7">
-      <span style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; background: %s;">
+      <span style="display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 999px; background: %s;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
         <span style="font-size: 14px; color: %s;">{{h.name}}</span>
       </span>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 16px 20px 0; font-size: 13px; line-height: 1.48; color: %s;">Starts tomorrow. The first few days are settling.</p>
+  <p style="flex: none; margin: 16px 16px 0; font-size: 13px; line-height: 1.45; color: %s;">Starts tomorrow. The first few days are settling.</p>
 """ % (CARD, GREEN, GREY, GREY))
 cat.append(grow())
 cat.append(tabbar('Activities.dc.html'))
@@ -336,16 +336,16 @@ H = 844
 notice = [HEAD, root(H, ' position: relative;')]
 notice.append("""
   <!-- Home, dimmed, so it is obvious what is behind this and that it is yours. -->
-  <div style="position: absolute; inset: 0; opacity: 0.22; display: flex; flex-direction: column; padding: 16px 20px 0;">
+  <div style="position: absolute; inset: 0; opacity: 0.22; display: flex; flex-direction: column; padding: 16px 16px 0;">
     <span style="font-size: 34px; font-weight: 700;">Today</span>
-    <span style="margin-top: 22px; font-size: 44px; font-weight: 700;">4 <span style="font-size: 20px; color: %s;">of 7</span></span>
+    <span style="margin-top: 20px; font-size: 44px; font-weight: 700;">4 <span style="font-size: 20px; color: %s;">of 7</span></span>
     <div style="margin-top: 16px; display: flex; gap: 4px;">
       <sc-for list="{{segs}}" as="s" hint-placeholder-count="7">
         <span style="flex-grow: 1; height: 5px; border-radius: 999px; background: {{s.fill}};"></span>
       </sc-for>
     </div>
     <sc-for list="{{ghost}}" as="g" hint-placeholder-count="5">
-      <div style="margin-top: 18px; display: flex; align-items: center; gap: 12px;">
+      <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
         <span style="width: 34px; height: 34px; border-radius: 10px; background: %s;"></span>
         <span style="flex-grow: 1; height: 13px; border-radius: 4px; background: %s;"></span>
       </div>
@@ -355,15 +355,15 @@ notice.append("""
 """ % (GREY, CARD2, CARD))
 
 notice.append("""
-  <div style="position: absolute; left: 16px; right: 16px; top: 132px; border-radius: 22px; background: #161618; border: 0.5px solid rgba(255,255,255,0.1); padding: 26px 22px 22px; display: flex; flex-direction: column;">
+  <div style="position: absolute; left: 16px; right: 16px; top: 132px; border-radius: 22px; background: #161618; border: 0.5px solid rgba(255,255,255,0.1); padding: 24px 16px 20px; display: flex; flex-direction: column;">
     <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: %s;">WHAT&#39;S NEW</span>
     <h2 style="margin: 12px 0 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;">Ren, nudges, and Monk mode</h2>
 
-    <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
       <sc-for list="{{lines}}" as="l" hint-placeholder-count="4">
-        <div style="display: flex; gap: 11px;">
-          <span style="flex: none; margin-top: 7px; width: 5px; height: 5px; border-radius: 999px; background: %s;"></span>
-          <span style="flex-grow: 1; font-size: 15px; line-height: 1.5; color: %s;">{{l.text}}</span>
+        <div style="display: flex; gap: 12px;">
+          <span style="flex: none; margin-top: 8px; width: 5px; height: 5px; border-radius: 999px; background: %s;"></span>
+          <span style="flex-grow: 1; font-size: 15px; line-height: 1.45; color: %s;">{{l.text}}</span>
         </div>
       </sc-for>
     </div>
@@ -374,7 +374,7 @@ notice.append("""
       typed at the moment of publishing.
     -->
     <button type="button" style="margin-top: 24px; width: 100%%; height: 50px; border: 0; border-radius: 14px; background: %s; color: #ffffff; font-family: inherit; font-size: 17px; font-weight: 600;">Got it</button>
-    <span style="margin-top: 11px; text-align: center; font-size: 12px; color: %s;">There is no dismiss. Got it is final.</span>
+    <span style="margin-top: 12px; text-align: center; font-size: 12px; color: %s;">There is no dismiss. Got it is final.</span>
   </div>
 """ % (MONO, PINK, PINK, '#c7c7cc', PINK, DIM))
 

@@ -2090,6 +2090,62 @@ where it counts. The gate and the reference boards were left alone: Consent is
 changes its rhythm and measuring gutters before the cut would measure a layout
 about to change.
 
+### 1.60 A spatial scale, because there wasn't one
+
+Settled 2026-09-25, after the text cut and deliberately after it, because
+removing a thousand words changes the rhythm of every board and measuring
+gutters first would have measured a layout about to change.
+
+**The measurement.** Across 41 boards: **22 distinct `gap` values, 28 distinct
+`padding` values, 17 distinct line-heights, and two competing page gutters.**
+That is not a system. It is ninety-odd individual decisions, and it is exactly
+what a screen looks like when every element was spaced by eye.
+
+### The scale
+
+**2, 4, 8, 12, 16, 20, 24, 32.** A 4px base with a 2px half-step, which the
+canvas uses 220 times for two things that sit almost touching.
+
+**Line-height is four values**: 1.2 tight, 1.35 a heading, 1.45 a row, 1.6
+prose.
+
+**Only nearby values moved.** A value within 2px of a step snapped to it;
+anything further stayed, because it was probably deliberate. That is what keeps
+the change safe against a fixed frame height: no board moved more than 4px, and
+the net across all 41 was 606px TIGHTER, so nothing can clip that did not clip
+before.
+
+### One gutter, and why 16 rather than 20
+
+Fifteen boards used 16px and twenty used 20px. Two gutters across one app is
+the thing an eye notices without being able to name it, because every screen
+starts its content in a slightly different place.
+
+**16 wins for two reasons.** It is the platform gutter on a 390px phone. And
+moving twenty boards from 20 to 16 **widens** their content by 8px, which
+cannot make anything wrap that did not wrap before. Going the other way could,
+and the Home status line has 34 characters of room measured to the pixel
+(1.45).
+
+| | before | after |
+|---|---|---|
+| `gap` values | 22 | **9** |
+| `padding` values | 28 | **11** |
+| line-heights | 17 | **6** |
+| boards on the house gutter | 15 of 41 | **38 of 41** |
+
+The three that are not: Mark and Signin at 8px, which are a reference sheet and
+the one marketing page, and Splash at 32px, which is a mark on an empty screen.
+
+### What was NOT touched, and why
+
+**The type ramp.** 31 distinct font sizes is the same kind of problem, and
+fixing it is not the same kind of safe: a font size change alters text width,
+and text width decides wrapping. The status line budget is 34 characters. That
+needs somebody to look at a rendered board rather than a script to round
+numbers, so it is the next thing a person does rather than the next thing a
+script does.
+
 ---
 
 ## 2. Confirmed unchanged

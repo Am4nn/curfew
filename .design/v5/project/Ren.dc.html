@@ -200,14 +200,14 @@
 -->
 <div style="width: 390px; height: 1158px; box-sizing: border-box; background: #000000; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: #ffffff; display: flex; flex-direction: column; overflow: hidden;">
 
-  <div style="flex: none; padding: 22px 20px 0;">
+  <div style="flex: none; padding: 20px 16px 0;">
     <span style="font-size: 34px; font-weight: 700; letter-spacing: -0.01em;">Ren, every mood</span>
     <p style="margin: 8px 0 0; font-size: 14.5px; line-height: 1.45; color: #8e8e93;">Colour is the feeling. Brows, eyes and mouth do the acting, and he turns to look around. The ball itself only breathes.</p>
   </div>
 
-  <div style="flex-grow: 1; min-height: 0; margin-top: 22px; padding: 0 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 14px;">
+  <div style="flex-grow: 1; min-height: 0; margin-top: 20px; padding: 0 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px;">
     <sc-for list="{{moods}}" as="m" hint-placeholder-count="6">
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 11px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
 
         <div class="{{m.body}}" style="position: relative; width: 112px; height: 112px;">
           <div style="position: absolute; inset: 0; border-radius: 999px; background: {{m.skin}};"></div>
@@ -235,14 +235,14 @@
 
         <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;">
           <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: {{m.tone}};">{{m.label}}</span>
-          <span style="font-size: 12.5px; line-height: 1.4; color: #8e8e93;">{{m.when}}</span>
+          <span style="font-size: 12.5px; line-height: 1.35; color: #8e8e93;">{{m.when}}</span>
         </div>
       </div>
     </sc-for>
   </div>
 
-  <div style="flex: none; margin: 16px 20px 22px; border-left: 2px solid #ff375f; background: #1c1c1e; padding: 13px 15px;">
-    <p style="margin: 0; font-size: 12.5px; line-height: 1.55; color: #8e8e93;">A mood is never chosen. Each answers a value the app already holds: a window closing, a period passing, a run ending, quiet hours, sixty clean days. <span style="color:#ffffff;">Angry is at the situation, never at you</span>, and only the words carry that.</p>
+  <div style="flex: none; margin: 16px 16px 20px; border-left: 2px solid #ff375f; background: #1c1c1e; padding: 12px 16px;">
+    <p style="margin: 0; font-size: 12.5px; line-height: 1.6; color: #8e8e93;">A mood is never chosen. Each answers a value the app already holds: a window closing, a period passing, a run ending, quiet hours, sixty clean days. <span style="color:#ffffff;">Angry is at the situation, never at you</span>, and only the words carry that.</p>
   </div>
 
 </div>

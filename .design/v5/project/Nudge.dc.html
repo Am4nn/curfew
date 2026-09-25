@@ -74,7 +74,7 @@
     the margin, exactly above the first letter of the large title. No disc: the
     disc is only for a chevron over a photograph.
   -->
-  <div style="flex: none; height: 44px; padding: 0 20px; display: flex; align-items: center;">
+  <div style="flex: none; height: 44px; padding: 0 16px; display: flex; align-items: center;">
     <a href="Main.dc.html" aria-label="Back" style="flex: none; width: 44px; height: 44px; margin-left: -12px; display: flex; align-items: center; justify-content: center; color: #ffffff; text-decoration: none;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
@@ -82,12 +82,12 @@
 
   <!-- BEFORE SENDING -->
   <sc-if value="{{pending}}" hint-placeholder-val="{{true}}">
-    <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 20px;">
+    <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 16px;">
 
-      <h1 style="margin: 4px 0 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;">Nudge Mira</h1>
+      <h1 style="margin: 4px 0 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;">Nudge Mira</h1>
 
       <!-- What she is actually short of, named the way her own row names it. -->
-      <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+      <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 15px; color: #8e8e93;">Water, 3 of 8</span>
         <span style="width: 3px; height: 3px; border-radius: 999px; background: #48484a;"></span>
         <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 600; color: #8e8e93;">2H LEFT</span>
@@ -100,9 +100,9 @@
         pressable. None is pink, because pink is the one primary action on a
         screen and these are four equal ways of doing the same thing.
       -->
-      <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 8px;">
         <sc-for list="{{options}}" as="o" hint-placeholder-count="4">
-          <button type="button" onClick="{{o.pick}}" style="width: 100%; height: 52px; padding: 0 18px; border-radius: 16px; border: none; background: #2c2c2e; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 600; text-align: left;">{{o.text}}</button>
+          <button type="button" onClick="{{o.pick}}" style="width: 100%; height: 52px; padding: 0 16px; border-radius: 16px; border: none; background: #2c2c2e; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 600; text-align: left;">{{o.text}}</button>
         </sc-for>
       </div>
 
@@ -113,20 +113,20 @@
         notification on somebody else's phone and the sender should know what
         lands there. It also answers "is this anonymous" without a FAQ.
       -->
-      <p style="margin: 0 0 28px; font-size: 12.5px; line-height: 1.5; color: #8e8e93;">She sees your name, the message and the activity. Nothing arrives during her quiet hours.</p>
+      <p style="margin: 0 0 28px; font-size: 12.5px; line-height: 1.45; color: #8e8e93;">She sees your name, the message and the activity. Nothing arrives during her quiet hours.</p>
     </div>
   </sc-if>
 
   <!-- AFTER SENDING -->
   <sc-if value="{{done}}" hint-placeholder-val="{{false}}">
-    <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 20px;">
+    <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 16px;">
 
-      <h1 style="margin: 4px 0 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;">Sent</h1>
+      <h1 style="margin: 4px 0 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;">Sent</h1>
 
       <!-- Her phone, quoted back, so the sender knows exactly what was said. -->
-      <div style="margin-top: 24px; padding: 16px 18px; border-radius: 16px; background: #1c1c1e;">
+      <div style="margin-top: 24px; padding: 16px 16px; border-radius: 16px; background: #1c1c1e;">
         <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; color: #8e8e93;">ON MIRA'S PHONE</span>
-        <p style="margin: 10px 0 0; font-size: 16px; font-weight: 600; line-height: 1.35;">Aman: {{sent}}</p>
+        <p style="margin: 8px 0 0; font-size: 16px; font-weight: 600; line-height: 1.35;">Aman: {{sent}}</p>
         <p style="margin: 4px 0 0; font-size: 14px; color: #8e8e93;">Water, 3 of 8. Two hours left.</p>
       </div>
 
@@ -135,7 +135,7 @@
         achievement, and a running total would turn helping somebody into a
         score, which is the one thing this screen must not become.
       -->
-      <p style="margin: 18px 0 0; font-size: 13.5px; line-height: 1.5; color: #8e8e93;">You can send another whenever you like.</p>
+      <p style="margin: 16px 0 0; font-size: 13.5px; line-height: 1.45; color: #8e8e93;">You can send another whenever you like.</p>
 
       <div style="flex-grow: 1;"></div>
 

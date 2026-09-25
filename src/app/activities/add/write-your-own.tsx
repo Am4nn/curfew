@@ -49,26 +49,26 @@ export function WriteYourOwn() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-3 border-b border-rule py-[14px] text-left"
+        className="flex items-center gap-3 border-b border-rule py-3.5 text-left"
       >
         <span className="flex flex-none">
           <ActivityIcon name="condition" size={20} />
         </span>
         <div className="flex flex-1 flex-col gap-[3px]">
-          <span className="text-[14px]">Write your own</span>
-          <span className="text-[11.5px] leading-[1.45] text-muted">
+          <span className="text-base">Write your own</span>
+          <span className="text-2xs leading-normal text-muted">
             A yes or no you name yourself
           </span>
         </div>
-        <span className="flex-none text-[18px] leading-none">+</span>
+        <span className="flex-none text-lg leading-none">+</span>
       </button>
     );
   }
 
   return (
-    <div className="flex flex-col gap-[10px] border-b border-rule py-[14px]">
-      <label className="flex flex-col gap-[6px]">
-        <span className="text-[11px] tracking-[0.14em] text-muted">
+    <div className="flex flex-col gap-2.5 border-b border-rule py-3.5">
+      <label className="flex flex-col gap-1.5">
+        <span className="text-2xs tracking-caps text-muted">
           WHAT ARE YOU CALLING IT
         </span>
         <input
@@ -78,15 +78,15 @@ export function WriteYourOwn() {
           maxLength={LABEL_MAX}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="No doomscroll"
-          className="h-11 w-full border border-rule bg-transparent px-3 text-[14px] text-fg outline-none placeholder:text-muted"
+          className="h-11 w-full border border-rule bg-transparent px-3 text-base text-fg outline-none placeholder:text-muted"
         />
       </label>
 
-      <fieldset className="flex flex-col gap-[6px] border-0 p-0">
-        <legend className="text-[11px] tracking-[0.14em] text-muted">
+      <fieldset className="flex flex-col gap-1.5 border-0 p-0">
+        <legend className="text-2xs tracking-caps text-muted">
           WHICH IS IT
         </legend>
-        <div className="flex gap-[10px] pt-[6px]">
+        <div className="flex gap-2.5 pt-1.5">
           {(
             [
               ["do", "Something I do"],
@@ -99,7 +99,7 @@ export function WriteYourOwn() {
               aria-pressed={kind === value}
               onClick={() => setKind(value)}
               className={
-                "h-10 flex-1 border text-[13px] " +
+                "h-10 flex-1 border text-sm " +
                 (kind === value ? "border-fg bg-fg text-bg" : "border-rule text-fg")
               }
             >
@@ -113,20 +113,20 @@ export function WriteYourOwn() {
           about a condition somebody writes that is different from ours, and
           finding out later that it counted toward nothing would read as a
           bug. */}
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         It keeps its own streak and you confirm it once a day, the same as any
         other. It does not count toward Monk mode: nothing can know what you
         meant by it.
       </p>
 
-      {error ? <p className="text-[11.5px] text-penalty">{error}</p> : null}
+      {error ? <p className="text-2xs text-penalty">{error}</p> : null}
 
-      <div className="flex gap-[10px]">
+      <div className="flex gap-2.5">
         <button
           type="button"
           onClick={save}
           disabled={trimmed.length === 0 || kind === null || pending}
-          className="h-11 flex-1 border border-fg bg-fg text-[14px] font-semibold text-bg disabled:opacity-40"
+          className="h-11 flex-1 border border-fg bg-fg text-base font-semibold text-bg disabled:opacity-40"
         >
           {pending ? "Saving" : "Add it"}
         </button>
@@ -138,7 +138,7 @@ export function WriteYourOwn() {
             setError(null);
           }}
           disabled={pending}
-          className="h-11 flex-1 border border-rule text-[14px] disabled:opacity-40"
+          className="h-11 flex-1 border border-rule text-base disabled:opacity-40"
         >
           Cancel
         </button>

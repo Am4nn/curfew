@@ -12,7 +12,7 @@ export default function Loading() {
       <div className="flex flex-col gap-[9px]">
         <LabelBar />
         <Bar w="w-[92px]" h={34} />
-        <div className="mt-[6px] flex gap-1">
+        <div className="mt-1.5 flex gap-1">
           {Array.from({ length: 5 }, (_, i) => (
             <div key={i} className="h-[3px] flex-1 bg-rule" />
           ))}

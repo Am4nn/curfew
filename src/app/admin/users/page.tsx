@@ -5,7 +5,7 @@ export default async function AdminUsers() {
   const users = await listAllUsers();
 
   return (
-    <section className="flex flex-col gap-[14px]">
+    <section className="flex flex-col gap-3.5">
       <UsersDirectory users={users} />
     </section>
   );

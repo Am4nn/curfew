@@ -107,6 +107,11 @@
   /* The streak colour, as a token rather than a literal. It was already in
      three places as #ff7a2f before the restore control needed a fourth. */
   --flame: #ff7a2f;
+  /* The flame's three stops. They were written as literals in seven places
+     and check:tokens counted every one: a gradient somebody writes seven
+     times is a token nobody named (1.61). --flame is the middle stop. */
+  --flame-from: #ffd23f;
+  --flame-to: #e4574b;
   --pass: #6ba17f;
   --accent: #7fa8ff;
   /* The heatmap ramp: none to all, five discrete steps from the near-black of
@@ -141,6 +146,8 @@
   --rank-unbroken: #b8480f;
   /* Darker on light, for the same reason the ranks are. */
   --flame: #b8480f;
+  --flame-from: #c98a15;
+  --flame-to: #a3342a;
   --pass: #2f5d3f;
   --accent: #7fa8ff;
   /* The same five steps read against the light ground: they darken as the day

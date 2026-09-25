@@ -115,14 +115,14 @@ export function SettingsForm(props: Props) {
   if (panel) return <PanelView {...props} back={here} />;
 
   return (
-    <div className="flex flex-col gap-[22px] px-5 pb-6 pt-[14px]">
+    <div className="flex flex-col gap-[22px] px-5 pb-6 pt-3.5">
       {/* A member owns nothing, so there is no second half to switch to. */}
       {props.isOwner ? (
         <div className="flex">
           <Link
             href={base}
             className={
-              "flex h-[38px] flex-1 items-center justify-center border text-[12px] tracking-[0.08em] " +
+              "flex h-[38px] flex-1 items-center justify-center border text-xs tracking-wider " +
               (half === "yours"
                 ? "border-fg bg-fg text-bg"
                 : "border-rule text-muted")
@@ -133,7 +133,7 @@ export function SettingsForm(props: Props) {
           <Link
             href={`${base}?half=group`}
             className={
-              "flex h-[38px] flex-1 items-center justify-center border border-l-0 text-[12px] tracking-[0.08em] " +
+              "flex h-[38px] flex-1 items-center justify-center border border-l-0 text-xs tracking-wider " +
               (half === "group"
                 ? "border-fg bg-fg text-bg"
                 : "border-rule text-muted")
@@ -176,10 +176,10 @@ function YourHalf({
   return (
     <>
       <Rule>
-        <p className="text-[17px] leading-[1.55]">
+        <p className="text-lg leading-relaxed">
           {groupName} accepts {listOf(shares.map((s) => s.name))}.
         </p>
-        <p className="text-[12.5px] leading-[1.65] text-muted">
+        <p className="text-xs leading-loose text-muted">
           You share {sharedCount === 0 ? "none" : sharedCount} of{" "}
           {shares.length === 1 ? "it" : `the ${shares.length}`}, so your ceiling here is{" "}
           {ceiling}. Sharing more raises it. Stopping does not erase what you earned,
@@ -219,10 +219,10 @@ function GroupHalf({
   return (
     <>
       <Rule>
-        <p className="text-[17px] leading-[1.55]">
+        <p className="text-lg leading-relaxed">
           You own this group, so these are yours to set.
         </p>
-        <p className="text-[12.5px] leading-[1.65] text-muted">
+        <p className="text-xs leading-loose text-muted">
           Every member feels them. Nothing here touches what you personally share,
           which is on the other side.
         </p>
@@ -252,7 +252,7 @@ function GroupHalf({
         ) : null}
       </Section>
 
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         A change to a fine starts tomorrow, never today. A period already running is
         judged on the rule it began under.
       </p>
@@ -275,12 +275,12 @@ function PanelView(props: Props & { back: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-[18px] px-5 pb-6 pt-[14px]">
-      <Link href={back} className="flex items-center gap-[9px] text-[13px] text-muted">
-        <span className="text-[15px]">&#8249;</span>
+    <div className="flex flex-col gap-[18px] px-5 pb-6 pt-3.5">
+      <Link href={back} className="flex items-center gap-[9px] text-sm text-muted">
+        <span className="text-base">&#8249;</span>
         Back
       </Link>
-      <h2 className="text-[17px] font-semibold">{title[panel!]}</h2>
+      <h2 className="text-lg font-semibold">{title[panel!]}</h2>
       {panel === "sharing" ? <SharingPanel {...props} /> : null}
       {panel === "cost" ? <CostPanel {...props} /> : null}
       {panel === "types" ? <TypesPanel {...props} /> : null}
@@ -308,7 +308,7 @@ function SharingPanel({ groupId, shares }: Props) {
 
   if (view.length === 0) {
     return (
-      <p className="text-[12.5px] leading-[1.6] text-muted">
+      <p className="text-xs leading-relaxed text-muted">
         This group accepts nothing yet, so there is nothing to share.
       </p>
     );
@@ -329,8 +329,8 @@ function SharingPanel({ groupId, shares }: Props) {
                 <ActivityIcon name={row.icon} />
               </span>
               <div className="flex flex-1 flex-col gap-[3px]">
-                <span className="text-[13.5px]">{row.name}</span>
-                <span className="text-[11px] text-muted">{row.sub}</span>
+                <span className="text-sm">{row.name}</span>
+                <span className="text-2xs text-muted">{row.sub}</span>
               </div>
               {row.tracked ? (
                 <Toggle
@@ -354,7 +354,7 @@ function SharingPanel({ groupId, shares }: Props) {
                 // anything.
                 <Link
                   href={`/activities/${row.typeKey}`}
-                  className="flex-none text-[11.5px] text-accent underline underline-offset-2"
+                  className="flex-none text-2xs text-accent underline underline-offset-2"
                 >
                   Set it up first
                 </Link>
@@ -384,7 +384,7 @@ function SharingPanel({ groupId, shares }: Props) {
           </div>
         ))}
       </div>
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         A group only ever sees what you switch on here, and nothing from before you
         joined it. Stopping tracking an activity stops sharing it too.
       </p>
@@ -397,7 +397,7 @@ function SharingPanel({ groupId, shares }: Props) {
 function CostPanel({ accepted, moneyOn, appMoneyOn }: Props) {
   if (!appMoneyOn || !moneyOn) {
     return (
-      <p className="text-[12.5px] leading-[1.6] text-muted">
+      <p className="text-xs leading-relaxed text-muted">
         This group does not track money, so nothing here costs anything.
       </p>
     );
@@ -411,10 +411,10 @@ function CostPanel({ accepted, moneyOn, appMoneyOn }: Props) {
             key={row.typeKey}
             className="flex items-center justify-between gap-3 border-b border-rule py-[13px]"
           >
-            <span className="text-[13.5px]">{row.name}</span>
+            <span className="text-sm">{row.name}</span>
             <span
               className={
-                "text-[12.5px] " + (row.fineAmount > 0 ? "text-penalty" : "text-muted")
+                "text-xs " + (row.fineAmount > 0 ? "text-penalty" : "text-muted")
               }
             >
               {row.fineAmount > 0
@@ -424,7 +424,7 @@ function CostPanel({ accepted, moneyOn, appMoneyOn }: Props) {
           </div>
         ))}
       </div>
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         A fine is owed between members and split among whoever passed. Curfew never
         collects anything. Only an owner can change these.
       </p>
@@ -449,8 +449,8 @@ function TypesPanel({ groupId, accepted, addable }: Props) {
               <ActivityIcon name={row.icon} />
             </span>
             <div className="flex flex-1 flex-col gap-[3px]">
-              <span className="text-[13.5px]">{row.name}</span>
-              <span className="text-[11px] text-muted">
+              <span className="text-sm">{row.name}</span>
+              <span className="text-2xs text-muted">
                 {row.sharers} {row.sharers === 1 ? "member shares" : "members share"}
               </span>
             </div>
@@ -460,7 +460,7 @@ function TypesPanel({ groupId, accepted, addable }: Props) {
               onClick={() =>
                 run(() => setAcceptedAction({ groupId, typeKey: row.typeKey, accepted: false }))
               }
-              className="flex-none text-[11.5px] text-penalty disabled:opacity-50"
+              className="flex-none text-2xs text-penalty disabled:opacity-50"
             >
               Remove
             </button>
@@ -482,8 +482,8 @@ function TypesPanel({ groupId, accepted, addable }: Props) {
               className="flex items-center gap-[11px] border-b border-rule py-3 text-left active:opacity-70 disabled:opacity-40"
             >
               <ActivityIcon name={t.icon} />
-              <span className="flex-1 text-[13.5px]">{t.name}</span>
-              <span className="text-[11.5px] text-muted">Accept</span>
+              <span className="flex-1 text-sm">{t.name}</span>
+              <span className="text-2xs text-muted">Accept</span>
             </button>
           ))}
         </div>
@@ -492,12 +492,12 @@ function TypesPanel({ groupId, accepted, addable }: Props) {
           type="button"
           disabled={addable.length === 0 || busy}
           onClick={() => setAdding(true)}
-          className="h-11 w-full border border-rule text-[14px] active:opacity-70 disabled:opacity-40"
+          className="h-11 w-full border border-rule text-base active:opacity-70 disabled:opacity-40"
         >
           + Accept another activity
         </button>
       )}
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Removing a type stops it counting here. Nothing anybody already earned is
         rewritten.
       </p>
@@ -514,8 +514,8 @@ function MoneyPanel({ groupId, accepted, moneyOn }: Props) {
     <>
       <div className="flex items-center gap-[11px] border-b border-rule py-3">
         <div className="flex flex-1 flex-col gap-[3px]">
-          <span className="text-[13.5px]">Track money</span>
-          <span className="text-[11px] leading-[1.5] text-muted">
+          <span className="text-sm">Track money</span>
+          <span className="text-2xs leading-relaxed text-muted">
             Fines are owed between members, never collected by Curfew
           </span>
         </div>
@@ -547,7 +547,7 @@ function MoneyPanel({ groupId, accepted, moneyOn }: Props) {
           ))
         : null}
 
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         A change starts tomorrow at the earliest. A period already running is judged
         on the rule it began under.
       </p>
@@ -569,10 +569,10 @@ function MembersPanel({ groupId, members, invites, viewerId }: Props) {
               {/* One string, not a name and a suffix beside it. Two text nodes
                   render the same but cannot be matched as one, which is a
                   needless way to make the row hard to address. */}
-              <span className="text-[13.5px]">
+              <span className="text-sm">
                 {m.userId === viewerId ? `${m.name} (you)` : m.name}
               </span>
-              <span className="text-[11px] text-muted">
+              <span className="text-2xs text-muted">
                 {m.role === "owner" ? "Owner" : "Member"}
               </span>
             </div>
@@ -588,7 +588,7 @@ function MembersPanel({ groupId, members, invites, viewerId }: Props) {
                   });
                 })
               }
-              className="h-[34px] flex-none border border-rule px-[13px] text-[12px] active:opacity-70 disabled:opacity-60"
+              className="h-[34px] flex-none border border-rule px-[13px] text-xs active:opacity-70 disabled:opacity-60"
             >
               {m.role === "owner" ? "Step down" : "Make owner"}
             </button>
@@ -598,7 +598,7 @@ function MembersPanel({ groupId, members, invites, viewerId }: Props) {
 
       {invites.length > 0 ? (
         <>
-          <span className="pt-2 text-[10px] tracking-[0.16em] text-muted">INVITES OUT</span>
+          <span className="pt-2 text-micro tracking-label text-muted">INVITES OUT</span>
           <div className="flex flex-col">
             {invites.map((invite) => (
               <div
@@ -606,8 +606,8 @@ function MembersPanel({ groupId, members, invites, viewerId }: Props) {
                 className="flex items-center gap-[11px] border-b border-rule py-3"
               >
                 <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                  <span className="truncate text-[13.5px]">{invite.email}</span>
-                  <span className="text-[11px] text-muted">
+                  <span className="truncate text-sm">{invite.email}</span>
+                  <span className="text-2xs text-muted">
                     Invited by {invite.invitedByName}
                   </span>
                 </div>
@@ -620,7 +620,7 @@ function MembersPanel({ groupId, members, invites, viewerId }: Props) {
                         await cancelInviteAction({ groupId, inviteId: invite.id });
                       })
                     }
-                    className="h-[34px] flex-none border border-rule px-[13px] text-[12px] active:opacity-70 disabled:opacity-60"
+                    className="h-[34px] flex-none border border-rule px-[13px] text-xs active:opacity-70 disabled:opacity-60"
                   >
                     Cancel
                   </button>
@@ -631,7 +631,7 @@ function MembersPanel({ groupId, members, invites, viewerId }: Props) {
         </>
       ) : null}
 
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         A group always keeps one owner: the last one cannot step down. Cancelling an
         invite stops the link working, nobody is told, and the same address can be
         invited again.
@@ -649,7 +649,7 @@ function Rule({ children }: { children: React.ReactNode }) {
   return (
     <div className="border border-rule bg-surface">
       <div className="border-b border-rule px-4 py-[13px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">WHERE YOU STAND</span>
+        <span className="text-micro tracking-label text-muted">WHERE YOU STAND</span>
       </div>
       <div className="flex flex-col gap-[11px] p-4">{children}</div>
     </div>
@@ -658,8 +658,8 @@ function Rule({ children }: { children: React.ReactNode }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-[10px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">{title}</span>
+    <section className="flex flex-col gap-2.5">
+      <span className="text-micro tracking-label text-muted">{title}</span>
       <div className="flex flex-col">{children}</div>
     </section>
   );
@@ -671,10 +671,10 @@ function Row({ href, label, value }: { href: string; label: string; value: strin
       href={href}
       className="flex items-center justify-between gap-3 border-b border-rule py-[15px] first:border-t active:opacity-70"
     >
-      <span className="flex-none text-[13.5px]">{label}</span>
-      <span className="flex min-w-0 items-center gap-[10px]">
-        <span className="truncate text-[13px] text-muted">{value}</span>
-        <span className="flex-none text-[15px] text-muted">&#8250;</span>
+      <span className="flex-none text-sm">{label}</span>
+      <span className="flex min-w-0 items-center gap-2.5">
+        <span className="truncate text-sm text-muted">{value}</span>
+        <span className="flex-none text-base text-muted">&#8250;</span>
       </span>
     </Link>
   );
@@ -682,12 +682,12 @@ function Row({ href, label, value }: { href: string; label: string; value: strin
 
 function Err({ error }: { error: string | null }) {
   if (!error) return null;
-  return <p className="text-[11.5px] leading-[1.55] text-penalty">{error}</p>;
+  return <p className="text-2xs leading-relaxed text-penalty">{error}</p>;
 }
 
 function Busy({ busy }: { busy: boolean }) {
   if (!busy) return null;
-  return <p className="text-[11px] text-muted">Saving</p>;
+  return <p className="text-2xs text-muted">Saving</p>;
 }
 
 function LeaveGroup({ groupId }: { groupId: string }) {
@@ -701,7 +701,7 @@ function LeaveGroup({ groupId }: { groupId: string }) {
       <button
         type="button"
         onClick={() => setLeaving(true)}
-        className="h-11 w-full border border-rule text-[14px] text-penalty active:opacity-70"
+        className="h-11 w-full border border-rule text-base text-penalty active:opacity-70"
       >
         Leave group
       </button>
@@ -710,15 +710,15 @@ function LeaveGroup({ groupId }: { groupId: string }) {
 
   return (
     <div className="flex flex-col gap-[11px] border border-penalty p-[13px]">
-      <span className="text-[12.5px] leading-[1.55]">
+      <span className="text-xs leading-relaxed">
         Leave this group? What you owe and what you are owed stay. Your streaks,
         standing and photos stop being visible here at once.
       </span>
-      <div className="flex gap-[10px]">
+      <div className="flex gap-2.5">
         <button
           type="button"
           onClick={() => setLeaving(false)}
-          className="h-11 flex-1 border border-rule text-[14px] active:opacity-70"
+          className="h-11 flex-1 border border-rule text-base active:opacity-70"
         >
           Stay
         </button>
@@ -727,7 +727,7 @@ function LeaveGroup({ groupId }: { groupId: string }) {
               flag, so useFormStatus is the only thing that knows this press
               happened. */}
           <SubmitButton
-            className="h-11 w-full border border-penalty bg-penalty text-[14px] font-semibold text-bg"
+            className="h-11 w-full border border-penalty bg-penalty text-base font-semibold text-bg"
             pendingLabel="Leaving"
           >
             Leave
@@ -752,7 +752,7 @@ function FineRow({
 
   return (
     <div className="flex items-center justify-between gap-3 border-b border-rule py-[11px]">
-      <span className="text-[13px]">{row.name}</span>
+      <span className="text-sm">{row.name}</span>
       <div className="flex items-center gap-2">
         <input
           type="number"
@@ -766,9 +766,9 @@ function FineRow({
             const n = Number(value);
             if (value !== "" && Number.isFinite(n)) onSave(n);
           }}
-          className="w-24 border border-rule bg-transparent px-2 py-[6px] text-right text-[12.5px] tabular-nums text-fg outline-none placeholder:text-muted"
+          className="w-24 border border-rule bg-transparent px-2 py-1.5 text-right text-xs tabular-nums text-fg outline-none placeholder:text-muted"
         />
-        <span className="text-[11px] text-muted">
+        <span className="text-2xs text-muted">
           {row.fineAmount > 0 ? formatMoney(row.fineAmount, row.currency) : row.currency}
         </span>
       </div>

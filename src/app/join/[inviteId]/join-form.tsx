@@ -70,7 +70,7 @@ export function JoinForm({
 
   return (
     <div className="flex flex-col gap-[18px] px-5 pb-6 pt-[18px]">
-      <p className="text-[12.5px] leading-[1.6] text-muted">
+      <p className="text-xs leading-relaxed text-muted">
         {groupName} tracks {rows.length}{" "}
         {rows.length === 1 ? "activity" : "activities"}. Choose what you send them.
         You can change this any time.
@@ -91,8 +91,8 @@ export function JoinForm({
                   <ActivityIcon name={row.icon} />
                 </span>
                 <div className="flex flex-1 flex-col gap-[3px]">
-                  <span className="text-[13.5px]">{row.name}</span>
-                  <span className="text-[11px] text-muted">{row.sub}</span>
+                  <span className="text-sm">{row.name}</span>
+                  <span className="text-2xs text-muted">{row.sub}</span>
                 </div>
                 <Toggle
                   on={mine.shared}
@@ -112,7 +112,7 @@ export function JoinForm({
                 <div className="pb-[13px] pl-[29px]">
                   <Link
                     href={`/activities/${row.typeKey}?from=join&invite=${inviteId}`}
-                    className="inline-flex h-8 items-center border border-rule px-3 text-[12px]"
+                    className="inline-flex h-8 items-center border border-rule px-3 text-xs"
                   >
                     Set it up first
                   </Link>
@@ -143,7 +143,7 @@ export function JoinForm({
                       </svg>
                     ) : null}
                   </span>
-                  <span className={"text-[12px] " + (mine.shareEvidence ? "text-fg" : "text-muted")}>
+                  <span className={"text-xs " + (mine.shareEvidence ? "text-fg" : "text-muted")}>
                     Share evidence with this group
                   </span>
                 </button>
@@ -154,19 +154,19 @@ export function JoinForm({
       </div>
 
       <div className="flex flex-col gap-[7px] border border-rule p-[13px]">
-        <span className="text-[12.5px]">
+        <span className="text-xs">
           {rows.length === 0
             ? "This group accepts nothing yet, so nothing caps you."
             : `Sharing ${sharing} of ${rows.length} caps your score at ${Math.round(ceiling)}.`}
         </span>
-        <span className="text-[11px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           You start at {Math.round(opening)},{" "}
           <span className={RANK_TEXT[startRank.key]}>{startRank.name}</span>.
         </span>
       </div>
 
       {error ? (
-        <div className="text-[11.5px] leading-[1.55] text-penalty">
+        <div className="text-2xs leading-relaxed text-penalty">
           {error}
         </div>
       ) : null}
@@ -175,7 +175,7 @@ export function JoinForm({
         type="button"
         onClick={join}
         disabled={busy}
-        className="h-11 w-full border border-fg bg-fg text-[14px] font-semibold text-bg disabled:opacity-50"
+        className="h-11 w-full border border-fg bg-fg text-base font-semibold text-bg disabled:opacity-50"
       >
         {busy ? "Joining" : "Join group"}
       </button>

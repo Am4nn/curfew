@@ -42,7 +42,7 @@ export function RowsSkeleton({ n = 5, icon = true }: { n?: number; icon?: boolea
 /** A row of the bordered figures Home, Stats and Standing all use. */
 export function TilesSkeleton({ n = 3 }: { n?: number }) {
   return (
-    <div className="flex gap-[10px]">
+    <div className="flex gap-2.5">
       {Array.from({ length: n }, (_, i) => (
         <div key={i} className="flex flex-1 flex-col gap-[9px] border border-rule p-3">
           <Bar w="w-[55%]" h={16} />
@@ -73,11 +73,11 @@ export function PageSkeleton({
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
           {back ? (
-            <span className="text-[14px] text-muted">&lsaquo;</span>
+            <span className="text-base text-muted">&lsaquo;</span>
           ) : (
             <QuorumMark size={15} />
           )}
-          <span className="text-[14px] font-semibold tracking-[0.16em]">{title}</span>
+          <span className="text-base font-semibold tracking-label">{title}</span>
         </header>
         <div className="flex animate-pulse flex-col gap-6">{children}</div>
       </div>

@@ -46,7 +46,7 @@ export default async function Insights() {
           kind="bar"
           fmt={(v) => String(v)}
         />
-        <p className="mt-1 text-[11.5px] text-muted">{trendCaption}</p>
+        <p className="mt-1 text-2xs text-muted">{trendCaption}</p>
       </section>
 
       <TypeBreakdown title="WHAT PEOPLE ACTUALLY HOLD" rates={rates} caption={callout} />
@@ -69,10 +69,10 @@ function Stat({
 }) {
   return (
     <div className="border border-rule p-3">
-      <div className={"text-[19px] font-semibold leading-none " + (tone === "penalty" ? "text-penalty" : "")}>
+      <div className={"text-lg font-semibold leading-none " + (tone === "penalty" ? "text-penalty" : "")}>
         {value}
       </div>
-      <div className="mt-[5px] text-[9.5px] leading-[1.4] tracking-[0.08em] text-muted">{label}</div>
+      <div className="mt-[5px] text-micro leading-snug tracking-wider text-muted">{label}</div>
     </div>
   );
 }

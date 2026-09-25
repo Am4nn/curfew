@@ -19,7 +19,7 @@ export function PhotoTile({
   showType?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-[6px] text-left">
+    <div className="flex flex-col gap-1.5 text-left">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photo.url}
@@ -27,12 +27,12 @@ export function PhotoTile({
         className="aspect-square w-full border border-rule bg-surface object-cover"
       />
       {showType ? (
-        <span className="flex items-center gap-[5px] text-[10px] text-muted">
+        <span className="flex items-center gap-[5px] text-micro text-muted">
           <ActivityIcon name={photo.icon} size={11} />
           {photo.name}
         </span>
       ) : null}
-      <span className="text-[10px] text-muted">{photo.date}</span>
+      <span className="text-micro text-muted">{photo.date}</span>
     </div>
   );
 }

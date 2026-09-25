@@ -75,24 +75,24 @@ export default async function ActivitiesPage() {
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
           <QuorumMark size={15} />
-          <h1 className="text-[14px] font-semibold tracking-[0.16em]">ACTIVITIES</h1>
+          <h1 className="text-base font-semibold tracking-label">ACTIVITIES</h1>
         </header>
 
         {/* The global score. Its owner sees it and nobody else ever does. */}
-        <Link href="/ranks" className="flex items-center gap-[13px] border border-rule p-[14px]">
+        <Link href="/ranks" className="flex items-center gap-[13px] border border-rule p-3.5">
           <span className={"flex flex-none " + colour}>
             <RankIcon score={score} cleanDays={cleanDays} size={30} />
           </span>
           <div className="flex flex-1 flex-col gap-[3px]">
             <div className="flex items-baseline gap-[9px]">
-              <span className={"text-[20px] font-semibold tabular-nums " + colour}>
+              <span className={"text-xl font-semibold tabular-nums " + colour}>
                 {Math.round(score)}
               </span>
-              <span className={"text-[10.5px] tracking-[0.14em] " + colour}>
+              <span className={"text-micro tracking-caps " + colour}>
                 {title}
               </span>
             </div>
-            <span className="text-[10.5px] leading-[1.5] text-muted">
+            <span className="text-micro leading-relaxed text-muted">
               Your record across everything you track, groups or not. Only you see
               this.
             </span>
@@ -100,8 +100,8 @@ export default async function ActivitiesPage() {
         </Link>
 
         {rows.length > 0 ? (
-          <section className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">YOURS</span>
+          <section className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">YOURS</span>
             <div className="flex flex-col">
               {/* The row is a div with a Link inside it rather than a Link
                   with everything inside that, because a condition somebody
@@ -122,29 +122,29 @@ export default async function ActivitiesPage() {
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                     <div className="flex items-center gap-[9px]">
-                      <span className="text-[14px]">{row.name}</span>
+                      <span className="text-base">{row.name}</span>
                       {/* Grey first, for the same reason as on Home: a run
                           that came short holds its number, so a positive count
                           is not enough to earn a live flame. */}
                       {row.grey ? (
                         <span className="flex items-center gap-1">
                           <DeadFlame size={13} />
-                          <span className="text-[12px] leading-none text-muted tabular-nums">
+                          <span className="text-xs leading-none text-muted tabular-nums">
                             {row.streak}
                           </span>
                         </span>
                       ) : row.streak > 0 ? (
                         <span className="flex items-center gap-1">
                           <Flame size={13} />
-                          <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">
+                          <span className="bg-gradient-to-r from-flame-from via-flame to-flame-to bg-clip-text text-xs font-medium leading-none text-transparent tabular-nums">
                             {row.streak}
                           </span>
                         </span>
                       ) : null}
                     </div>
-                    <span className="truncate text-[11.5px] text-muted">{row.summary}</span>
+                    <span className="truncate text-2xs text-muted">{row.summary}</span>
                   </div>
-                  <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
+                  <span className="flex-none text-sm text-muted">&rsaquo;</span>
                 </Link>
                 {/* A condition somebody wrote is the one thing here that can
                     be put away rather than only switched off: its label stops
@@ -157,14 +157,14 @@ export default async function ActivitiesPage() {
             </div>
           </section>
         ) : (
-          <p className="text-[13px] leading-[1.6] text-muted">
+          <p className="text-sm leading-relaxed text-muted">
             You are not tracking anything yet.
           </p>
         )}
 
         <Link
           href="/activities/add"
-          className="flex h-11 w-full items-center justify-center border border-fg bg-fg text-[14px] font-semibold text-bg"
+          className="flex h-11 w-full items-center justify-center border border-fg bg-fg text-base font-semibold text-bg"
         >
           + Add activity
         </Link>

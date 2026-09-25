@@ -77,6 +77,12 @@ jobs:
       - name: The activity sheet still matches the registry
         run: bun run check:activities
 
+      # The design system, enforced rather than described. Font size, line
+      # height, letter spacing, colour and family have complete token sets and
+      # any escape fails; spacing and sizing are a ratchet that may only fall.
+      - name: The app is still spending its own tokens
+        run: bun run check:tokens
+
       # Invariant 10. break-in proves the EXISTING routes refuse a stranger, by
       # sweeping a hand-maintained list, so it catches a new leak exactly when
       # somebody remembered to add the route to the list. This needs no memory,

@@ -25,22 +25,22 @@ export default async function GracePage() {
   return (
     <main className="min-h-dvh pb-nav">
       <header className="flex items-center gap-[9px] border-b border-rule px-5 pb-[11px] pt-5">
-        <BackLink fallback="/settings" className="text-[14px] text-muted" />
-        <span className="text-[14px] font-semibold tracking-[0.14em]">GRACE</span>
+        <BackLink fallback="/settings" className="text-base text-muted" />
+        <span className="text-base font-semibold tracking-caps">GRACE</span>
       </header>
 
       <div className="flex flex-col gap-[22px] px-5 pb-6 pt-[18px]">
         <section className="flex flex-col gap-[9px]">
-          <div className="flex items-baseline gap-[10px]">
-            <span className="text-[38px] font-semibold leading-none tabular-nums">
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-4xl font-semibold leading-none tabular-nums">
               {state.left}
             </span>
-            <span className="text-[15px] text-muted">of {state.pool} left</span>
+            <span className="text-base text-muted">of {state.pool} left</span>
           </div>
           {/* One segment a grace, filled for what is left. The same bar the day
               at the top of Home uses, which is what makes it read without a
               label. */}
-          <div className="flex gap-[4px]">
+          <div className="flex gap-1">
             {Array.from({ length: state.pool }, (_, i) => (
               <div
                 key={i}
@@ -48,14 +48,14 @@ export default async function GracePage() {
               />
             ))}
           </div>
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             Two a month per activity. Resets {resets}.
           </span>
         </section>
 
         {offers.length > 0 ? (
-          <section className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">OPEN</span>
+          <section className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">OPEN</span>
             {offers.map((offer) => (
               <div
                 key={offer.typeKey}
@@ -70,21 +70,21 @@ export default async function GracePage() {
                   </span>
                   <span
                     className={
-                      "flex-1 text-[13px] " + (offer.affordable ? "" : "text-muted")
+                      "flex-1 text-sm " + (offer.affordable ? "" : "text-muted")
                     }
                   >
                     {offer.name}
                   </span>
-                  <span className="text-[10.5px] text-muted">{offer.closes}</span>
+                  <span className="text-micro text-muted">{offer.closes}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-[5px]">
                     <DeadFlame size={15} />
-                    <span className="text-[15px] text-muted tabular-nums">
+                    <span className="text-base text-muted tabular-nums">
                       {offer.restoresTo}
                     </span>
                   </span>
-                  <span className="flex-1 text-[11px] text-muted">
+                  <span className="flex-1 text-2xs text-muted">
                     {offer.affordable
                       ? `${offer.cost} grace`
                       : `needs ${offer.cost}, you have ${state.left}`}
@@ -109,19 +109,19 @@ export default async function GracePage() {
         ) : null}
 
         {state.spentOn.length > 0 ? (
-          <section className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">SPENT</span>
+          <section className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">SPENT</span>
             <div className="flex flex-col">
               {state.spentOn.map((s, i) => (
                 <div
                   key={`${s.typeKey}-${s.day}-${i}`}
-                  className="flex items-baseline gap-[10px] border-b border-rule py-[9px]"
+                  className="flex items-baseline gap-2.5 border-b border-rule py-[9px]"
                 >
-                  <span className="flex-1 text-[12.5px]">{s.name}</span>
-                  <span className="text-[11px] text-muted">
+                  <span className="flex-1 text-xs">{s.name}</span>
+                  <span className="text-2xs text-muted">
                     {DateTime.fromISO(s.day).toFormat("d LLL")}
                   </span>
-                  <span className="text-[12px] tabular-nums">{s.cost}</span>
+                  <span className="text-xs tabular-nums">{s.cost}</span>
                 </div>
               ))}
             </div>
@@ -129,13 +129,13 @@ export default async function GracePage() {
         ) : null}
 
         {offers.length === 0 && state.spentOn.length === 0 ? (
-          <p className="text-[12.5px] leading-[1.6] text-muted">
+          <p className="text-xs leading-relaxed text-muted">
             Nothing to restore. Grace is offered when a streak ends, and only
             until you next check in for that activity.
           </p>
         ) : null}
 
-        <p className="text-[11.5px] leading-[1.55] text-muted">
+        <p className="text-2xs leading-relaxed text-muted">
           Grace holds a streak. Fines and standing are untouched.
         </p>
       </div>

@@ -21,7 +21,7 @@ export function RetireCondition({ typeKey, label }: { typeKey: string; label: st
         type="button"
         onClick={() => setAsking(true)}
         aria-label={`Put away ${label}`}
-        className="flex-none px-2 py-[13px] text-[11px] tracking-[0.12em] text-muted"
+        className="flex-none px-2 py-[13px] text-2xs tracking-caps text-muted"
       >
         PUT AWAY
       </button>
@@ -40,7 +40,7 @@ export function RetireCondition({ typeKey, label }: { typeKey: string; label: st
             router.refresh();
           })
         }
-        className="border border-rule px-2 py-1 text-[11px] text-penalty disabled:opacity-40"
+        className="border border-rule px-2 py-1 text-2xs text-penalty disabled:opacity-40"
       >
         {pending ? "Saving" : "Sure"}
       </button>
@@ -48,7 +48,7 @@ export function RetireCondition({ typeKey, label }: { typeKey: string; label: st
         type="button"
         disabled={pending}
         onClick={() => setAsking(false)}
-        className="px-1 text-[11px] text-muted disabled:opacity-40"
+        className="px-1 text-2xs text-muted disabled:opacity-40"
       >
         No
       </button>

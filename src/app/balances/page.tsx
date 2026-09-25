@@ -23,18 +23,18 @@ export default async function Balances() {
   return (
     <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto max-w-[560px]">
-        <header className="-mx-5 mb-6 border-b border-rule px-5 pb-[10px]">
+        <header className="-mx-5 mb-6 border-b border-rule px-5 pb-2.5">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-[13px] text-muted">‹</span>
-            <h1 className="text-[15px] font-semibold tracking-[0.14em]">BALANCES</h1>
+            <span className="text-sm text-muted">‹</span>
+            <h1 className="text-base font-semibold tracking-caps">BALANCES</h1>
           </Link>
         </header>
 
         {settledEverywhere ? (
-          <p className="text-[14px] text-muted">You are settled in every group.</p>
+          <p className="text-base text-muted">You are settled in every group.</p>
         ) : (
           <>
-            <p className="mb-6 text-[14px] leading-relaxed">
+            <p className="mb-6 text-base leading-relaxed">
               Across your groups you owe{" "}
               <span className="text-penalty">{joinAmounts(oweByCur)}</span> and are owed{" "}
               <span className="text-pass">{joinAmounts(owedByCur)}</span>.
@@ -42,18 +42,18 @@ export default async function Balances() {
 
             {owe.length > 0 ? (
               <section className="mb-8">
-                <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">YOU OWE</div>
+                <div className="mb-2.5 text-2xs tracking-caps text-muted">YOU OWE</div>
                 {owe.map((d) => {
                   const exp = minorUnitExponent(d.currency);
                   const major = (d.amount / 10 ** exp).toFixed(exp);
                   return (
-                    <div key={d.otherId + d.groupId + d.currency} className="mb-3 border border-rule p-[14px]">
+                    <div key={d.otherId + d.groupId + d.currency} className="mb-3 border border-rule p-3.5">
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex flex-col gap-[3px]">
-                          <span className="text-[15px]">{d.otherName}</span>
-                          <span className="text-[12px] text-muted">{d.groupName}</span>
+                          <span className="text-base">{d.otherName}</span>
+                          <span className="text-xs text-muted">{d.groupName}</span>
                         </div>
-                        <span className="text-[17px] tabular-nums text-penalty">
+                        <span className="text-lg tabular-nums text-penalty">
                           {formatMoney(d.amount, d.currency)}
                         </span>
                       </div>
@@ -72,22 +72,22 @@ export default async function Balances() {
 
             {owed.length > 0 ? (
               <section>
-                <div className="mb-[10px] text-[11px] tracking-[0.14em] text-muted">OWED TO YOU</div>
+                <div className="mb-2.5 text-2xs tracking-caps text-muted">OWED TO YOU</div>
                 {owed.map((d) => (
                   <div
                     key={d.otherId + d.groupId + d.currency}
-                    className="mb-3 flex items-center justify-between gap-3 border border-rule p-[14px]"
+                    className="mb-3 flex items-center justify-between gap-3 border border-rule p-3.5"
                   >
                     <div className="flex flex-col gap-[3px]">
-                      <span className="text-[15px]">{d.otherName}</span>
-                      <span className="text-[12px] text-muted">{d.groupName}</span>
+                      <span className="text-base">{d.otherName}</span>
+                      <span className="text-xs text-muted">{d.groupName}</span>
                     </div>
-                    <span className="text-[17px] tabular-nums text-pass">
+                    <span className="text-lg tabular-nums text-pass">
                       {formatMoney(d.amount, d.currency)}
                     </span>
                   </div>
                 ))}
-                <p className="mt-1 text-[12px] leading-relaxed text-muted">
+                <p className="mt-1 text-xs leading-relaxed text-muted">
                   They settle from their own screen. Curfew never moves money, it only keeps the record.
                 </p>
               </section>

@@ -98,12 +98,12 @@ export default async function Home({
     <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px]">
-          <h1 className="flex items-center gap-[9px] text-[14px] font-semibold tracking-[0.16em]">
+          <h1 className="flex items-center gap-[9px] text-base font-semibold tracking-label">
             <QuorumMark size={15} />
             CURFEW
           </h1>
           {admin ? (
-            <Link href="/admin" className="flex items-center gap-[5px] text-[11px] text-muted">
+            <Link href="/admin" className="flex items-center gap-[5px] text-2xs text-muted">
               Admin
               {pendingAdminWork > 0 ? (
                 <span
@@ -150,15 +150,15 @@ export default async function Home({
           .filter((g) => g.grace)
           .map((g) => (
             <div key={g.groupId} className="flex flex-col gap-[5px] border border-accent p-[13px]">
-              <div className="flex items-baseline justify-between gap-[10px]">
-                <span className="text-[12.5px] text-accent">
+              <div className="flex items-baseline justify-between gap-2.5">
+                <span className="text-xs text-accent">
                   {g.name} starts counting you at midnight.
                 </span>
-                <span className="flex-none text-[11px] text-accent">
+                <span className="flex-none text-2xs text-accent">
                   {g.grace!.hoursLeft}h
                 </span>
               </div>
-              <span className="text-[11.5px] leading-[1.55] text-muted">
+              <span className="text-2xs leading-relaxed text-muted">
                 Nothing there can cost you money or reputation yet. Your streaks
                 count today as normal.
               </span>
@@ -166,21 +166,21 @@ export default async function Home({
           ))}
 
         {showMoney ? (
-          <section className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">BALANCES</span>
-            <div className="flex gap-[10px]">
+          <section className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">BALANCES</span>
+            <div className="flex gap-2.5">
               <Link href="/balances" className="flex flex-1 flex-col gap-1 border border-rule p-3">
-                <span className="text-[10px] text-muted">YOU OWE</span>
+                <span className="text-micro text-muted">YOU OWE</span>
                 <span
-                  className={"text-[19px] tabular-nums " + (owe === 0 ? "text-muted" : "text-penalty")}
+                  className={"text-lg tabular-nums " + (owe === 0 ? "text-muted" : "text-penalty")}
                 >
                   {formatMoney(owe, currency)}
                 </span>
               </Link>
               <Link href="/balances" className="flex flex-1 flex-col gap-1 border border-rule p-3">
-                <span className="text-[10px] text-muted">OWED TO YOU</span>
+                <span className="text-micro text-muted">OWED TO YOU</span>
                 <span
-                  className={"text-[19px] tabular-nums " + (owed === 0 ? "text-muted" : "text-pass")}
+                  className={"text-lg tabular-nums " + (owed === 0 ? "text-muted" : "text-pass")}
                 >
                   {formatMoney(owed, currency)}
                 </span>
@@ -198,19 +198,19 @@ export default async function Home({
           // It takes the slot the GROUPS section takes, which is the same slot
           // in the mock: with no groups there are no balances and no grace
           // notices either, so nothing sits between this and the day.
-          <section className="flex flex-col gap-[10px] border-t border-rule pt-[18px]">
+          <section className="flex flex-col gap-2.5 border-t border-rule pt-[18px]">
             <Link href="/groups" className={buttonClass("secondary", "lg", "w-full")}>
               Create a group
             </Link>
-            <p className="text-[11.5px] leading-[1.55] text-muted">
+            <p className="text-2xs leading-relaxed text-muted">
               Groups are invite-only, and they only ever see the activities you
               choose to share. Make one and invite the people who will notice
               when you stop.
             </p>
           </section>
         ) : (
-          <section className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">GROUPS</span>
+          <section className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">GROUPS</span>
             <div className="flex flex-col">
               {standings.map((g) => (
                 <Link
@@ -218,9 +218,9 @@ export default async function Home({
                   href={`/group/${g.groupId}`}
                   className="flex items-center gap-3 border-b border-rule py-[13px]"
                 >
-                  <span className="flex-1 text-[14px]">{g.name}</span>
+                  <span className="flex-1 text-base">{g.name}</span>
                   {g.grace ? (
-                    <span className="flex-none border border-accent px-[7px] py-[3px] text-[10px] tracking-[0.12em] text-accent">
+                    <span className="flex-none border border-accent px-[7px] py-[3px] text-micro tracking-caps text-accent">
                       GRACE
                     </span>
                   ) : (
@@ -260,14 +260,14 @@ function NewUser() {
   return (
     <section className="flex flex-col gap-5">
       <div className="flex flex-col gap-[3px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">TODAY</span>
-        <span className="text-[22px] font-semibold leading-tight">
+        <span className="text-micro tracking-label text-muted">TODAY</span>
+        <span className="text-xl font-semibold leading-tight">
           You are tracking nothing.
         </span>
       </div>
 
       <div className="flex flex-col gap-[11px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">
+        <span className="text-micro tracking-label text-muted">
           PICK ONE TO START
         </span>
         <div className="flex flex-col">
@@ -275,30 +275,30 @@ function NewUser() {
             <Link
               key={s.key}
               href={`/activities/${s.key}`}
-              className="flex items-center gap-3 border-b border-rule py-[14px]"
+              className="flex items-center gap-3 border-b border-rule py-3.5"
             >
               <span className="flex flex-none">
                 <ActivityIcon name={s.icon} size={20} />
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                <span className="text-[14px]">{s.name}</span>
-                <span className="text-[11.5px] leading-[1.45] text-muted">
+                <span className="text-base">{s.name}</span>
+                <span className="text-2xs leading-normal text-muted">
                   {s.description}
                 </span>
               </div>
-              <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
+              <span className="flex-none text-sm text-muted">&rsaquo;</span>
             </Link>
           ))}
           {/* The catalog, not /activities: a person tracking nothing has an
               empty list of their own, and the thing to show them is the menu. */}
           <Link
             href="/activities/add"
-            className="flex items-center gap-3 border-b border-rule py-[14px]"
+            className="flex items-center gap-3 border-b border-rule py-3.5"
           >
-            <span className="flex-1 text-[13.5px] text-muted">
+            <span className="flex-1 text-sm text-muted">
               See every activity
             </span>
-            <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
+            <span className="flex-none text-sm text-muted">&rsaquo;</span>
           </Link>
         </div>
       </div>

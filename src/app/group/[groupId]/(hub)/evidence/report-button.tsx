@@ -24,7 +24,7 @@ export function ReportButton({
   const { run, pending: busy, error } = useServerAction();
 
   if (done) {
-    return <span className="text-[10px] text-muted">reported</span>;
+    return <span className="text-micro text-muted">reported</span>;
   }
 
   return (
@@ -33,7 +33,7 @@ export function ReportButton({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Report the photo from ${who}`}
-        className="text-[10px] text-muted underline underline-offset-2"
+        className="text-micro text-muted underline underline-offset-2"
       >
         report
       </button>
@@ -44,8 +44,8 @@ export function ReportButton({
           style={{ backgroundColor: "var(--scrim-85)" }}
         >
           <div className="flex w-full flex-col gap-3 border-t border-penalty bg-bg px-5 pb-5 pt-5">
-            <span className="text-[16px] font-semibold">Report this photo</span>
-            <span className="text-[12px] leading-[1.6] text-muted">
+            <span className="text-lg font-semibold">Report this photo</span>
+            <span className="text-xs leading-relaxed text-muted">
               An admin will look at it. That is the only reason an admin ever sees a
               photo, and the fact they looked is recorded.
             </span>
@@ -64,7 +64,7 @@ export function ReportButton({
                       (reason === key ? "border-fg bg-fg" : "border-rule")
                     }
                   />
-                  <span className="text-[12.5px]">{REPORT_REASONS[key]}</span>
+                  <span className="text-xs">{REPORT_REASONS[key]}</span>
                 </button>
               ))}
             </div>
@@ -75,18 +75,18 @@ export function ReportButton({
               maxLength={200}
               placeholder="Anything to add (optional)"
               aria-label="Anything to add"
-              className="border border-rule bg-transparent px-3 py-[11px] text-[13px] text-fg outline-none placeholder:text-muted"
+              className="border border-rule bg-transparent px-3 py-[11px] text-sm text-fg outline-none placeholder:text-muted"
             />
 
             {error ? (
-              <span className="text-[11.5px] leading-[1.55] text-penalty">{error}</span>
+              <span className="text-2xs leading-relaxed text-penalty">{error}</span>
             ) : null}
 
-            <div className="flex gap-[10px]">
+            <div className="flex gap-2.5">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="h-[46px] flex-1 border border-rule text-[13.5px]"
+                className="h-[46px] flex-1 border border-rule text-sm"
               >
                 Cancel
               </button>
@@ -100,7 +100,7 @@ export function ReportButton({
                     setDone(true);
                   })
                 }
-                className="h-[46px] flex-1 border border-penalty bg-penalty text-[13.5px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
+                className="h-[46px] flex-1 border border-penalty bg-penalty text-sm font-semibold text-bg active:opacity-70 disabled:opacity-40"
               >
                 {busy ? "Sending" : "Report"}
               </button>

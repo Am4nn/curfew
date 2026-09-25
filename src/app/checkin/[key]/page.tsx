@@ -39,10 +39,10 @@ export default async function CheckinPage({
     <main className="flex h-dvh flex-col">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
         <div className="flex items-center gap-[9px]">
-          <BackLink fallback={`/activities/${key}`} className="text-[14px] text-muted" />
-          <span className="text-[14px] font-semibold tracking-[0.14em]">CHECK IN</span>
+          <BackLink fallback={`/activities/${key}`} className="text-base text-muted" />
+          <span className="text-base font-semibold tracking-caps">CHECK IN</span>
         </div>
-        <span className="text-[11px] text-muted">
+        <span className="text-2xs text-muted">
           {state.name}
           {occurrence} &middot; {state.nowLabel}
         </span>
@@ -90,7 +90,7 @@ function Closed({
     ) ?? null;
   return (
     <div className="flex flex-1 flex-col gap-[18px] px-5 pb-6 pt-[18px]">
-      <span className="text-[16px] leading-[1.5]">
+      <span className="text-lg leading-relaxed">
         {!state.scheduled
           ? `${state.name} is not scheduled today.`
           : spent?.waitingUntil
@@ -102,7 +102,7 @@ function Closed({
                 : "No window is open."}
       </span>
       {state.scheduled && !spent && !waiting && next ? (
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           {next.label} runs {next.opensLabel} to {next.closesLabel}. Nothing recorded
           outside it counts.
         </span>
@@ -110,7 +110,7 @@ function Closed({
       <div className="flex-1" />
       <Link
         href={`/activities/${state.typeKey}`}
-        className="flex h-[46px] items-center justify-center border border-rule text-[13.5px] text-fg"
+        className="flex h-[46px] items-center justify-center border border-rule text-sm text-fg"
       >
         Back to {state.name}
       </Link>

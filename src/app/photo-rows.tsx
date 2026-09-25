@@ -22,7 +22,7 @@ export function PhotoRows({ photos }: { photos: SignedPhoto[] }) {
     <>
       <div className="flex flex-col">
         {photos.map((p, i) => (
-          <div key={p.id} className="flex gap-3 border-b border-rule py-[14px]">
+          <div key={p.id} className="flex gap-3 border-b border-rule py-3.5">
             <button
               type="button"
               onClick={() => setAt(i)}
@@ -40,19 +40,19 @@ export function PhotoRows({ photos }: { photos: SignedPhoto[] }) {
             <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
               <div className="flex items-center gap-2">
                 <ActivityIcon name={p.icon} size={14} />
-                <span className="text-[13px]">{p.name}</span>
-                <span className="ml-auto flex-none text-[10.5px] text-muted">
+                <span className="text-sm">{p.name}</span>
+                <span className="ml-auto flex-none text-micro text-muted">
                   {p.when ?? p.date}
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-[6px]">
+              <div className="flex flex-wrap gap-1.5">
                 {p.tags && p.tags.length > 0 ? (
                   p.tags.map((t) => (
                     <span
                       key={t.groupId}
                       className={
-                        "border px-[8px] py-[3px] text-[10px] " +
+                        "border px-2 py-[3px] text-micro " +
                         (t.revoked
                           ? "border-rule text-muted line-through"
                           : "border-dash text-fg")
@@ -62,7 +62,7 @@ export function PhotoRows({ photos }: { photos: SignedPhoto[] }) {
                     </span>
                   ))
                 ) : (
-                  <span className="text-[10.5px] text-dash">Yours only</span>
+                  <span className="text-micro text-dash">Yours only</span>
                 )}
               </div>
             </div>

@@ -28,7 +28,7 @@ import { canGoBack, subscribeNavDepth } from "./nav-depth";
  */
 export function BackLink({
   fallback,
-  className = "text-[14px] text-muted",
+  className = "text-base text-muted",
   label = "Back",
   children,
 }: {

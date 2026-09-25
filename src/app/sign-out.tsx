@@ -23,7 +23,7 @@ export function SignOut({ className }: { className?: string }) {
       }}
       className={
         (className ??
-          "border border-fg bg-transparent px-[15px] py-[15px] text-[14px] text-fg") +
+          "border border-fg bg-transparent px-[15px] py-[15px] text-base text-fg") +
         " active:opacity-70 disabled:opacity-40"
       }
     >

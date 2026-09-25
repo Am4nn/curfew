@@ -38,7 +38,7 @@ export default async function GroupOverview({
           {accepted.map((a) => (
             <span
               key={a.typeKey}
-              className="flex items-center gap-[7px] border border-rule bg-surface px-[11px] py-[6px] text-[12px]"
+              className="flex items-center gap-[7px] border border-rule bg-surface px-[11px] py-1.5 text-xs"
             >
               <ActivityIcon name={a.icon} size={14} />
               {a.name}
@@ -46,7 +46,7 @@ export default async function GroupOverview({
           ))}
         </div>
       ) : (
-        <p className="text-[12.5px] leading-[1.6] text-muted">
+        <p className="text-xs leading-relaxed text-muted">
           This group accepts nothing yet.{" "}
           {header.role === "owner"
             ? "Pick its activities under Settings."
@@ -54,8 +54,8 @@ export default async function GroupOverview({
         </p>
       )}
 
-      <section className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">
+      <section className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">
           MEMBERS &middot; {members.length}
         </span>
         <div className="flex flex-col">
@@ -66,13 +66,13 @@ export default async function GroupOverview({
             >
               <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                 <div className="flex items-baseline gap-[7px]">
-                  <span className={"text-[14px]" + (m.grace ? " text-muted" : "")}>
+                  <span className={"text-base" + (m.grace ? " text-muted" : "")}>
                     {m.you ? "You" : m.name}
                   </span>
                   {m.grace ? (
-                    <span className="text-[10px] text-accent">joined today</span>
+                    <span className="text-micro text-accent">joined today</span>
                   ) : m.you ? (
-                    <span className="text-[10px] text-muted">you</span>
+                    <span className="text-micro text-muted">you</span>
                   ) : null}
                 </div>
                 {/* Being away replaces the streaks line and never the score.
@@ -81,7 +81,7 @@ export default async function GroupOverview({
                     from the group. */}
                 <span
                   className={
-                    "truncate text-[11px] " + (!m.grace && m.pause ? "text-accent" : "text-muted")
+                    "truncate text-2xs " + (!m.grace && m.pause ? "text-accent" : "text-muted")
                   }
                 >
                   {m.grace
@@ -93,7 +93,7 @@ export default async function GroupOverview({
               </div>
               {/* No score to show yet, so the slot that carries one says why. */}
               {m.grace ? (
-                <span className="flex-none border border-accent px-[7px] py-[3px] text-[10px] tracking-[0.12em] text-accent">
+                <span className="flex-none border border-accent px-[7px] py-[3px] text-micro tracking-caps text-accent">
                   GRACE
                 </span>
               ) : (
@@ -103,12 +103,12 @@ export default async function GroupOverview({
           ))}
         </div>
         {members.some((m) => m.grace) ? (
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             A member is not scored or fined here on the day they join.
           </span>
         ) : null}
         {members.some((m) => !m.grace && m.pause) ? (
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             A member who declared they are away is not scored or fined for those
             days. Their standing stays where it was, and their streaks ended when
             the first of those days closed.
@@ -123,20 +123,20 @@ export default async function GroupOverview({
         <div className="flex flex-col gap-[3px]">
           {standing.grace ? (
             <>
-              <span className="text-[12.5px]">
+              <span className="text-xs">
                 You are in grace for {standing.grace.hoursLeft}h
               </span>
-              <span className="text-[11px] text-muted">
+              <span className="text-2xs text-muted">
                 counting starts at midnight, at {Math.round(standing.score)}
               </span>
             </>
           ) : (
             <>
-              <span className="text-[12.5px]">
+              <span className="text-xs">
                 You are {Math.round(standing.score)},{" "}
-                <span className={"tracking-[0.1em] " + colour}>{title}</span> here
+                <span className={"tracking-wider " + colour}>{title}</span> here
               </span>
-              <span className="text-[11px] text-muted">
+              <span className="text-2xs text-muted">
                 {standing.movements[0]
                   ? `${standing.movements[0].delta >= 0 ? "+" : ""}${Math.round(standing.movements[0].delta)} today`
                   : "nothing scored yet"}
@@ -144,7 +144,7 @@ export default async function GroupOverview({
             </>
           )}
         </div>
-        <span className="text-[13px] text-muted">&rsaquo;</span>
+        <span className="text-sm text-muted">&rsaquo;</span>
       </Link>
 
       <Link
@@ -152,21 +152,21 @@ export default async function GroupOverview({
         className="flex items-center justify-between gap-3 border border-rule p-[13px]"
       >
         <div className="flex flex-col gap-[3px]">
-          <span className="text-[12.5px]">
+          <span className="text-xs">
             {week.of === 0
               ? "Nothing scored this week yet"
               : `This week the group did ${week.done} of ${week.of}`}
           </span>
-          <span className="text-[11px] text-muted">Group stats</span>
+          <span className="text-2xs text-muted">Group stats</span>
         </div>
-        <span className="text-[13px] text-muted">&rsaquo;</span>
+        <span className="text-sm text-muted">&rsaquo;</span>
       </Link>
 
       {/* The artboard puts inviting here, on Overview. It sat on the Settings
           tab, which is why that screen carried five sections and read as a
           control panel. */}
-      <section className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">INVITE SOMEONE</span>
+      <section className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">INVITE SOMEONE</span>
         <InviteForm groupId={groupId} inviterName={user.name} />
       </section>
     </div>

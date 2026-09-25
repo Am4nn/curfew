@@ -50,19 +50,19 @@ export default async function StatsPage({
       <main className="min-h-dvh px-5 pb-nav pt-5">
         <div className="mx-auto flex max-w-[560px] flex-col gap-[22px]">
           <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-            <BackLink fallback="/stats" className="text-[14px] text-muted" />
+            <BackLink fallback="/stats" className="text-base text-muted" />
             <QuorumMark size={15} />
-            <h1 className="text-[14px] font-semibold tracking-[0.16em]">STATS</h1>
+            <h1 className="text-base font-semibold tracking-label">STATS</h1>
           </header>
 
           {/* The mock's picker, and a real one: a disclosure rather than a box
               with a chevron that does nothing. */}
           <details className="group">
-            <summary className="flex cursor-pointer list-none items-center gap-[10px] border border-rule px-3 py-[11px] [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center gap-2.5 border border-rule px-3 py-[11px] [&::-webkit-details-marker]:hidden">
               <span className="flex flex-none">
                 <ActivityIcon name={chart.icon} size={17} />
               </span>
-              <span className="flex-1 text-[14px]">{chart.name}</span>
+              <span className="flex-1 text-base">{chart.name}</span>
               <svg
                 width="12"
                 height="12"
@@ -81,12 +81,12 @@ export default async function StatsPage({
                 <Link
                   key={o.typeKey}
                   href={`/stats?a=${o.typeKey}`}
-                  className="flex items-center gap-[10px] border-t border-rule px-3 py-[11px] first:border-t-0"
+                  className="flex items-center gap-2.5 border-t border-rule px-3 py-[11px] first:border-t-0"
                 >
                   <span className="flex flex-none text-muted">
                     <ActivityIcon name={o.icon} size={17} />
                   </span>
-                  <span className="flex-1 text-[14px]">{o.name}</span>
+                  <span className="flex-1 text-base">{o.name}</span>
                 </Link>
               ))}
             </div>
@@ -97,10 +97,10 @@ export default async function StatsPage({
           {photos.length > 0 ? (
             <section className="flex flex-col gap-[11px]">
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-[10px] tracking-[0.16em] text-muted">
+                <span className="text-micro tracking-label text-muted">
                   YOUR PHOTOS
                 </span>
-                <Link href="/settings/photos" className="text-[11px] text-muted">
+                <Link href="/settings/photos" className="text-2xs text-muted">
                   All &rsaquo;
                 </Link>
               </div>
@@ -119,33 +119,33 @@ export default async function StatsPage({
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
           <QuorumMark size={15} />
-          <h1 className="text-[14px] font-semibold tracking-[0.16em]">STATS</h1>
+          <h1 className="text-base font-semibold tracking-label">STATS</h1>
         </header>
 
         {stats.byActivity.length === 0 ? (
-          <p className="text-[13px] leading-[1.6] text-muted">
+          <p className="text-sm leading-relaxed text-muted">
             Nothing scored yet. Numbers appear once your first period closes.
           </p>
         ) : (
           <>
-            <section className="flex flex-col gap-[6px]">
-              <span className="text-[10px] tracking-[0.16em] text-muted">
+            <section className="flex flex-col gap-1.5">
+              <span className="text-micro tracking-label text-muted">
                 PERFECT DAYS THIS MONTH
               </span>
-              <div className="flex items-baseline gap-[10px]">
-                <span className="text-[38px] font-semibold leading-none tabular-nums">
+              <div className="flex items-baseline gap-2.5">
+                <span className="text-4xl font-semibold leading-none tabular-nums">
                   {stats.perfectDays}
                 </span>
-                <span className="text-[15px] text-muted">of {stats.daysInMonth}</span>
+                <span className="text-base text-muted">of {stats.daysInMonth}</span>
               </div>
-              <span className="text-[11.5px] leading-[1.55] text-muted">
+              <span className="text-2xs leading-relaxed text-muted">
                 {stats.awayThisMonth > 0
                   ? `${stats.awayThisMonth} ${stats.awayThisMonth === 1 ? "day" : "days"} away ${stats.awayThisMonth === 1 ? "is" : "are"} not counted, either way.`
                   : "A perfect day is every activity that was scheduled, done."}
               </span>
             </section>
 
-            <div className="flex gap-[10px]">
+            <div className="flex gap-2.5">
               <Tile value={`${stats.passRate}%`} label="PERIODS PASSED, 30 DAYS" />
               <Tile
                 value={String(stats.longestStreak)}
@@ -156,7 +156,7 @@ export default async function StatsPage({
             </div>
 
             <section className="flex flex-col gap-[11px]">
-              <span className="text-[10px] tracking-[0.16em] text-muted">
+              <span className="text-micro tracking-label text-muted">
                 EVERY DAY, HOW MUCH OF IT
               </span>
               <div className="flex flex-col gap-[9px]">
@@ -186,25 +186,25 @@ export default async function StatsPage({
                   ))}
                 </div>
                 <div className="flex items-center gap-[7px]">
-                  <span className="text-[10px] text-muted">none</span>
+                  <span className="text-micro text-muted">none</span>
                   {HEAT.map((c, i) => (
                     <div key={i} className="h-[8px] w-[14px]" style={{ background: c }} />
                   ))}
-                  <span className="text-[10px] text-muted">all</span>
+                  <span className="text-micro text-muted">all</span>
                   {stats.away.length > 0 ? (
-                    <span className="ml-[10px] flex items-center gap-[5px]">
+                    <span className="ml-2.5 flex items-center gap-[5px]">
                       <span className="block h-[8px] w-[8px] border border-dashed border-accent" />
-                      <span className="text-[10px] text-accent">away</span>
+                      <span className="text-micro text-accent">away</span>
                     </span>
                   ) : null}
-                  <span className="ml-auto text-[10px] text-muted">
+                  <span className="ml-auto text-micro text-muted">
                     {stats.heatmap.length} weeks
                   </span>
                 </div>
                 {stats.away.map((a) => (
                   <span
                     key={a.from}
-                    className="text-[11.5px] leading-[1.55] text-accent"
+                    className="text-2xs leading-relaxed text-accent"
                   >
                     Away {shortDay(a.from)} to {shortDay(a.to)}. Those days were not
                     scheduled.
@@ -223,12 +223,12 @@ export default async function StatsPage({
                 starter rows and above the photos. The header says it in words
                 as well, because a 12px glyph on the far edge is not something
                 to rest a whole screen on. */}
-            <section className="flex flex-col gap-[10px]">
+            <section className="flex flex-col gap-2.5">
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-[10px] tracking-[0.16em] text-muted">
+                <span className="text-micro tracking-label text-muted">
                   BY ACTIVITY, LAST 30 DAYS
                 </span>
-                <span className="text-[10px] tracking-[0.16em] text-muted">
+                <span className="text-micro tracking-label text-muted">
                   TAP FOR THE CHART
                 </span>
               </div>
@@ -242,11 +242,11 @@ export default async function StatsPage({
                     <span className="flex flex-none text-muted">
                       <ActivityIcon name={row.icon} size={17} />
                     </span>
-                    <div className="flex flex-1 flex-col gap-[6px]">
+                    <div className="flex flex-1 flex-col gap-1.5">
                       <div className="flex items-center justify-between gap-[9px]">
-                        <span className="text-[13px]">{row.name}</span>
+                        <span className="text-sm">{row.name}</span>
                         <span className="flex items-center gap-[9px]">
-                          <span className="text-[11.5px] tabular-nums text-muted">
+                          <span className="text-2xs tabular-nums text-muted">
                             {row.percent}%
                           </span>
                           {/* Grey before alive: a run that came short keeps
@@ -255,14 +255,14 @@ export default async function StatsPage({
                           {row.grey ? (
                             <span className="flex items-center gap-1">
                               <DeadFlame size={13} />
-                              <span className="text-[12px] leading-none text-muted tabular-nums">
+                              <span className="text-xs leading-none text-muted tabular-nums">
                                 {row.streak}
                               </span>
                             </span>
                           ) : row.streak > 0 ? (
                             <span className="flex items-center gap-1">
                               <Flame size={13} />
-                              <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">
+                              <span className="bg-gradient-to-r from-flame-from via-flame to-flame-to bg-clip-text text-xs font-medium leading-none text-transparent tabular-nums">
                                 {row.streak}
                               </span>
                             </span>
@@ -273,7 +273,7 @@ export default async function StatsPage({
                         <div className="h-[3px] bg-fg" style={{ width: `${row.percent}%` }} />
                       </div>
                     </div>
-                    <span className="flex-none text-[13px] text-muted">&rsaquo;</span>
+                    <span className="flex-none text-sm text-muted">&rsaquo;</span>
                   </Link>
                 ))}
               </div>
@@ -290,13 +290,13 @@ function Tile({ value, label, flame }: { value: string; label: string; flame?: b
     <div className="flex flex-1 flex-col gap-1 border border-rule p-3">
       <span
         className={
-          "text-[19px] tabular-nums " +
-          (flame ? "bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-transparent" : "")
+          "text-lg tabular-nums " +
+          (flame ? "bg-gradient-to-r from-flame-from via-flame to-flame-to bg-clip-text text-transparent" : "")
         }
       >
         {value}
       </span>
-      <span className="text-[10px] leading-[1.35] text-muted">{label}</span>
+      <span className="text-micro leading-snug text-muted">{label}</span>
     </div>
   );
 }

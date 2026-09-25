@@ -50,17 +50,17 @@ export default async function StandingTab({
           screen raises. Unlike grace it does not hide the score: the number is
           theirs and it is still standing, it is just not moving. */}
       {away && today ? (
-        <div className="flex flex-col gap-2 border border-accent p-[14px]">
-          <div className="flex items-baseline justify-between gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-accent">PAUSED</span>
-            <span className="text-[12px] text-accent">
+        <div className="flex flex-col gap-2 border border-accent p-3.5">
+          <div className="flex items-baseline justify-between gap-2.5">
+            <span className="text-micro tracking-label text-accent">PAUSED</span>
+            <span className="text-xs text-accent">
               {daysBetween(today, away.endsOn)} days left
             </span>
           </div>
-          <span className="text-[13px] leading-[1.55]">
+          <span className="text-sm leading-relaxed">
             This group is not counting these days.
           </span>
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             Nothing here can be a miss or a fine until {shortDay(dayAfter(away.endsOn))}.
           </span>
         </div>
@@ -69,17 +69,17 @@ export default async function StandingTab({
       {/* In grace this comes first, because it is the answer to every question
           the rest of the screen raises. */}
       {grace ? (
-        <div className="flex flex-col gap-2 border border-accent p-[14px]">
-          <div className="flex items-baseline justify-between gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-accent">GRACE PERIOD</span>
-            <span className="text-[12px] text-accent">
+        <div className="flex flex-col gap-2 border border-accent p-3.5">
+          <div className="flex items-baseline justify-between gap-2.5">
+            <span className="text-micro tracking-label text-accent">GRACE PERIOD</span>
+            <span className="text-xs text-accent">
               {grace.hoursLeft} {grace.hoursLeft === 1 ? "hour" : "hours"} left
             </span>
           </div>
-          <span className="text-[13px] leading-[1.55]">
+          <span className="text-sm leading-relaxed">
             {header.name} starts counting you at midnight.
           </span>
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             Nothing today can move your score here or cost you money. The group
             can see you are in grace.
           </span>
@@ -91,10 +91,10 @@ export default async function StandingTab({
           <RankIcon score={standing.score} cleanDays={cleanDays} size={42} />
         </span>
         <div className="flex flex-col gap-[5px]">
-          <span className={"text-[32px] font-semibold leading-none " + colour}>
+          <span className={"text-3xl font-semibold leading-none " + colour}>
             {Math.round(standing.score)}
           </span>
-          <span className="text-[10.5px] tracking-[0.14em] text-muted">
+          <span className="text-micro tracking-caps text-muted">
             {grace
               ? "STARTS TOMORROW"
               : away
@@ -108,7 +108,7 @@ export default async function StandingTab({
         </div>
         <Link
           href="/ranks"
-          className="ml-auto text-[11px] text-accent"
+          className="ml-auto text-2xs text-accent"
         >
           How it works &rsaquo;
         </Link>
@@ -119,10 +119,10 @@ export default async function StandingTab({
           needs moving, and a run of clean days is how it moves anyway. */}
       {!grace && held ? (
         <div className="flex flex-col gap-[5px] border border-gold p-[13px]">
-          <span className="text-[12.5px] text-gold">
+          <span className="text-xs text-gold">
             {cleanDays} days, nothing missed.
           </span>
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             One missed day ends the run and the title. The score stays.
           </span>
         </div>
@@ -130,11 +130,11 @@ export default async function StandingTab({
 
       {!grace && !held && rank.key === "unbroken" ? (
         <div className="flex flex-col gap-[11px] border border-rule p-[13px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">
+          <span className="text-micro tracking-label text-muted">
             TOWARD IMMACULATE
           </span>
           <CleanBar cleanDays={cleanDays} />
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             UNBROKEN already. {daysToImmaculate(cleanDays)} more days with
             nothing missed.
           </span>
@@ -142,24 +142,24 @@ export default async function StandingTab({
       ) : null}
 
       {grace ? (
-        <section className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">STILL COUNTING</span>
+        <section className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">STILL COUNTING</span>
           {[
             ["Your streaks", "Yours, not the group's. Unaffected."],
             ["Your own record", "The score only you can see."],
           ].map(([what, why]) => (
             <div
               key={what}
-              className="flex items-center justify-between gap-[10px] border-b border-rule py-3"
+              className="flex items-center justify-between gap-2.5 border-b border-rule py-3"
             >
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[12.5px]">{what}</span>
-                <span className="text-[10.5px] text-muted">{why}</span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs">{what}</span>
+                <span className="text-micro text-muted">{why}</span>
               </div>
-              <span className="text-[13px] text-pass">Running</span>
+              <span className="text-sm text-pass">Running</span>
             </div>
           ))}
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             One day, each time you join. Anything you owed here comes back with
             you.
           </span>
@@ -168,23 +168,23 @@ export default async function StandingTab({
 
       {/* A group with money off never mentions it at all (decision 43). */}
       {header.moneyOn && !grace ? (
-        <section className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">MONEY</span>
+        <section className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">MONEY</span>
           {owed.length === 0 ? (
-            <p className="text-[12px] leading-[1.6] text-muted">Nothing owed either way.</p>
+            <p className="text-xs leading-relaxed text-muted">Nothing owed either way.</p>
           ) : (
             owed.map((b) => (
               <div
                 key={b.userId}
                 className="flex items-center justify-between gap-3 border border-rule p-[13px]"
               >
-                <span className="text-[13px]">
+                <span className="text-sm">
                   {b.netOwed > 0 ? `You owe ${b.name}` : `${b.name} owes you`}
                 </span>
-                <span className="flex items-center gap-[10px]">
+                <span className="flex items-center gap-2.5">
                   <span
                     className={
-                      "text-[15px] tabular-nums " +
+                      "text-base tabular-nums " +
                       (b.netOwed > 0 ? "text-penalty" : "text-pass")
                     }
                   >
@@ -193,7 +193,7 @@ export default async function StandingTab({
                   {b.netOwed > 0 ? (
                     <Link
                       href={`/group/${groupId}/ledger`}
-                      className="border border-rule px-3 py-[7px] text-[12.5px]"
+                      className="border border-rule px-3 py-[7px] text-xs"
                     >
                       Settle
                     </Link>
@@ -204,14 +204,14 @@ export default async function StandingTab({
           )}
           <Link
             href={`/group/${groupId}/ledger`}
-            className="flex items-center justify-between gap-[10px] border-t border-rule py-3"
+            className="flex items-center justify-between gap-2.5 border-t border-rule py-3"
           >
-            <span className="text-[12.5px]">Full ledger</span>
-            <span className="text-[11px] text-muted">every fine and settlement &rsaquo;</span>
+            <span className="text-xs">Full ledger</span>
+            <span className="text-2xs text-muted">every fine and settlement &rsaquo;</span>
           </Link>
         </section>
       ) : grace ? null : (
-        <div className="text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-2xs leading-relaxed text-muted">
           A miss costs your streak and your standing here.
         </div>
       )}
@@ -220,7 +220,7 @@ export default async function StandingTab({
           no day has been scored. */}
       {grace ? null : (
       <section className="flex flex-col gap-2">
-        <span className="text-[10px] tracking-[0.16em] text-muted">CEILING</span>
+        <span className="text-micro tracking-label text-muted">CEILING</span>
         <div className="relative h-[6px] bg-rule">
           <div
             className={"absolute inset-y-0 left-0 " + fill}
@@ -233,12 +233,12 @@ export default async function StandingTab({
             />
           ) : null}
         </div>
-        <div className="flex justify-between text-[10px] text-muted">
+        <div className="flex justify-between text-micro text-muted">
           <span>0</span>
           <span>ceiling {Math.round(standing.ceiling)}</span>
           <span>1000</span>
         </div>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           {standing.breadth.accepted === 0
             ? "This group accepts nothing yet, so nothing caps you."
             : standing.breadth.shared === standing.breadth.accepted
@@ -249,8 +249,8 @@ export default async function StandingTab({
       )}
 
       {away ? (
-        <section className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">
+        <section className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">
             WHAT MOVES, AND WHEN
           </span>
           <div className="flex flex-col">
@@ -263,15 +263,15 @@ export default async function StandingTab({
                 key={what}
                 className="flex items-baseline justify-between gap-3 border-b border-rule py-[11px]"
               >
-                <div className="flex flex-col gap-[2px]">
-                  <span className="text-[12.5px]">{what}</span>
-                  <span className="text-[10.5px] text-muted">{why}</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs">{what}</span>
+                  <span className="text-micro text-muted">{why}</span>
                 </div>
-                <span className="text-[13px] text-muted">{value}</span>
+                <span className="text-sm text-muted">{value}</span>
               </div>
             ))}
           </div>
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             Away four days costs nothing. Away four weeks costs what any four
             quiet weeks cost.
           </span>
@@ -279,24 +279,24 @@ export default async function StandingTab({
       ) : null}
 
       {grace ? null : (
-      <section className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">LAST 7 DAYS</span>
+      <section className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">LAST 7 DAYS</span>
         {standing.movements.length === 0 ? (
-          <p className="text-[12px] text-muted">Nothing scored yet.</p>
+          <p className="text-xs text-muted">Nothing scored yet.</p>
         ) : (
           <div className="flex flex-col">
             {standing.movements.map((m) => (
               <div
                 key={m.day}
-                className="flex items-center justify-between gap-[10px] border-b border-rule py-[11px]"
+                className="flex items-center justify-between gap-2.5 border-b border-rule py-[11px]"
               >
-                <div className="flex flex-col gap-[2px]">
-                  <span className="text-[12.5px]">{REASON[m.reason] ?? m.reason}</span>
-                  <span className="text-[10px] text-muted">{m.day}</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs">{REASON[m.reason] ?? m.reason}</span>
+                  <span className="text-micro text-muted">{m.day}</span>
                 </div>
                 <span
                   className={
-                    "text-[13px] tabular-nums " +
+                    "text-sm tabular-nums " +
                     (m.delta > 0 ? "text-pass" : m.delta < 0 ? "text-penalty" : "text-muted")
                   }
                 >

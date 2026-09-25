@@ -31,32 +31,32 @@ export async function ConsentGate() {
       className="fixed inset-0 z-[60] flex flex-col bg-bg"
     >
       <div className="border-b border-rule px-5 pb-[11px] pt-5">
-        <span className="text-[14px] font-semibold tracking-[0.16em]">
+        <span className="text-base font-semibold tracking-label">
           BEFORE YOU START
         </span>
       </div>
 
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-5 py-5">
-        <p className="text-[13px] leading-[1.6]">
+        <p className="text-sm leading-relaxed">
           Curfew keeps a record of what you say you did, and shows some of it to
           people you choose. Two things to read: what it stores, and the rules
           you are agreeing to. Both are in Settings afterwards, always.
         </p>
 
-        <span className="text-[11px] tracking-[0.16em] text-fg">
+        <span className="text-2xs tracking-label text-fg">
           WHAT CURFEW STORES
         </span>
 
         {CONSENT.map((section) => (
-          <section key={section.heading} className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">
+          <section key={section.heading} className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">
               {section.heading}
             </span>
-            <ul className="flex flex-col gap-[10px]">
+            <ul className="flex flex-col gap-2.5">
               {section.lines.map((line) => (
                 <li key={line} className="flex gap-[9px]">
-                  <span className="text-[11px] leading-[1.65] text-muted">&bull;</span>
-                  <span className="flex-1 text-[12.5px] leading-[1.6] text-muted">
+                  <span className="text-2xs leading-loose text-muted">&bull;</span>
+                  <span className="flex-1 text-xs leading-relaxed text-muted">
                     {line}
                   </span>
                 </li>
@@ -64,18 +64,18 @@ export async function ConsentGate() {
             </ul>
           </section>
         ))}
-        <span className="mt-2 text-[11px] tracking-[0.16em] text-fg">THE RULES</span>
+        <span className="mt-2 text-2xs tracking-label text-fg">THE RULES</span>
 
         {TERMS.map((section) => (
-          <section key={section.heading} className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">
+          <section key={section.heading} className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">
               {section.heading}
             </span>
-            <ul className="flex flex-col gap-[10px]">
+            <ul className="flex flex-col gap-2.5">
               {section.lines.map((line) => (
                 <li key={line} className="flex gap-[9px]">
-                  <span className="text-[11px] leading-[1.65] text-muted">&bull;</span>
-                  <span className="flex-1 text-[12.5px] leading-[1.6] text-muted">
+                  <span className="text-2xs leading-loose text-muted">&bull;</span>
+                  <span className="flex-1 text-xs leading-relaxed text-muted">
                     {line.replaceAll("**", "")}
                   </span>
                 </li>
@@ -85,11 +85,11 @@ export async function ConsentGate() {
         ))}
       </div>
 
-      <div className="border-t border-rule px-5 pb-5 pt-[14px]">
-        <form action={acceptConsentAction} className="flex flex-col gap-[14px]">
+      <div className="border-t border-rule px-5 pb-5 pt-3.5">
+        <form action={acceptConsentAction} className="flex flex-col gap-3.5">
           <TimezoneField zones={supportedZones()} fallback={fallback} />
           <SubmitButton
-            className="h-12 w-full border border-fg bg-fg text-[14px] font-semibold text-bg"
+            className="h-12 w-full border border-fg bg-fg text-base font-semibold text-bg"
             pendingLabel="Saving"
           >
             I am 18 or older and I agree

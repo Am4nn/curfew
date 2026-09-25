@@ -15,7 +15,7 @@ export default async function AdminOverview() {
 
   return (
     <>
-      <section className="mb-8 grid grid-cols-3 gap-[10px]">
+      <section className="mb-8 grid grid-cols-3 gap-2.5">
         <Stat value={o.usersTotal} label="Users" />
         <Stat value={o.groupsTotal} label="Groups" />
         <Stat value={o.pendingInvites} label="Pending invites" tone="penalty" />
@@ -27,8 +27,8 @@ export default async function AdminOverview() {
         />
       </section>
 
-      <section className="mb-8 flex flex-col gap-[10px]">
-        <h2 className="text-[10px] tracking-[0.16em] text-muted">LAST NIGHT&rsquo;S RUN</h2>
+      <section className="mb-8 flex flex-col gap-2.5">
+        <h2 className="text-micro tracking-label text-muted">LAST NIGHT&rsquo;S RUN</h2>
         <div className="flex flex-col">
           <RunRow
             label="Scheduler"
@@ -63,18 +63,18 @@ export default async function AdminOverview() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-[10px] tracking-[0.16em] text-muted">
+        <h2 className="mb-2 text-micro tracking-label text-muted">
           PENDING APPROVALS &middot; {pending.length}
         </h2>
         {pending.length === 0 ? (
-          <p className="text-[14px] text-muted">No accounts waiting.</p>
+          <p className="text-base text-muted">No accounts waiting.</p>
         ) : (
-          <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-2.5">
             {pending.map((p) => (
               <div key={p.userId} className="flex flex-col gap-[11px] border border-rule p-[13px]">
                 <div className="flex flex-col gap-[3px]">
-                  <span className="text-[13px]">{p.email}</span>
-                  <span className="text-[10.5px] text-muted">
+                  <span className="text-sm">{p.email}</span>
+                  <span className="text-micro text-muted">
                     {p.invite
                       ? `invited by ${p.invite.invitedByName} · ${p.invite.groupName} · ${formatShortDate(p.requestedAt)}`
                       : formatShortDate(p.requestedAt)}
@@ -85,7 +85,7 @@ export default async function AdminOverview() {
                     <ActionForm action={decideAction}>
                       <input type="hidden" name="userId" value={p.userId} />
                       <input type="hidden" name="approve" value="true" />
-                      <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-[14px] py-[6px] text-[12px] font-semibold text-bg">
+                      <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-3.5 py-1.5 text-xs font-semibold text-bg">
                         Approve
                       </SubmitButton>
                     </ActionForm>
@@ -98,7 +98,7 @@ export default async function AdminOverview() {
                     />
                   </span>
                 ) : (
-                  <span className="text-[12px] text-muted">read-only</span>
+                  <span className="text-xs text-muted">read-only</span>
                 )}
               </div>
             ))}
@@ -124,10 +124,10 @@ function Stat({
 }) {
   return (
     <div className="flex flex-col gap-[5px] border border-rule p-3">
-      <span className={"text-[19px] font-semibold leading-none " + (tone === "penalty" ? "text-penalty" : "text-fg")}>
+      <span className={"text-lg font-semibold leading-none " + (tone === "penalty" ? "text-penalty" : "text-fg")}>
         {value}
       </span>
-      <span className="text-[9.5px] uppercase leading-[1.4] tracking-[0.08em] text-muted">{label}</span>
+      <span className="text-micro uppercase leading-snug tracking-wider text-muted">{label}</span>
     </div>
   );
 }
@@ -142,12 +142,12 @@ function RunRow({
   status: "ok" | "review";
 }) {
   return (
-    <div className="flex items-center justify-between gap-[10px] border-b border-rule py-[11px]">
+    <div className="flex items-center justify-between gap-2.5 border-b border-rule py-[11px]">
       <div className="flex min-w-0 flex-col gap-[3px]">
-        <span className="text-[13px]">{label}</span>
-        <span className="text-[10.5px] text-muted">{detail}</span>
+        <span className="text-sm">{label}</span>
+        <span className="text-micro text-muted">{detail}</span>
       </div>
-      <span className="flex-none text-[11.5px] text-muted">{status}</span>
+      <span className="flex-none text-2xs text-muted">{status}</span>
     </div>
   );
 }

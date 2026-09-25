@@ -60,10 +60,10 @@ function PhotoSlot({
   return (
     <div className="flex flex-col gap-[9px]">
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] tracking-[0.14em] text-muted">PHOTO</span>
+        <span className="text-2xs tracking-caps text-muted">PHOTO</span>
         <span
           className={
-            "text-[11px] " + (required && !shot ? "text-penalty" : "text-muted")
+            "text-2xs " + (required && !shot ? "text-penalty" : "text-muted")
           }
         >
           {required ? "required" : "optional"}
@@ -82,7 +82,7 @@ function PhotoSlot({
             type="button"
             onClick={onRemove}
             aria-label="Remove the photo"
-            className="absolute right-2 top-2 flex h-[26px] w-[26px] items-center justify-center bg-penalty text-[13px] leading-none text-bg"
+            className="absolute right-2 top-2 flex h-[26px] w-[26px] items-center justify-center bg-penalty text-sm leading-none text-bg"
           >
             &#10005;
           </button>
@@ -97,7 +97,7 @@ function PhotoSlot({
           }
         >
           <CameraIcon />
-          <span className="text-[12.5px]">Take a photo</span>
+          <span className="text-xs">Take a photo</span>
         </button>
       )}
     </div>
@@ -120,10 +120,10 @@ function Field({
   if (field.kind !== "number") return null;
   return (
     <div className="flex flex-col gap-[7px]">
-      <span className="text-[11px] tracking-[0.06em] text-muted">{field.label}</span>
+      <span className="text-2xs tracking-wide text-muted">{field.label}</span>
       <div
         className={
-          "flex items-center justify-between gap-[10px] border bg-bg px-3 py-[11px] " +
+          "flex items-center justify-between gap-2.5 border bg-bg px-3 py-[11px] " +
           (required && value === "" ? "border-penalty" : "border-rule")
         }
       >
@@ -148,14 +148,14 @@ function Field({
             onChange(next);
           }}
           aria-label={field.label}
-          className="w-full bg-transparent text-[14px] text-fg outline-none placeholder:text-muted"
+          className="w-full bg-transparent text-base text-fg outline-none placeholder:text-muted"
         />
         {field.unit ? (
-          <span className="text-[12px] text-muted">{field.unit}</span>
+          <span className="text-xs text-muted">{field.unit}</span>
         ) : null}
       </div>
       {hint ? (
-        <span className="text-[11px] leading-[1.5] text-muted">{hint}</span>
+        <span className="text-2xs leading-relaxed text-muted">{hint}</span>
       ) : null}
     </div>
   );
@@ -372,13 +372,13 @@ export function CheckinForm({
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-5 pb-6 pt-[18px]">
         <div className="flex flex-col gap-2">
-          <span className="text-[16px] leading-[1.5]">{step.prompt}</span>
+          <span className="text-lg leading-relaxed">{step.prompt}</span>
           {step.aside ? (
-            <span className="text-[11.5px] leading-[1.55] text-muted">{step.aside}</span>
+            <span className="text-2xs leading-relaxed text-muted">{step.aside}</span>
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col gap-2.5">
           {/* Both said nothing at all while sending: a 40% fade on a 52px
               button is not a press anybody notices. */}
           <button
@@ -386,7 +386,7 @@ export function CheckinForm({
             disabled={busy}
             aria-busy={busy || undefined}
             onClick={() => send({ held: true })}
-            className="h-[52px] w-full border border-fg bg-fg text-[15px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
+            className="h-[52px] w-full border border-fg bg-fg text-base font-semibold text-bg active:opacity-70 disabled:opacity-40"
           >
             {busy ? "Recording" : state.answers.yes}
           </button>
@@ -395,25 +395,25 @@ export function CheckinForm({
             disabled={busy}
             aria-busy={busy || undefined}
             onClick={() => send({ held: false })}
-            className="h-[52px] w-full border border-rule bg-transparent text-[15px] text-penalty active:opacity-70 disabled:opacity-40"
+            className="h-[52px] w-full border border-rule bg-transparent text-base text-penalty active:opacity-70 disabled:opacity-40"
           >
             {busy ? "Recording" : state.answers.no}
           </button>
         </div>
 
         <div className="flex items-center justify-between border-y border-rule py-3">
-          <span className="text-[12.5px] text-muted">Current streak</span>
+          <span className="text-xs text-muted">Current streak</span>
           <StreakBadge value={streak} />
         </div>
 
         {error ? (
-          <p className="text-[11px] leading-[1.5] text-penalty">{error}</p>
+          <p className="text-2xs leading-relaxed text-penalty">{error}</p>
         ) : null}
 
         <div className="flex-1" />
 
         {step.consequence ? (
-          <p className="text-[11.5px] leading-[1.55] text-muted">
+          <p className="text-2xs leading-relaxed text-muted">
             {step.consequence}
           </p>
         ) : null}
@@ -452,7 +452,7 @@ export function CheckinForm({
         // with an optional photo can still have something to answer.
         onSkip={photoRequired ? undefined : () => setCameraOpen(false)}
         sheet={
-          <div className="flex flex-col gap-[14px]">
+          <div className="flex flex-col gap-3.5">
             {step.fields.map((field) => (
               <Field
                 key={field.kind === "number" ? field.key : field.label}
@@ -468,7 +468,7 @@ export function CheckinForm({
               />
             ))}
             {step.fields.length === 0 && (hints[step.key] ?? step.hint) ? (
-              <span className="text-[11.5px] leading-[1.5] text-muted">
+              <span className="text-2xs leading-relaxed text-muted">
                 {hints[step.key] ?? step.hint}
               </span>
             ) : null}
@@ -529,22 +529,22 @@ export function CheckinForm({
       ))}
 
       {step.fields.length === 0 && step.hint ? (
-        <span className="text-[11px] leading-[1.5] text-muted">{step.hint}</span>
+        <span className="text-2xs leading-relaxed text-muted">{step.hint}</span>
       ) : null}
 
       <div className="flex-1" />
 
       {error ? (
-        <span className="text-[11px] leading-[1.5] text-penalty">{error}</span>
+        <span className="text-2xs leading-relaxed text-penalty">{error}</span>
       ) : attempted && blocked ? (
-        <span className="text-[11px] leading-[1.5] text-penalty">{blocked}</span>
+        <span className="text-2xs leading-relaxed text-penalty">{blocked}</span>
       ) : null}
 
-      <div className="flex gap-[10px]">
+      <div className="flex gap-2.5">
         <button
           type="button"
           onClick={() => router.back()}
-          className="h-[46px] flex-1 border border-rule bg-transparent text-[13.5px] text-penalty"
+          className="h-[46px] flex-1 border border-rule bg-transparent text-sm text-penalty"
         >
           Discard
         </button>
@@ -553,7 +553,7 @@ export function CheckinForm({
           disabled={busy}
           onClick={() => (canSend ? sendFields() : setAttempted(true))}
           className={
-            "h-[46px] flex-[1.6] border text-[13.5px] " +
+            "h-[46px] flex-[1.6] border text-sm " +
             (canSend
               ? "border-fg bg-fg font-semibold text-bg"
               : "cursor-not-allowed border-rule bg-transparent text-muted")
@@ -574,8 +574,8 @@ function StreakBadge({ value }: { value: number }) {
         <defs>
           <linearGradient id="checkin-flame" x1="0" y1="1" x2="0" y2="0">
             <stop offset="0%" stopColor="#ffc24b" />
-            <stop offset="55%" stopColor="#ff7a2f" />
-            <stop offset="100%" stopColor="#e4574b" />
+            <stop offset="55%" stopColor="var(--flame)" />
+            <stop offset="100%" stopColor="var(--flame-to)" />
           </linearGradient>
         </defs>
         <path
@@ -587,7 +587,7 @@ function StreakBadge({ value }: { value: number }) {
           fill="#ffe6a1"
         />
       </svg>
-      <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">
+      <span className="bg-gradient-to-r from-flame-from via-flame to-flame-to bg-clip-text text-xs font-medium leading-none text-transparent tabular-nums">
         {value}
       </span>
     </span>

@@ -81,9 +81,9 @@ export function NotificationsForm({
     <div className="mt-6 flex flex-col gap-7">
       <section className="flex flex-col gap-2">
         <div className="flex items-center gap-3 border-b border-rule py-[13px]">
-          <span className="flex-1 text-[13.5px]">
+          <span className="flex-1 text-sm">
             Reminders on this device
-            <span className="mt-[3px] block text-[11px] text-muted">
+            <span className="mt-[3px] block text-2xs text-muted">
               {explain(current, devices)}
             </span>
           </span>
@@ -96,15 +96,15 @@ export function NotificationsForm({
           />
         </div>
         {on ? <TestButton /> : null}
-        {error ? <p className="text-[11.5px] text-penalty">{error}</p> : null}
-        {note ? <p className="text-[11.5px] text-pass">{note}</p> : null}
+        {error ? <p className="text-2xs text-penalty">{error}</p> : null}
+        {note ? <p className="text-2xs text-pass">{note}</p> : null}
       </section>
 
       <QuietHours quiet={quiet} />
 
       <section className="flex flex-col gap-2">
-        <span className="text-[10px] tracking-[0.16em] text-muted">WHEN</span>
-        <p className="text-[11.5px] leading-[1.6] text-muted">
+        <span className="text-micro tracking-label text-muted">WHEN</span>
+        <p className="text-2xs leading-relaxed text-muted">
           Leave an activity blank and Curfew picks the times: before the window
           closes, or the hours the activity itself suggests. A time you set here
           is honoured even inside the default quiet hours, because you set it.
@@ -142,27 +142,27 @@ function QuietHours({ quiet }: { quiet: Quiet }) {
 
   return (
     <section className="flex flex-col gap-2">
-      <span className="text-[10px] tracking-[0.16em] text-muted">QUIET HOURS</span>
-      <p className="text-[11.5px] leading-[1.6] text-muted">
+      <span className="text-micro tracking-label text-muted">QUIET HOURS</span>
+      <p className="text-2xs leading-relaxed text-muted">
         Nothing arrives between these times, including a window about to close.
         Curfew would rather miss a reminder than wake you with one.
       </p>
       <div className="flex items-center gap-3 border-b border-rule py-[11px]">
-        <span className="w-[92px] flex-none text-[13px]">From</span>
+        <span className="w-[92px] flex-none text-sm">From</span>
         <input
           type="time"
           value={from}
           onChange={(e) => setFrom(e.target.value)}
           aria-label="Quiet hours start"
-          className="border border-rule bg-transparent px-2 py-[6px] text-[12px]"
+          className="border border-rule bg-transparent px-2 py-1.5 text-xs"
         />
-        <span className="text-[13px]">until</span>
+        <span className="text-sm">until</span>
         <input
           type="time"
           value={to}
           onChange={(e) => setTo(e.target.value)}
           aria-label="Quiet hours end"
-          className="border border-rule bg-transparent px-2 py-[6px] text-[12px]"
+          className="border border-rule bg-transparent px-2 py-1.5 text-xs"
         />
       </div>
       {dirty ? (
@@ -183,14 +183,14 @@ function QuietHours({ quiet }: { quiet: Quiet }) {
                 )
                 .finally(() => setSaving(false));
             }}
-            className="border border-fg px-3 py-[7px] text-[12px] active:opacity-70 disabled:opacity-40"
+            className="border border-fg px-3 py-[7px] text-xs active:opacity-70 disabled:opacity-40"
           >
             {saving ? "Saving" : "Save quiet hours"}
           </button>
         </div>
       ) : null}
       {result ? (
-        <p className={`text-[11.5px] ${result.ok ? "text-pass" : "text-penalty"}`}>
+        <p className={`text-2xs ${result.ok ? "text-pass" : "text-penalty"}`}>
           {result.text}
         </p>
       ) : null}
@@ -215,11 +215,11 @@ function TestButton() {
             .then((r) => setResult(r.error ?? r.note ?? "Sent."))
             .finally(() => setSending(false));
         }}
-        className="border border-fg px-3 py-[7px] text-[12px] active:opacity-70 disabled:opacity-40"
+        className="border border-fg px-3 py-[7px] text-xs active:opacity-70 disabled:opacity-40"
       >
         {sending ? "Sending" : "Send a test"}
       </button>
-      {result ? <span className="text-[11.5px] text-muted">{result}</span> : null}
+      {result ? <span className="text-2xs text-muted">{result}</span> : null}
     </div>
   );
 }
@@ -242,7 +242,7 @@ function ActivityTimes({ activity }: { activity: Activity }) {
 
   return (
     <div className="flex items-center gap-3 border-b border-rule py-[11px]">
-      <span className="w-[92px] flex-none text-[13px]">{activity.name}</span>
+      <span className="w-[92px] flex-none text-sm">{activity.name}</span>
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -258,9 +258,9 @@ function ActivityTimes({ activity }: { activity: Activity }) {
         inputMode="numeric"
         aria-label={`${activity.name} reminder times`}
         aria-busy={pending || undefined}
-        className="w-full border border-rule bg-transparent px-2 py-[6px] text-[12px] placeholder:text-muted"
+        className="w-full border border-rule bg-transparent px-2 py-1.5 text-xs placeholder:text-muted"
       />
-      {error ? <span className="text-[11px] text-penalty">{error}</span> : null}
+      {error ? <span className="text-2xs text-penalty">{error}</span> : null}
     </div>
   );
 }

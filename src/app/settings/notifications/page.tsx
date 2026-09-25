@@ -32,12 +32,12 @@ export default async function Notifications() {
       <div className="mx-auto max-w-[560px]">
         <header className="-mx-5 border-b border-rule px-5 pb-[11px]">
           <BackLink fallback="/settings" label="settings" />
-          <h1 className="mt-3 text-[14px] font-semibold tracking-[0.16em]">
+          <h1 className="mt-3 text-base font-semibold tracking-label">
             NOTIFICATIONS
           </h1>
         </header>
 
-        <p className="mt-5 text-[12px] leading-[1.6] text-muted">
+        <p className="mt-5 text-xs leading-relaxed text-muted">
           Curfew can remind you before a window closes, and say what the rest of
           your group has already logged.
           <InfoHint label="How reminders work">
@@ -70,7 +70,7 @@ export default async function Notifications() {
             quiet={quiet}
           />
         ) : (
-          <p className="mt-6 border border-rule p-4 text-[12px] leading-[1.6] text-muted">
+          <p className="mt-6 border border-rule p-4 text-xs leading-relaxed text-muted">
             Push is not configured in this environment. VAPID_PUBLIC_KEY,
             VAPID_PRIVATE_KEY and VAPID_SUBJECT are unset, so there is nothing
             to subscribe to.

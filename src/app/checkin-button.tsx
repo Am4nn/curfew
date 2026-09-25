@@ -11,7 +11,7 @@ import { tapped } from "./haptics";
 // Each press carries its own idempotency key, so a retry after a flaky network
 // records nothing while a second deliberate press records a second check-in.
 const DEFAULT_CLASS =
-  "block w-full bg-fg px-5 py-[34px] text-[19px] font-medium uppercase tracking-[0.04em] text-bg disabled:opacity-60";
+  "block w-full bg-fg px-5 py-[34px] text-lg font-medium uppercase tracking-wide text-bg disabled:opacity-60";
 
 function newIdem(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -103,7 +103,7 @@ export function CheckinButton({
       >
         {pending ? busyLabel : label}
       </button>
-      {error ? <p className="mt-3 text-[13px] text-penalty">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-penalty">{error}</p> : null}
     </div>
   );
 }

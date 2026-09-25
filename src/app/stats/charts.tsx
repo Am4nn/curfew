@@ -18,7 +18,7 @@ const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
 export function ActivityChartView({ chart }: { chart: ActivityChart }) {
   if (chart.points.length === 0) {
     return (
-      <p className="text-[13px] leading-[1.6] text-muted">
+      <p className="text-sm leading-relaxed text-muted">
         Nothing scored yet. The chart appears once the first period closes.
       </p>
     );
@@ -44,7 +44,7 @@ export function ActivityChartView({ chart }: { chart: ActivityChart }) {
 function Tiles({ chart }: { chart: ActivityChart }) {
   const third = thirdTile(chart);
   return (
-    <div className="flex gap-[10px]">
+    <div className="flex gap-2.5">
       <Tile value={String(chart.streak)} label="CURRENT STREAK" flame />
       <Tile value={String(chart.best)} label="BEST" />
       <Tile value={third.value} label={third.label} />
@@ -77,15 +77,15 @@ function Tile({ value, label, flame }: { value: string; label: string; flame?: b
     <div className="flex flex-1 flex-col gap-[5px] border border-rule p-3">
       <span
         className={
-          "text-[19px] font-semibold leading-none tabular-nums " +
+          "text-lg font-semibold leading-none tabular-nums " +
           (flame
-            ? "bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-transparent"
+            ? "bg-gradient-to-r from-flame-from via-flame to-flame-to bg-clip-text text-transparent"
             : "")
         }
       >
         {value}
       </span>
-      <span className="text-[9.5px] leading-[1.4] tracking-[0.08em] text-muted">{label}</span>
+      <span className="text-micro leading-snug tracking-wider text-muted">{label}</span>
     </div>
   );
 }
@@ -126,20 +126,20 @@ function Weekdays({ chart }: { chart: ActivityChart }) {
 
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">
+      <span className="text-micro tracking-label text-muted">
         {weekly ? "WHICH DAYS YOU GO" : "PASS RATE BY WEEKDAY"}
       </span>
       <div className="flex flex-col gap-[9px]">
-        <div className="flex h-[70px] items-end gap-[6px]">
+        <div className="flex h-[70px] items-end gap-1.5">
           {values.map((v, i) => (
             <div key={i} className="flex h-full flex-1 flex-col justify-end">
               <div className="bg-fg" style={{ height: `${v ?? 0}%` }} />
             </div>
           ))}
         </div>
-        <div className="flex gap-[6px]">
+        <div className="flex gap-1.5">
           {DAYS.map((d, i) => (
-            <span key={i} className="flex-1 text-center text-[10px] text-muted">
+            <span key={i} className="flex-1 text-center text-micro text-muted">
               {d}
             </span>
           ))}
@@ -174,7 +174,7 @@ function Numeric({ chart }: { chart: ActivityChart }) {
 
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">
+      <span className="text-micro tracking-label text-muted">
         {chart.spec.heading}, {chart.points.length} PERIODS
       </span>
       <div className="relative h-[132px]">
@@ -185,14 +185,14 @@ function Numeric({ chart }: { chart: ActivityChart }) {
               style={{ bottom: `${(line / peak) * 100}%` }}
             />
             <span
-              className="absolute right-0 bg-bg pl-[4px] text-[9.5px] text-accent"
+              className="absolute right-0 bg-bg pl-1 text-micro text-accent"
               style={{ bottom: `calc(${(line / peak) * 100}% + 2px)` }}
             >
               target {line.toLocaleString("en-US")}
             </span>
           </>
         ) : null}
-        <div className="flex h-full items-end gap-[4px]">
+        <div className="flex h-full items-end gap-1">
           {chart.points.map((p) => (
             <div
               key={p.periodStart}
@@ -203,7 +203,7 @@ function Numeric({ chart }: { chart: ActivityChart }) {
           ))}
         </div>
       </div>
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-2xs leading-relaxed text-muted">
         Bars at or above the line passed.{" "}
         {short === 0
           ? "None fell short."
@@ -233,7 +233,7 @@ function Binary({ chart }: { chart: ActivityChart }) {
 
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">
+      <span className="text-micro tracking-label text-muted">
         {chart.spec.heading}, {weeks.length} WEEKS
       </span>
       <div className="flex flex-col gap-[5px]">
@@ -247,27 +247,27 @@ function Binary({ chart }: { chart: ActivityChart }) {
       </div>
       <div className="flex gap-[5px]">
         {DAYS.map((d, i) => (
-          <span key={i} className="flex-1 text-center text-[10px] text-muted">
+          <span key={i} className="flex-1 text-center text-micro text-muted">
             {d}
           </span>
         ))}
       </div>
-      <div className="flex items-center gap-[14px]">
-        <span className="flex items-center gap-[6px] text-[10.5px] text-muted">
+      <div className="flex items-center gap-3.5">
+        <span className="flex items-center gap-1.5 text-micro text-muted">
           <span className="flex text-pass">
             <Tick />
           </span>
           held
         </span>
-        <span className="flex items-center gap-[6px] text-[10.5px] text-muted">
+        <span className="flex items-center gap-1.5 text-micro text-muted">
           <span className="flex text-penalty">
             <Cross />
           </span>
           slipped
         </span>
-        <span className="ml-auto text-[10.5px] text-muted">empty is not scheduled</span>
+        <span className="ml-auto text-micro text-muted">empty is not scheduled</span>
       </div>
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-2xs leading-relaxed text-muted">
         {slips === 0
           ? "No slips in this window."
           : `${slips} ${slips === 1 ? "slip" : "slips"} in ${weeks.length} weeks.`}{" "}
@@ -343,7 +343,7 @@ function Weekly({ chart }: { chart: ActivityChart }) {
 
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">
+      <span className="text-micro tracking-label text-muted">
         {chart.spec.heading}, {chart.points.length} WEEKS
       </span>
       <div className="relative h-[132px]">
@@ -354,7 +354,7 @@ function Weekly({ chart }: { chart: ActivityChart }) {
               style={{ bottom: `${(min / peak) * 84}%` }}
             />
             <span
-              className="absolute right-0 bg-bg pl-[4px] text-[9.5px] text-accent"
+              className="absolute right-0 bg-bg pl-1 text-micro text-accent"
               style={{ bottom: `calc(${(min / peak) * 84}% + 2px)` }}
             >
               minimum {min}
@@ -369,7 +369,7 @@ function Weekly({ chart }: { chart: ActivityChart }) {
             >
               <span
                 className={
-                  "text-[10px] tabular-nums " +
+                  "text-micro tabular-nums " +
                   (sessions(p.detail) >= min ? "text-muted" : "text-penalty")
                 }
               >
@@ -383,7 +383,7 @@ function Weekly({ chart }: { chart: ActivityChart }) {
           ))}
         </div>
       </div>
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-2xs leading-relaxed text-muted">
         {short === 0
           ? `Every week met the minimum of ${min}.`
           : `${short} ${short === 1 ? "week" : "weeks"} fell short of ${min}.`}
@@ -419,10 +419,10 @@ function Windowed({ chart }: { chart: ActivityChart }) {
   if (windowOpen === null || windowClose === null || dots.length === 0) {
     return (
       <section className="flex flex-col gap-[11px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">
+        <span className="text-micro tracking-label text-muted">
           {chart.spec.heading}
         </span>
-        <p className="text-[11.5px] leading-[1.55] text-muted">
+        <p className="text-2xs leading-relaxed text-muted">
           No wake check-in recorded yet.
         </p>
       </section>
@@ -438,7 +438,7 @@ function Windowed({ chart }: { chart: ActivityChart }) {
 
   return (
     <section className="flex flex-col gap-[11px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">
+      <span className="text-micro tracking-label text-muted">
         {chart.spec.heading}, {dots.length} DAYS
       </span>
       <div className="relative h-[132px] border-b border-l border-rule">
@@ -451,7 +451,7 @@ function Windowed({ chart }: { chart: ActivityChart }) {
           }}
         />
         <span
-          className="absolute right-[6px] -translate-y-1/2 text-[9.5px] text-pass"
+          className="absolute right-[6px] -translate-y-1/2 text-micro text-pass"
           style={{ top: `${topOf(windowOpen)}%` }}
         >
           window
@@ -471,13 +471,13 @@ function Windowed({ chart }: { chart: ActivityChart }) {
           />
         ))}
       </div>
-      <div className="flex justify-between text-[10px] text-muted">
+      <div className="flex justify-between text-micro text-muted">
         <span>{formatClock(domainMin)}</span>
         <span>{formatClock(windowOpen)}</span>
         <span>{formatClock(windowClose)}</span>
         <span>{formatClock(domainMax)}</span>
       </div>
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-2xs leading-relaxed text-muted">
         {missed === 0
           ? "Every morning landed inside the window."
           : `${missed} morning${missed === 1 ? "" : "s"} landed outside the window.`}{" "}

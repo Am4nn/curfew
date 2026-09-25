@@ -27,7 +27,7 @@ export function SettleForm({
     // which read as a total rather than as something to type in. The button
     // keeps the filled treatment: it is the only thing on the screen that moves
     // money, and the mock's outline made it look like the field's twin.
-    <ActionForm action={settleAction} className="mt-3 flex items-center gap-[10px]">
+    <ActionForm action={settleAction} className="mt-3 flex items-center gap-2.5">
       <input type="hidden" name="groupId" value={groupId} />
       <input type="hidden" name="toUserId" value={toUserId} />
       <input type="hidden" name="currency" value={currency} />
@@ -37,11 +37,11 @@ export function SettleForm({
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         aria-label={`Amount settled to ${toName}`}
-        className="h-[38px] flex-1 border border-rule bg-transparent px-[11px] text-[13px] text-fg"
+        className="h-[38px] flex-1 border border-rule bg-transparent px-[11px] text-sm text-fg"
       />
       <SubmitButton
         pendingLabel="Recording"
-        className="h-[38px] flex-none border border-fg bg-fg px-[14px] text-[12.5px] font-normal text-bg"
+        className="h-[38px] flex-none border border-fg bg-fg px-3.5 text-xs font-normal text-bg"
       >
         Mark settled
       </SubmitButton>

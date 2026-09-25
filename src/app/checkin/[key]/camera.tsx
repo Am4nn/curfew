@@ -236,17 +236,17 @@ export function Camera({
           type="button"
           onClick={onClose}
           aria-label={captured ? "Leave without recording" : "Close the camera"}
-          className="text-[13px] opacity-80"
+          className="text-sm opacity-80"
         >
           &#10005;
         </button>
-        <span className="text-[11px] tracking-[0.16em] opacity-80">{title}</span>
+        <span className="text-2xs tracking-label opacity-80">{title}</span>
         {captured ? (
           <button
             type="button"
             disabled={busy}
             onClick={() => retake(captured)}
-            className="flex items-center gap-[7px] text-[11.5px] opacity-80 active:opacity-50 disabled:opacity-40"
+            className="flex items-center gap-[7px] text-2xs opacity-80 active:opacity-50 disabled:opacity-40"
           >
             <RetakeIcon />
             Retake
@@ -279,15 +279,15 @@ export function Camera({
 
           {/* Sized by its contents, never by a fraction of the screen. */}
           <div className="relative flex flex-none flex-col border-t border-rule bg-bg">
-            <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-[14px]">
-              <span className="text-[13.5px] font-semibold">{title}</span>
-              <span className="text-[11px] text-muted">{nowLabel}</span>
+            <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-3.5">
+              <span className="text-sm font-semibold">{title}</span>
+              <span className="text-2xs text-muted">{nowLabel}</span>
             </div>
 
             {sheet ? <div className="px-5">{sheet}</div> : null}
 
             {error ? (
-              <p className="px-5 pt-3 text-[11.5px] leading-[1.5] text-penalty">
+              <p className="px-5 pt-3 text-2xs leading-relaxed text-penalty">
                 {error}
               </p>
             ) : null}
@@ -299,7 +299,7 @@ export function Camera({
                 aria-busy={busy || undefined}
                 onClick={() => use(captured)}
                 className={
-                  "h-[52px] w-full border text-[14.5px] active:opacity-60 " +
+                  "h-[52px] w-full border text-base active:opacity-60 " +
                   (canUse
                     ? "border-fg bg-fg font-semibold text-bg disabled:opacity-40"
                     : "cursor-not-allowed border-rule bg-transparent text-muted")
@@ -316,23 +316,23 @@ export function Camera({
 
           {state.kind === "denied" ? (
             <div className="relative flex flex-col gap-4 p-5 pb-[34px]">
-              <p className="text-[13px] leading-[1.55]">{state.message}</p>
-              <p className="text-[11.5px] leading-[1.55] text-muted">
+              <p className="text-sm leading-relaxed">{state.message}</p>
+              <p className="text-2xs leading-relaxed text-muted">
                 Allow the camera for this site in your browser settings, then open
                 this again.
               </p>
               <button
                 type="button"
                 onClick={onClose}
-                className="h-[46px] w-full border border-rule text-[13.5px] text-fg active:opacity-60"
+                className="h-[46px] w-full border border-rule text-sm text-fg active:opacity-60"
               >
                 Back
               </button>
             </div>
           ) : (
-            <div className="relative flex flex-col items-center gap-[14px] px-5 pb-[34px]">
+            <div className="relative flex flex-col items-center gap-3.5 px-5 pb-[34px]">
               {closesLabel ? (
-                <span className="text-[11.5px] opacity-65">
+                <span className="text-2xs opacity-65">
                   Window closes {closesLabel}
                 </span>
               ) : null}
@@ -354,7 +354,7 @@ export function Camera({
                 <button
                   type="button"
                   onClick={onSkip}
-                  className="text-[11.5px] text-muted active:opacity-60"
+                  className="text-2xs text-muted active:opacity-60"
                 >
                   Without a photo
                 </button>

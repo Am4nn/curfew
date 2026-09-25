@@ -53,11 +53,11 @@ function Row({
       onClick={onClick}
       className="flex items-center gap-3 border-b border-rule py-[13px] text-left"
     >
-      <span className={"flex-1 text-[13.5px] " + (danger ? "text-penalty" : "")}>
+      <span className={"flex-1 text-sm " + (danger ? "text-penalty" : "")}>
         {label}
       </span>
-      {sub ? <span className="text-[11px] text-muted">{sub}</span> : null}
-      <span className="text-[13px] text-muted">&rsaquo;</span>
+      {sub ? <span className="text-2xs text-muted">{sub}</span> : null}
+      <span className="text-sm text-muted">&rsaquo;</span>
     </button>
   );
 }
@@ -122,7 +122,7 @@ export function DeleteForm({
   return (
     <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
       <section className="flex flex-col gap-2">
-        <span className="text-[10px] tracking-[0.16em] text-muted">PHOTOS</span>
+        <span className="text-micro tracking-label text-muted">PHOTOS</span>
         <div className="flex flex-col">
           <Row
             label="Delete a single photo"
@@ -137,7 +137,7 @@ export function DeleteForm({
       </section>
 
       <section className="flex flex-col gap-2">
-        <span className="text-[10px] tracking-[0.16em] text-muted">HISTORY</span>
+        <span className="text-micro tracking-label text-muted">HISTORY</span>
         <div className="flex flex-col">
           {activities.map((a) => (
             <button
@@ -151,8 +151,8 @@ export function DeleteForm({
               <span className="flex flex-none text-muted">
                 <ActivityIcon name={a.icon} size={17} />
               </span>
-              <span className="flex-1 text-[13.5px]">Delete {a.name} history</span>
-              <span className="text-[13px] text-muted">&rsaquo;</span>
+              <span className="flex-1 text-sm">Delete {a.name} history</span>
+              <span className="text-sm text-muted">&rsaquo;</span>
             </button>
           ))}
           <Row
@@ -163,7 +163,7 @@ export function DeleteForm({
       </section>
 
       <section className="flex flex-col gap-2">
-        <span className="text-[10px] tracking-[0.16em] text-muted">ACCOUNT</span>
+        <span className="text-micro tracking-label text-muted">ACCOUNT</span>
         <div className="flex flex-col">
           <Row label="Delete my account" danger onClick={() => setPending({ kind: "account" })} />
         </div>
@@ -172,14 +172,14 @@ export function DeleteForm({
       {/* The money warning keeps its colour, because it is the one thing here
           that survives the deletion. The rest is plain text: three stacked
           boxes on one screen is what made this page shout. */}
-      <p className="text-[11.5px] leading-[1.55] text-penalty">
+      <p className="text-2xs leading-relaxed text-penalty">
         Money owed is never deleted.
         {outstanding.length > 0 ? ` You owe ${outstanding.join(", ")}.` : ""} Ledger
         entries stay, and your name stays on them, so the people involved can still
         see who owes what.
       </p>
 
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Photos disappear at once and the files go from storage tonight. Habit
         history goes with them. Nothing here can be undone.
       </p>
@@ -190,17 +190,17 @@ export function DeleteForm({
             <button
               type="button"
               onClick={() => setPending(null)}
-              className="text-[14px] text-muted"
+              className="text-base text-muted"
             >
               &lsaquo;
             </button>
-            <span className="text-[14px] font-semibold tracking-[0.14em]">
+            <span className="text-base font-semibold tracking-caps">
               DELETE A PHOTO
             </span>
           </header>
           <div className="flex-1 overflow-y-auto px-5 py-[18px]">
             {shown.length === 0 ? (
-              <p className="text-[12.5px] leading-[1.6] text-muted">You have no photos.</p>
+              <p className="text-xs leading-relaxed text-muted">You have no photos.</p>
             ) : (
               <div className="grid grid-cols-3 gap-3">
                 {shown.map((p) => (
@@ -230,7 +230,7 @@ export function DeleteForm({
                     setLoadingMore(false);
                   }
                 }}
-                className="mt-5 flex h-11 w-full items-center justify-center border border-rule text-[14px] active:opacity-70 disabled:opacity-40"
+                className="mt-5 flex h-11 w-full items-center justify-center border border-rule text-base active:opacity-70 disabled:opacity-40"
               >
                 {loadingMore ? "Loading" : `Load older (${shown.length} of ${totalPhotos})`}
               </button>
@@ -245,8 +245,8 @@ export function DeleteForm({
           style={{ backgroundColor: "var(--scrim-85)" }}
         >
           <div className="flex w-full flex-col gap-3 border-t border-penalty bg-bg px-5 pb-5 pt-5">
-            <span className="text-[16px] font-semibold">{title(pending)}</span>
-            <span className="text-[12px] leading-[1.6] text-muted">
+            <span className="text-lg font-semibold">{title(pending)}</span>
+            <span className="text-xs leading-relaxed text-muted">
               {confirmText(pending)}
             </span>
 
@@ -256,22 +256,22 @@ export function DeleteForm({
                 onChange={(e) => setTyped(e.target.value)}
                 placeholder="Type DELETE to confirm"
                 aria-label="Type DELETE to confirm"
-                className="border border-rule bg-transparent px-3 py-[11px] text-[14px] text-fg outline-none placeholder:text-muted"
+                className="border border-rule bg-transparent px-3 py-[11px] text-base text-fg outline-none placeholder:text-muted"
               />
             ) : null}
 
             {error ? (
-              <span className="text-[11.5px] leading-[1.55] text-penalty">{error}</span>
+              <span className="text-2xs leading-relaxed text-penalty">{error}</span>
             ) : null}
 
-            <div className="flex gap-[10px]">
+            <div className="flex gap-2.5">
               <button
                 type="button"
                 onClick={() => {
                   setPending(pending.kind === "photo" ? { kind: "photo-pick" } : null);
                   setTyped("");
                 }}
-                className="h-[46px] flex-1 border border-rule text-[13.5px]"
+                className="h-[46px] flex-1 border border-rule text-sm"
               >
                 Cancel
               </button>
@@ -296,7 +296,7 @@ export function DeleteForm({
                     return deleteAccountAction();
                   }, pending.kind === "photo" ? { kind: "photo-pick" } : null)
                 }
-                className="h-[46px] flex-1 border border-penalty bg-penalty text-[13.5px] font-semibold text-bg disabled:opacity-50"
+                className="h-[46px] flex-1 border border-penalty bg-penalty text-sm font-semibold text-bg disabled:opacity-50"
               >
                 {busy ? "Deleting" : "Delete"}
               </button>

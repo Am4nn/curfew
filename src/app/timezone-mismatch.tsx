@@ -47,8 +47,8 @@ export function TimezoneMismatch({ stored }: { stored: string }) {
 
   return (
     <div className="flex flex-col gap-[9px] border border-accent p-[13px]">
-      <span className="text-[12.5px] text-accent">This device is in {device}.</span>
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-xs text-accent">This device is in {device}.</span>
+      <span className="text-2xs leading-relaxed text-muted">
         Curfew reads your windows and deadlines in {stored}.
       </span>
       <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export function TimezoneMismatch({ stored }: { stored: string }) {
           <input type="hidden" name="timezone" value={device} />
           <SubmitButton
             pendingLabel="Saving"
-            className="border border-fg bg-fg px-3 py-[7px] text-[12.5px] text-bg"
+            className="border border-fg bg-fg px-3 py-[7px] text-xs text-bg"
           >
             Switch from tomorrow
           </SubmitButton>
@@ -72,7 +72,7 @@ export function TimezoneMismatch({ stored }: { stored: string }) {
             }
             setKept(true);
           }}
-          className="border border-rule px-3 py-[7px] text-[12.5px] text-muted"
+          className="border border-rule px-3 py-[7px] text-xs text-muted"
         >
           Keep {stored}
         </button>

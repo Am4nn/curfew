@@ -50,7 +50,7 @@ const APP_SWITCHES: { key: string; label: string; hint: string }[] = [
 ];
 
 const UNSAVED = (
-  <span className="border border-penalty px-[6px] py-px text-[9.5px] tracking-[0.1em] text-penalty">
+  <span className="border border-penalty px-1.5 py-px text-micro tracking-wider text-penalty">
     UNSAVED
   </span>
 );
@@ -143,17 +143,17 @@ export function ControlsForm({
 
   return (
     <div className="flex flex-col gap-8 pb-28">
-      <section className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">THE APP</span>
+      <section className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">THE APP</span>
         <div className="flex flex-col">
           {APP_SWITCHES.map(({ key, label, hint }) => (
             <div key={key} className="flex items-center gap-3 border-b border-rule py-[13px]">
               <div className="flex flex-1 flex-col gap-[3px]">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13.5px]">{label}</span>
+                  <span className="text-sm">{label}</span>
                   {changed("setting", key) ? UNSAVED : null}
                 </div>
-                <span className="text-[10.5px] leading-[1.5] text-muted">{hint}</span>
+                <span className="text-micro leading-relaxed text-muted">{hint}</span>
               </div>
               <Toggle
                 label={label}
@@ -166,14 +166,14 @@ export function ControlsForm({
             </div>
           ))}
         </div>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           A switch here takes effect at once and never deletes anything. Turning money off
           hides it; turning it back on brings the same balances back.
         </span>
       </section>
 
-      <section className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">ACTIVITY TYPES</span>
+      <section className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">ACTIVITY TYPES</span>
         <div className="flex flex-col">
           {state.types.map((type) => (
             <div
@@ -184,14 +184,14 @@ export function ControlsForm({
                 <div className="flex items-center gap-2">
                   <span
                     className={
-                      "text-[13.5px] " + (draft.types[type.key] ? "text-fg" : "text-muted")
+                      "text-sm " + (draft.types[type.key] ? "text-fg" : "text-muted")
                     }
                   >
                     {type.name}
                   </span>
                   {changed("type", type.key) ? UNSAVED : null}
                 </div>
-                <span className="text-[10.5px] text-muted">{type.tracking} tracking</span>
+                <span className="text-micro text-muted">{type.tracking} tracking</span>
               </div>
               <Toggle
                 label={type.name}
@@ -204,17 +204,17 @@ export function ControlsForm({
             </div>
           ))}
         </div>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           Off hides a type from the catalog. Anyone already tracking it keeps it. The list
           is every type the app has: adding one is a code change, not a setting.
         </span>
       </section>
 
-      <section className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">EVIDENCE</span>
+      <section className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">EVIDENCE</span>
         <div className="flex items-center gap-3 border-b border-rule py-[13px]">
           <div className="flex flex-1 items-center gap-2">
-            <span className="text-[13.5px]">Retention</span>
+            <span className="text-sm">Retention</span>
             {changed("setting", "retention_days") ? UNSAVED : null}
           </div>
           <div className="flex items-center">
@@ -228,11 +228,11 @@ export function ControlsForm({
                   settings: { ...d.settings, retention_days: retention - 1 },
                 }))
               }
-              className="h-[34px] w-[34px] border border-rule text-[15px] disabled:opacity-40"
+              className="h-[34px] w-[34px] border border-rule text-base disabled:opacity-40"
             >
               -
             </button>
-            <span className="min-w-[74px] border-y border-rule px-3 py-[7px] text-center text-[13px]">
+            <span className="min-w-[74px] border-y border-rule px-3 py-[7px] text-center text-sm">
               {retention} days
             </span>
             <button
@@ -245,33 +245,33 @@ export function ControlsForm({
                   settings: { ...d.settings, retention_days: retention + 1 },
                 }))
               }
-              className="h-[34px] w-[34px] border border-rule text-[15px] disabled:opacity-40"
+              className="h-[34px] w-[34px] border border-rule text-base disabled:opacity-40"
             >
               +
             </button>
           </div>
         </div>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           Shortening this deletes anything already older on the next sweep.
         </span>
       </section>
 
       {changes.length > 0 ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-[10px] border-t border-rule bg-surface px-5 py-[13px]">
-          <span className="flex-1 text-[11.5px] text-muted">
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2.5 border-t border-rule bg-surface px-5 py-[13px]">
+          <span className="flex-1 text-2xs text-muted">
             {changes.length} unsaved {changes.length === 1 ? "change" : "changes"}
           </span>
           <button
             type="button"
             onClick={() => setDraft(initial)}
-            className="h-[38px] border border-rule px-[15px] text-[12.5px]"
+            className="h-[38px] border border-rule px-[15px] text-xs"
           >
             Discard
           </button>
           <button
             type="button"
             onClick={() => setSheetOpen(true)}
-            className="h-[38px] border border-penalty bg-penalty px-[15px] text-[12.5px] font-semibold text-bg"
+            className="h-[38px] border border-penalty bg-penalty px-[15px] text-xs font-semibold text-bg"
           >
             Save
           </button>
@@ -284,20 +284,20 @@ export function ControlsForm({
           style={{ backgroundColor: "var(--scrim-85)" }}
         >
           <div className="flex max-h-[85vh] w-full flex-col border-t border-penalty bg-bg">
-            <div className="px-5 pb-[6px] pt-5">
-              <span className="text-[16px] font-semibold">
+            <div className="px-5 pb-1.5 pt-5">
+              <span className="text-lg font-semibold">
                 Save {changes.length} {changes.length === 1 ? "change" : "changes"}?
               </span>
             </div>
 
             <div className="flex flex-1 flex-col overflow-y-auto px-5">
               {consequences.map((c) => (
-                <div key={c.name} className="flex flex-col gap-2 border-t border-rule py-[14px]">
+                <div key={c.name} className="flex flex-col gap-2 border-t border-rule py-3.5">
                   <div className="flex items-center gap-[9px]">
-                    <span className="text-[13.5px]">{c.name}</span>
+                    <span className="text-sm">{c.name}</span>
                     <span
                       className={
-                        "border px-[6px] py-px text-[9.5px] tracking-[0.1em] " +
+                        "border px-1.5 py-px text-micro tracking-wider " +
                         (c.state === "on"
                           ? "border-pass text-pass"
                           : "border-penalty text-penalty")
@@ -308,35 +308,35 @@ export function ControlsForm({
                   </div>
                   {c.lines.map((line) => (
                     <div key={line} className="flex gap-[9px]">
-                      <span className="text-[11px] leading-[1.65] text-muted">&bull;</span>
-                      <span className="flex-1 text-[12px] leading-[1.6] text-muted">{line}</span>
+                      <span className="text-2xs leading-loose text-muted">&bull;</span>
+                      <span className="flex-1 text-xs leading-relaxed text-muted">{line}</span>
                     </div>
                   ))}
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-rule px-5 pb-5 pt-[14px]">
-              <label className="flex items-start gap-[10px]">
+            <div className="flex flex-col gap-3 border-t border-rule px-5 pb-5 pt-3.5">
+              <label className="flex items-start gap-2.5">
                 <input
                   type="checkbox"
                   checked={notify}
                   onChange={(e) => setNotify(e.target.checked)}
-                  className="mt-[2px] h-[15px] w-[15px] flex-none accent-fg"
+                  className="mt-0.5 h-[15px] w-[15px] flex-none accent-fg"
                 />
-                <span className="text-[12.5px]">Tell users what changed</span>
+                <span className="text-xs">Tell users what changed</span>
               </label>
 
-              <span className="text-[11px] leading-[1.55] text-muted">
+              <span className="text-2xs leading-relaxed text-muted">
                 A switch hides a system. Nothing here deletes data, and switching back
                 restores what was hidden.
               </span>
 
-              <div className="flex gap-[10px]">
+              <div className="flex gap-2.5">
                 <button
                   type="button"
                   onClick={() => setSheetOpen(false)}
-                  className="h-[46px] flex-1 border border-rule text-[13.5px]"
+                  className="h-[46px] flex-1 border border-rule text-sm"
                 >
                   Cancel
                 </button>
@@ -344,7 +344,7 @@ export function ControlsForm({
                   type="button"
                   onClick={save}
                   disabled={saving}
-                  className="h-[46px] flex-1 border border-penalty bg-penalty text-[13.5px] font-semibold text-bg disabled:opacity-50"
+                  className="h-[46px] flex-1 border border-penalty bg-penalty text-sm font-semibold text-bg disabled:opacity-50"
                 >
                   {saving ? "Saving" : "Save changes"}
                 </button>

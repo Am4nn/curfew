@@ -50,8 +50,8 @@ export default async function ConfigurePage({
     <main className="flex min-h-dvh flex-col pb-nav">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
         <div className="flex items-center gap-[9px]">
-          <BackLink fallback="/activities" className="text-[14px] text-muted" />
-          <span className="text-[14px] font-semibold tracking-[0.14em]">
+          <BackLink fallback="/activities" className="text-base text-muted" />
+          <span className="text-base font-semibold tracking-caps">
             {type.name.toUpperCase()}
           </span>
         </div>

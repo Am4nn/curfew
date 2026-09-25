@@ -39,11 +39,11 @@ export default async function AdminLayout({
       <div className="mx-auto max-w-[720px]">
         <header className="mb-[15px] flex items-center gap-[9px]">
           <QuorumMark size={15} />
-          <h1 className="text-[14px] font-semibold tracking-[0.16em]">ADMIN</h1>
-          <span className="text-[11px] text-muted" title="Deployed version">
+          <h1 className="text-base font-semibold tracking-label">ADMIN</h1>
+          <span className="text-2xs text-muted" title="Deployed version">
             v{APP_VERSION}
           </span>
-          <Link href="/" className="ml-auto text-[11px] text-muted">
+          <Link href="/" className="ml-auto text-2xs text-muted">
             Back to app &rsaquo;
           </Link>
         </header>

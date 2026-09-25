@@ -57,23 +57,23 @@ export default async function GroupLedger({
     <main className="min-h-dvh pb-nav">
       <header className="flex items-center justify-between gap-3 border-b border-rule px-5 pb-[11px] pt-5">
         <div className="flex items-center gap-[9px]">
-          <BackLink fallback={`/group/${groupId}/standing`} className="text-[14px] text-muted" />
-          <span className="text-[14px] font-semibold tracking-[0.14em]">LEDGER</span>
+          <BackLink fallback={`/group/${groupId}/standing`} className="text-base text-muted" />
+          <span className="text-base font-semibold tracking-caps">LEDGER</span>
         </div>
-        <span className="text-[11px] text-muted">{header.name}</span>
+        <span className="text-2xs text-muted">{header.name}</span>
       </header>
 
       <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
-        <div className="flex gap-[10px]">
+        <div className="flex gap-2.5">
           <div className="flex flex-1 flex-col gap-1 border border-rule p-3">
-            <span className="text-[10px] text-muted">YOU OWE</span>
-            <span className="text-[19px] tabular-nums text-penalty">
+            <span className="text-micro text-muted">YOU OWE</span>
+            <span className="text-lg tabular-nums text-penalty">
               {formatMoney(owe, currency)}
             </span>
           </div>
           <div className="flex flex-1 flex-col gap-1 border border-rule p-3">
-            <span className="text-[10px] text-muted">OWED TO YOU</span>
-            <span className="text-[19px] tabular-nums text-pass">
+            <span className="text-micro text-muted">OWED TO YOU</span>
+            <span className="text-lg tabular-nums text-pass">
               {formatMoney(owed, currency)}
             </span>
           </div>
@@ -92,27 +92,27 @@ export default async function GroupLedger({
             />
           ))}
 
-        <section className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">EVERY ENTRY</span>
+        <section className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">EVERY ENTRY</span>
           {rows.length === 0 ? (
-            <p className="text-[12px] text-muted">Nothing recorded yet.</p>
+            <p className="text-xs text-muted">Nothing recorded yet.</p>
           ) : (
             <div className="border border-rule">
               {rows.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center justify-between gap-[10px] border-b border-rule px-[13px] py-3"
+                  className="flex items-center justify-between gap-2.5 border-b border-rule px-[13px] py-3"
                 >
                   <div className="flex min-w-0 flex-col gap-[3px]">
-                    <span className="text-[12.5px]">{describe(r)}</span>
-                    <span className="text-[10px] text-muted">
+                    <span className="text-xs">{describe(r)}</span>
+                    <span className="text-micro text-muted">
                       {DateTime.fromJSDate(r.createdAt).toFormat("d LLL")} &middot;{" "}
                       {direction(r)}
                     </span>
                   </div>
                   <span
                     className={
-                      "flex-none text-[13px] tabular-nums " +
+                      "flex-none text-sm tabular-nums " +
                       (r.kind !== "fine"
                         ? "text-muted"
                         : r.fromUserId === user.id

@@ -2146,6 +2146,68 @@ needs somebody to look at a rendered board rather than a script to round
 numbers, so it is the next thing a person does rather than the next thing a
 script does.
 
+### 1.61 A design system, enforced rather than described
+
+Settled 2026-09-25. Aman, after the spacing pass: *"our app should have a
+proper design system like constants for spacing sizing fonts etc so we dont
+drift whole coding and always remain standardised."*
+
+Right, and 1.60 is the argument for it: **a script that snaps 1,300 values once
+is not a fix.** The next `p-[13px]` undoes it.
+
+### What the measurement found
+
+| | |
+|---|---|
+| colour | 18 semantic tokens, **3 arbitrary escapes in 98 files** |
+| radius | 1 token, and Tailwind has no other value to write |
+| font size | **no ramp at all.** 829 arbitrary values, 23 distinct sizes |
+| line height | no tokens. 167 arbitrary values |
+| letter spacing | no tokens. 152 values, **86 of them identical** |
+| spacing | a 4px scale obeyed 615 times, bypassed 654 |
+
+**The config already had the right idea twice and stopped.** That is the whole
+finding. Colour held at three escapes because a semantic token is easier to
+write than a hex. Radius held because `rounded-lg` does not exist. Nothing
+stopped `text-[11.5px]`, so somebody wrote it 129 times.
+
+**A token holds when the wrong thing is harder to write than the right one.**
+
+### What was built
+
+- **A type ramp**, ten sizes, overriding rather than extending so `text-sm`
+  is the only way to write one. Every old value rounded DOWN, because a smaller
+  size only makes text narrower and narrower text cannot wrap where it did not
+  before. 829 uses migrated.
+- **Line height**, five tokens, 167 uses migrated.
+- **Letter spacing**, seven tokens, 152 uses migrated. The 0.16em written 86
+  times is `tracking-label`.
+- **The flame gradient**, which was three hex literals in seven places and had
+  one token for its middle stop. `--flame-from` and `--flame-to` now exist in
+  both themes, so the streak number finally darkens on light like everything
+  else around it.
+- **`bun run check:tokens`**, in CI.
+
+**Spacing was deliberately NOT given a new scale**, and that is a finding
+rather than an omission. Tailwind's default IS a 4px system and 615 uses
+already sat on it. Of the 654 that escaped, **262 named a size that already had
+a key**: `gap-[10px]` is `gap-2.5`. Those were converted with no pixel moving.
+Spacing did not need a system. It needed the one it had enforced.
+
+### Two tiers, because they are two different problems
+
+**BANNED, any escape fails at any count**: font size, line height, letter
+spacing, colour, family. The token sets are complete, so there is no honest
+reason to leave them.
+
+**RATCHETED, the count may fall and may never rise**: spacing and sizing, plus
+a hardcoded value inside `style={{}}`. A 560px reading column and a 46px
+control are layout rather than drift. **546 today**, and `CEILING` is lowered
+whenever it drops, because a ratchet only works if somebody turns it.
+
+Proved both ways: a file with `text-[13px] p-[7px]` fails on the banned tier
+AND pushes the ratchet over, and removing it goes green.
+
 ---
 
 ## 2. Confirmed unchanged

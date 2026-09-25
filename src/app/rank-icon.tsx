@@ -129,7 +129,7 @@ export function RankScore({
   return (
     <span className={"flex flex-none items-center gap-2 " + rankText(score, cleanDays)}>
       <RankIcon score={score} cleanDays={cleanDays} size={size} />
-      <span className="text-[15px] tabular-nums">{Math.round(score)}</span>
+      <span className="text-base tabular-nums">{Math.round(score)}</span>
     </span>
   );
 }

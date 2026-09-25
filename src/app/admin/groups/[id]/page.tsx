@@ -22,11 +22,11 @@ export default async function GroupInspectorPage({
   return (
     <>
       <div className="mb-6 flex items-baseline justify-between gap-3">
-        <h2 className="text-[15px] font-semibold">
+        <h2 className="text-base font-semibold">
           {data.name}
-          {data.archived ? <span className="ml-2 text-[12px] text-penalty">archived</span> : null}
+          {data.archived ? <span className="ml-2 text-xs text-penalty">archived</span> : null}
         </h2>
-        <Link href="/admin/groups" className="text-[12px] text-muted">‹ all groups</Link>
+        <Link href="/admin/groups" className="text-xs text-muted">‹ all groups</Link>
       </div>
 
       {canArchive ? (
@@ -34,7 +34,7 @@ export default async function GroupInspectorPage({
           {data.archived ? (
             <ActionForm action={restoreGroupAction}>
               <input type="hidden" name="groupId" value={id} />
-              <SubmitButton pendingLabel="Restoring" className="border border-fg px-3 py-[6px] text-[13px]">
+              <SubmitButton pendingLabel="Restoring" className="border border-fg px-3 py-1.5 text-sm">
                 Restore group
               </SubmitButton>
             </ActionForm>
@@ -54,9 +54,9 @@ export default async function GroupInspectorPage({
         {data.members.map((m) => (
           <Row key={m.userId}>
             <Link href={`/admin/users/${m.userId}`}>
-              {m.name} <span className="text-[11px] text-muted">{m.role}</span> ›
+              {m.name} <span className="text-2xs text-muted">{m.role}</span> ›
             </Link>
-            <span className="text-[11px] tabular-nums text-muted">
+            <span className="text-2xs tabular-nums text-muted">
               joined {m.joinedAt}{m.leftAt ? ` · left ${m.leftAt}` : ""}
             </span>
           </Row>
@@ -88,7 +88,7 @@ export default async function GroupInspectorPage({
             <Row key={l.id}>
               <span>
                 {l.kind === "settlement" ? `${l.toName} → ${l.fromName}` : `${l.fromName} → ${l.toName}`}
-                <span className="ml-2 text-[11px] text-muted">
+                <span className="ml-2 text-2xs text-muted">
                   {l.kind}{l.periodStart ? ` · ${l.periodStart}` : ` · ${new Date(l.createdAt).toISOString().slice(0, 10)}`}
                 </span>
               </span>
@@ -106,14 +106,14 @@ export default async function GroupInspectorPage({
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-7">
-      <h3 className="mb-2 text-[12px] font-semibold tracking-[0.1em] text-muted">{title}</h3>
+      <h3 className="mb-2 text-xs font-semibold tracking-wider text-muted">{title}</h3>
       {children}
     </section>
   );
 }
 function Row({ children }: { children: React.ReactNode }) {
-  return <div className="flex items-baseline justify-between gap-3 border-b border-rule py-2 text-[13px]">{children}</div>;
+  return <div className="flex items-baseline justify-between gap-3 border-b border-rule py-2 text-sm">{children}</div>;
 }
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-[13px] text-muted">{children}</p>;
+  return <p className="text-sm text-muted">{children}</p>;
 }

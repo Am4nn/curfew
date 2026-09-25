@@ -57,17 +57,17 @@ export default function SignIn() {
   return (
     <main className="flex min-h-dvh flex-col">
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col px-5">
-        <div className="flex items-center gap-3 pt-[52px] text-[30px] font-semibold tracking-[0.2em]">
+        <div className="flex items-center gap-3 pt-[52px] text-3xl font-semibold tracking-widest">
           <QuorumMark size={27} />
           CURFEW
         </div>
 
         <div className="flex flex-1 flex-col justify-center gap-[26px] py-8">
           <div className="flex flex-col gap-[15px]">
-            <h1 className="text-pretty text-[27px] font-semibold leading-[1.22] tracking-[-0.015em]">
+            <h1 className="text-pretty text-2xl font-semibold leading-tight tracking-tight">
               Prove it, or it didn&rsquo;t happen.
             </h1>
-            <p className="text-pretty text-[13.5px] leading-[1.7] text-muted">
+            <p className="text-pretty text-sm leading-loose text-muted">
               Twelve habits on your own schedule. Curfew tells you what a miss
               costs before you miss it, asks for a photograph where one is worth
               having, and keeps the record either way.
@@ -88,7 +88,7 @@ export default function SignIn() {
             ))}
           </div>
 
-          <p className="text-[11.5px] leading-[1.6] text-muted">
+          <p className="text-2xs leading-relaxed text-muted">
             Photographs are kept 60 days, then deleted.
           </p>
         </div>
@@ -96,12 +96,12 @@ export default function SignIn() {
         <div className="flex flex-col gap-3 pb-[34px]">
           <button
             onClick={() => signIn.social({ provider: "google", callbackURL: "/" })}
-            className="flex h-[52px] w-full items-center justify-center gap-[11px] border border-fg bg-fg text-[15px] font-semibold text-bg active:opacity-70"
+            className="flex h-[52px] w-full items-center justify-center gap-[11px] border border-fg bg-fg text-base font-semibold text-bg active:opacity-70"
           >
             <GoogleMark />
             Sign in with Google
           </button>
-          <p className="text-center text-[11px] text-muted">
+          <p className="text-center text-2xs text-muted">
             Invite only. New accounts wait for an admin.
           </p>
         </div>

@@ -39,7 +39,7 @@ export function EvidenceGrid({
     <>
       <div className="grid grid-cols-2 gap-3">
         {items.map((item, i) => (
-          <div key={item.id} className="flex flex-col gap-[6px]">
+          <div key={item.id} className="flex flex-col gap-1.5">
             <button
               type="button"
               onClick={() => setAt(i)}
@@ -53,12 +53,12 @@ export function EvidenceGrid({
                 className="aspect-square w-full border border-rule bg-surface object-cover"
               />
             </button>
-            <div className="flex items-center justify-between gap-[6px]">
-              <span className="text-[11px]">{item.who}</span>
-              <span className="text-[10px] text-muted">{item.timeLabel}</span>
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="text-2xs">{item.who}</span>
+              <span className="text-micro text-muted">{item.timeLabel}</span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-[5px] text-[10px] text-muted">
+              <span className="flex items-center gap-[5px] text-micro text-muted">
                 <ActivityIcon name={item.icon} size={11} />
                 {item.typeName}
               </span>

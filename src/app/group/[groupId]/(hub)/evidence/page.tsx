@@ -74,7 +74,7 @@ export default async function EvidenceTab({
         // for days. Nothing shared is nothing shared. Photographs that exist
         // and could not be signed for is a fault, and the tab has to say so
         // rather than describe the group as quiet.
-        <p className="text-[12.5px] leading-[1.6] text-muted">
+        <p className="text-xs leading-relaxed text-muted">
           {page.length > 0
             ? "These photos could not be loaded. Nothing has been deleted; try again shortly."
             : "Nothing shared here yet."}
@@ -82,7 +82,7 @@ export default async function EvidenceTab({
       ) : (
         days.map((day) => (
           <section key={day} className="flex flex-col gap-3">
-            <span className="text-[10px] tracking-[0.16em] text-muted">
+            <span className="text-micro tracking-label text-muted">
               {heading(day)}
             </span>
             {/* The times are formatted here, in the viewer's own zone, on the
@@ -109,7 +109,7 @@ export default async function EvidenceTab({
       {more ? (
         <a
           href={`/group/${groupId}/evidence?show=${limit + PAGE}`}
-          className="flex h-11 w-full items-center justify-center border border-rule text-[14px] active:opacity-70"
+          className="flex h-11 w-full items-center justify-center border border-rule text-base active:opacity-70"
         >
           Load older
         </a>

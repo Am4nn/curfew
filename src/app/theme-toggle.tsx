@@ -34,7 +34,7 @@ export function ThemeToggle({ initial }: { initial: Theme }) {
           aria-pressed={theme === t}
           aria-label={`${label} theme`}
           className={
-            "flex-1 px-1 py-[10px] text-center text-[12.5px] " +
+            "flex-1 px-1 py-2.5 text-center text-xs " +
             (i === 1 ? "border-l border-rule " : "") +
             (theme === t ? "bg-fg text-bg" : "bg-transparent text-muted")
           }

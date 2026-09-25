@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function AdminNav({ tabs }: { tabs: [string, string][] }) {
   const pathname = usePathname() ?? "";
   return (
-    <nav className="-mx-5 mb-[18px] flex gap-[12px] overflow-x-auto border-b border-rule px-5">
+    <nav className="-mx-5 mb-[18px] flex gap-3 overflow-x-auto border-b border-rule px-5">
       {tabs.map(([href, label]) => {
         const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
         return (
@@ -15,7 +15,7 @@ export function AdminNav({ tabs }: { tabs: [string, string][] }) {
             href={href}
             aria-current={active ? "page" : undefined}
             className={
-              "whitespace-nowrap pb-[10px] text-[9.5px] uppercase tracking-[0.08em] " +
+              "whitespace-nowrap pb-2.5 text-micro uppercase tracking-wider " +
               (active ? "text-fg shadow-[inset_0_-2px_0_var(--fg)]" : "text-muted")
             }
           >

@@ -38,32 +38,32 @@ export function RouteError({
     <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-          <span className="text-[14px] font-semibold tracking-[0.16em]">{title}</span>
+          <span className="text-base font-semibold tracking-label">{title}</span>
         </header>
 
         <div className="flex flex-col gap-2">
-          <p className="text-[14px] leading-[1.5] text-penalty">
+          <p className="text-base leading-relaxed text-penalty">
             This did not load. Nothing was changed.
           </p>
-          <p className="text-[11.5px] leading-[1.55] text-muted">
+          <p className="text-2xs leading-relaxed text-muted">
             Your check-ins, streaks and standing are unaffected: this screen only
             reads them.
             {error.digest ? ` Reference ${error.digest}.` : ""}
           </p>
         </div>
 
-        <div className="flex gap-[10px]">
+        <div className="flex gap-2.5">
           <button
             type="button"
             onClick={reset}
-            className="h-[46px] flex-1 border border-fg bg-fg text-[13.5px] font-semibold text-bg active:opacity-70"
+            className="h-[46px] flex-1 border border-fg bg-fg text-sm font-semibold text-bg active:opacity-70"
           >
             Try again
           </button>
           {back ? (
             <Link
               href={back}
-              className="flex h-[46px] flex-1 items-center justify-center border border-rule text-[13.5px] text-fg active:opacity-70"
+              className="flex h-[46px] flex-1 items-center justify-center border border-rule text-sm text-fg active:opacity-70"
             >
               {backLabel}
             </Link>

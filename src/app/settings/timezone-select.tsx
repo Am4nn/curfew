@@ -56,12 +56,12 @@ export function TimezoneSelect({
         onClick={() => setOpen(true)}
         placeholder="search timezone"
         aria-label="Timezone"
-        className="w-full border border-fg bg-transparent px-2 py-[7px] text-[14px]"
+        className="w-full border border-fg bg-transparent px-2 py-[7px] text-base"
       />
       {open ? (
         <ul className="absolute left-0 right-0 z-30 mt-1 max-h-56 overflow-auto border border-fg bg-bg">
           {filtered.length === 0 ? (
-            <li className="px-2 py-[7px] text-[13px] text-muted">no match</li>
+            <li className="px-2 py-[7px] text-sm text-muted">no match</li>
           ) : (
             filtered.map((z) => (
               <li key={z}>
@@ -73,7 +73,7 @@ export function TimezoneSelect({
                     setOpen(false);
                   }}
                   className={
-                    "block w-full px-2 py-[6px] text-left text-[13px] " +
+                    "block w-full px-2 py-1.5 text-left text-sm " +
                     (z === query ? "bg-fg text-bg" : "hover:bg-surface")
                   }
                 >

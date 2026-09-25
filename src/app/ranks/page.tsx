@@ -49,77 +49,77 @@ export default async function RanksPage() {
     <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-          <BackLink fallback="/settings" className="text-[14px] text-muted" />
-          <span className="text-[14px] font-semibold tracking-[0.14em]">
+          <BackLink fallback="/settings" className="text-base text-muted" />
+          <span className="text-base font-semibold tracking-caps">
             HOW REPUTATION WORKS
           </span>
         </header>
 
-        <div className="flex items-center gap-[13px] border border-rule p-[14px]">
+        <div className="flex items-center gap-[13px] border border-rule p-3.5">
           <span className={"flex flex-none " + colour}>
             <RankIcon score={score} cleanDays={cleanDays} size={30} />
           </span>
           <div className="flex flex-1 flex-col gap-[3px]">
             <div className="flex items-baseline gap-[9px]">
-              <span className={"text-[20px] font-semibold " + colour}>
+              <span className={"text-xl font-semibold " + colour}>
                 {Math.round(score)}
               </span>
-              <span className={"text-[10.5px] tracking-[0.14em] " + colour}>
+              <span className={"text-micro tracking-caps " + colour}>
                 {held ? "IMMACULATE" : mine.name}
               </span>
             </div>
-            <span className="text-[10.5px] text-muted">
+            <span className="text-micro text-muted">
               Yours, across everything. Nobody else sees it.
             </span>
           </div>
         </div>
 
-        <p className="text-[12.5px] leading-[1.6] text-muted">
+        <p className="text-xs leading-relaxed text-muted">
           This number is yours alone and nobody else ever sees it. It sets where you
           start in a group you join, and nothing else. Inside a group you have a
           separate score that only that group can see.
         </p>
 
-        <section className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">THE BANDS</span>
+        <section className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">THE BANDS</span>
           <div className="flex flex-col">
             {[...RANKS].reverse().map((rank, i, reversed) => {
               const upper = i === 0 ? 1000 : reversed[i - 1].from - 1;
               return (
                 <div
                   key={rank.key}
-                  className="flex items-center gap-[13px] border-b border-rule py-[14px]"
+                  className="flex items-center gap-[13px] border-b border-rule py-3.5"
                 >
                   <span className={"flex flex-none " + RANK_TEXT[rank.key]}>
                     <RankIcon score={rank.from} size={26} />
                   </span>
                   <div className="flex flex-1 flex-col gap-[3px]">
                     <div className="flex items-baseline gap-[9px]">
-                      <span className={"text-[13.5px] tracking-[0.12em] " + RANK_TEXT[rank.key]}>
+                      <span className={"text-sm tracking-caps " + RANK_TEXT[rank.key]}>
                         {rank.name}
                       </span>
-                      <span className="text-[11px] tabular-nums text-muted">
+                      <span className="text-2xs tabular-nums text-muted">
                         {rank.from}-{upper}
                       </span>
                     </div>
-                    <span className="text-[11px] text-muted">{rank.meaning}</span>
+                    <span className="text-2xs text-muted">{rank.meaning}</span>
                   </div>
                 </div>
               );
             })}
 
-            <div className="flex items-center gap-[13px] border-b border-rule py-[14px]">
+            <div className="flex items-center gap-[13px] border-b border-rule py-3.5">
               <span className="flex flex-none text-gold">
                 <CrownIcon size={26} />
               </span>
               <div className="flex flex-1 flex-col gap-[3px]">
                 <div className="flex items-baseline gap-[9px]">
-                  <span className="text-[13.5px] tracking-[0.12em] text-gold">IMMACULATE</span>
-                  <span className="text-[11px] tabular-nums text-muted">
+                  <span className="text-sm tracking-caps text-gold">IMMACULATE</span>
+                  <span className="text-2xs tabular-nums text-muted">
                     UNBROKEN, {IMMACULATE_CLEAN_DAYS} clean days
                   </span>
                 </div>
-                <span className="text-[11px] text-muted">
+                <span className="text-2xs text-muted">
                   Not a score. A record with nothing missed in it.
                 </span>
               </div>
@@ -130,24 +130,24 @@ export default async function RanksPage() {
         {/* The run itself, because it is the half of IMMACULATE that no number
             on this page shows. A score can be read off the top of the screen;
             "how long since you last let a day go" cannot. */}
-        <section className="flex flex-col gap-[11px] border border-rule p-[14px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">YOUR CLEAN RUN</span>
+        <section className="flex flex-col gap-[11px] border border-rule p-3.5">
+          <span className="text-micro tracking-label text-muted">YOUR CLEAN RUN</span>
           {held ? (
-            <span className="text-[12.5px] text-gold">
+            <span className="text-xs text-gold">
               {cleanDays} days, nothing missed.
             </span>
           ) : (
             <CleanBar cleanDays={cleanDays} />
           )}
-          <span className="text-[11.5px] leading-[1.55] text-muted">
+          <span className="text-2xs leading-relaxed text-muted">
             A missed day sets this back to nothing. A day with nothing scheduled
             does not.
           </span>
         </section>
 
-        <section className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">WHAT MOVES IT</span>
-          <ul className="flex flex-col gap-[10px]">
+        <section className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">WHAT MOVES IT</span>
+          <ul className="flex flex-col gap-2.5">
             {[
               "A day where everything scheduled was done moves it up. The gain shrinks as the number climbs, so 1000 is approached and never reached.",
               "A missed day moves it down by roughly what two clean days were worth at the start, and a week's worth at the top.",
@@ -158,8 +158,8 @@ export default async function RanksPage() {
               "Doing nothing for a week starts a slow decay. A high score is a record you keep, not one you reach.",
             ].map((line) => (
               <li key={line} className="flex gap-[9px]">
-                <span className="text-[11px] leading-[1.65] text-muted">&bull;</span>
-                <span className="flex-1 text-[12px] leading-[1.6] text-muted">{line}</span>
+                <span className="text-2xs leading-loose text-muted">&bull;</span>
+                <span className="flex-1 text-xs leading-relaxed text-muted">{line}</span>
               </li>
             ))}
           </ul>

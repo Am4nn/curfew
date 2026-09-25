@@ -35,14 +35,14 @@ export default async function AdminGroups() {
   });
 
   return (
-    <section className="flex flex-col gap-[10px]">
+    <section className="flex flex-col gap-2.5">
       <GroupsDirectory
         rows={rows}
         appWideMoneyOn={appWideMoneyOn}
         canWrite={canWrite}
       />
 
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-2xs leading-relaxed text-muted">
         Archiving freezes a group: no check-ins count toward it, no fines, nobody can
         join. Nothing is deleted and it can be brought back. Archive a group from its
         own page.

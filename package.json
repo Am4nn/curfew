@@ -58,7 +58,8 @@
     "check:cors:production": "dotenv -e .env.production -- bun run scripts/check-r2-cors.ts",
     "doc:activities": "bun run scripts/write-activities.ts",
     "check:activities": "bun run scripts/write-activities.ts --check",
-    "sim:consistency": "bun run scripts/sim-consistency.ts"
+    "sim:consistency": "bun run scripts/sim-consistency.ts",
+    "check:tokens": "bun run scripts/check-tokens.ts"
   },
   "overrides": {
     "postcss": "^8.5.26"

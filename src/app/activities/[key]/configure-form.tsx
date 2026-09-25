@@ -60,12 +60,12 @@ function FieldWrap({
 }) {
   return (
     <div className="flex flex-col gap-[7px]">
-      <span className="text-[11px] tracking-[0.06em] text-muted">{label}</span>
+      <span className="text-2xs tracking-wide text-muted">{label}</span>
       {children}
       {error ? (
-        <span className="text-[11px] leading-[1.5] text-penalty">{error}</span>
+        <span className="text-2xs leading-relaxed text-penalty">{error}</span>
       ) : hint ? (
-        <span className="text-[11px] leading-[1.5] text-muted">{hint}</span>
+        <span className="text-2xs leading-relaxed text-muted">{hint}</span>
       ) : null}
     </div>
   );
@@ -88,7 +88,7 @@ function DayCell({
       aria-pressed={on}
       onClick={onClick}
       className={
-        "flex h-[38px] items-center justify-center border text-[11.5px] " +
+        "flex h-[38px] items-center justify-center border text-2xs " +
         (wide ? "flex-[1.5] " : "flex-1 ") +
         (on ? "border-fg bg-fg text-bg" : "border-rule text-muted")
       }
@@ -124,20 +124,20 @@ function Stepper({
         aria-label="Less"
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - step))}
-        className="w-11 border-r border-rule text-[16px] text-muted disabled:opacity-40"
+        className="w-11 border-r border-rule text-lg text-muted disabled:opacity-40"
       >
         &minus;
       </button>
-      <div className="flex flex-1 items-center justify-center gap-[6px] py-[11px]">
-        <span className="text-[14px] tabular-nums">{value.toLocaleString("en-US")}</span>
-        {unit ? <span className="text-[12px] text-muted">{unit}</span> : null}
+      <div className="flex flex-1 items-center justify-center gap-1.5 py-[11px]">
+        <span className="text-base tabular-nums">{value.toLocaleString("en-US")}</span>
+        {unit ? <span className="text-xs text-muted">{unit}</span> : null}
       </div>
       <button
         type="button"
         aria-label="More"
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + step))}
-        className="w-11 border-l border-rule text-[16px] text-muted disabled:opacity-40"
+        className="w-11 border-l border-rule text-lg text-muted disabled:opacity-40"
       >
         +
       </button>
@@ -162,7 +162,7 @@ function NumberBox({
   return (
     <div
       className={
-        "flex items-center justify-between gap-[10px] border px-3 py-[10px] " +
+        "flex items-center justify-between gap-2.5 border px-3 py-2.5 " +
         (invalid ? "border-penalty" : "border-rule")
       }
     >
@@ -175,9 +175,9 @@ function NumberBox({
         value={Number.isNaN(value) ? "" : value.toLocaleString("en-US")}
         aria-label={label}
         onChange={(e) => onChange(Number(e.target.value.replace(/,/g, "")))}
-        className="w-full bg-transparent text-[14px] tabular-nums text-fg outline-none"
+        className="w-full bg-transparent text-base tabular-nums text-fg outline-none"
       />
-      {unit ? <span className="text-[12px] text-muted">{unit}</span> : null}
+      {unit ? <span className="text-xs text-muted">{unit}</span> : null}
     </div>
   );
 }
@@ -200,7 +200,7 @@ function Segmented({
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
           className={
-            "flex-1 px-1 py-[10px] text-center text-[12.5px] " +
+            "flex-1 px-1 py-2.5 text-center text-xs " +
             (i > 0 ? "border-l border-rule " : "") +
             (value === option.value ? "bg-fg text-bg" : "text-muted")
           }
@@ -233,7 +233,7 @@ function TimeBox({
       aria-label={label}
       onChange={(e) => onChange(e.target.value)}
       className={
-        "flex-1 border bg-transparent px-3 py-[10px] text-[14px] text-fg " +
+        "flex-1 border bg-transparent px-3 py-2.5 text-base text-fg " +
         (invalid ? "border-penalty" : "border-rule")
       }
     />
@@ -243,8 +243,8 @@ function TimeBox({
 function Fact({ title, sub }: { title: string; sub: string }) {
   return (
     <div className="flex flex-col gap-[3px] border border-rule bg-surface px-[13px] py-3">
-      <span className="text-[13px]">{title}</span>
-      <span className="text-[11px] leading-[1.5] text-muted">{sub}</span>
+      <span className="text-sm">{title}</span>
+      <span className="text-2xs leading-relaxed text-muted">{sub}</span>
     </div>
   );
 }
@@ -258,7 +258,7 @@ function EvidenceFact({ rule }: { rule: EvidenceRule }) {
         <CameraIcon struck={none} />
       </span>
       <div className="flex flex-1 flex-col gap-[3px]">
-        <span className="text-[13px]">
+        <span className="text-sm">
           {none ? "No photo" : `Photo ${rule.level}`}
         </span>
         {/*
@@ -271,7 +271,7 @@ function EvidenceFact({ rule }: { rule: EvidenceRule }) {
           is a fact somebody needs before pressing.
         */}
         {rule.detail ? (
-          <span className="text-[11px] leading-[1.5] text-muted">{rule.detail}</span>
+          <span className="text-2xs leading-relaxed text-muted">{rule.detail}</span>
         ) : null}
       </div>
     </div>
@@ -285,7 +285,7 @@ function Note({ children, tone = "accent" }: { children: React.ReactNode; tone?:
   return (
     <p
       className={
-        "text-[11.5px] leading-[1.55] " + (tone === "penalty" ? "text-penalty" : "text-muted")
+        "text-2xs leading-relaxed " + (tone === "penalty" ? "text-penalty" : "text-muted")
       }
     >
       {children}
@@ -425,7 +425,7 @@ export function ConfigureForm({
     broken: Boolean(errorFor("@schedule")),
     body: (
       <div className="flex flex-col gap-[9px]">
-        <div className="flex gap-[6px]">
+        <div className="flex gap-1.5">
           {DAY_LABELS.map((label, i) => {
             const day = (i + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
             const on = !isMinimum && days.includes(day);
@@ -463,7 +463,7 @@ export function ConfigureForm({
             onChange={(n) => setSchedulePart({ kind: "minimum", perWeek: n })}
           />
         ) : null}
-        <span className="text-[11px] leading-[1.5] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           Pick the days, or ANY for a number of days a week whichever they fall on.
         </span>
       </div>
@@ -598,16 +598,16 @@ export function ConfigureForm({
             <RuleText rule={rule} />
             <EvidenceFact rule={type.evidence} />
             {type.note ? <Note>{type.note}</Note> : null}
-            <p className="text-[11.5px] leading-[1.55] text-muted">{settling}</p>
+            <p className="text-2xs leading-relaxed text-muted">{settling}</p>
             {error ? <Note tone="penalty">{error}</Note> : null}
             {problems}
-            <div className="mt-auto flex flex-col gap-[10px] pt-2">
+            <div className="mt-auto flex flex-col gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => save(true)}
                 disabled={!valid || pending}
                 className={
-                  "h-11 w-full border text-[14px] " +
+                  "h-11 w-full border text-base " +
                   (valid
                     ? "border-fg bg-fg font-semibold text-bg"
                     : "cursor-not-allowed border-rule text-muted")
@@ -625,7 +625,7 @@ export function ConfigureForm({
                   onClick={() => save(false)}
                   disabled={!valid || pending}
                   className={
-                    "h-11 w-full border text-[14px] " +
+                    "h-11 w-full border text-base " +
                     (valid ? "border-rule text-fg" : "cursor-not-allowed border-rule text-muted")
                   }
                 >
@@ -637,10 +637,10 @@ export function ConfigureForm({
           </>
         ) : panel ? (
           <>
-            <div className="flex flex-col gap-[6px]">
-              <p className="text-[15px] leading-[1.45]">{panel.question}</p>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-base leading-normal">{panel.question}</p>
               {at === 0 ? (
-                <p className="text-[12px] leading-[1.55] text-muted">{description}.</p>
+                <p className="text-xs leading-relaxed text-muted">{description}.</p>
               ) : null}
             </div>
             {at === 0
@@ -649,13 +649,13 @@ export function ConfigureForm({
                 ))
               : null}
             {panel.body}
-            <div className="mt-auto flex flex-col gap-[10px] pt-2">
+            <div className="mt-auto flex flex-col gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setAt(at + 1)}
                 disabled={panel.broken}
                 className={
-                  "h-11 w-full border text-[14px] " +
+                  "h-11 w-full border text-base " +
                   (panel.broken
                     ? "cursor-not-allowed border-rule text-muted"
                     : "border-fg bg-fg font-semibold text-bg")
@@ -680,20 +680,20 @@ export function ConfigureForm({
   if (openPanel) {
     return (
       <div className={shell}>
-        <span className="text-[11px] tracking-[0.06em] text-muted">
+        <span className="text-2xs tracking-wide text-muted">
           {openPanel.label.toUpperCase()}
         </span>
         {openPanel.body}
         {error ? <Note tone="penalty">{error}</Note> : null}
         {problems}
-        <p className="text-[11.5px] leading-[1.55] text-muted">{settling}</p>
-        <div className="mt-auto flex flex-col gap-[10px] pt-2">
+        <p className="text-2xs leading-relaxed text-muted">{settling}</p>
+        <div className="mt-auto flex flex-col gap-2.5 pt-2">
           <button
             type="button"
             onClick={() => (dirty ? save(true) : setOpen(null))}
             disabled={!valid || pending}
             className={
-              "h-11 w-full border text-[14px] " +
+              "h-11 w-full border text-base " +
               (valid
                 ? "border-fg bg-fg font-semibold text-bg"
                 : "cursor-not-allowed border-rule text-muted")
@@ -709,7 +709,7 @@ export function ConfigureForm({
               setOpen(null);
             }}
             disabled={pending}
-            className="h-11 w-full border border-rule text-[14px] text-fg"
+            className="h-11 w-full border border-rule text-base text-fg"
           >
             Cancel
           </button>
@@ -722,7 +722,7 @@ export function ConfigureForm({
     <div className={shell}>
       <div className="flex items-center justify-between gap-3">
         <StreakNumber value={streak} />
-        <span className="text-[11px] text-muted">days &middot; best {best}</span>
+        <span className="text-2xs text-muted">days &middot; best {best}</span>
       </div>
 
       <RuleText rule={rule} />
@@ -732,20 +732,20 @@ export function ConfigureForm({
       ))}
 
       <div className="flex flex-col">
-        <span className="pb-[9px] text-[11px] tracking-[0.06em] text-muted">
+        <span className="pb-[9px] text-2xs tracking-wide text-muted">
           CHANGE ONE THING
         </span>
         {panels.map((panel) =>
           panel.fixed ? (
             <div
               key={panel.id}
-              className="flex flex-col gap-[4px] border-t border-rule py-[13px]"
+              className="flex flex-col gap-1 border-t border-rule py-[13px]"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[13.5px] text-muted">{panel.label}</span>
-                <span className="truncate text-[12px] text-muted">{panel.value}</span>
+                <span className="text-sm text-muted">{panel.label}</span>
+                <span className="truncate text-xs text-muted">{panel.value}</span>
               </div>
-              <span className="text-[11px] leading-[1.5] text-muted">{panel.fixed}</span>
+              <span className="text-2xs leading-relaxed text-muted">{panel.fixed}</span>
             </div>
           ) : (
             <button
@@ -754,9 +754,9 @@ export function ConfigureForm({
               onClick={() => setOpen(panel.id)}
               className="flex items-center justify-between gap-3 border-t border-rule py-[13px] text-left"
             >
-              <span className="text-[13.5px]">{panel.label}</span>
-              <span className="flex min-w-0 items-center gap-[8px]">
-                <span className="truncate text-[12px] text-muted">{panel.value}</span>
+              <span className="text-sm">{panel.label}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="truncate text-xs text-muted">{panel.value}</span>
                 <Chevron />
               </span>
             </button>
@@ -789,11 +789,11 @@ export function ConfigureForm({
 /** The rule, stated. The one thing the old screen never did. */
 function RuleText({ rule }: { rule: { headline: string; notes: string[] } }) {
   return (
-    <div className="flex flex-col gap-[10px] border-t border-rule pt-[14px]">
-      <span className="text-[11px] tracking-[0.06em] text-muted">THE RULE</span>
-      <p className="text-[15px] leading-[1.5]">{rule.headline}</p>
+    <div className="flex flex-col gap-2.5 border-t border-rule pt-3.5">
+      <span className="text-2xs tracking-wide text-muted">THE RULE</span>
+      <p className="text-base leading-relaxed">{rule.headline}</p>
       {rule.notes.map((note) => (
-        <p key={note} className="text-[11.5px] leading-[1.55] text-muted">
+        <p key={note} className="text-2xs leading-relaxed text-muted">
           {note}
         </p>
       ))}
@@ -804,7 +804,7 @@ function RuleText({ rule }: { rule: { headline: string; notes: string[] } }) {
 /** How far through setting one up, as a rule rather than a number. */
 function Progress({ at, of }: { at: number; of: number }) {
   return (
-    <div className="flex gap-[4px]" aria-label={`Step ${at + 1} of ${of}`}>
+    <div className="flex gap-1" aria-label={`Step ${at + 1} of ${of}`}>
       {Array.from({ length: of }, (_, i) => (
         <span
           key={i}
@@ -821,7 +821,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="h-11 w-full border border-rule text-[14px] text-fg"
+      className="h-11 w-full border border-rule text-base text-fg"
     >
       Back
     </button>
@@ -908,7 +908,7 @@ function ModuleField({
             invalid={Boolean(error)}
             onChange={(v) => onChange(set(config, field.openKey, v))}
           />
-          <span className="text-[11px] text-muted">to</span>
+          <span className="text-2xs text-muted">to</span>
           <TimeBox
             label={`${field.label} closes`}
             value={text(get(config, field.closeKey))}

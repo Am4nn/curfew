@@ -27,22 +27,22 @@ export default async function UserInspectorPage({
     <>
       <div className="mb-6 flex items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-[15px] font-semibold">{profile.name}</h2>
-          <div className="text-[12px] text-muted">{profile.email}</div>
+          <h2 className="text-base font-semibold">{profile.name}</h2>
+          <div className="text-xs text-muted">{profile.email}</div>
         </div>
-        <Link href="/admin/users" className="text-[12px] text-muted">‹ all users</Link>
+        <Link href="/admin/users" className="text-xs text-muted">‹ all users</Link>
       </div>
 
       <section className="mb-7">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-[13px]">
+          <span className="text-sm">
             status:{" "}
             <span className={profile.status === "approved" ? "text-pass" : profile.status === "rejected" ? "text-penalty" : "text-muted"}>
               {profile.status}
             </span>
           </span>
-          <span className="text-[13px]">role: {profile.role}</span>
-          {profile.disabled ? <span className="text-[13px] text-penalty">removed</span> : null}
+          <span className="text-sm">role: {profile.role}</span>
+          {profile.disabled ? <span className="text-sm text-penalty">removed</span> : null}
         </div>
 
         {canApprove && profile.status === "pending" ? (
@@ -50,7 +50,7 @@ export default async function UserInspectorPage({
             <ActionForm action={decideAction}>
               <input type="hidden" name="userId" value={profile.userId} />
               <input type="hidden" name="approve" value="true" />
-              <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
+              <SubmitButton pendingLabel="Approving" className="border border-fg bg-fg px-3 py-1.5 text-sm text-bg">
                 Approve
               </SubmitButton>
             </ActionForm>
@@ -61,29 +61,29 @@ export default async function UserInspectorPage({
         {canSetRole ? (
           <ActionForm action={setRoleAction} className="mt-3 flex items-center gap-2">
             <input type="hidden" name="userId" value={profile.userId} />
-            <label className="text-[13px] text-muted">Role</label>
+            <label className="text-sm text-muted">Role</label>
             <span className="relative inline-block">
               <select
                 name="role"
                 defaultValue={profile.role}
-                className="appearance-none border border-fg bg-bg py-[7px] pl-2 pr-8 text-[14px] text-fg"
+                className="appearance-none border border-fg bg-bg py-[7px] pl-2 pr-8 text-base text-fg"
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>{r}</option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted">
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-muted">
                 ▾
               </span>
             </span>
-            <SubmitButton pendingLabel="Saving" className="border border-fg bg-fg px-3 py-[6px] text-[13px] text-bg">
+            <SubmitButton pendingLabel="Saving" className="border border-fg bg-fg px-3 py-1.5 text-sm text-bg">
               Save role
             </SubmitButton>
           </ActionForm>
         ) : null}
 
         {canDisable && me?.id === profile.userId ? (
-          <p className="mt-4 text-[12px] text-muted">This is you.</p>
+          <p className="mt-4 text-xs text-muted">This is you.</p>
         ) : null}
 
         {canDisable && me?.id !== profile.userId ? (
@@ -91,7 +91,7 @@ export default async function UserInspectorPage({
             {profile.disabled ? (
               <ActionForm action={restoreUserAction}>
                 <input type="hidden" name="userId" value={profile.userId} />
-                <SubmitButton pendingLabel="Restoring" className="border border-fg px-3 py-[6px] text-[13px]">
+                <SubmitButton pendingLabel="Restoring" className="border border-fg px-3 py-1.5 text-sm">
                   Restore user
                 </SubmitButton>
               </ActionForm>
@@ -175,14 +175,14 @@ export default async function UserInspectorPage({
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-7">
-      <h3 className="mb-2 text-[12px] font-semibold tracking-[0.1em] text-muted">{title}</h3>
+      <h3 className="mb-2 text-xs font-semibold tracking-wider text-muted">{title}</h3>
       {children}
     </section>
   );
 }
 function Row({ children }: { children: React.ReactNode }) {
-  return <div className="flex items-baseline justify-between gap-3 border-b border-rule py-2 text-[13px]">{children}</div>;
+  return <div className="flex items-baseline justify-between gap-3 border-b border-rule py-2 text-sm">{children}</div>;
 }
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-[13px] text-muted">{children}</p>;
+  return <p className="text-sm text-muted">{children}</p>;
 }

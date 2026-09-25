@@ -150,12 +150,12 @@ export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: str
     >
       <div className="mx-auto flex max-w-[420px] flex-col gap-3 border border-fg bg-bg p-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[13.5px] font-semibold">
+          <span className="text-sm font-semibold">
             {mode === "install"
               ? "Add Curfew to your home screen for reminders"
               : "Want a nudge before a window closes?"}
           </span>
-          <span className="text-[12px] leading-[1.6] text-muted">
+          <span className="text-xs leading-relaxed text-muted">
             {mode === "install" ? (
               <>
                 iPhone only allows notifications for an installed app. Tap Share,
@@ -173,7 +173,7 @@ export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: str
         </div>
 
         {failed ? (
-          <span className="text-[11.5px] text-penalty">
+          <span className="text-2xs text-penalty">
             That did not work. Settings, Notifications has the switch.
           </span>
         ) : null}
@@ -188,7 +188,7 @@ export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: str
               disabled={busy}
               aria-busy={busy || undefined}
               onClick={() => void turnOn()}
-              className="border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg active:opacity-70 disabled:opacity-40"
+              className="border border-fg bg-fg px-3 py-2 text-sm text-bg active:opacity-70 disabled:opacity-40"
             >
               {busy ? "Turning on" : "Turn on"}
             </button>
@@ -196,7 +196,7 @@ export function NotificationPromptCard({ vapidPublicKey }: { vapidPublicKey: str
           <button
             type="button"
             onClick={dismiss}
-            className="px-2 py-[8px] text-[12px] text-muted active:opacity-70"
+            className="px-2 py-2 text-xs text-muted active:opacity-70"
           >
             {mode === "install" ? "Got it" : "Not now"}
           </button>

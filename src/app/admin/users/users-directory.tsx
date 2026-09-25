@@ -42,7 +42,7 @@ export function UsersDirectory({ users }: { users: AdminUserRow[] }) {
 
   return (
     <>
-      <div className="flex items-center gap-[10px] border border-rule px-3 py-[10px]">
+      <div className="flex items-center gap-2.5 border border-rule px-3 py-2.5">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="flex-none text-muted">
           <circle cx="11" cy="11" r="7"></circle>
           <path d="M16.5 16.5 21 21"></path>
@@ -52,7 +52,7 @@ export function UsersDirectory({ users }: { users: AdminUserRow[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name or email"
-          className="w-full bg-transparent text-[13.5px] text-fg placeholder:text-muted outline-none"
+          className="w-full bg-transparent text-sm text-fg placeholder:text-muted outline-none"
         />
       </div>
 
@@ -63,7 +63,7 @@ export function UsersDirectory({ users }: { users: AdminUserRow[] }) {
             type="button"
             onClick={() => setFilter(f)}
             className={
-              "border px-[11px] py-[6px] text-[11.5px] " +
+              "border px-[11px] py-1.5 text-2xs " +
               (filter === f ? "border-fg bg-fg text-bg" : "border-rule text-muted")
             }
           >
@@ -74,21 +74,21 @@ export function UsersDirectory({ users }: { users: AdminUserRow[] }) {
 
       <div className="flex flex-col">
         {filtered.length === 0 ? (
-          <p className="py-4 text-[13px] text-muted">No users match.</p>
+          <p className="py-4 text-sm text-muted">No users match.</p>
         ) : (
           filtered.map((u) => (
             <Link
               key={u.userId}
               href={`/admin/users/${u.userId}`}
-              className="flex items-center justify-between gap-[10px] border-b border-rule py-3"
+              className="flex items-center justify-between gap-2.5 border-b border-rule py-3"
             >
               <div className="flex min-w-0 flex-col gap-[3px]">
-                <span className="text-[13.5px]">{u.name}</span>
-                <span className="truncate text-[10.5px] text-muted">{metaLine(u)}</span>
+                <span className="text-sm">{u.name}</span>
+                <span className="truncate text-micro text-muted">{metaLine(u)}</span>
               </div>
               <span
                 className={
-                  "flex-none text-[10.5px] " +
+                  "flex-none text-micro " +
                   (u.displayStatus === "active" ? "text-muted" : "text-penalty")
                 }
               >
@@ -99,7 +99,7 @@ export function UsersDirectory({ users }: { users: AdminUserRow[] }) {
         )}
       </div>
 
-      <div className="text-[11.5px] leading-[1.55] text-muted">
+      <div className="text-2xs leading-relaxed text-muted">
         A user&apos;s activities and evidence are never visible here. Admin sees that they
         exist, not what they contain.
       </div>

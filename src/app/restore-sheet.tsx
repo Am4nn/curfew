@@ -45,7 +45,7 @@ export function RestoreButton({
         onClick={() => setOpen(true)}
         aria-label={`Restore your ${offer.name} streak`}
         className={
-          "flex h-[34px] flex-none items-center gap-[5px] border border-flame px-[10px] text-[12px] active:opacity-70 " +
+          "flex h-[34px] flex-none items-center gap-[5px] border border-flame px-2.5 text-xs active:opacity-70 " +
           (variant === "filled" ? "bg-flame font-semibold text-bg" : "text-flame")
         }
       >
@@ -76,46 +76,46 @@ function RestoreSheet({
       aria-modal="true"
       aria-label={`Restore ${offer.name} streak`}
     >
-      <div className="flex w-full flex-col gap-[14px] border-t border-rule bg-bg px-5 pb-[22px] pt-[18px]">
-        <span className="text-[16px] leading-[1.45]">Restore {offer.name} streak</span>
+      <div className="flex w-full flex-col gap-3.5 border-t border-rule bg-bg px-5 pb-[22px] pt-[18px]">
+        <span className="text-lg leading-normal">Restore {offer.name} streak</span>
 
         {/* Whose streak this is, said once, because the sheet can be opened
             from a screen listing several. */}
         <div className="flex items-center gap-[9px]">
           <ActivityIcon name={offer.icon} size={17} />
-          <span className="text-[13.5px]">{offer.name}</span>
+          <span className="text-sm">{offer.name}</span>
         </div>
 
         {/* The number coming back, beside what it costs. The flame is out here
             and relights on the row behind once the press lands, which is the
             whole proposition in one image. */}
-        <div className="flex items-center gap-4 border-b border-rule pb-[14px]">
+        <div className="flex items-center gap-4 border-b border-rule pb-3.5">
           <span className="flex items-center gap-[7px]">
             <DeadFlame size={24} />
-            <span className="text-[26px] leading-none text-muted tabular-nums">
+            <span className="text-2xl leading-none text-muted tabular-nums">
               {offer.restoresTo}
             </span>
           </span>
           <div className="flex flex-1 flex-col gap-1">
-            <span className="text-[12.5px]">
+            <span className="text-xs">
               {offer.cost === 1 ? "One day short" : `${offer.cost} days short`}
             </span>
-            <span className="text-[11px] text-muted">
+            <span className="text-2xs text-muted">
               {offer.cost} of your {offer.left} grace
             </span>
           </div>
         </div>
 
-        <span className="self-start border border-flame px-[6px] py-px text-[9.5px] tracking-[0.1em] text-flame">
+        <span className="self-start border border-flame px-1.5 py-px text-micro tracking-wider text-flame">
           OPEN UNTIL YOU NEXT CHECK IN
         </span>
-        <span className="text-[11.5px] text-muted">Fine and standing do not change.</span>
+        <span className="text-2xs text-muted">Fine and standing do not change.</span>
 
         {error ? (
-          <span className="text-[11.5px] leading-[1.55] text-penalty">{error}</span>
+          <span className="text-2xs leading-relaxed text-penalty">{error}</span>
         ) : null}
 
-        <div className="mt-[2px] flex flex-col gap-[9px]">
+        <div className="mt-0.5 flex flex-col gap-[9px]">
           <button
             type="button"
             disabled={pending}
@@ -131,7 +131,7 @@ function RestoreSheet({
                 router.refresh();
               })
             }
-            className="h-[46px] w-full border border-flame bg-flame text-[14px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
+            className="h-[46px] w-full border border-flame bg-flame text-base font-semibold text-bg active:opacity-70 disabled:opacity-40"
           >
             {pending ? "Restoring" : `Use ${offer.cost} grace`}
           </button>
@@ -139,7 +139,7 @@ function RestoreSheet({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="h-[46px] w-full border border-rule text-[14px] active:opacity-70 disabled:opacity-40"
+            className="h-[46px] w-full border border-rule text-base active:opacity-70 disabled:opacity-40"
           >
             Let it go
           </button>

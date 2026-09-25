@@ -44,19 +44,19 @@ export function GroupRow({
   const { run, pending, error } = useServerAction();
 
   return (
-    <div className="flex flex-col gap-[10px] border-b border-rule py-[14px]">
+    <div className="flex flex-col gap-2.5 border-b border-rule py-3.5">
       <div className="flex items-baseline gap-2">
-        <Link href={`/admin/groups/${group.groupId}`} className="flex-1 text-[14px]">
+        <Link href={`/admin/groups/${group.groupId}`} className="flex-1 text-base">
           {group.name} &rsaquo;
         </Link>
         {group.archived ? (
-          <span className="border border-rule px-[6px] py-px text-[9.5px] tracking-[0.1em] text-muted">
+          <span className="border border-rule px-1.5 py-px text-micro tracking-wider text-muted">
             ARCHIVED
           </span>
         ) : null}
       </div>
 
-      <span className="text-[11px] text-muted">
+      <span className="text-2xs text-muted">
         {group.memberCount} {group.memberCount === 1 ? "member" : "members"}
         {" · "}
         {group.typeCount} {group.typeCount === 1 ? "type" : "types"}
@@ -67,8 +67,8 @@ export function GroupRow({
           .design/V3AdminGroups.dc.html row 4). Restoring is still possible
           from the group's own inspector page, which is not this list. */}
       {!group.archived ? (
-        <div className="flex flex-wrap items-center gap-[6px]">
-          {moneyLabel ? <span className="mr-1 text-[11px] text-muted">{moneyLabel}</span> : null}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {moneyLabel ? <span className="mr-1 text-2xs text-muted">{moneyLabel}</span> : null}
           {OPTIONS.map((option) => {
             const active = override === option.value;
             return (
@@ -82,7 +82,7 @@ export function GroupRow({
                   // The active chip is disabled because it is already the
                   // current value, which is not the same as unavailable, so it
                   // keeps full opacity. Every other disabled state fades.
-                  "h-[30px] border px-[10px] text-[11.5px] active:opacity-70 " +
+                  "h-[30px] border px-2.5 text-2xs active:opacity-70 " +
                   (active
                     ? "border-fg bg-fg font-semibold text-bg disabled:opacity-100"
                     : "border-rule text-muted disabled:opacity-40")
@@ -96,7 +96,7 @@ export function GroupRow({
       ) : null}
 
       {/* This used to swallow its failure entirely. */}
-      {error ? <span className="text-[11px] text-penalty">{error}</span> : null}
+      {error ? <span className="text-2xs text-penalty">{error}</span> : null}
     </div>
   );
 }

@@ -40,8 +40,8 @@ export default async function PersonalSettings() {
   return (
     <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto max-w-[560px]">
-        <header className="-mx-5 mb-6 flex items-center justify-between border-b border-rule px-5 pb-[10px]">
-          <h1 className="flex items-center text-[15px] font-semibold tracking-[0.14em]">
+        <header className="-mx-5 mb-6 flex items-center justify-between border-b border-rule px-5 pb-2.5">
+          <h1 className="flex items-center text-base font-semibold tracking-caps">
             PERSONAL
             <InfoHint label="How your timezone is used">
               Every activity is judged in this zone: when a day starts, when a window
@@ -51,21 +51,21 @@ export default async function PersonalSettings() {
               its own screen, under Activities.
             </InfoHint>
           </h1>
-          <Link href="/settings" className="text-[12px] text-muted">‹ settings</Link>
+          <Link href="/settings" className="text-xs text-muted">‹ settings</Link>
         </header>
 
-        <p className="mb-6 text-[12px] text-muted">Yours only. Changes take effect tomorrow.</p>
+        <p className="mb-6 text-xs text-muted">Yours only. Changes take effect tomorrow.</p>
 
         <ActionForm action={updateTimezoneAction} className="mb-8">
-          <label className="text-[14px]">
+          <label className="text-base">
             Timezone
-            <span className="block text-[12px] text-muted">IANA name, e.g. Asia/Kolkata</span>
+            <span className="block text-xs text-muted">IANA name, e.g. Asia/Kolkata</span>
           </label>
           <div className="mt-2 flex items-start gap-2">
             <TimezoneSelect zones={zones} defaultValue={personal.timezone} />
             <SubmitButton
               pendingLabel="Saving"
-              className="border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg"
+              className="border border-fg bg-fg px-3 py-2 text-sm text-bg"
             >
               Save
             </SubmitButton>

@@ -88,7 +88,7 @@ export function ActivityRow({
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
         <div className="flex items-center gap-[9px]">
-          <span className="text-[14px]">{row.name}</span>
+          <span className="text-base">{row.name}</span>
           {/* A rest day is not a broken streak, so an unscheduled row still
               carries its count. The whole row is at 0.42, so the flame dims
               with it rather than needing a duller treatment of its own. */}
@@ -114,20 +114,20 @@ export function ActivityRow({
             // to talk about grace has stopped being a row about the activity.
             <span className="flex items-center gap-1">
               <DeadFlame size={13} />
-              <span className="text-[12px] leading-none text-muted tabular-nums">
+              <span className="text-xs leading-none text-muted tabular-nums">
                 {row.streak}
               </span>
             </span>
           ) : row.streak > 0 ? (
             <span className="flex items-center gap-1">
               <Flame size={13} />
-              <span className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text text-[12px] font-medium leading-none text-transparent tabular-nums">
+              <span className="bg-gradient-to-r from-flame-from via-flame to-flame-to bg-clip-text text-xs font-medium leading-none text-transparent tabular-nums">
                 {row.streak}
               </span>
             </span>
           ) : null}
         </div>
-        <span className="truncate text-[11.5px] text-muted">{status}</span>
+        <span className="truncate text-2xs text-muted">{status}</span>
       </div>
 
       {/* The tick and the control are not alternatives. A period can be passed
@@ -138,7 +138,7 @@ export function ActivityRow({
           does not shout at anyone. Where a press would do nothing the step is
           not open, so Sleep and Office read exactly as the mock draws them. */}
       {row.done || row.restore?.affordable || (row.open && row.step) ? (
-        <div className="flex flex-none items-center gap-[10px]">
+        <div className="flex flex-none items-center gap-2.5">
           {/* The other thing that differs. It sits BESIDE Check in rather than
               instead of it: the week ended, the activity did not, and checking
               in is still the thing to do today. Outlined, so it reads as the
@@ -163,7 +163,7 @@ export function ActivityRow({
             />
           ) : null}
           {row.done ? (
-            <span className="flex items-center gap-[6px] text-[12px] text-pass">
+            <span className="flex items-center gap-1.5 text-xs text-pass">
               <svg
                 width="15"
                 height="15"
@@ -186,12 +186,12 @@ export function ActivityRow({
                 typeKey={row.typeKey}
                 step={row.step}
                 onPressed={onRecord}
-                className={"flex h-[34px] items-center px-[13px] text-[12px] disabled:opacity-60 " + control(row.done)}
+                className={"flex h-[34px] items-center px-[13px] text-xs disabled:opacity-60 " + control(row.done)}
               />
             ) : (
               <Link
                 href={`/checkin/${row.typeKey}`}
-                className={"flex h-[34px] items-center gap-[6px] px-[13px] text-[12px] " + control(row.done)}
+                className={"flex h-[34px] items-center gap-1.5 px-[13px] text-xs " + control(row.done)}
               >
                 {label(row)}
               </Link>
@@ -211,7 +211,7 @@ export function ActivityRow({
           are not the same element, and putting both in one place is what made
           these come out small and shoved against the left edge. */}
       {declaring && row.step ? (
-        <div className="flex gap-[10px] pb-[14px]">
+        <div className="flex gap-2.5 pb-3.5">
           <CheckinButton
             label={row.answers.yes}
             busyLabel="Saving"
@@ -221,7 +221,7 @@ export function ActivityRow({
             onPressed={onRecord}
             wrapperClassName="flex-1"
             className={
-              "flex h-[42px] w-full items-center justify-center text-[13px] disabled:opacity-60 " +
+              "flex h-[42px] w-full items-center justify-center text-sm disabled:opacity-60 " +
               (row.done
                 ? "border border-rule text-fg"
                 : "border border-fg bg-fg font-semibold text-bg")
@@ -235,7 +235,7 @@ export function ActivityRow({
             evidence={{ held: false }}
             onPressed={onRecord}
             wrapperClassName="flex-1"
-            className="flex h-[42px] w-full items-center justify-center border border-rule text-[13px] text-penalty disabled:opacity-60"
+            className="flex h-[42px] w-full items-center justify-center border border-rule text-sm text-penalty disabled:opacity-60"
           />
         </div>
       ) : null}

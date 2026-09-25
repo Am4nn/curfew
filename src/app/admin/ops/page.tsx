@@ -66,11 +66,11 @@ export default async function AdminOps({
         rebuild={runRebuildAction}
       />
 
-      <section className="mb-8 flex flex-col gap-[10px]">
+      <section className="mb-8 flex flex-col gap-2.5">
         {/* First, because a job that did not run explains every other number
             below it. Drift is what a wrong answer looks like; this is whether
             anybody was asked the question. */}
-        <h2 className="text-[13px] font-semibold tracking-[0.1em]">SCHEDULER</h2>
+        <h2 className="text-sm font-semibold tracking-wider">SCHEDULER</h2>
         <div className="flex flex-col">
           {scheduler.jobs.map((j) => (
             <OpsRow
@@ -86,7 +86,7 @@ export default async function AdminOps({
           ))}
         </div>
         {scheduler.failures.length === 0 ? (
-          <p className="text-[11.5px] text-muted">
+          <p className="text-2xs text-muted">
             No job has failed its retries in the last 7 days.
           </p>
         ) : (
@@ -94,27 +94,27 @@ export default async function AdminOps({
             {scheduler.failures.map((f, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between gap-[10px] border-b border-rule py-[11px]"
+                className="flex items-center justify-between gap-2.5 border-b border-rule py-[11px]"
               >
                 <div className="flex min-w-0 flex-col gap-[3px]">
-                  <span className="text-[13px]">
+                  <span className="text-sm">
                     {[shortDate(f.at.toISOString()), f.path, f.status ? `HTTP ${f.status}` : null]
                       .filter(Boolean)
                       .join(" · ")}
                   </span>
-                  <span className="truncate text-[10.5px] text-muted">
+                  <span className="truncate text-micro text-muted">
                     {f.response ?? "gave up after every retry, no response body"}
                   </span>
                 </div>
-                <span className="flex-none text-[11.5px] text-muted">failed</span>
+                <span className="flex-none text-2xs text-muted">failed</span>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      <section className="mb-8 flex flex-col gap-[10px]">
-        <h2 className="text-[13px] font-semibold tracking-[0.1em]">EVIDENCE</h2>
+      <section className="mb-8 flex flex-col gap-2.5">
+        <h2 className="text-sm font-semibold tracking-wider">EVIDENCE</h2>
         <div className="flex flex-col">
           <OpsRow label="Stored" value={`${humanBytes(ev.bytes)} across ${ev.stored} photos`} />
           <OpsRow label="Retention" value={`deleted after ${ev.retentionDays} days`} />
@@ -132,10 +132,10 @@ export default async function AdminOps({
       </section>
 
       {canVerify ? (
-        <section className="flex flex-col gap-[10px]">
-          <h2 className="text-[13px] font-semibold tracking-[0.1em]">DRIFT, LAST RUN</h2>
+        <section className="flex flex-col gap-2.5">
+          <h2 className="text-sm font-semibold tracking-wider">DRIFT, LAST RUN</h2>
           {driftReport.rows.length === 0 ? (
-            <p className="text-[14px] text-muted">
+            <p className="text-base text-muted">
               No drift. Stored rows match a fresh recompute for {shortDate(from)} to {shortDate(to)}.
             </p>
           ) : (
@@ -143,21 +143,21 @@ export default async function AdminOps({
               {driftReport.rows.map((d, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between gap-[10px] border-b border-rule py-[11px]"
+                  className="flex items-center justify-between gap-2.5 border-b border-rule py-[11px]"
                 >
                   <div className="flex min-w-0 flex-col gap-[3px]">
-                    <span className="text-[13px]">
+                    <span className="text-sm">
                       {[driftDate(d.date), d.userName, d.typeName]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>
-                    <span className="text-[10.5px] text-muted">{d.detail}</span>
+                    <span className="text-micro text-muted">{d.detail}</span>
                   </div>
-                  <span className="flex-none text-[11.5px] text-muted">review</span>
+                  <span className="flex-none text-2xs text-muted">review</span>
                 </div>
               ))}
               {driftReport.total > driftReport.rows.length ? (
-                <p className="pt-2 text-[11.5px] text-muted">
+                <p className="pt-2 text-2xs text-muted">
                   {driftReport.total - driftReport.rows.length} more not shown.
                 </p>
               ) : null}
@@ -166,7 +166,7 @@ export default async function AdminOps({
         </section>
       ) : null}
 
-      <div className="mt-8 border-l-2 border-penalty bg-surface px-[13px] py-[11px] text-[11.5px] leading-[1.55] text-muted">
+      <div className="mt-8 border-l-2 border-penalty bg-surface px-[13px] py-[11px] text-2xs leading-relaxed text-muted">
         Rebuild rewrites derived tables only. Events and ledger entries are never touched.
       </div>
     </>
@@ -202,9 +202,9 @@ function every(minutes: number): string {
 function OpsRow({ label, value, right }: { label: string; value: string; right?: string }) {
   return (
     <div className="flex items-center gap-3 border-b border-rule py-[11px]">
-      <span className="flex-1 text-[13px]">{label}</span>
-      <span className="text-[11.5px] text-muted">{value}</span>
-      {right ? <span className="text-[11px] text-muted">{right}</span> : null}
+      <span className="flex-1 text-sm">{label}</span>
+      <span className="text-2xs text-muted">{value}</span>
+      {right ? <span className="text-2xs text-muted">{right}</span> : null}
     </div>
   );
 }

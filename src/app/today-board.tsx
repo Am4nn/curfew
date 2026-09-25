@@ -126,9 +126,9 @@ export function TodayBoard({
 
   return (
     <>
-      <section className="flex flex-col gap-[6px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">TODAY</span>
-        <div className="flex items-baseline gap-[10px]">
+      <section className="flex flex-col gap-1.5">
+        <span className="text-micro tracking-label text-muted">TODAY</span>
+        <div className="flex items-baseline gap-2.5">
           {/* One slot, two numbers. The old one lifts out of it and the new one
               rises into it, which is what a roll is. Side by side it would be
               two numbers, and the one that stays would sit a digit to the
@@ -137,7 +137,7 @@ export function TodayBoard({
             {from !== null ? (
               <span
                 aria-hidden="true"
-                className="roll-out absolute left-0 top-0 text-[38px] font-semibold leading-none tabular-nums text-muted"
+                className="roll-out absolute left-0 top-0 text-4xl font-semibold leading-none tabular-nums text-muted"
               >
                 {from}
               </span>
@@ -145,16 +145,16 @@ export function TodayBoard({
             <span
               key={done}
               className={
-                "text-[38px] font-semibold leading-none tabular-nums " +
+                "text-4xl font-semibold leading-none tabular-nums " +
                 (from !== null ? "roll-in" : "")
               }
             >
               {done}
             </span>
           </span>
-          <span className="text-[15px] text-muted">of {of} done</span>
+          <span className="text-base text-muted">of {of} done</span>
         </div>
-        <div className="mt-[6px] flex gap-1">
+        <div className="mt-1.5 flex gap-1">
           {Array.from({ length: of }, (_, i) => {
             const filled = i < done;
             // The segment this check-in filled grows into place. Every other

@@ -98,7 +98,7 @@ export function TabBar({ hasPendingInvite = false }: { hasPendingInvite?: boolea
               replace
               aria-current={active ? "page" : undefined}
               className={
-                "relative flex flex-1 flex-col items-center gap-[5px] px-0 pb-[11px] pt-[9px] text-[10px] " +
+                "relative flex flex-1 flex-col items-center gap-[5px] px-0 pb-[11px] pt-[9px] text-micro " +
                 (active ? "text-fg" : "text-muted")
               }
             >

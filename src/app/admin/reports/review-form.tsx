@@ -24,9 +24,9 @@ export function ReviewForm({
 
   return (
     <div className="flex flex-col gap-3">
-      {error ? <span className="text-[11.5px] text-penalty">{error}</span> : null}
+      {error ? <span className="text-2xs text-penalty">{error}</span> : null}
 
-      <div className="flex flex-wrap gap-[10px]">
+      <div className="flex flex-wrap gap-2.5">
         <button
           type="button"
           disabled={busy}
@@ -35,7 +35,7 @@ export function ReviewForm({
               reviewReportAction({ reportId, outcome: "dismissed", removePhoto: false }),
             )
           }
-          className="h-[38px] flex-1 border border-rule px-3 text-[12.5px] active:opacity-70 disabled:opacity-40"
+          className="h-[38px] flex-1 border border-rule px-3 text-xs active:opacity-70 disabled:opacity-40"
         >
           {busy ? "Working" : "Nothing wrong with it"}
         </button>
@@ -47,7 +47,7 @@ export function ReviewForm({
               reviewReportAction({ reportId, outcome: "upheld", removePhoto: hasPhoto }),
             )
           }
-          className="h-[38px] flex-1 border border-penalty bg-penalty px-3 text-[12.5px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
+          className="h-[38px] flex-1 border border-penalty bg-penalty px-3 text-xs font-semibold text-bg active:opacity-70 disabled:opacity-40"
         >
           {busy ? "Working" : hasPhoto ? "Remove the photo" : "Uphold"}
         </button>
@@ -55,7 +55,7 @@ export function ReviewForm({
 
       {banning ? (
         <div className="flex flex-col gap-2 border-t border-rule pt-3">
-          <span className="text-[12px] text-muted">
+          <span className="text-xs text-muted">
             Banning {subjectName} deletes their photos and blocks sign-in. Money they
             owe stays owed and stays visible. A ban is not a way to clear a debt.
           </span>
@@ -65,13 +65,13 @@ export function ReviewForm({
             maxLength={200}
             placeholder="Reason, recorded against the ban"
             aria-label="Reason for the ban"
-            className="border border-rule bg-transparent px-3 py-[9px] text-[13px] text-fg outline-none placeholder:text-muted"
+            className="border border-rule bg-transparent px-3 py-[9px] text-sm text-fg outline-none placeholder:text-muted"
           />
-          <div className="flex gap-[10px]">
+          <div className="flex gap-2.5">
             <button
               type="button"
               onClick={() => setBanning(false)}
-              className="h-[38px] flex-1 border border-rule text-[12.5px]"
+              className="h-[38px] flex-1 border border-rule text-xs"
             >
               Cancel
             </button>
@@ -88,7 +88,7 @@ export function ReviewForm({
                   });
                 })
               }
-              className="h-[38px] flex-1 border border-penalty bg-penalty text-[12.5px] font-semibold text-bg active:opacity-70 disabled:opacity-40"
+              className="h-[38px] flex-1 border border-penalty bg-penalty text-xs font-semibold text-bg active:opacity-70 disabled:opacity-40"
             >
               Ban {subjectName}
             </button>
@@ -98,7 +98,7 @@ export function ReviewForm({
         <button
           type="button"
           onClick={() => setBanning(true)}
-          className="self-start text-[11.5px] text-penalty underline underline-offset-2"
+          className="self-start text-2xs text-penalty underline underline-offset-2"
         >
           Ban this account
         </button>

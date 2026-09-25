@@ -44,7 +44,7 @@ export function StopSheet({ typeKey, name }: { typeKey: string; name: string }) 
       <button
         type="button"
         onClick={ask}
-        className="h-11 w-full border border-rule text-[14px] text-penalty active:opacity-70"
+        className="h-11 w-full border border-rule text-base text-penalty active:opacity-70"
       >
         Stop tracking {name}
       </button>
@@ -57,11 +57,11 @@ export function StopSheet({ typeKey, name }: { typeKey: string; name: string }) 
           aria-modal="true"
           aria-label={`Stop tracking ${name}`}
         >
-          <div className="flex w-full flex-col gap-[14px] border-t border-rule bg-bg px-5 pb-[22px] pt-[18px]">
-            <span className="text-[16px] leading-[1.45]">Stop tracking {name}?</span>
+          <div className="flex w-full flex-col gap-3.5 border-t border-rule bg-bg px-5 pb-[22px] pt-[18px]">
+            <span className="text-lg leading-normal">Stop tracking {name}?</span>
 
             {cost === null ? (
-              <span className="py-[10px] text-[12px] text-muted">
+              <span className="py-2.5 text-xs text-muted">
                 Working out what this costs.
               </span>
             ) : (
@@ -69,13 +69,13 @@ export function StopSheet({ typeKey, name }: { typeKey: string; name: string }) 
                 {cost.map((c) => (
                   <div
                     key={c.what}
-                    className="flex gap-[10px] border-b border-rule py-[10px]"
+                    className="flex gap-2.5 border-b border-rule py-2.5"
                   >
                     {/* The marker, as a rule rather than a dash character. */}
                     <span className="mt-[9px] h-px w-[11px] flex-none bg-penalty" />
                     <div className="flex flex-col gap-[3px]">
-                      <span className="text-[12.5px] leading-[1.5]">{c.what}</span>
-                      <span className="text-[10.5px] leading-[1.5] text-muted">
+                      <span className="text-xs leading-relaxed">{c.what}</span>
+                      <span className="text-micro leading-relaxed text-muted">
                         {c.detail}
                       </span>
                     </div>
@@ -85,14 +85,14 @@ export function StopSheet({ typeKey, name }: { typeKey: string; name: string }) 
             )}
 
             {error ? (
-              <span className="text-[11px] leading-[1.55] text-penalty">{error}</span>
+              <span className="text-2xs leading-relaxed text-penalty">{error}</span>
             ) : null}
 
-            <span className="text-[11px] leading-[1.55] text-muted">
+            <span className="text-2xs leading-relaxed text-muted">
               {STOP_FOOTNOTE}
             </span>
 
-            <div className="mt-[2px] flex flex-col gap-[9px]">
+            <div className="mt-0.5 flex flex-col gap-[9px]">
               <button
                 type="button"
                 // Nothing is confirmable until the list is on screen. The
@@ -112,7 +112,7 @@ export function StopSheet({ typeKey, name }: { typeKey: string; name: string }) 
                     }
                   })
                 }
-                className="h-[46px] w-full border border-penalty text-[14px] text-penalty active:opacity-70 disabled:opacity-40"
+                className="h-[46px] w-full border border-penalty text-base text-penalty active:opacity-70 disabled:opacity-40"
               >
                 {stopping ? `Stopping ${name}` : `Stop tracking ${name}`}
               </button>
@@ -120,7 +120,7 @@ export function StopSheet({ typeKey, name }: { typeKey: string; name: string }) 
                 type="button"
                 onClick={() => setOpen(false)}
                 disabled={stopping}
-                className="h-[46px] w-full border border-rule text-[14px] active:opacity-70 disabled:opacity-40"
+                className="h-[46px] w-full border border-rule text-base active:opacity-70 disabled:opacity-40"
               >
                 Cancel
               </button>

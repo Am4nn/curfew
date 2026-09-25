@@ -15,24 +15,24 @@ export default async function RulesPage() {
     <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-6">
         <header className="-mx-5 flex items-center gap-[9px] border-b border-rule px-5 pb-[11px]">
-          <BackLink fallback="/settings" className="text-[14px] text-muted" />
-          <span className="text-[14px] font-semibold tracking-[0.14em]">THE RULES</span>
+          <BackLink fallback="/settings" className="text-base text-muted" />
+          <span className="text-base font-semibold tracking-caps">THE RULES</span>
         </header>
 
         {TERMS.map((section) => (
-          <section key={section.heading} className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">
+          <section key={section.heading} className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">
               {section.heading}
             </span>
-            <ul className="flex flex-col gap-[10px]">
+            <ul className="flex flex-col gap-2.5">
               {section.lines.map((line) => {
                 const strong = line.startsWith("**");
                 return (
                   <li key={line} className="flex gap-[9px]">
-                    <span className="text-[11px] leading-[1.65] text-muted">&bull;</span>
+                    <span className="text-2xs leading-loose text-muted">&bull;</span>
                     <span
                       className={
-                        "flex-1 text-[12.5px] leading-[1.6] " +
+                        "flex-1 text-xs leading-relaxed " +
                         (strong ? "text-fg" : "text-muted")
                       }
                     >
@@ -45,7 +45,7 @@ export default async function RulesPage() {
           </section>
         ))}
 
-        <div className="text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-2xs leading-relaxed text-muted">
           {consent
             ? `You agreed to version ${consent.version} of this on ${consent.acceptedAt.toISOString().slice(0, 10)}. This is version ${CONSENT_VERSION}.`
             : "You have not agreed to this yet."}

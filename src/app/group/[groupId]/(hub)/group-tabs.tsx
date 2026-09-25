@@ -34,7 +34,7 @@ export function GroupTabs({ groupId }: { groupId: string }) {
             // looked at.
             replace
             className={
-              "mr-[22px] pb-[10px] text-[11px] tracking-[0.12em] " +
+              "mr-[22px] pb-2.5 text-2xs tracking-caps " +
               (active ? "text-fg shadow-[inset_0_-2px_0_var(--fg)]" : "text-muted")
             }
           >

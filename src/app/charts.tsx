@@ -38,7 +38,7 @@ export function TimeChart({
   if (data.length === 0) {
     return (
       <Figure title={title} suffix={suffix}>
-        <p className="text-[13px] text-muted">No data yet.</p>
+        <p className="text-sm text-muted">No data yet.</p>
       </Figure>
     );
   }
@@ -120,7 +120,7 @@ export function TimeChart({
           </text>
         </svg>
       </div>
-      <div className="mt-1 flex justify-between text-[11px] text-muted">
+      <div className="mt-1 flex justify-between text-2xs text-muted">
         <span>{data[0].date}</span>
         <span>{last.date}</span>
       </div>
@@ -140,8 +140,8 @@ function Figure({
   return (
     <section className="mb-8">
       <div className="mb-2 flex items-baseline justify-between">
-        <h2 className="text-[13px] font-semibold tracking-[0.1em]">{title}</h2>
-        {suffix ? <span className="text-[11px] text-muted">{suffix}</span> : null}
+        <h2 className="text-sm font-semibold tracking-wider">{title}</h2>
+        {suffix ? <span className="text-2xs text-muted">{suffix}</span> : null}
       </div>
       {children}
     </section>

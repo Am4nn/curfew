@@ -67,10 +67,10 @@ export function Recompute({
   const ready = range.from !== "" && range.to !== "";
 
   return (
-    <section className="mb-8 flex flex-col gap-[10px]">
-      <h2 className="text-[13px] font-semibold tracking-[0.1em]">RECOMPUTE</h2>
+    <section className="mb-8 flex flex-col gap-2.5">
+      <h2 className="text-sm font-semibold tracking-wider">RECOMPUTE</h2>
       <div className="flex flex-col gap-[7px]">
-        <span className="text-[11px] tracking-[0.06em] text-muted">Range</span>
+        <span className="text-2xs tracking-wide text-muted">Range</span>
         <div className="flex items-center gap-[9px]">
           <input
             type="date"
@@ -78,20 +78,20 @@ export function Recompute({
             value={range.from}
             max={range.to || undefined}
             onChange={(e) => setRange((r) => ({ ...r, from: e.target.value }))}
-            className="flex-1 border border-rule bg-transparent px-3 py-[10px] text-[14px]"
+            className="flex-1 border border-rule bg-transparent px-3 py-2.5 text-base"
           />
-          <span className="text-[11px] text-muted">to</span>
+          <span className="text-2xs text-muted">to</span>
           <input
             type="date"
             aria-label="To"
             value={range.to}
             min={range.from || undefined}
             onChange={(e) => setRange((r) => ({ ...r, to: e.target.value }))}
-            className="flex-1 border border-rule bg-transparent px-3 py-[10px] text-[14px]"
+            className="flex-1 border border-rule bg-transparent px-3 py-2.5 text-base"
           />
         </div>
       </div>
-      <div className="flex gap-[10px]">
+      <div className="flex gap-2.5">
         {canVerify ? (
           <button
             type="button"
@@ -99,7 +99,7 @@ export function Recompute({
             disabled={verifying || !ready}
             aria-busy={verifying || undefined}
             className={
-              "h-11 border border-rule px-4 text-[14px] active:opacity-70 disabled:opacity-40" +
+              "h-11 border border-rule px-4 text-base active:opacity-70 disabled:opacity-40" +
               (verifying ? " opacity-60" : "")
             }
           >
@@ -112,14 +112,14 @@ export function Recompute({
             <input type="hidden" name="to" value={range.to} />
             <SubmitButton
               pendingLabel="Rebuilding"
-              className="h-11 border border-rule px-4 text-[14px]"
+              className="h-11 border border-rule px-4 text-base"
             >
               Rebuild
             </SubmitButton>
           </ActionForm>
         ) : null}
       </div>
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Verify recomputes and reports what differs. Rebuild writes the result.
       </p>
     </section>

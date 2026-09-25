@@ -73,12 +73,12 @@ export function PhotoViewer({
       className="fixed inset-0 z-50 flex flex-col bg-bg"
     >
       <div className="flex items-center justify-between gap-3 border-b border-rule px-5 py-[11px]">
-        <span className="truncate text-[11.5px] text-muted">{photo.caption}</span>
+        <span className="truncate text-2xs text-muted">{photo.caption}</span>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="flex h-[30px] flex-none items-center border border-rule px-[11px] text-[11.5px] text-fg active:opacity-70"
+          className="flex h-[30px] flex-none items-center border border-rule px-[11px] text-2xs text-fg active:opacity-70"
         >
           Close
         </button>
@@ -105,18 +105,18 @@ export function PhotoViewer({
             type="button"
             disabled={first}
             onClick={() => onMove(at - 1)}
-            className="flex h-[30px] items-center border border-rule px-[11px] text-[11.5px] text-fg disabled:opacity-40 active:opacity-70"
+            className="flex h-[30px] items-center border border-rule px-[11px] text-2xs text-fg disabled:opacity-40 active:opacity-70"
           >
             &lsaquo; Previous
           </button>
-          <span className="text-[11px] tabular-nums text-muted">
+          <span className="text-2xs tabular-nums text-muted">
             {at + 1} of {photos.length}
           </span>
           <button
             type="button"
             disabled={last}
             onClick={() => onMove(at + 1)}
-            className="flex h-[30px] items-center border border-rule px-[11px] text-[11.5px] text-fg disabled:opacity-40 active:opacity-70"
+            className="flex h-[30px] items-center border border-rule px-[11px] text-2xs text-fg disabled:opacity-40 active:opacity-70"
           >
             Next &rsaquo;
           </button>

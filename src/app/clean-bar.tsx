@@ -13,10 +13,10 @@ export function CleanBar({ cleanDays }: { cleanDays: number }) {
   return (
     <div className="flex flex-col gap-[7px]">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[11.5px] text-muted">
+        <span className="text-2xs text-muted">
           {done} of {need} clean days
         </span>
-        <span className="text-[11px] text-muted">
+        <span className="text-2xs text-muted">
           {left === 0 ? "held" : `${left} to go`}
         </span>
       </div>

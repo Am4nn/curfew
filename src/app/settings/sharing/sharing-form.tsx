@@ -63,17 +63,17 @@ export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
   return (
     <div className="flex flex-col gap-6 px-5 pb-6 pt-[18px]">
       {view.length === 0 ? (
-        <p className="text-[13px] leading-[1.6] text-muted">
+        <p className="text-sm leading-relaxed text-muted">
           You are not in a group, so nothing is shared anywhere.
         </p>
       ) : (
         view.map((block) => (
-          <section key={block.groupId} className="flex flex-col gap-[10px]">
-            <span className="text-[10px] tracking-[0.16em] text-muted">
+          <section key={block.groupId} className="flex flex-col gap-2.5">
+            <span className="text-micro tracking-label text-muted">
               {block.groupName.toUpperCase()}
             </span>
             {block.rows.length === 0 ? (
-              <p className="text-[12px] text-muted">This group accepts nothing yet.</p>
+              <p className="text-xs text-muted">This group accepts nothing yet.</p>
             ) : (
               <div className="flex flex-col">
                 {block.rows.map((row) => (
@@ -88,8 +88,8 @@ export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
                         <ActivityIcon name={row.icon} />
                       </span>
                       <div className="flex flex-1 flex-col gap-[3px]">
-                        <span className="text-[13.5px]">{row.name}</span>
-                        <span className="text-[11px] text-muted">{row.sub}</span>
+                        <span className="text-sm">{row.name}</span>
+                        <span className="text-2xs text-muted">{row.sub}</span>
                       </div>
                       {row.tracked ? (
                         <Toggle
@@ -113,7 +113,7 @@ export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
                         // press a switch that cannot mean anything.
                         <Link
                           href={`/activities/${row.typeKey}`}
-                          className="flex-none text-[11.5px] text-accent underline underline-offset-2"
+                          className="flex-none text-2xs text-accent underline underline-offset-2"
                         >
                           Set it up first
                         </Link>
@@ -153,12 +153,12 @@ export function SharingForm({ blocks }: { blocks: GroupShares[] }) {
       )}
 
       {error ? (
-        <div className="text-[11.5px] leading-[1.55] text-penalty">
+        <div className="text-2xs leading-relaxed text-penalty">
           {error}
         </div>
       ) : null}
 
-      <p className="text-[11.5px] leading-[1.55] text-muted">
+      <p className="text-2xs leading-relaxed text-muted">
         Photos off leaves your streak shared. Turning an activity off keeps your
         record in that group, it just stops growing.
       </p>

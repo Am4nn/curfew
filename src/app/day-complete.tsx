@@ -69,18 +69,18 @@ export function DayComplete({
       }
       style={{ backgroundColor: "var(--scrim-93)" }}
     >
-      <div className="stamp-in flex flex-col items-center gap-[6px] border-[3px] border-pass px-[30px] py-4 text-pass">
-        <span className="text-[38px] font-semibold leading-none tracking-[0.08em]">
+      <div className="stamp-in flex flex-col items-center gap-1.5 border-[3px] border-pass px-[30px] py-4 text-pass">
+        <span className="text-4xl font-semibold leading-none tracking-wider">
           COMPLETE
         </span>
-        <span className="text-[12px] tracking-[0.24em] opacity-75">{dateLabel}</span>
+        <span className="text-xs tracking-widest opacity-75">{dateLabel}</span>
       </div>
-      <div className="flex items-center gap-[14px] text-pass opacity-85">
+      <div className="flex items-center gap-3.5 text-pass opacity-85">
         {icons.map((icon, i) => (
           <ActivityIcon key={`${icon}-${i}`} name={icon} size={17} />
         ))}
       </div>
-      <span className="text-[12.5px] text-muted">Everything you scheduled, done.</span>
+      <span className="text-xs text-muted">Everything you scheduled, done.</span>
     </div>
   );
 }

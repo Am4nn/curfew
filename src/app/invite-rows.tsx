@@ -43,17 +43,17 @@ export function InviteRows({ invites }: { invites: InviteRow[] }) {
   if (shown.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-[10px]">
+    <section className="flex flex-col gap-2.5">
       {shown.map((invite) => (
         <div
           key={invite.id}
-          className="flex flex-col gap-[10px] border border-rule px-[13px] py-3"
+          className="flex flex-col gap-2.5 border border-rule px-[13px] py-3"
         >
           <div className="flex items-start gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-              <span className="text-[10px] tracking-[0.16em] text-accent">AN INVITE</span>
-              <span className="text-[14px]">{invite.groupName}</span>
-              <span className="text-[11.5px] leading-[1.45] text-muted">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className="text-micro tracking-label text-accent">AN INVITE</span>
+              <span className="text-base">{invite.groupName}</span>
+              <span className="text-2xs leading-normal text-muted">
                 {invite.inviterName} invited you
               </span>
             </div>
@@ -87,7 +87,7 @@ export function InviteRows({ invites }: { invites: InviteRow[] }) {
               </svg>
             </button>
           </div>
-          <div className="flex items-center gap-[8px]">
+          <div className="flex items-center gap-2">
             <Link
               href={`/join/${invite.id}`}
               className={buttonClass("primary", "sm")}
@@ -113,7 +113,7 @@ export function InviteRows({ invites }: { invites: InviteRow[] }) {
           </div>
         </div>
       ))}
-      {error ? <span className="text-[11.5px] text-penalty">{error}</span> : null}
+      {error ? <span className="text-2xs text-penalty">{error}</span> : null}
     </section>
   );
 }

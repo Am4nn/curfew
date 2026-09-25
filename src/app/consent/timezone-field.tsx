@@ -32,26 +32,26 @@ export function TimezoneField({
   const [editing, setEditing] = useState(false);
 
   return (
-    <section className="flex flex-col gap-[10px] border border-rule p-[13px]">
-      <span className="text-[10px] tracking-[0.16em] text-muted">YOUR DAY</span>
+    <section className="flex flex-col gap-2.5 border border-rule p-[13px]">
+      <span className="text-micro tracking-label text-muted">YOUR DAY</span>
 
       {editing ? (
         <TimezoneSelect zones={zones} defaultValue={zone} onChange={setChosen} />
       ) : (
-        <div className="flex items-baseline justify-between gap-[10px]">
+        <div className="flex items-baseline justify-between gap-2.5">
           <input type="hidden" name="timezone" value={zone} />
-          <span className="text-[13px]">{zone}</span>
+          <span className="text-sm">{zone}</span>
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="flex-none text-[11px] text-accent"
+            className="flex-none text-2xs text-accent"
           >
             change
           </button>
         </div>
       )}
 
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-2xs leading-relaxed text-muted">
         Every window and deadline is read here. Change it any time in Settings.
       </span>
     </section>

@@ -182,8 +182,8 @@ export function Flame({ size = 13 }: { size?: number }) {
       <defs>
         <linearGradient id={id} x1="0" y1="1" x2="0" y2="0">
           <stop offset="0%" stopColor="#ffc24b" />
-          <stop offset="55%" stopColor="#ff7a2f" />
-          <stop offset="100%" stopColor="#e4574b" />
+          <stop offset="55%" stopColor="var(--flame)" />
+          <stop offset="100%" stopColor="var(--flame-to)" />
         </linearGradient>
       </defs>
       <path
@@ -243,7 +243,7 @@ export function StreakNumber({ value, size = 30 }: { value: number; size?: numbe
     <span className="flex items-center gap-[9px]">
       <Flame size={size} />
       <span
-        className="bg-gradient-to-r from-[#ffd23f] via-[#ff7a2f] to-[#e4574b] bg-clip-text font-semibold leading-none text-transparent tabular-nums"
+        className="bg-gradient-to-r from-flame-from via-flame to-flame-to bg-clip-text font-semibold leading-none text-transparent tabular-nums"
         style={{ fontSize: size }}
       >
         {value}

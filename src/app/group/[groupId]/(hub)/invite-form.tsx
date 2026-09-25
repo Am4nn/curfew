@@ -51,18 +51,18 @@ export function InviteForm({ groupId, inviterName }: { groupId: string; inviterN
             }
           }}
           placeholder="email address"
-          className="flex-1 border border-rule bg-transparent px-3 py-[10px] text-[14px]"
+          className="flex-1 border border-rule bg-transparent px-3 py-2.5 text-base"
         />
         <button
           type="button"
           onClick={() => valid && setOpen(true)}
           disabled={!valid}
-          className="border border-rule bg-surface px-4 py-[10px] text-[14px] disabled:opacity-50"
+          className="border border-rule bg-surface px-4 py-2.5 text-base disabled:opacity-50"
         >
           Send
         </button>
       </div>
-      {state.error ? <p className="mt-2 text-[13px] text-penalty">{state.error}</p> : null}
+      {state.error ? <p className="mt-2 text-sm text-penalty">{state.error}</p> : null}
 
       {open ? (
         <div
@@ -72,7 +72,7 @@ export function InviteForm({ groupId, inviterName }: { groupId: string; inviterN
           onClick={() => setOpen(false)}
         >
           <div className="w-full max-w-[360px] border border-fg bg-bg p-5" onClick={(e) => e.stopPropagation()}>
-            <p className="text-[14px] leading-relaxed">
+            <p className="text-base leading-relaxed">
               An email invite will be sent to{" "}
               <span className="font-semibold">{email.trim()}</span>. It names you
               {inviterName ? (
@@ -84,19 +84,19 @@ export function InviteForm({ groupId, inviterName }: { groupId: string; inviterN
               as the inviter.
             </p>
             {state.error ? (
-              <p className="mt-3 text-[13px] text-penalty">{state.error}</p>
+              <p className="mt-3 text-sm text-penalty">{state.error}</p>
             ) : null}
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="border border-fg px-3 py-[8px] text-[13px]"
+                className="border border-fg px-3 py-2 text-sm"
               >
                 Cancel
               </button>
               <SubmitButton
                 pendingLabel="Sending"
-                className="border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg"
+                className="border border-fg bg-fg px-3 py-2 text-sm text-bg"
               >
                 Send invite
               </SubmitButton>

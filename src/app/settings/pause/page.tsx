@@ -21,11 +21,11 @@ import { declarePauseAction, extendPauseAction, endPauseAction } from "./actions
 function Fact({ what, value, why }: { what: string; value: string; why?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-rule py-[11px]">
-      <div className="flex flex-col gap-[2px]">
-        <span className="text-[13px]">{what}</span>
-        {why ? <span className="text-[10.5px] text-muted">{why}</span> : null}
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm">{what}</span>
+        {why ? <span className="text-micro text-muted">{why}</span> : null}
       </div>
-      <span className="text-right text-[13px] text-muted">{value}</span>
+      <span className="text-right text-sm text-muted">{value}</span>
     </div>
   );
 }
@@ -35,17 +35,17 @@ function Running({ pause, today }: { pause: Pause; today: string }) {
 
   return (
     <>
-      <div className="flex flex-col gap-2 border border-accent p-[14px]">
-        <div className="flex items-baseline justify-between gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-accent">PAUSED</span>
-          <span className="text-[12px] text-accent">
+      <div className="flex flex-col gap-2 border border-accent p-3.5">
+        <div className="flex items-baseline justify-between gap-2.5">
+          <span className="text-micro tracking-label text-accent">PAUSED</span>
+          <span className="text-xs text-accent">
             {left} {left === 1 ? "day" : "days"} left
           </span>
         </div>
-        <span className="text-[13px] leading-[1.55]">
+        <span className="text-sm leading-relaxed">
           Back on {shortDay(dayAfter(pause.endsOn))}.
         </span>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           Nothing is scheduled and nothing counts, in any group.
         </span>
       </div>
@@ -65,8 +65,8 @@ function Running({ pause, today }: { pause: Pause; today: string }) {
         />
       </div>
 
-      <ActionForm action={extendPauseAction} className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">STAYING LONGER</span>
+      <ActionForm action={extendPauseAction} className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">STAYING LONGER</span>
         <div className="flex items-center gap-2">
           <input
             type="date"
@@ -74,11 +74,11 @@ function Running({ pause, today }: { pause: Pause; today: string }) {
             required
             defaultValue={pause.endsOn}
             min={DateTime.fromISO(pause.endsOn).plus({ days: 1 }).toFormat("yyyy-MM-dd")}
-            className="flex-1 border border-fg bg-transparent px-3 py-[9px] text-[14px]"
+            className="flex-1 border border-fg bg-transparent px-3 py-[9px] text-base"
           />
           <SubmitButton
             pendingLabel="Saving"
-            className="border border-rule px-3 py-[9px] text-[13px]"
+            className="border border-rule px-3 py-[9px] text-sm"
           >
             Extend
           </SubmitButton>
@@ -88,11 +88,11 @@ function Running({ pause, today }: { pause: Pause; today: string }) {
       <ActionForm action={endPauseAction} className="flex flex-col gap-[9px]">
         <SubmitButton
           pendingLabel="Saving"
-          className="self-start border border-rule px-3 py-[9px] text-[13px]"
+          className="self-start border border-rule px-3 py-[9px] text-sm"
         >
           Come back early
         </SubmitButton>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           From tomorrow. The days already passed stay paused, and the streak that
           ended does not come back.
         </span>
@@ -104,12 +104,12 @@ function Running({ pause, today }: { pause: Pause; today: string }) {
 function Declared({ pause }: { pause: Pause }) {
   return (
     <>
-      <div className="flex flex-col gap-2 border border-accent p-[14px]">
-        <span className="text-[10px] tracking-[0.16em] text-accent">DECLARED</span>
-        <span className="text-[13px] leading-[1.55]">
+      <div className="flex flex-col gap-2 border border-accent p-3.5">
+        <span className="text-micro tracking-label text-accent">DECLARED</span>
+        <span className="text-sm leading-relaxed">
           Away {shortDay(pause.startsOn)} to {shortDay(pause.endsOn)}.
         </span>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           {lengthOf(pause)} days. Your groups can already see it.
         </span>
       </div>
@@ -117,11 +117,11 @@ function Declared({ pause }: { pause: Pause }) {
       <ActionForm action={endPauseAction} className="flex flex-col gap-[9px]">
         <SubmitButton
           pendingLabel="Saving"
-          className="self-start border border-rule px-3 py-[9px] text-[13px]"
+          className="self-start border border-rule px-3 py-[9px] text-sm"
         >
           Call it off
         </SubmitButton>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           It has not started, so nothing has happened yet and it goes entirely.
         </span>
       </ActionForm>
@@ -136,26 +136,26 @@ function Declare({ today }: { today: string }) {
 
   return (
     <>
-      <p className="text-[13px] leading-[1.6]">
+      <p className="text-sm leading-relaxed">
         Tell Curfew you are away. The days are not counted, in any group or on
         your own record.
       </p>
 
-      <ActionForm action={declarePauseAction} className="flex flex-col gap-[14px]">
+      <ActionForm action={declarePauseAction} className="flex flex-col gap-3.5">
         <div className="flex gap-[11px]">
-          <label className="flex flex-1 flex-col gap-[6px]">
-            <span className="text-[10px] tracking-[0.14em] text-muted">FROM</span>
+          <label className="flex flex-1 flex-col gap-1.5">
+            <span className="text-micro tracking-caps text-muted">FROM</span>
             <input
               type="date"
               name="from"
               required
               defaultValue={from}
               min={from}
-              className="border border-fg bg-transparent px-3 py-[9px] text-[14px]"
+              className="border border-fg bg-transparent px-3 py-[9px] text-base"
             />
           </label>
-          <label className="flex flex-1 flex-col gap-[6px]">
-            <span className="text-[10px] tracking-[0.14em] text-muted">TO</span>
+          <label className="flex flex-1 flex-col gap-1.5">
+            <span className="text-micro tracking-caps text-muted">TO</span>
             {/* No `min` here. It could only be computed from the start date
                 as it stands on the server, so the moment somebody picks a
                 later one it would be wrong, and a wrong `min` blocks a valid
@@ -167,19 +167,19 @@ function Declare({ today }: { today: string }) {
               required
               defaultValue={to}
               min={from}
-              className="border border-fg bg-transparent px-3 py-[9px] text-[14px]"
+              className="border border-fg bg-transparent px-3 py-[9px] text-base"
             />
           </label>
         </div>
-        <span className="-mt-2 text-[11.5px] text-muted">
+        <span className="-mt-2 text-2xs text-muted">
           Starts tomorrow at the earliest. {MINIMUM_DAYS} days minimum.
         </span>
 
-        <div className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">WHAT IT COSTS</span>
+        <div className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">WHAT IT COSTS</span>
           <div className="flex flex-col gap-[5px] border border-penalty p-[13px]">
-            <span className="text-[13px] text-penalty">Every streak ends at 0.</span>
-            <span className="text-[11.5px] leading-[1.55] text-muted">
+            <span className="text-sm text-penalty">Every streak ends at 0.</span>
+            <span className="text-2xs leading-relaxed text-muted">
               A streak is consecutive days. A pause is a gap, and grace does not
               cover one. They end when the first paused day closes, the same as
               any day you miss, not the moment you declare.
@@ -187,8 +187,8 @@ function Declare({ today }: { today: string }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-[10px]">
-          <span className="text-[10px] tracking-[0.16em] text-muted">WHAT IT SAVES</span>
+        <div className="flex flex-col gap-2.5">
+          <span className="text-micro tracking-label text-muted">WHAT IT SAVES</span>
           <div className="flex flex-col">
             <Fact what="Reputation" value="Not marked down" why="The days are not misses" />
             <Fact what="Money" value="Nothing owed" why="Nothing scheduled, nothing to fine" />
@@ -198,13 +198,13 @@ function Declare({ today }: { today: string }) {
 
         <SubmitButton
           pendingLabel="Declaring"
-          className="h-12 w-full border border-fg bg-fg text-[14px] font-semibold text-bg"
+          className="h-12 w-full border border-fg bg-fg text-base font-semibold text-bg"
         >
           Declare
         </SubmitButton>
       </ActionForm>
 
-      <span className="text-[11.5px] leading-[1.55] text-muted">
+      <span className="text-2xs leading-relaxed text-muted">
         Your groups see the dates. Nothing about a pause is per group.
       </span>
     </>
@@ -221,8 +221,8 @@ export default async function PauseSettings() {
   return (
     <main className="min-h-dvh px-5 pb-nav pt-5">
       <div className="mx-auto flex max-w-[560px] flex-col gap-5">
-        <header className="-mx-5 mb-1 flex items-center justify-between border-b border-rule px-5 pb-[10px]">
-          <h1 className="flex items-center text-[15px] font-semibold tracking-[0.14em]">
+        <header className="-mx-5 mb-1 flex items-center justify-between border-b border-rule px-5 pb-2.5">
+          <h1 className="flex items-center text-base font-semibold tracking-caps">
             PAUSE
             <InfoHint label="How a pause works">
               A day you have declared away is a day with nothing scheduled. It is
@@ -231,7 +231,7 @@ export default async function PauseSettings() {
               away your score settles the way any quiet week makes it settle.
             </InfoHint>
           </h1>
-          <BackLink fallback="/settings" className="text-[12px] text-muted" />
+          <BackLink fallback="/settings" className="text-xs text-muted" />
         </header>
 
         {held === null ? (

@@ -18,26 +18,26 @@ export default async function AdminReports() {
 
   return (
     <>
-      <section className="flex flex-col gap-[10px]">
-        <h2 className="text-[13px] font-semibold tracking-[0.1em]">OPEN REPORTS</h2>
+      <section className="flex flex-col gap-2.5">
+        <h2 className="text-sm font-semibold tracking-wider">OPEN REPORTS</h2>
 
         {reports.length === 0 ? (
-          <p className="text-[13px] text-muted">Nothing reported.</p>
+          <p className="text-sm text-muted">Nothing reported.</p>
         ) : (
           <div className="flex flex-col gap-5">
             {reports.map((report) => (
               <div key={report.id} className="flex flex-col gap-3 border border-rule p-[13px]">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-[13.5px]">
+                  <span className="text-sm">
                     {REPORT_REASONS[report.reason as keyof typeof REPORT_REASONS] ??
                       report.reason}
                   </span>
-                  <span className="text-[11px] text-muted">
+                  <span className="text-2xs text-muted">
                     {DateTime.fromJSDate(report.createdAt).toFormat("d LLL, h:mm a")}
                   </span>
                 </div>
 
-                <span className="text-[11.5px] leading-[1.55] text-muted">
+                <span className="text-2xs leading-relaxed text-muted">
                   {report.reporterName} reported {report.subjectName}
                   {report.groupName ? ` in ${report.groupName}` : ""}.
                   {report.note ? ` "${report.note}"` : ""}
@@ -51,7 +51,7 @@ export default async function AdminReports() {
                     className="max-h-[280px] w-full border border-rule object-contain"
                   />
                 ) : (
-                  <span className="text-[11.5px] text-muted">
+                  <span className="text-2xs text-muted">
                     The photo is already gone.
                   </span>
                 )}

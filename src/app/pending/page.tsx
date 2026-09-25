@@ -20,15 +20,15 @@ export default async function Pending() {
   return (
     <main className="flex min-h-dvh flex-col justify-center px-5 py-7">
       <div className="mx-auto flex w-full max-w-[560px] flex-col gap-[22px]">
-        <div className="flex items-center gap-3 text-[30px] font-semibold tracking-[0.2em]">
+        <div className="flex items-center gap-3 text-3xl font-semibold tracking-widest">
           <QuorumMark size={26} />
           CURFEW
         </div>
-        <div className="text-[14px] leading-relaxed">
+        <div className="text-base leading-relaxed">
           {message}
         </div>
-        <p className="text-[12px] text-muted">Signed in as {user.email}</p>
-        <SignOut className="h-[44px] self-start border border-rule bg-transparent px-[18px] text-[14px] text-muted" />
+        <p className="text-xs text-muted">Signed in as {user.email}</p>
+        <SignOut className="h-[44px] self-start border border-rule bg-transparent px-[18px] text-base text-muted" />
       </div>
     </main>
   );

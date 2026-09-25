@@ -32,7 +32,7 @@ export async function NoticeOverlay() {
     >
       <div className="flex w-full max-w-[420px] flex-col border border-rule bg-bg">
         <div className="border-b border-rule px-[18px] py-4">
-          <span className="text-[10px] tracking-[0.16em] text-muted">WHAT CHANGED</span>
+          <span className="text-micro tracking-label text-muted">WHAT CHANGED</span>
         </div>
 
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto px-[18px] py-4">
@@ -47,9 +47,9 @@ export async function NoticeOverlay() {
               const rest = sentenceEnd === -1 ? "" : paragraph.slice(sentenceEnd + 2);
               return (
                 <div key={`${notice.id}-${i}`} className="flex flex-col gap-1">
-                  <span className="text-[13.5px] font-semibold">{headline}</span>
+                  <span className="text-sm font-semibold">{headline}</span>
                   {rest ? (
-                    <span className="text-[12px] leading-[1.6] text-muted">{rest}</span>
+                    <span className="text-xs leading-relaxed text-muted">{rest}</span>
                   ) : null}
                 </div>
               );
@@ -61,7 +61,7 @@ export async function NoticeOverlay() {
             rather than content: inside, a notice long enough to scroll pushed
             it below the fold and the overlay lost its signature exactly when it
             was carrying the most to read. */}
-        <div className="px-[18px] pb-3 pt-1 text-[10.5px] text-muted">
+        <div className="px-[18px] pb-3 pt-1 text-micro text-muted">
           {published.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           {" \u00b7 from Curfew"}
         </div>
@@ -69,7 +69,7 @@ export async function NoticeOverlay() {
         <div className="px-[18px] pb-[18px]">
           <form action={acknowledgeNoticesAction}>
             <SubmitButton
-              className="h-11 w-full border border-fg bg-fg text-[13.5px] font-semibold text-bg"
+              className="h-11 w-full border border-fg bg-fg text-sm font-semibold text-bg"
               pendingLabel="Saving"
             >
               Got it

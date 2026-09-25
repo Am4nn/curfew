@@ -565,6 +565,7 @@ shards     bun run check:shards    — CI still runs every browser suite
 dead       bun run check:dead      — nothing is exported that nothing imports
 acts       bun run doc:activities  — rewrite ACTIVITIES.md from the registry
 sheet      bun run check:activities — and CI fails if it went stale
+tokens     bun run check:tokens    — no custom CSS values, use the design system
 notice     bun run publish:notice  — announce a release to the people already here
 sleep      bun run migrate:sleep   — move existing members onto the anchored confirm
 remind     bun run check:reminders — a reminder is sent only when a press would count
@@ -893,6 +894,38 @@ so because every function involved was doing its job.
 be substituted for each other. `hint` sits under a control on a screen that
 already shows the name and counts UP; `remind` is for a lock screen, counts
 DOWN, and is what the notification path reads.
+
+## The design system
+
+`tailwind.config.ts` is it, and `bun run check:tokens` is what stops it being
+a suggestion. **Never write a custom CSS value.** Not `text-[13px]`, not
+`p-[7px]`, not `[#ff7a2f]`, not a hardcoded px inside `style={{}}`.
+
+| | |
+|---|---|
+| colour | 20 semantic tokens over CSS variables, both themes |
+| font size | `text-micro 2xs xs sm base lg xl 2xl 3xl 4xl` |
+| line height | `leading-tight snug normal relaxed loose` |
+| letter spacing | `tracking-tight normal wide wider caps label widest` |
+| radius | zero, and Tailwind has no other value to write |
+| spacing | Tailwind's own 4px scale. `gap-2.5` is 10px, `p-3` is 12px |
+
+**The check has two tiers and they are two different problems.** Font size,
+line height, letter spacing, colour and family have COMPLETE token sets, so
+any escape fails at any count. Spacing and sizing are a RATCHET: a 560px
+reading column is layout rather than drift, so the count may fall and may
+never rise. **Lower `CEILING` in `scripts/check-tokens.ts` when it drops.** A
+ratchet only works if somebody turns it.
+
+**The measurement that produced all this (1.61).** 98 component files carried
+829 arbitrary font sizes across 23 distinct sizes, 167 line heights, 152
+letter spacings with 86 of them identical, and 654 spacing values beside a 4px
+scale that 615 other uses already obeyed. Colour was the exception at three
+escapes, because a semantic token is easier to write than a hex, and radius
+held because `rounded-lg` does not exist.
+
+**That is the whole lesson: a token holds when the wrong thing is harder to
+write than the right one.** Everything above is now in that shape.
 
 ## Visual tells to avoid
 

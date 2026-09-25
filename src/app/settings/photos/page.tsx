@@ -42,13 +42,13 @@ export default async function OwnPhotosPage({
   return (
     <main className="min-h-dvh pb-nav">
       <header className="flex items-center gap-[9px] border-b border-rule px-5 pb-[11px] pt-5">
-        <BackLink fallback="/settings" className="text-[14px] text-muted" />
-        <span className="text-[14px] font-semibold tracking-[0.14em]">YOUR PHOTOS</span>
+        <BackLink fallback="/settings" className="text-base text-muted" />
+        <span className="text-base font-semibold tracking-caps">YOUR PHOTOS</span>
       </header>
 
       <div className="flex flex-col gap-5 px-5 pb-6 pt-[18px]">
         {photos.length === 0 ? (
-          <p className="text-[12.5px] leading-[1.6] text-muted">
+          <p className="text-xs leading-relaxed text-muted">
             No photos yet. Activities that ask for one keep it here.
           </p>
         ) : (
@@ -56,7 +56,7 @@ export default async function OwnPhotosPage({
             <PhotoRows photos={photos} />
 
             {photos.some((p) => p.tags?.some((t) => t.revoked)) ? (
-              <p className="text-[11.5px] leading-[1.55] text-muted">
+              <p className="text-2xs leading-relaxed text-muted">
                 A struck-through group saw this once and no longer can, because
                 sharing stopped or you left. It does not come back.
               </p>
@@ -65,13 +65,13 @@ export default async function OwnPhotosPage({
             {more > 0 ? (
               <Link
                 href={`/settings/photos?show=${limit + PAGE}`}
-                className="flex h-11 w-full items-center justify-center border border-rule text-[14px] active:opacity-70"
+                className="flex h-11 w-full items-center justify-center border border-rule text-base active:opacity-70"
               >
                 Load older
               </Link>
             ) : null}
 
-            <p className="text-[11.5px] leading-[1.55] text-muted">
+            <p className="text-2xs leading-relaxed text-muted">
               {more > 0
                 ? `${photos.length} of ${total} photos.`
                 : `${total} ${total === 1 ? "photo" : "photos"}.`}{" "}

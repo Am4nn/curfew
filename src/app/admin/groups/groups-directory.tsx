@@ -45,7 +45,7 @@ export function GroupsDirectory({
 
   return (
     <>
-      <div className="flex items-center gap-[10px] border border-rule px-3 py-[10px]">
+      <div className="flex items-center gap-2.5 border border-rule px-3 py-2.5">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="flex-none text-muted">
           <circle cx="11" cy="11" r="7"></circle>
           <path d="M16.5 16.5 21 21"></path>
@@ -55,7 +55,7 @@ export function GroupsDirectory({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search groups"
-          className="w-full bg-transparent text-[13.5px] text-fg placeholder:text-muted outline-none"
+          className="w-full bg-transparent text-sm text-fg placeholder:text-muted outline-none"
         />
       </div>
 
@@ -66,7 +66,7 @@ export function GroupsDirectory({
             type="button"
             onClick={() => setFilter(f)}
             className={
-              "border px-[11px] py-[6px] text-[11.5px] " +
+              "border px-[11px] py-1.5 text-2xs " +
               (filter === f ? "border-fg bg-fg text-bg" : "border-rule text-muted")
             }
           >
@@ -76,14 +76,14 @@ export function GroupsDirectory({
       </div>
 
       {!appWideMoneyOn ? (
-        <div className="text-[11.5px] leading-[1.55] text-muted">
+        <div className="text-2xs leading-relaxed text-muted">
           Money is off app-wide. A group switched on here keeps it, and its members still
           see everything about money.
         </div>
       ) : null}
 
       {filtered.length === 0 ? (
-        <p className="py-4 text-[13px] text-muted">No groups match.</p>
+        <p className="py-4 text-sm text-muted">No groups match.</p>
       ) : (
         <div className="flex flex-col">
           {filtered.map((r) => (

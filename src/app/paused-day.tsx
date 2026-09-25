@@ -29,9 +29,9 @@ export function PausedDay({
 }) {
   return (
     <>
-      <section className="flex flex-col gap-[6px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">TODAY</span>
-        <span className="text-[38px] font-semibold leading-none text-muted">Paused</span>
+      <section className="flex flex-col gap-1.5">
+        <span className="text-micro tracking-label text-muted">TODAY</span>
+        <span className="text-4xl font-semibold leading-none text-muted">Paused</span>
         <div className="mt-2 flex gap-1">
           {[0, 1, 2, 3, 4].map((i) => (
             <div key={i} className="h-[3px] flex-1 border-t border-dashed border-rule" />
@@ -40,19 +40,19 @@ export function PausedDay({
       </section>
 
       <div className="flex flex-col gap-[5px] border border-accent p-[13px]">
-        <div className="flex items-baseline justify-between gap-[10px]">
-          <span className="text-[12.5px] text-accent">Back on {backOn}.</span>
-          <span className="flex-none text-[11px] text-accent">
+        <div className="flex items-baseline justify-between gap-2.5">
+          <span className="text-xs text-accent">Back on {backOn}.</span>
+          <span className="flex-none text-2xs text-accent">
             {daysLeft} {daysLeft === 1 ? "day" : "days"}
           </span>
         </div>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           Nothing is scheduled and nothing counts.
         </span>
       </div>
 
-      <section className="flex flex-col gap-[10px]">
-        <span className="text-[10px] tracking-[0.16em] text-muted">
+      <section className="flex flex-col gap-2.5">
+        <span className="text-micro tracking-label text-muted">
           WHILE YOU ARE AWAY
         </span>
         <div className="flex flex-col">
@@ -67,11 +67,11 @@ export function PausedDay({
               key={what}
               className="flex items-baseline justify-between gap-3 border-b border-rule py-[11px]"
             >
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[12.5px]">{what}</span>
-                {why ? <span className="text-[10.5px] text-muted">{why}</span> : null}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs">{what}</span>
+                {why ? <span className="text-micro text-muted">{why}</span> : null}
               </div>
-              <span className="text-right text-[13px] text-muted">{value}</span>
+              <span className="text-right text-sm text-muted">{value}</span>
             </div>
           ))}
         </div>
@@ -83,20 +83,20 @@ export function PausedDay({
               one. Coming back early needs nothing, so it happens here. */}
           <Link
             href="/settings/pause"
-            className="border border-rule px-3 py-[8px] text-[12.5px]"
+            className="border border-rule px-3 py-2 text-xs"
           >
             Extend
           </Link>
           <ActionForm action={endPauseAction}>
             <SubmitButton
               pendingLabel="Saving"
-              className="border border-rule px-3 py-[8px] text-[12.5px]"
+              className="border border-rule px-3 py-2 text-xs"
             >
               Come back early
             </SubmitButton>
           </ActionForm>
         </div>
-        <span className="text-[11.5px] leading-[1.55] text-muted">
+        <span className="text-2xs leading-relaxed text-muted">
           Coming back early takes effect tomorrow.
         </span>
       </section>

@@ -145,7 +145,7 @@ export function CheckRow({
           </svg>
         ) : null}
       </span>
-      <span className={"text-[12px] " + (on ? "text-fg" : "text-muted")}>{children}</span>
+      <span className={"text-xs " + (on ? "text-fg" : "text-muted")}>{children}</span>
     </button>
   );
 }
@@ -177,7 +177,7 @@ export function Toggle({
       disabled={disabled}
       onClick={onClick}
       className={
-        "flex h-[22px] w-10 flex-none items-center p-[2px] active:opacity-70 disabled:opacity-40 " +
+        "flex h-[22px] w-10 flex-none items-center p-0.5 active:opacity-70 disabled:opacity-40 " +
         (on ? "justify-end border border-fg bg-fg" : "justify-start border border-rule")
       }
     >
@@ -200,7 +200,7 @@ export function InfoHint({ children, label = "More information" }: {
         aria-label={label}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="ml-2 inline-flex h-4 w-4 items-center justify-center border border-muted text-[11px] leading-none text-muted"
+        className="ml-2 inline-flex h-4 w-4 items-center justify-center border border-muted text-2xs leading-none text-muted"
       >
         i
       </button>
@@ -208,13 +208,13 @@ export function InfoHint({ children, label = "More information" }: {
         <span
           role="dialog"
           aria-label={label}
-          className="absolute left-0 top-6 z-10 w-72 border border-fg bg-bg p-3 text-left text-[12px] font-normal leading-5 tracking-normal text-fg shadow-none"
+          className="absolute left-0 top-6 z-10 w-72 border border-fg bg-bg p-3 text-left text-xs font-normal leading-5 tracking-normal text-fg shadow-none"
         >
           <span className="block">{children}</span>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="mt-2 border border-fg px-2 py-1 text-[11px]"
+            className="mt-2 border border-fg px-2 py-1 text-2xs"
           >
             Close
           </button>
@@ -270,10 +270,10 @@ function ActionFormInner({
     <form ref={setFormEl} action={formAction} className={className}>
       {children}
       {state.error ? (
-        <p className="mt-2 text-[13px] text-penalty">{state.error}</p>
+        <p className="mt-2 text-sm text-penalty">{state.error}</p>
       ) : null}
       {state.note ? (
-        <p className="mt-2 whitespace-pre-wrap text-[13px] text-pass">{state.note}</p>
+        <p className="mt-2 whitespace-pre-wrap text-sm text-pass">{state.note}</p>
       ) : null}
     </form>
   );
@@ -318,12 +318,12 @@ export function ConfirmButton({
 
   const triggerClass =
     tone === "danger"
-      ? "border border-penalty px-3 py-[6px] text-[13px] text-penalty"
-      : "border border-rule px-3 py-[6px] text-[13px]";
+      ? "border border-penalty px-3 py-1.5 text-sm text-penalty"
+      : "border border-rule px-3 py-1.5 text-sm";
   const confirmClass =
     tone === "danger"
-      ? "border border-penalty bg-penalty px-3 py-[8px] text-[13px] text-bg"
-      : "border border-fg bg-fg px-3 py-[8px] text-[13px] text-bg";
+      ? "border border-penalty bg-penalty px-3 py-2 text-sm text-bg"
+      : "border border-fg bg-fg px-3 py-2 text-sm text-bg";
 
   return (
     <form action={formAction}>
@@ -345,15 +345,15 @@ export function ConfirmButton({
             className="w-full max-w-[360px] border border-fg bg-bg p-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-[14px] leading-relaxed">{message}</p>
+            <p className="text-base leading-relaxed">{message}</p>
             {state.error ? (
-              <p className="mt-2 text-[13px] text-penalty">{state.error}</p>
+              <p className="mt-2 text-sm text-penalty">{state.error}</p>
             ) : null}
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="border border-fg px-3 py-[8px] text-[13px]"
+                className="border border-fg px-3 py-2 text-sm"
               >
                 Cancel
               </button>

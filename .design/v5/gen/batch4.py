@@ -24,7 +24,7 @@ mk.append("""  <div style="flex: none; padding: 4px 20px 0;">
     <div style="margin-top: 16px; height: 8px; border-radius: 999px; background: %s; position: relative; overflow: hidden;">
       <span style="position: absolute; left: 0; top: 0; bottom: 0; width: 71%%; border-radius: 999px; background: %s;"></span>
     </div>
-    <p style="margin: 14px 0 0; font-size: 13.5px; line-height: 1.48; color: %s;">Passed over scheduled, counted at the end of the day. There is no streak on this, no bar to clear and no fine attached to it.</p>
+    <p style="margin: 14px 0 0; font-size: 13.5px; line-height: 1.48; color: %s;">Passed over scheduled. No streak, no bar, no fine.</p>
   </div>
 """ % (MONO, MONO, GREY, GREY, CARD2, PINK, GREY))
 
@@ -60,7 +60,7 @@ mk.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px;
     denominator moves daily. Gym is in today because he went; on a Wednesday he
     does not go, it is simply not asked, and a weekly can only ever lift a day.
   -->
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Gym counts today because you went. On a day you do not, it is not asked and it is not held against you: only what was scheduled is in the denominator.</p>
+  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Only what was scheduled counts.</p>
 """ % (CARD, MONO, GREY))
 
 mk.append(section('This week', top=26))
@@ -83,7 +83,7 @@ mk.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px;
     A day where nothing in the set was scheduled is 0 of 0. It is no score at
     all and it must never render as 0%%, so Wednesday carries a dash.
   -->
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Wednesday has a dash because nothing in the set was scheduled that day. Nothing to pass is not the same as failing everything.</p>
+  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">A dash means nothing was scheduled.</p>
 """ % (CARD, MONO, SEP, MONO, GREY))
 mk.append(grow())
 mk.append(tabbar('Main.dc.html'))

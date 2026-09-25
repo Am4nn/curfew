@@ -44,7 +44,6 @@ export const waterActivity: ActivityType<WaterConfig, WaterEvidence> = {
   evidence: {
     level: "none",
     source: "live",
-    detail: "Nothing to photograph. This runs on your word.",
   },
   checkin: { kind: "counter" },
   chart: {

@@ -74,12 +74,23 @@ describe("the seventeen configure screens", () => {
     }
   });
 
-  it("state their evidence rule in their own words", () => {
+  // 1.59. NEVER EXPLAIN AN ABSENCE. Nine types carried a line saying, in nine
+  // wordings, that there is nothing to photograph and the app takes your word.
+  // A struck-through camera beside "No photo" had already said it.
+  //
+  // So the rule inverts: a type that wants a photograph says what of, because
+  // that is a fact somebody needs before pressing. A type that wants none says
+  // nothing, and the assertion is that it says nothing.
+  it("say what a photograph is for, and say nothing when there is none", () => {
     for (const key of registeredKeys()) {
       const type = getActivityType(key);
+      if (type.evidence.level === "none") {
+        expect(type.evidence.detail, key).toBeUndefined();
+        continue;
+      }
       expect(type.evidence.detail, key).not.toBe("");
-      // "Photo required" and "No photo" are the engine's words; the sentence
-      // under them belongs to the type.
+      // "Photo required" is the engine's words; the sentence under it is the
+      // type's own.
       expect(type.evidence.detail, key).toMatch(/\.$/);
     }
   });

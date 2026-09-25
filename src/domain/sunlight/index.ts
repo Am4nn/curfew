@@ -33,6 +33,5 @@ export const sunlightActivity = abstinenceActivity({
   prompt: () => "Sunlight this morning. Did you get out in it?",
   chartHeading: "MORNINGS YOU GOT OUT",
   windowHint: "After the morning is over you say whether you got out.",
-  evidenceDetail: "A photograph cannot say when you were outside. This one runs on your word.",
   note: "You still check in once a day. Saying nothing is not a pass, or the app would reward never opening it.",
 });

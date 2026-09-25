@@ -17,6 +17,5 @@ export const junkfreeActivity = abstinenceActivity({
   prompt: () => "No junk food today. Did it hold?",
   chartHeading: "DAYS THAT HELD",
   windowHint: "End of the day you say whether it held.",
-  evidenceDetail: "Nothing can prove absence. This one runs on your word.",
   note: "What counts as junk is yours to decide, and the app never asks. It only records the answer you give.",
 });

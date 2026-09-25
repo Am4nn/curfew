@@ -35,6 +35,5 @@ export const coldshowerActivity = abstinenceActivity({
   prompt: () => "A cold shower today. Did you take one?",
   chartHeading: "DAYS YOU TOOK ONE",
   windowHint: "Next morning you say whether you took one.",
-  evidenceDetail: "Nothing can prove a shower. This one runs on your word.",
   note: "You still check in once a day. Saying nothing is not a pass, or the app would reward never opening it.",
 });

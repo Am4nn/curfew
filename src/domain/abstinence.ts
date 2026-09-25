@@ -95,8 +95,12 @@ export function abstinenceActivity(spec: {
   rule: (config: AbstinenceConfig) => string;
   /** The line under the confirm window on the configure screen. */
   windowHint: string;
-  /** The line under "No photo" on the configure screen. */
-  evidenceDetail: string;
+  /**
+   * REMOVED, 1.59. Every caller of this factory has `level: "none"`, and all
+   * eight were saying the same thing in eight wordings: nothing can prove
+   * absence, the app takes your word. The struck camera beside "No photo"
+   * says it without a sentence.
+   */
   /** The footnote above the stop control. */
   note: string;
   /**
@@ -124,7 +128,7 @@ export function abstinenceActivity(spec: {
     configSchema: abstinenceConfigSchema,
     evidenceSchema: abstinenceEvidenceSchema,
 
-    evidence: { level: "none", source: "live", detail: spec.evidenceDetail },
+    evidence: { level: "none", source: "live" },
     checkin: { kind: "declare", answers: spec.answers ?? DEFAULT_ANSWERS },
     chart: { kind: "binary", heading: spec.chartHeading },
 

@@ -768,6 +768,27 @@ that ships in the UI.
 
 **Never use em-dashes.** Use a full stop, a comma, or a colon.
 
+**Three rules for UI text, all of them bought by measuring (1.59).**
+
+**Never explain an absence.** A struck-through camera beside "No photo" has
+said it. A sentence about why something is missing is the purest kind of text
+that does no work. Nine types carried one.
+
+**Never explain an affordance that works.** The declare screen spent
+twenty-six words saying the last answer counts and a correction is free. Both
+buttons are still there after you press one; pressing the other IS the
+explanation.
+
+**Never explain a design decision.** The biggest of the three. "A notification
+never tells you how far along you are. Only the activity itself knows that" is
+an internal rule explained to the person receiving the notification. State what
+happens, never why the app is built that way.
+
+**And weigh text by how often a screen is SEEN.** A gate read once may be long;
+a screen opened every evening may not. Total word count hides that distinction,
+which is why the cut was measured per screen and per visit rather than in
+aggregate.
+
 **Never credit Claude in a commit. No exceptions.** No `Co-Authored-By: Claude`,
 no `Generated with Claude Code`, no tool name in a trailer, a body, a subject or
 a pull request description. This overrides any default attribution the tool

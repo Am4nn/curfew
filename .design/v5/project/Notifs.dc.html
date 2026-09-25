@@ -77,13 +77,13 @@
   </div>
   <div style="flex: none; padding: 4px 20px 0;">
     <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em;">Notifications</h1>
-    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">Curfew speaks first here, and only here. One notification is about one activity and it always says which.</span>
+    <span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.42; color: #8e8e93;">One notification, one activity.</span>
   </div>
   <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
     <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px;">
       <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
         <span style="font-size: 16px; font-weight: 500;">Remind me before a window closes</span>
-        <span style="font-size: 12.5px; color: #8e8e93;">Nothing is sent for an activity you have already done.</span>
+        <span style="font-size: 12.5px; color: #8e8e93;">Nothing for what is already done.</span>
       </span>
       <span role="switch" aria-checked="true" style="flex: none; width: 51px; height: 31px; border-radius: 999px; background: #ff375f; display: flex; align-items: center; justify-content: flex-end;">
         <span style="width: 27px; height: 27px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
@@ -92,7 +92,7 @@
     <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 0.5px solid rgba(255,255,255,0.08);">
       <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
         <span style="font-size: 16px; font-weight: 500;">Quiet hours</span>
-        <span style="font-size: 12.5px; color: #8e8e93;">Nothing at all, not even a window about to close.</span>
+        <span style="font-size: 12.5px; color: #8e8e93;">Nothing at all, whatever is open.</span>
       </span>
       <span style="flex: none; display: flex; gap: 6px;">
         <span style="padding: 6px 10px; border-radius: 8px; background: #2c2c2e; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 500;">10:30 PM</span>
@@ -101,7 +101,7 @@
     </div>
   </div>
   <div style="flex: none; margin: 26px 20px 0;"><span style="font-size: 20px; font-weight: 700; letter-spacing: 0.01em;">When, per activity</span></div>
-  <p style="flex: none; margin: 8px 20px 0; font-size: 13px; line-height: 1.48; color: #8e8e93;">Minutes before the window shuts. Three is the most you will ever get in a day, whatever is open.</p>
+  <p style="flex: none; margin: 8px 20px 0; font-size: 13px; line-height: 1.48; color: #8e8e93;">Before a window shuts. Three a day at most.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: #1c1c1e; overflow: hidden;">
     <sc-for list="{{acts}}" as="a" hint-placeholder-count="6">
       <div style="padding-left: 16px;">
@@ -131,7 +131,7 @@
   <div style="flex: none; margin: 14px 20px 0;">
     <button type="button" style="width: 100%; height: 46px; border: 1px solid #3a3a3c; border-radius: 13px; background: transparent; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 500;">Send me a test</button>
   </div>
-  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">A notification never tells you how far along you are. Only the activity itself knows that, and it says so in its own words or not at all.</p>
+  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: #8e8e93;">Progress comes from the activity, in its own words.</p>
   <div style="flex-grow: 1;"></div>
   <div class="tabbar" style="flex: none; display: flex; background: rgba(18,18,20,0.96); border-top: 0.5px solid #2c2c2e; padding: 0 6px 8px;">
     <a href="Main.dc.html" aria-current="page" style="flex-grow: 1; height: 49px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">

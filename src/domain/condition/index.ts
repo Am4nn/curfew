@@ -79,7 +79,6 @@ const base = abstinenceActivity({
   prompt: () => "Did it hold today?",
   chartHeading: "DAYS THAT HELD",
   windowHint: "End of the day you say whether it held.",
-  evidenceDetail: "Nothing can prove absence. This one runs on your word.",
   note: "You wrote this one, so only you know what it means. The app records the answer you give and never asks what it was.",
 });
 

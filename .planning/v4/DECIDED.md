@@ -2013,6 +2013,57 @@ measuring gutters and line-height before the cut would be measuring a layout
 that is about to change. The boards get redrawn, then spacing gets its own
 pass.
 
+### 1.59 Three rules for cutting text, and what they took
+
+Settled 2026-09-25. Aman: *"keep cutting... not many apps have that much of
+text on every day to day screens."*
+
+**Measured by how often a screen is SEEN**, because that is the distinction
+that matters and total word count hides it. A gate somebody reads once may be
+long. A screen somebody opens every evening may not.
+
+**1. Never explain an absence.** Nine types carried a line saying, in nine
+wordings, that there is nothing to photograph and the app takes your word. A
+struck-through camera beside "No photo" had already said it. `evidence.detail`
+is optional now, and `configure.test.ts` asserts it is UNDEFINED where the
+level is none, so the sentence cannot come back.
+
+A type that wants a photograph still says what of, because that is a fact
+somebody needs before pressing.
+
+**2. Never explain an affordance that works.** The declare screen spent
+twenty-six words telling you the last answer counts and a correction is free.
+Both buttons are still on the screen after you press one. **Pressing the other
+one is the explanation.** It is four words now.
+
+**3. Never explain a design decision.** The largest of the three. These screens
+were documenting the app to its user:
+
+> *"A notification never tells you how far along you are. Only the activity
+> itself knows that, and it says so in its own words or not at all."*
+
+That is 1.24, an internal rule, explained to the person receiving the
+notifications. They do not need to know why. Monk mode explained its own
+denominator twice; Sharing explained the ceiling in four paragraphs.
+
+### What it took
+
+| | before | after |
+|---|---|---|
+| The declare check-in screen | 66 words | **30** |
+| The eight declare modules | 652 words | **301** |
+| Screens seen every day | 438 | **382** |
+| Screens seen sometimes | 997 | **832** |
+| All 41 boards | 5381 | **5160** |
+
+Two hundred of the cut are on screens somebody sees daily or weekly, which is
+where it counts. The gate and the reference boards were left alone: Consent is
+1673 words and is meant to be read once, carefully.
+
+**Spacing is next**, and separately, because removing forty words from a screen
+changes its rhythm and measuring gutters before the cut would measure a layout
+about to change.
+
 ---
 
 ## 2. Confirmed unchanged

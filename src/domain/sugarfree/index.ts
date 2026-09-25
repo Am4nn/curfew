@@ -16,6 +16,5 @@ export const sugarfreeActivity = abstinenceActivity({
   prompt: () => "No sugar today. Did it hold?",
   chartHeading: "DAYS THAT HELD",
   windowHint: "End of the day you say whether it held.",
-  evidenceDetail: "Nothing can prove absence. This one runs on your word.",
   note: "You still check in once a day. Saying nothing is not a pass, or the app would reward never opening it.",
 });

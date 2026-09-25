@@ -261,7 +261,18 @@ function EvidenceFact({ rule }: { rule: EvidenceRule }) {
         <span className="text-[13px]">
           {none ? "No photo" : `Photo ${rule.level}`}
         </span>
-        <span className="text-[11px] leading-[1.5] text-muted">{rule.detail}</span>
+        {/*
+          1.59. NEVER EXPLAIN AN ABSENCE. Nine types carried a line here
+          saying, in nine slightly different wordings, that there is nothing
+          to photograph and the app takes your word. A struck-through camera
+          beside the words "No photo" has already said it.
+
+          A type that DOES want a photograph still says what of, because that
+          is a fact somebody needs before pressing.
+        */}
+        {rule.detail ? (
+          <span className="text-[11px] leading-[1.5] text-muted">{rule.detail}</span>
+        ) : null}
       </div>
     </div>
   );

@@ -23,6 +23,5 @@ export const socialfreeActivity = abstinenceActivity({
   prompt: () => "Social media today. Did it hold?",
   chartHeading: "DAYS THAT HELD",
   windowHint: "End of the day you say whether it held.",
-  evidenceDetail: "Nothing can prove absence. This one runs on your word.",
   note: "Which apps count is yours to decide, and the app never asks. It only records the answer you give.",
 });

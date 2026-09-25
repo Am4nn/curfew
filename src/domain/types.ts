@@ -147,7 +147,7 @@ export interface EvidenceRule {
    * own words. "Gallery allowed. A shot of your watch or app counts." is a
    * sentence about steps, not about evidence in general.
    */
-  detail: string;
+  detail?: string;
   /**
    * What the browser compresses to (decision 97). Defaults are 1280px at
    * quality 0.75; a type whose photo carries detail worth keeping asks for

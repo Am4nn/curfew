@@ -75,7 +75,7 @@ st.append(rows_card([
     ('Time zone', 'Asia/Kolkata', '#ffffff', None),
     ('Your day starts', '4:00 AM', '#ffffff', None),
 ], margin=12))
-st.append('  <p style="flex: none; margin: 10px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">A day belongs to you and not to UTC, so every window, streak and fine is judged in this zone.</p>\n' % GREY)
+st.append('  <p style="flex: none; margin: 10px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Every window and fine is judged in this zone.</p>\n' % GREY)
 
 st.append(eyebrow('REN AND YOUR FRIENDS', GREY, top=26))
 st.append(rows_card([
@@ -154,7 +154,7 @@ write('Settings.dc.html', st)
 H = 1300
 sh = [HEAD, root(H)]
 sh.append(nav('Settings.dc.html', 'Back to you'))
-sh.append(title('What you share', 'One switch per activity, per group. On means they see it, photographs included, and their coaches read them.'))
+sh.append(title('What you share', 'On means they see it, photographs included.'))
 
 # Three groups, unrolled, so each one is its own card with its own heading. A
 # loop inside a loop is not a shape these artboards are documented to support,
@@ -170,7 +170,7 @@ sh.append("""  <!--
     <div style="display: flex; align-items: baseline; gap: 8px;">
       <span style="font-family: %s; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: %s;">WHAT SHARING BUYS</span>
     </div>
-    <span style="font-size: 13.5px; line-height: 1.5; color: %s;">Your standing in a group can only climb as high as the share of its activities you share. <span style="color:#ffffff;">Four of five in Wing caps you at 850.</span> Turning one off does not erase what you earned: the score settles down to the lower number, two points a day.</span>
+    <span style="font-size: 13.5px; line-height: 1.5; color: %s;">Your ceiling is the share of a group you share. <span style="color:#ffffff;">Four of five in Wing caps you at 850.</span> Your score settles down, two points a day.</span>
   </div>
 """ % (CARD, MONO, GREY, GREY))
 
@@ -195,7 +195,7 @@ for gname, gnote, gkey in GROUPS:
   </div>
 """ % (gname, GREY, gnote, CARD, gkey))
 
-sh.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Switching one off stops it now, photographs included, and takes back the ones already sent. It does not un-see them: the group saw them.</p>
+sh.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Stops now and takes back what was sent. They have already seen them.</p>
 """ % GREY)
 sh.append(grow())
 sh.append(tabbar('Main.dc.html'))
@@ -228,13 +228,13 @@ write('Sharing.dc.html', sh)
 H = 1210
 nt = [HEAD, root(H)]
 nt.append(nav('Settings.dc.html', 'Back to you'))
-nt.append(title('Notifications', 'Curfew speaks first here, and only here. One notification is about one activity and it always says which.'))
+nt.append(title('Notifications', 'One notification, one activity.'))
 
 nt.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px;">
       <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
         <span style="font-size: 16px; font-weight: 500;">Remind me before a window closes</span>
-        <span style="font-size: 12.5px; color: %s;">Nothing is sent for an activity you have already done.</span>
+        <span style="font-size: 12.5px; color: %s;">Nothing for what is already done.</span>
       </span>
       <span role="switch" aria-checked="true" style="flex: none; width: 51px; height: 31px; border-radius: 999px; background: %s; display: flex; align-items: center; justify-content: flex-end;">
         <span style="width: 27px; height: 27px; margin: 0 2px; border-radius: 999px; background: #ffffff;"></span>
@@ -243,7 +243,7 @@ nt.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px;
     <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 0.5px solid %s;">
       <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
         <span style="font-size: 16px; font-weight: 500;">Quiet hours</span>
-        <span style="font-size: 12.5px; color: %s;">Nothing at all, not even a window about to close.</span>
+        <span style="font-size: 12.5px; color: %s;">Nothing at all, whatever is open.</span>
       </span>
       <span style="flex: none; display: flex; gap: 6px;">
         <span style="padding: 6px 10px; border-radius: 8px; background: %s; font-family: %s; font-size: 14px; font-weight: 500;">10:30 PM</span>
@@ -254,7 +254,7 @@ nt.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px;
 """ % (CARD, GREY, PINK, SEP, GREY, CARD2, MONO, CARD2, MONO))
 
 nt.append(section('When, per activity', top=26))
-nt.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13px; line-height: 1.48; color: %s;">Minutes before the window shuts. Three is the most you will ever get in a day, whatever is open.</p>
+nt.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13px; line-height: 1.48; color: %s;">Before a window shuts. Three a day at most.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{acts}}" as="a" hint-placeholder-count="6">
       <div style="padding-left: 16px;">
@@ -288,7 +288,7 @@ nt.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 16px;
   <div style="flex: none; margin: 14px 20px 0;">
     <button type="button" style="width: 100%%; height: 46px; border: 1px solid #3a3a3c; border-radius: 13px; background: transparent; color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 500;">Send me a test</button>
   </div>
-  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">A notification never tells you how far along you are. Only the activity itself knows that, and it says so in its own words or not at all.</p>
+  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Progress comes from the activity, in its own words.</p>
 """ % (PINK, MONO, DIM, GREY))
 nt.append(grow())
 nt.append(tabbar('Main.dc.html'))

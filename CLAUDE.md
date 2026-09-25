@@ -569,11 +569,26 @@ notice     bun run publish:notice  — announce a release to the people already 
 sleep      bun run migrate:sleep   — move existing members onto the anchored confirm
 remind     bun run check:reminders — a reminder is sent only when a press would count
 sim        bun run sim:push        — a day of notifications, printed, no database
+estab      bun run sim:consistency — a year of the habit number, printed, no database
 push       bun run check:push      — what Curfew actually said to people
 schedule   bun run schedule         — reconcile every QStash tick with JOBS
 rewrite    bun run schedule -- --rewrite — recreate all; the failure callback
                                      is the one field QStash never reports back
 ```
+
+**`bun run sim:consistency` is the same gate for the number that replaces the
+streak (1.49).** It walks six lives at the real function and prints what the
+row would have read: a perfect run from nothing, forty days then one missed,
+a week away, a three-in-five life, Gym where a period is a week, and a
+scattered cue. It needs nothing running.
+
+It exists for the reason `sim:push` does. Properties cannot tell you a number
+FEELS wrong, the same way a unit test cannot tell you a sentence is false,
+and reading the output found two things twelve passing property tests did
+not: a row saying "established 77%, 0 to automatic", which is a countdown
+that had finished and kept printing, and a column of weeks labelled days.
+
+Read it before changing a constant in `consistency.ts`.
 
 **`bun run sim:push` is the review gate for notification copy, and reading its
 output is the point of it.** It walks seven fabricated days at the real

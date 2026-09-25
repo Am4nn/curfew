@@ -111,19 +111,42 @@ if (COACH.length > 0) {
   const proposed = new Set(
     [...COACH.matchAll(/^(?:\*\*|### )C(\d+)\./gm)].map((m) => m[1]),
   );
+  // CITED is not PHASED, and the first version of this check only asked the
+  // first question. C10 was mentioned in one aside inside Phase 2 and was
+  // never built by any phase, and it passed. So the test is now which PHASE
+  // builds it: the C has to appear somewhere below a `## Phase` heading.
+  //
+  // A proposal that is a DIRECTION rather than a build item says so in
+  // DECIDED, in as many words, and the reason is then visible to a reader
+  // instead of being an exception nobody can see.
+  const phases = PLAN.split(/^## Phase /m).slice(1);
+  const built = new Set<string>();
+  for (const phase of phases) {
+    for (const m of phase.matchAll(/\bC(\d+)\b/g)) built.add(m[1]);
+  }
+  // Two ways out, both of which have to be SAID in DECIDED so a reader
+  // meets the reason rather than an exception nobody can see: a proposal
+  // that is a DIRECTION rather than a build item, and one a later
+  // proposal SUPERSEDED.
+  const excused = new Set(
+    [...DECIDED.matchAll(/\bC(\d+) is (?:a direction|superseded)\b/g)].map(
+      (m) => m[1],
+    ),
+  );
+  const orphaned = [...proposed]
+    .filter((c) => !built.has(c) && !excused.has(c))
+    .sort((a, b) => Number(a) - Number(b))
+    .map((c) => `C${c}`);
+  check(
+    "every COACH.md proposal is built by a phase, or excused in DECIDED",
+    orphaned.length === 0,
+    orphaned.length ? `${orphaned.join(", ")} has no phase` : undefined,
+  );
+
   const placed = new Set<string>();
   for (const text of [DECIDED, PLAN]) {
     for (const m of text.matchAll(/\bC(\d+)\b/g)) placed.add(m[1]);
   }
-  const orphaned = [...proposed]
-    .filter((c) => !placed.has(c))
-    .sort((a, b) => Number(a) - Number(b))
-    .map((c) => `C${c}`);
-  check(
-    "every COACH.md proposal is settled in DECIDED or placed in PLAN",
-    orphaned.length === 0,
-    orphaned.length ? `${orphaned.join(", ")} cited only in COACH.md` : undefined,
-  );
   // And the reverse: a phase that cites a proposal nobody wrote.
   const dangling = [...placed]
     .filter((c) => !proposed.has(c))

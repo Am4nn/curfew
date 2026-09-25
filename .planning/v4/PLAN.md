@@ -122,6 +122,15 @@ derived** — that is their job, and they are a tripwire rather than a chore:
 `catalog.test.ts:29` (`toHaveLength(12)`), `configure.test.ts:12-43` (a label
 per type, in order), `checkin.test.ts:38-62` (which types repeat).
 
+### A target is not a bar (C9)
+
+`pass.ts` was handed a target and used it as a bar, so two meals of three
+scored exactly like none. Food carries an aim and a floor; the floor decides
+the day and the aim rides in `detail` where the consistency measure and Ren can
+read it. `mealsFloor` is nullish, so every config row written before it parses
+unchanged and is judged as it was. Water, Steps, Reading and Study take the
+same shape when they need it.
+
 **Done when:** seventeen types in the catalog, a member-written one can be
 created and checked in, `check:offer` passes for every new type, and `simulate`
 runs a week with all five and reports no drift.
@@ -150,6 +159,12 @@ that C6 established. **Nothing new is stored**: every input is already in
 
 **A late log does not feed it** (C10), and neither does a press far from the
 cue, which is the fault the activities review found in Cold shower.
+
+**A miss does not reset it** (C2). It counts repetitions over a trailing
+window, so a missed day simply adds nothing and old ones age out. That is the
+whole difference from a streak, and it is a property of the arithmetic rather
+than a rule laid over it: there is no branch anywhere that says what a miss
+does.
 
 ### The demotion (1.49)
 
@@ -218,6 +233,49 @@ touching the other four; a do-something type shows a percentage that dips on a
 miss and recovers; an abstinence type still shows a flame; a group sees the
 right one for each shared type; `verify` reports no drift, because nothing it
 reads has changed.
+
+## Phase 2.5 — The check-in screen gets kinder (C10, C11)
+
+Two changes, one screen, and its own phase because v4 does not otherwise touch
+check-in. They were decided on 2026-09-23 and had no phase until the
+verification round on 2026-09-24 went looking, which is the thing a phase
+number exists to prevent.
+
+### C10 — a late log
+
+Food is `evidence: { level: "required", source: "live" }`, so a meal nobody
+photographed cannot be logged later at all. **The live camera was never proving
+the meal**: nothing in the app has ever inspected a photograph. It proves
+somebody was present and deliberate at the moment of logging, and that is what
+stops a week being backfilled in one sitting.
+
+So a late log keeps the camera and the photo may be of anything:
+
+- allowed until the period has been closed a few hours, and no longer,
+- the event carries `late: true`,
+- its evidence is **never shared to a group and never sent to Ren** (1.22),
+  because it is not a picture of the meal,
+- it **does not feed the consistency measure**. A press at 11 PM for a lunch is
+  exactly the timestamp the cue must not read, which is the fault the
+  activities review found in Cold shower.
+
+Every invariant survives: an explicit press (9), a server timestamp (8), one
+event (1), scored from `checkin.*` alone (2).
+
+### C11 — same as yesterday
+
+One tap repeats the last period's entry, for every type that takes a number.
+No new data: it reads the previous period's own check-ins.
+
+The objection is real and belongs here rather than in a commit message.
+Invariant 9 exists because a press should be a deliberate act, and a one-tap
+repeat is the nearest thing in the app to logging without looking. What keeps
+it honest is that it still requires the press, and for Food it still requires
+the camera. **It saves typing, not attention.**
+
+**Done when:** a meal missed yesterday can be logged today, is marked late,
+reaches no group, and moves the consistency measure not at all; and one tap
+repeats yesterday's water without opening a field.
 
 ## Phase 3 — Monk mode (1.16, 1.29)
 
@@ -314,6 +372,12 @@ behind the same seam for Ask Ren, text only. The rolling summary rewritten
 nightly, with read, edit and clear (1.25). The daily cap, and the ceiling that
 switches Ask Ren off while the nightly lines carry on. Ren off is a real off
 (1.14).
+
+**C3, the line the morning after**, lands here with him. "Never miss twice" is
+what the evidence supports, and after 1.49 it applies to the six abstinence
+types alone: for the twelve there is no morning after, because a percentage
+dips and recovers, and a line about that would be a line about an ordinary
+Tuesday.
 
 **The failure path proved rather than assumed** (1.23): make a real call fail
 and watch retries, DLQ, the empty state and the guarded recompute — the way

@@ -1626,10 +1626,16 @@ Neither needs a hostile migration: both are derived reads over `events`, so
 invariant 1 holds and the streak tables are untouched. **The real risk is two
 numbers on one Home row and nobody knowing which to look at.**
 
-**The activities review comes next and is part of this**, because C5 is a
-question about every type: every declare type ships a 20:00 to 23:59 window,
-and four hours is a compliance window rather than a cue. "Sometime in the
-evening" cannot become automatic.
+**The activities review came next and was part of this.** C5 asked it of every
+type: every declare type ships a 20:00 to 23:59 window, and four hours is a
+compliance window rather than a cue.
+
+**C5 is superseded by C6**, and `COACH.md` keeps the wrong version standing
+rather than replacing it quietly. The review found that window is a REPORTING
+window, not a compliance one, and tightening when somebody reports does nothing
+for a habit: it only makes it easier to miss. The real fault was elsewhere, in
+two types confirming at 8 PM for something done at 7 AM, and the cue turned out
+to be a field that already existed.
 
 ### 1.48 A target is not a bar, and forgetting is not failing
 
@@ -1667,8 +1673,10 @@ deliberateness at the moment of logging, which is what stops a week being
 backfilled in one sitting. A late log keeps the camera, carries `late: true`,
 is never shared and never sent to Ren, and **does not feed C1's cue measure**.
 
-**C11, same as yesterday**, and **C12, take Lifesum's mechanics and not its
-database.** Degrade rather than break, one-tap repeat, more ways to log. The
+**C11, same as yesterday.** Phase 2.5 with C10.
+
+**C12 is a direction, not a build item**: take Lifesum's mechanics and not its
+database. Degrade rather than break, one-tap repeat, more ways to log. The
 food database, barcode, macros, recipes and wearables are a different product
 and a subscription business, and they overturn two entries on the Not in v4
 list rather than extending one. Curfew stays a habit tracker that happens to

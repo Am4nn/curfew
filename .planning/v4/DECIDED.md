@@ -2046,6 +2046,20 @@ That is 1.24, an internal rule, explained to the person receiving the
 notifications. They do not need to know why. Monk mode explained its own
 denominator twice; Sharing explained the ceiling in four paragraphs.
 
+### A fourth rule, from the second pass
+
+**A sentence that could be a label should be a label.** The first pass took the
+paragraphs; a second sweep over every string of seven words or more found 116 of
+them, and most were not explaining anything in particular. They were simply
+sentences where other apps use two words.
+
+> *"Tell Curfew you are away and those days do not count against you. Say so
+> first: an away day cannot be declared after the fact."*
+
+became *"Declared in advance. Those days do not count against you."*
+
+Fifty-one strings went this way across two sweeps.
+
 ### What it took
 
 | | before | after |
@@ -2053,8 +2067,20 @@ denominator twice; Sharing explained the ceiling in four paragraphs.
 | The declare check-in screen | 66 words | **30** |
 | The eight declare modules | 652 words | **301** |
 | Screens seen every day | 438 | **382** |
-| Screens seen sometimes | 997 | **832** |
-| All 41 boards | 5381 | **5160** |
+| Screens seen sometimes | 997 | **701** |
+| All 41 boards | 5381 | **4345** |
+| All 41 minus the consent gate | 3708 | **2672** |
+
+### Where it stops
+
+**Eight strings of fifteen words or more are left, and every one of them states
+a fact somebody needs before pressing something.** What Monk mode is still
+missing. What deleting your photographs does. The terms of a group before you
+accept it. What the person you are nudging will see. Ren's own line, which is
+the content of his screen rather than furniture around it.
+
+That is the line: **a long sentence is fine where it is the thing you came to
+read, and wrong where it is decoration around the thing you came to read.**
 
 Two hundred of the cut are on screens somebody sees daily or weekly, which is
 where it counts. The gate and the reference boards were left alone: Consent is

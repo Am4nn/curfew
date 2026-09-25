@@ -7,7 +7,7 @@ from chrome import *
 H = 1150
 ev = [HEAD, root(H)]
 ev.append(nav('Group.dc.html', 'Back to Wing'))
-ev.append(title('What Wing shared', 'Only what each member switched on for this group. Nothing here was collected, all of it was offered.'))
+ev.append(title('What Wing shared', 'Only what each member switched on.'))
 
 SHOTS = [
     ('Today', [
@@ -53,7 +53,7 @@ ev.append("""  <div style="flex: none; margin: 22px 20px 0;">
     limit: a group used to see a member's whole back catalogue the moment they
     joined.
   -->
-  <p style="flex: none; margin: 16px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Wing sees nothing you logged before you joined, and a photograph disappears from here the moment you stop sharing that activity.</p>
+  <p style="flex: none; margin: 16px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Nothing from before you joined.</p>
 """ % GREY)
 ev.append(grow())
 ev.append(tabbar('Groups.dc.html'))
@@ -130,7 +130,7 @@ gs.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px;
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Counted across the group, never per person. Who missed what is on nobody&#39;s screen but their own.</p>
+  <p style="flex: none; margin: 14px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Across the group, never per person.</p>
 """ % (CARD, MONO, GREY, GREY))
 gs.append(grow())
 gs.append(tabbar('Groups.dc.html'))
@@ -214,7 +214,7 @@ led.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 16px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Curfew moves no money. This is a record of what three people agreed, and settling it is between you.</p>
+  <p style="flex: none; margin: 16px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Curfew moves no money. You settle between yourselves.</p>
 """ % (CARD, MONO, ORANGE, ORANGE, GREY, MONO, MONO, DIM, GREY))
 led.append(grow())
 led.append(tabbar('Groups.dc.html'))
@@ -251,7 +251,7 @@ gset.append(nav('Group.dc.html', 'Back to Wing'))
 gset.append(title('Wing', 'Three members. You joined 2 July.'))
 
 gset.append(section('What you share here', top=26))
-gset.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">One switch per activity. On means Wing sees it, photographs included. You share four of five, so your ceiling here is 850.</p>
+gset.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">On means Wing sees it, photographs included.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{shares}}" as="s" hint-placeholder-count="5">
       <div style="padding-left: 16px;">
@@ -294,14 +294,14 @@ gset.append("""  <div style="flex: none; margin: 14px 20px 0; border-radius: 14p
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Only Mira can change these, and a change she makes today takes effect tomorrow. A day already being judged keeps the rules it started under.</p>
+  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Only Mira can change these. Changes start tomorrow.</p>
 """ % (CARD, MONO, GREY))
 
 gset.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <button type="button" style="width: 100%%; border: 0; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: #ffffff;">Invite somebody</button>
     <button type="button" style="width: 100%%; border: 0; border-top: 0.5px solid %s; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: %s;">Leave Wing</button>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Leaving stops the sharing immediately. What you owe stays on the ledger, because a balance is a record of what two people agreed.</p>
+  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Leaving stops the sharing. What you owe stays.</p>
 """ % (CARD, SEP, RED, GREY))
 gset.append(grow())
 gset.append(tabbar('Groups.dc.html'))
@@ -369,7 +369,7 @@ inv.append("""  <div style="flex: none; padding: 4px 20px 0; display: flex; flex
 """ % GREY)
 
 inv.append(section('What Wing tracks', top=26))
-inv.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Choose what they see. You can change every line of this afterwards, and nothing you logged before today is ever shown to them.</p>
+inv.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Choose what they see. Changeable later.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
       <div style="padding-left: 16px;">
@@ -406,7 +406,7 @@ inv.append("""  <!--
     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3.2 19.5 6v6c0 4.2-3 7.2-7.5 8.8C7.5 19.2 4.5 16.2 4.5 12V6Z"/><path d="M8.7 11.8 11.2 14.3 15.6 9.8"/></svg>
     <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
       <span style="font-size: 15px; font-weight: 600;">On means they see it, pictures included</span>
-      <span style="font-size: 13px; line-height: 1.45; color: %s;">One switch each. Wing sees what you share and their coaches read the photographs. Sharing three of four caps your standing here at 812, and sharing more raises it.</span>
+      <span style="font-size: 13px; line-height: 1.45; color: %s;">One switch each. Photographs included.</span>
     </div>
   </div>
 """ % (CARD, ORANGE, GREY))

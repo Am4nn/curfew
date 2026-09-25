@@ -52,7 +52,7 @@ cd.append("""
   <div style="flex: none; padding: 30px 26px 0; display: flex; flex-direction: column; align-items: center;">
     """ + sphere(104, grey=True) + """
     <h1 style="margin: 26px 0 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">Nothing from last night.</h1>
-    <p style="margin: 11px 0 0; font-size: 15.5px; line-height: 1.5; color: %s; text-align: center;">The job that reads your week did not finish. Nothing of yours was lost and no number changed: he never touches those.</p>
+    <p style="margin: 11px 0 0; font-size: 15.5px; line-height: 1.5; color: %s; text-align: center;">The job that reads your week did not finish.</p>
   </div>
 """ % GREY)
 
@@ -64,7 +64,7 @@ cd.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 16px;
       </span>
       <span style="flex-grow: 1; font-family: %s; font-size: 10.5px; font-weight: 700; letter-spacing: 0.13em; color: #ffffff;">FAILED 04:12, RETRIED 3 TIMES</span>
     </div>
-    <span style="font-size: 13.5px; line-height: 1.5; color: %s;">This button is here because the server recorded the failure. It is not here on a day that worked, and pressing it cannot be made to happen from your end.</span>
+    <span style="font-size: 13.5px; line-height: 1.5; color: %s;">The failure was recorded.</span>
     <button type="button" style="width: 100%%; height: 48px; border: 0; border-radius: 14px; background: %s; color: #ffffff; font-family: inherit; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 9px;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.7-5.7L21 9"/><path d="M21 4v5h-5"/></svg>
       Try again
@@ -82,7 +82,7 @@ cd.append("""  <div style="flex: none; margin: 22px 20px 0; display: flex; flex-
   </div>
 """ % (CARD, DIM, DIM, GREY))
 
-cd.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12px; line-height: 1.5; color: %s;">Every number on every other screen is arithmetic over your check-ins and does not go anywhere near him. None of it is affected by any of this.</p>
+cd.append("""  <p style="flex: none; margin: 20px 20px 0; font-size: 12px; line-height: 1.5; color: %s;">Every other number is arithmetic over your check-ins.</p>
 """ % DIM)
 cd.append(grow())
 cd.append(tabbar('Coach.dc.html'))
@@ -105,7 +105,7 @@ H = 1080
 mm = [HEAD, root(H)]
 mm.append(nav('Settings.dc.html', 'Back to you'))
 mm.append(title('What Ren remembers',
-                'One paragraph, rewritten every night. This is everything he carries between conversations: there is no other record of what you have said to him.'))
+                'One paragraph, rewritten every night.'))
 
 mm.append("""  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; padding: 17px 16px; display: flex; flex-direction: column; gap: 13px;">
     <div style="display: flex; align-items: center; gap: 9px;">
@@ -135,10 +135,10 @@ mm.append("""  <div style="flex: none; margin: 14px 20px 0; display: flex; gap: 
 NOTES = [
     (GREY, 'M4 6h16M4 12h16M4 18h10',
      'It is a summary, not a transcript',
-     'Nothing you asked him is kept word for word. He rewrites this paragraph each night and the old one is gone.'),
+     'Nothing is kept word for word.'),
     (AMBER, 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z',
      'Editing it has a cost, and here it is',
-     'Change a line and he will treat it afterwards as something he noticed himself. That is the trade for being able to correct him.'),
+     'Edit a line and he treats it as his own.'),
     (RED, 'M4 7h16M9 7V5h6v2M6.5 7l1 13h9l1-13',
      'Clearing it does not stop him',
      'He starts again tonight from your record, which he can always read. To stop him reading anything, turn him off.'),

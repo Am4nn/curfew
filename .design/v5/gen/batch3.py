@@ -319,11 +319,11 @@ write('Notifs.dc.html', nt)
 H = 1120
 ph = [HEAD, root(H)]
 ph.append(nav('Settings.dc.html', 'Back to you'))
-ph.append(title('Your photographs', '148 of them, newest first. This screen is yours alone: nothing here can be edited, shared or replaced from it.'))
+ph.append(title('Your photographs', '148, newest first. Yours alone.'))
 
 ph.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px; background: %s; padding: 14px 16px; display: flex; gap: 12px;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 7.6v5l3 2"/></svg>
-    <span style="flex-grow: 1; font-size: 13.5px; line-height: 1.48; color: %s;">A photograph is deleted 90 days after it was taken, automatically, whether or not you ask. The check-in it proves stays for ever.</span>
+    <span style="flex-grow: 1; font-size: 13.5px; line-height: 1.48; color: %s;">Deleted 90 days after it was taken.</span>
   </div>
 """ % (CARD, ORANGE, GREY))
 
@@ -353,7 +353,7 @@ write('Photos.dc.html', ph)
 H = 1080
 dt = [HEAD, root(H)]
 dt.append(nav('Settings.dc.html', 'Back to you'))
-dt.append(title('Your data', 'What Curfew holds, and how to be rid of it. Every one of these is final the moment you confirm it.'))
+dt.append(title('Your data', 'What Curfew holds. Each of these is final.'))
 
 dt.append(eyebrow('WHAT IS HELD', GREY, top=24))
 dt.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
@@ -393,7 +393,7 @@ dt.append("""  <div style="flex: none; margin: 20px 20px 0; border-radius: 14px;
     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 2v20M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.6 7 6.5 9.2 10 12 11s5 2.3 5 4.2-2.2 3.3-5 3.3-5-1.4-5-3.3"/></svg>
     <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
       <span style="font-size: 15px; font-weight: 600;">Money is never deleted</span>
-      <span style="font-size: 13px; line-height: 1.45; color: %s;">A ledger entry is a record of what two people agreed, so it belongs to both of them. Deleting your account does not clear what you owe and does not clear what you are owed.</span>
+      <span style="font-size: 13px; line-height: 1.45; color: %s;">Ledger entries stay. They belong to both of you.</span>
     </div>
   </div>
   <div style="flex: none; margin: 20px 20px 0;">
@@ -423,7 +423,7 @@ write('Data.dc.html', dt)
 H = 1010
 aw = [HEAD, root(H)]
 aw.append(nav('Settings.dc.html', 'Back to you'))
-aw.append(title('Away days', 'Tell Curfew you are away and those days do not count against you. Say so first: an away day cannot be declared over a day that has already been judged.'))
+aw.append(title('Away days', 'Declared in advance. Those days do not count against you.'))
 
 aw.append("""  <div style="flex: none; margin: 22px 20px 0; border-radius: 16px; background: %s; padding: 18px 16px; display: flex; align-items: center; gap: 16px;">
     <div style="flex: none; display: flex; flex-direction: column; align-items: center;">
@@ -466,7 +466,7 @@ aw.append("""  <div style="flex: none; margin: 14px 20px 0; display: flex; flex-
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 18px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Your group sees that you are away rather than seeing you vanish, which is the difference between a member on a trip and a member who quit.</p>
+  <p style="flex: none; margin: 18px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Your group sees that you are away.</p>
 """ % GREY)
 aw.append(grow())
 aw.append(tabbar('Main.dc.html'))
@@ -522,7 +522,7 @@ ad.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px;
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 11px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">A paused schedule is not a failed delivery, it is the absence of one, so this reads heartbeats rather than errors. A job late past its own cadence says so here before anything downstream goes wrong.</p>
+  <p style="flex: none; margin: 11px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Heartbeats, not deliveries.</p>
 """ % (CARD, MONO, DIM, MONO, GREY, GREY))
 
 ad.append(eyebrow('FAILURES, LAST 7 DAYS', GREY, top=26))
@@ -551,7 +551,7 @@ ad.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px;
   <div style="flex: none; margin: 12px 20px 0; height: 6px; border-radius: 999px; background: %s; position: relative; overflow: hidden;">
     <span class="fill" style="position: absolute; left: 0; top: 0; bottom: 0; width: 41%%; border-radius: 999px; background: %s;"></span>
   </div>
-  <p style="flex: none; margin: 10px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Above the ceiling Ask Ren switches itself off and the nightly lines carry on, because those cost a known three a day. Admins are told when it fires.</p>
+  <p style="flex: none; margin: 10px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Above the ceiling, Ask Ren stops. Nightly lines carry on.</p>
 """ % (CARD, GREY, MONO, CARD2, PINK, GREY))
 
 ad.append(eyebrow('EVIDENCE', GREY, top=26))
@@ -594,7 +594,7 @@ ad.append("""  <div style="flex: none; margin: 12px 20px 0; border-radius: 14px;
       </div>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 11px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Switching one off takes effect now and rewrites nothing. A period already closed keeps the settings it closed under, and nobody loses the ability to check in.</p>
+  <p style="flex: none; margin: 11px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Takes effect now. Rewrites nothing.</p>
 """ % (CARD, GREY, GREY))
 ad.append(grow())
 ad.append(logic(H, """  renderVals() {

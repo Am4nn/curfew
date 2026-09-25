@@ -102,8 +102,8 @@
       </div>
 
       <h1 style="margin: 28px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
-      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He reads what you log, your photographs and whatever your groups share with you, and he tells you what he notices.</p>
-      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He never decides whether a day counted. That is arithmetic, and it stays arithmetic.</p>
+      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He reads what you log and what your groups share.</p>
+      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: #8e8e93; text-align: center;">He never decides whether a day counted.</p>
     </div>
   </sc-if>
 
@@ -150,7 +150,7 @@
           </button>
         </sc-for>
       </div>
-      <p style="margin: 14px 2px 0; font-size: 13px; line-height: 1.45; color: #8e8e93;">Defaults are filled in for each one. Nothing here is a commitment you cannot undo, and none of it starts until tomorrow.</p>
+      <p style="margin: 14px 2px 0; font-size: 13px; line-height: 1.45; color: #8e8e93;">Defaults are filled in. Nothing here is permanent.</p>
     </div>
   </sc-if>
 
@@ -194,7 +194,7 @@
       <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
         <div style="margin-top: 16px; width: 100%; border-radius: 14px; background: #1c1c1e; padding: 14px 16px; display: flex; gap: 12px;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
-          <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: #8e8e93;">Ren is off. Nothing of yours goes to a model, and there is no coach tab. Switch him on any time in Settings.</span>
+          <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: #8e8e93;">Ren is off. Nothing goes to a model. Switch him on any time.</span>
         </div>
       </sc-if>
     </div>
@@ -206,7 +206,7 @@
     </sc-if>
     <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
       <button type="button" onClick="{{decline}}" style="margin-top: 6px; width: 100%; height: 44px; border: 0; background: transparent; color: #8e8e93; font-family: inherit; font-size: 15px;">I do not want a coach</button>
-      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: #48484a;">Nothing of yours is sent to a model, and you can switch him on later in Settings.</p>
+      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: #48484a;">Switch him on later in Settings.</p>
     </sc-if>
     <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
       <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 54px; border-radius: 15px; background: #ff375f; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Go to Today</a>

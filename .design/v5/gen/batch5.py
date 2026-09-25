@@ -41,7 +41,7 @@ si.append(
     '    <p style="margin: 13px 0 0; font-size: 15.5px; line-height: 1.45; color: ' + GREY + ';">A tracker with your friends watching. You pick the windows. Miss one and it costs you.</p>\n'
     '  </div>\n')
 
-HOW = [('01', 'You set the window', 'Nobody imposes a time on you. That is the part other apps get wrong.'),
+HOW = [('01', 'You set the window', 'Nobody imposes a time on you.'),
        ('02', 'A photograph proves it', 'Live camera, never the gallery, and only where you asked for one.'),
        ('03', 'Your friends see it', 'Whatever you chose to share, and the fine when you do not turn up.')]
 si.append('  <div style="flex: none; margin: 24px 22px 0; display: flex; flex-direction: column;">\n')

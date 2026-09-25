@@ -132,11 +132,11 @@ H = 1400
 ms = [HEAD, root(H)]
 ms.append(nav('Monk.dc.html', 'Back to Monk mode',
                right=top_action('Save', SAVE_ICON)))
-ms.append(title('Set up Monk mode', 'Which of your activities count toward the day, and how hard each one has to be to count.'))
+ms.append(title('Set up Monk mode', 'What counts, and how hard.'))
 
 # Compulsory activities. Free, because it still only reads `passed`.
 ms.append(section('Always in', top=26))
-ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Three activities are compulsory. Without them the number means something different for every person and comparing it is meaningless.</p>
+ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Three are compulsory.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{fixed}}" as="f" hint-placeholder-count="3">
       <div style="padding-left: 16px;">
@@ -153,7 +153,7 @@ ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line
 # Required categories. Costs a category field on each module, and it is what
 # lets somebody who runs and somebody who lifts both have a real monk day.
 ms.append(section('Four kinds, all covered', top=26))
-ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">A monk day has to reach a body, a food, a mind and a sleep. What you use for each is yours.</p>
+ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">A body, a food, a mind and a sleep.</p>
   <div style="flex: none; margin: 14px 20px 0; display: flex; flex-direction: column; gap: 8px;">
     <sc-for list="{{cats}}" as="c" hint-placeholder-count="4">
       <div style="border-radius: 13px; background: %s; padding: 13px 15px; display: flex; align-items: center; gap: 12px;">
@@ -167,7 +167,7 @@ ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line
 
 # The expensive one, priced out loud on the screen that sells it.
 ms.append(section('Stricter on a monk day', top=26))
-ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Your own target is on the left and the monk bar is on the right. Passing your target and missing the monk bar is a normal day: your streak is safe and this number is not.</p>
+ms.append("""  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: %s;">Your target on the left, the monk bar on the right.</p>
   <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <sc-for list="{{bars}}" as="b" hint-placeholder-count="5">
       <div style="padding-left: 16px;">
@@ -197,7 +197,7 @@ ms.append("""  <div style="flex: none; margin: 14px 20px 0; display: flex; flex-
 # past, which nothing in Curfew has ever done.
 ms.append("""  <div style="flex: none; margin: 26px 20px 0; display: flex; gap: 11px;">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/></svg>
-    <span style="font-size: 13.5px; line-height: 1.48; color: %s;">Add something today and it counts from tomorrow. September does not move. A score that dropped while you did nothing is exactly the confusion this rule exists to stop.</span>
+    <span style="font-size: 13.5px; line-height: 1.48; color: %s;">Counts from tomorrow.</span>
   </div>
   <div style="flex: none; margin: 22px 20px 0; border-radius: 14px; background: %s; overflow: hidden;">
     <button type="button" style="width: 100%%; border: 0; background: transparent; padding: 15px 16px; text-align: left; font-family: inherit; font-size: 16px; color: %s;">Turn Monk mode off</button>
@@ -247,7 +247,7 @@ ml.append(nav('Main.dc.html', 'Back to Today'))
 ml.append("""  <div style="flex: none; padding: 4px 20px 0;">
     <h1 style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; color: %s;">Monk mode</h1>
     <p style="margin: 14px 0 0; font-size: 18px; line-height: 1.45; font-weight: 500;">You are two short of the four kinds it needs, so there is no number to show you yet.</p>
-    <p style="margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: %s;">A percentage over the two easy things you already do would be a number comparable to nobody, and scoring you on something you never agreed to do is not something this app does anywhere else.</p>
+    <p style="margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: %s;">A monk day needs a body, a food, a mind and a sleep.</p>
   </div>
 """ % (GREY, GREY))
 
@@ -277,7 +277,7 @@ ml.append("""  <div style="flex: none; margin: 26px 20px 0; border-radius: 14px;
     </div>
   </div>
 
-  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Add both and Monk mode appears on Today tomorrow morning, with its first day scored from tomorrow onward.</p>
+  <p style="flex: none; margin: 20px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Add both and it appears tomorrow.</p>
 """ % (CARD, CARD2, GREEN, GREY, GREY))
 ml.append(grow())
 ml.append("""  <div style="flex: none; padding: 0 20px 22px;">

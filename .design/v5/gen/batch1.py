@@ -57,8 +57,8 @@ first.append("""
     <div style="padding: 40px 26px 0; display: flex; flex-direction: column; align-items: center;">
 """ + REN_SPHERE.replace('{size}', '130') + """
       <h1 style="margin: 28px 0 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; text-align: center;">This is Ren.</h1>
-      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He reads what you log, your photographs and whatever your groups share with you, and he tells you what he notices.</p>
-      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He never decides whether a day counted. That is arithmetic, and it stays arithmetic.</p>
+      <p style="margin: 12px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He reads what you log and what your groups share.</p>
+      <p style="margin: 16px 0 0; font-size: 17px; line-height: 1.5; color: %s; text-align: center;">He never decides whether a day counted.</p>
     </div>
   </sc-if>
 
@@ -92,7 +92,7 @@ first.append("""
           </button>
         </sc-for>
       </div>
-      <p style="margin: 14px 2px 0; font-size: 13px; line-height: 1.45; color: %s;">Defaults are filled in for each one. Nothing here is a commitment you cannot undo, and none of it starts until tomorrow.</p>
+      <p style="margin: 14px 2px 0; font-size: 13px; line-height: 1.45; color: %s;">Defaults are filled in. Nothing here is permanent.</p>
     </div>
   </sc-if>
 
@@ -123,7 +123,7 @@ first.append("""
       <sc-if value="{{noRen}}" hint-placeholder-val="{{false}}">
         <div style="margin-top: 16px; width: 100%%; border-radius: 14px; background: %s; padding: 14px 16px; display: flex; gap: 12px;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="%s" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3v8.4M7.4 6.2a7 7 0 1 0 9.2 0"/></svg>
-          <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: %s;">Ren is off. Nothing of yours goes to a model, and there is no coach tab. Switch him on any time in Settings.</span>
+          <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; color: %s;">Ren is off. Nothing goes to a model. Switch him on any time.</span>
         </div>
       </sc-if>
     </div>
@@ -140,7 +140,7 @@ first.append("""  <div style="flex: none; padding: 0 20px 30px;">
     </sc-if>
     <sc-if value="{{isMeet}}" hint-placeholder-val="{{true}}">
       <button type="button" onClick="{{decline}}" style="margin-top: 6px; width: 100%%; height: 44px; border: 0; background: transparent; color: %s; font-family: inherit; font-size: 15px;">I do not want a coach</button>
-      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: %s;">Nothing of yours is sent to a model, and you can switch him on later in Settings.</p>
+      <p style="margin: 0; text-align: center; font-size: 12.5px; line-height: 1.4; color: %s;">Switch him on later in Settings.</p>
     </sc-if>
     <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
       <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%%; height: 54px; border-radius: 15px; background: %s; color: #ffffff; text-decoration: none; font-size: 17px; font-weight: 600;">Go to Today</a>
@@ -219,7 +219,7 @@ write('Welcome.dc.html', first)
 H = 1500
 cat = [HEAD, root(H)]
 cat.append(nav('Activities.dc.html', 'Back to your activities'))
-cat.append(title('Add an activity', 'Fourteen to choose from. Each one arrives with a default rule you can change before it starts.'))
+cat.append(title('Add an activity', 'Fourteen to choose from, each with a default rule.'))
 
 TYPES = [
     ('Gym', 'Three a week, photo on the way out', None, 'M6.5 8v8M17.5 8v8M3.5 10v4M20.5 10v4M6.5 12h11'),
@@ -270,7 +270,7 @@ SIMPLE = [
 ]
 cat.append(section('Simple ones', top=28))
 cat.append('  <p style="flex: none; margin: 8px 20px 0; font-size: 13.5px; line-height: 1.48; color: ' + GREY
-           + ';">Held or slipped at the end of the day, nothing to photograph. Each keeps its own streak, and they share one row on Home rather than taking five.</p>\n')
+           + ';">Held or slipped. Each keeps its own streak.</p>\n')
 cat.append('  <div style="flex: none; margin: 14px 20px 0; border-radius: 14px; background: ' + CARD + '; overflow: hidden;">\n')
 for i, (name, cat_label, path) in enumerate(SIMPLE):
     sep = 'transparent' if i == 0 else SEP
@@ -304,7 +304,7 @@ cat.append("""    <div style="display: flex; align-items: center; gap: 13px; pad
       </span>
     </div>
   </div>
-  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">One you write yourself has no category, so it keeps a streak and counts toward nothing else. Monk mode asks for a body, a food, a mind and a sleep, and nothing can tell which of those <span style="color:#ffffff;">no doomscroll</span> is.</p>
+  <p style="flex: none; margin: 12px 20px 0; font-size: 12.5px; line-height: 1.48; color: %s;">Yours alone. It counts toward its own streak and nothing else. <span style="color:#ffffff;">no doomscroll</span> is.</p>
 """ % (SEP, GREY, GREY, MONO, DIM, GREY))
 
 cat.append(section('Already tracking', top=26))
@@ -316,7 +316,7 @@ cat.append("""  <div style="flex: none; margin: 12px 20px 0; display: flex; flex
       </span>
     </sc-for>
   </div>
-  <p style="flex: none; margin: 16px 20px 0; font-size: 13px; line-height: 1.48; color: %s;">Whatever you add starts tomorrow, and the first few days are marked settling so a half-set-up activity never counts against you.</p>
+  <p style="flex: none; margin: 16px 20px 0; font-size: 13px; line-height: 1.48; color: %s;">Starts tomorrow. The first few days are settling.</p>
 """ % (CARD, GREEN, GREY, GREY))
 cat.append(grow())
 cat.append(tabbar('Activities.dc.html'))

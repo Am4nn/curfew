@@ -784,6 +784,11 @@ never tells you how far along you are. Only the activity itself knows that" is
 an internal rule explained to the person receiving the notification. State what
 happens, never why the app is built that way.
 
+**A sentence that could be a label should be a label.** "Tell Curfew you are
+away and those days do not count against you. Say so first: an away day cannot
+be declared after the fact" is "Declared in advance. Those days do not count
+against you."
+
 **And weigh text by how often a screen is SEEN.** A gate read once may be long;
 a screen opened every evening may not. Total word count hides that distinction,
 which is why the cut was measured per screen and per visit rather than in

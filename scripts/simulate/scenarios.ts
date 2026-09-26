@@ -83,7 +83,6 @@ const WEEKDAY: ScheduleShape = { schedule: WEEKDAYS, dayBoundary: "midnight" };
 const STEPS_CONFIG = { target: 8000, direction: "atLeast" as const };
 const WATER_CONFIG = { glasses: 8 };
 // Nothing of its own: how many sessions a week is the schedule's.
-const GYM_CONFIG = {};
 const OFFICE_CONFIG = { window: { open: "10:00", close: "14:00" } };
 
 const eq = (what: string, got: unknown, want: unknown): Check => ({
@@ -126,14 +125,23 @@ async function soloWorld(
 const logSteps = (date: string, count: number) =>
   checkin(A, "steps", "count", date, "20:00", DAILY, { steps: count });
 
+// 1.50. A REPAIR RESTORES A STREAK, so it is only offered where one is
+// carried, and after 1.49 that is the six abstinence types. Steps and Gym
+// show a percentage now, which a miss does not break: there is nothing to put
+// back and nothing to test with them.
+//
+// Sugar-free is the plainest of the six. The mechanic is unchanged; these
+// scenarios were pointed at activities that stopped having it.
+const HELD_CONFIG = { window: { open: "20:00", close: "23:59" }, cutoff: null };
+const logHeld = (date: string, schedule: ScheduleShape = DAILY) =>
+  checkin(A, "sugarfree", "declare", date, "21:00", schedule, { held: true });
+
 const logWater = async (date: string, glasses: number, who = A) => {
   for (let i = 0; i < glasses; i += 1) {
     await checkin(who, "water", "glass", date, `${String(8 + i).padStart(2, "0")}:00`, DAILY);
   }
 };
 
-const logGym = (date: string, who = A) =>
-  checkin(who, "gym", "session", date, "07:00", WEEKLY3);
 
 // ---------------------------------------------------------------------------
 
@@ -167,22 +175,22 @@ export const SCENARIOS: Scenario[] = [
       // The miss is YESTERDAY, not somewhere in the middle. The offer closes
       // the moment the activity is checked in again, which is the rule and not
       // an implementation detail: the run either came back or it did not.
-      await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
+      await soloWorld("sugarfree", DAILY, HELD_CONFIG, -30);
       for (const d of days(-30, -1)) {
         if (d === day(-1)) continue; // the miss
-        await logSteps(d, 10000);
+        await logHeld(d);
       }
       await scoreAll();
 
       // The miss ENDS the run. Nothing holds it on its own any more: the whole
       // point of item 19 is that grace is a thing somebody does, not a thing
       // that happens to them.
-      const broken = await streakOf(A, "steps");
-      const offer = await offerOf(A, "steps");
+      const broken = await streakOf(A, "sugarfree");
+      const offer = await offerOf(A, "sugarfree");
       const before = await graceOf(A);
 
-      const used = await pressRestore(A, "steps");
-      const after = await streakOf(A, "steps");
+      const used = await pressRestore(A, "sugarfree");
+      const after = await streakOf(A, "sugarfree");
       const left = await graceOf(A);
 
       return {
@@ -220,7 +228,7 @@ export const SCENARIOS: Scenario[] = [
         await logSteps(d, 10000);
       }
       await scoreAll();
-      const s = await streakOf(A, "steps");
+      const s = await streakOf(A, "sugarfree");
       return {
         checks: [
           eq("streak", s?.streak, 9),
@@ -239,17 +247,17 @@ export const SCENARIOS: Scenario[] = [
     async run() {
       // One activity tracked, so the month's pool is two. Then three days
       // missed in a row, which is a break costing three.
-      await soloWorld("steps", DAILY, STEPS_CONFIG, -30);
+      await soloWorld("sugarfree", DAILY, HELD_CONFIG, -30);
       const misses = new Set([day(-3), day(-2), day(-1)]);
       for (const d of days(-30, -1)) {
         if (misses.has(d)) continue;
-        await logSteps(d, 10000);
+        await logHeld(d);
       }
       await scoreAll();
 
       const pool = await graceOf(A);
-      const offer = await offerOf(A, "steps");
-      const refused = await pressRestore(A, "steps");
+      const offer = await offerOf(A, "sugarfree");
+      const refused = await pressRestore(A, "sugarfree");
 
       return {
         checks: [
@@ -272,15 +280,23 @@ export const SCENARIOS: Scenario[] = [
     },
   },
   {
-    id: "streak-gym-short-week",
+    id: "streak-short-week",
     group: "Streaks",
-    title: "A gym week that fell short",
-    question: "Does grace keep the days a short week did earn?",
+    title: "A weekly run that fell short",
+    question: "Does a repair keep the days a short week did earn?",
     async run() {
       await wipe();
       await defaultTimezone();
       await person(A, "Ann");
-      await track(A, "gym", WEEKLY3, GYM_CONFIG, day(-35));
+      // ON AN ABSTINENCE, not on Gym, and 1.50 is why rather than
+      // convenience. Grey and repair are properties OF a streak, Gym carries
+      // a percentage now, and a percentage has no run to be unable to save.
+      //
+      // WEEKLY, which is the only way grey is still reachable at all (1.54):
+      // it needs a type that carries a streak on a schedule that can come
+      // short, and all six abstinences are daily by default. Somebody CAN set
+      // one to a weekly minimum, and this is that person.
+      await track(A, "sugarfree", WEEKLY3, HELD_CONFIG, day(-35));
       // Gym weeks are Monday to Sunday, so the short one has to be a real week
       // rather than a slice of seven days off the end.
       const all = days(-35, -1);
@@ -303,14 +319,14 @@ export const SCENARIOS: Scenario[] = [
         if (mondayOf(d) > shortWeek) continue;
         const dow = new Date(`${d}T00:00:00Z`).getUTCDay();
         const wanted = mondayOf(d) === shortWeek ? [1, 3] : [1, 3, 5];
-        if (wanted.includes(dow)) await logGym(d);
+        if (wanted.includes(dow)) await logHeld(d, WEEKLY3);
       }
       await scoreAll();
 
-      const broken = await streakOf(A, "gym");
-      const offer = await offerOf(A, "gym");
-      const held = await pressRestore(A, "gym");
-      const s = await streakOf(A, "gym");
+      const broken = await streakOf(A, "sugarfree");
+      const offer = await offerOf(A, "sugarfree");
+      const held = await pressRestore(A, "sugarfree");
+      const s = await streakOf(A, "sugarfree");
 
       return {
         checks: [

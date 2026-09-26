@@ -39,7 +39,8 @@ Money is optional and can be switched off entirely.
 
 ## Current phase
 
-**v4 is being built. Phase 1 done, Phase 2 next.** `3.4.8` is what production runs; everything
+**v4 is being built. Phases 1 and 2 are CODE COMPLETE; Phase 2 cannot close
+until a person has opened its five screens beside their artboards.** `3.4.8` is what production runs; everything
 below this block is v3's record and is still true of the deployed app.
 
 Read these three before touching anything:
@@ -89,6 +90,26 @@ nullable column rather than the second scope 1.16 first described; and 1.19,
 1.20 and 3.1 were once silently truncated out of `DECIDED.md` by an append and
 had to be recovered from git. That is why `DECIDED.md` is now assembled from
 sorted blocks and why `check:decided` exists.
+
+**Phase 2 built what 1.49 decided.** Home leads with a consistency percentage
+for the twelve do-something types, keeps the flame for the six abstinences, and
+collapses the latter into one row. `consistency.ts` is the number,
+`consistency-read.ts` is the three batched queries behind it, and
+`bun run sim:consistency` is the gate on its behaviour.
+
+Three things about it are worth knowing before touching that code:
+
+- **The FIRST press of a period is the cue**, not the last. Water's eighth
+  glass at 9 PM says when somebody finished and the first at 7 AM says when
+  they start.
+- **The group hub computes its percentage from the GROUP'S own outcomes**, not
+  from the member's scores. A group sees a shared activity only from the day
+  somebody joined, and reading `activity_scores` for another member would
+  reopen the leak v3.1 closed and be a cross-member read with no
+  `assertMember` over it.
+- **Repair and grey follow the streak and need no rule naming types**, because
+  both are properties OF one. The repair pool counts tracked activities that
+  carry a streak, which is the same rule over a smaller set.
 
 **The design is done and approved**, 41 boards at
 https://claude.ai/artifact/V5Q54R7heSttj1aXT5PVqP, with sources in

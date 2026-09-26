@@ -98,6 +98,22 @@ check(
   dangling.join(", "),
 );
 
+// CLAUDE.md names the range of settled decisions, twice, and it has gone stale
+// twice: it said 1.32 while the file held 1.51, and 1.54 while it held 1.61.
+// Nothing went red either time, because a range in prose is not a reference
+// anything resolves.
+const CLAUDE = read("CLAUDE.md");
+if (CLAUDE.length > 0 && settled.length > 0) {
+  const highest = Math.max(...settled);
+  const claims = [...CLAUDE.matchAll(/1\.1 to 1\.(\d+)/g)].map((m) => Number(m[1]));
+  const wrong = claims.filter((c) => c !== highest);
+  check(
+    "CLAUDE.md names the range DECIDED.md actually holds",
+    wrong.length === 0,
+    wrong.length ? `says 1.${wrong.join(", 1.")}, highest is 1.${highest}` : undefined,
+  );
+}
+
 // COACH.md's proposals, C1 upward. THE BUG THIS EXISTS FOR was found by a
 // verification round on 2026-09-24: C3, C4 and C8 were cited nowhere outside
 // COACH.md, and C8 had been APPROVED. An approved proposal with no phase is a

@@ -39,12 +39,12 @@ Money is optional and can be switched off entirely.
 
 ## Current phase
 
-**v4 is being built. Phase 0.** `3.4.8` is what production runs; everything
+**v4 is being built. Phase 1 done, Phase 2 next.** `3.4.8` is what production runs; everything
 below this block is v3's record and is still true of the deployed app.
 
 Read these three before touching anything:
 
-- `.planning/v4/DECIDED.md` — 1.1 to 1.54 settled, 3.3 open. **The authority.**
+- `.planning/v4/DECIDED.md` — 1.1 to 1.61 settled, 3.3 open. **The authority.**
   Every other v4 file cites it by number.
 - `.planning/v4/ACTIVITIES.md` — **what every activity actually is**: the
   number it carries, its schedule, how often it can be fined, what it asks for,
@@ -854,7 +854,7 @@ A push is still the only thing that speaks first to a phone on a table, so it
 stays the loudest of them. Exclamation marks are still for lock screens.
 
 **Theme 3 answered yes on 2026-09-20 and v4 is building it.**
-`.planning/v4/DECIDED.md` is the authority on voice now, 1.1 to 1.54. Read it
+`.planning/v4/DECIDED.md` is the authority on voice now, 1.1 to 1.61. Read it
 before writing a line of UI copy; this section is the mechanical half and that
 file is the register.
 

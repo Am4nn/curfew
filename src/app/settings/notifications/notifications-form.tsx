@@ -80,7 +80,7 @@ export function NotificationsForm({
   return (
     <div className="mt-6 flex flex-col gap-7">
       <section className="flex flex-col gap-2">
-        <div className="flex items-center gap-3 border-b border-rule py-[13px]">
+        <div className="flex items-center gap-3 border-b border-rule py-3">
           <span className="flex-1 text-sm">
             Reminders on this device
             <span className="mt-[3px] block text-2xs text-muted">

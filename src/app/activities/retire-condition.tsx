@@ -21,7 +21,7 @@ export function RetireCondition({ typeKey, label }: { typeKey: string; label: st
         type="button"
         onClick={() => setAsking(true)}
         aria-label={`Put away ${label}`}
-        className="flex-none px-2 py-[13px] text-2xs tracking-caps text-muted"
+        className="flex-none px-2 py-3 text-2xs tracking-caps text-muted"
       >
         PUT AWAY
       </button>
@@ -29,7 +29,7 @@ export function RetireCondition({ typeKey, label }: { typeKey: string; label: st
   }
 
   return (
-    <span className="flex flex-none items-center gap-2 py-[13px]">
+    <span className="flex flex-none items-center gap-2 py-3">
       <button
         type="button"
         disabled={pending}

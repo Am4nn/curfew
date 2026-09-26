@@ -17,7 +17,7 @@ import { SignOut } from "../sign-out";
 
 function Row({ label, value, href }: { label: string; value?: string; href: string }) {
   return (
-    <Link href={href} className="flex items-center gap-3 border-b border-rule py-[13px]">
+    <Link href={href} className="flex items-center gap-3 border-b border-rule py-3">
       <span className="flex-1 text-sm">{label}</span>
       {value ? <span className="text-2xs text-muted">{value}</span> : null}
       <span className="text-sm text-muted">&rsaquo;</span>
@@ -121,7 +121,7 @@ export default async function Settings() {
         <section className="flex flex-col gap-2">
           <span className="text-micro tracking-label text-muted">YOUR DATA</span>
           <div className="flex flex-col">
-            <div className="flex items-center gap-3 border-b border-rule py-[13px]">
+            <div className="flex items-center gap-3 border-b border-rule py-3">
               <span className="flex-1 text-sm">Photo retention</span>
               <span className="text-2xs text-muted">{RETENTION_DAYS} days</span>
             </div>

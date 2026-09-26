@@ -61,7 +61,7 @@ export default async function GroupsPage() {
                 <Link
                   key={g.groupId}
                   href={`/group/${g.groupId}`}
-                  className="flex items-center gap-3 border-b border-rule py-[13px]"
+                  className="flex items-center gap-3 border-b border-rule py-3"
                 >
                   <div className="flex flex-1 flex-col gap-[3px]">
                     <span className="text-base">{g.name}</span>

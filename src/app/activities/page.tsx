@@ -120,7 +120,7 @@ export default async function ActivitiesPage() {
                 >
                 <Link
                   href={`/activities/${row.typeKey}`}
-                  className="flex min-w-0 flex-1 items-center gap-3 py-[13px]"
+                  className="flex min-w-0 flex-1 items-center gap-3 py-3"
                 >
                   <span className="flex flex-none">
                     <ActivityIcon name={row.type.icon} size={20} />

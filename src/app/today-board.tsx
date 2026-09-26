@@ -27,6 +27,26 @@ import { finished } from "./haptics";
 /** How long the row keeps its rule, and how long the old count hangs about. */
 const HOLD_MS = 4200;
 
+/** The disclosure caret, pointing down when the row is open. */
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={"flex-none text-rule " + (open ? "rotate-90" : "")}
+    >
+      <polyline points="9 5 16 12 9 19" />
+    </svg>
+  );
+}
+
 export function TodayBoard({
   rows,
   done,
@@ -49,6 +69,14 @@ export function TodayBoard({
   dueIcons: string[];
 }) {
   const [recorded, setRecorded] = useState<string | null>(initialRecorded);
+  // 1.19. Open by default: the point of the row is that five activities take
+  // one row's worth of Home, not that they are hidden. Closing it is for
+  // somebody who has settled into them and does not need to look.
+  const [open, setOpen] = useState(true);
+
+  // 1.55. `measure` decides, so nothing here names a type.
+  const doing = rows.filter((r) => r.measure === "consistency");
+  const avoiding = rows.filter((r) => r.measure === "streak");
 
   // What the pressed row said at the moment it was pressed.
   //
@@ -171,8 +199,19 @@ export function TodayBoard({
         </div>
       </section>
 
+      {/*
+        1.19 and 1.55. Home is the things you DO, and then one row for the
+        things you avoid.
+
+        WHICH TYPES GO IN IT IS `measure`, not `checkin.kind`. 1.19 said "every
+        held-or-slipped type", which was the same set until 1.49 split it: Cold
+        shower and Morning sunlight are declares that carry a percentage and
+        belong with the rows above, and Screen carries a streak without being a
+        declare at all. One rule, derived, and no list of type keys, which is
+        the switch-on-a-key invariant 6 exists to prevent.
+      */}
       <section className="flex flex-col">
-        {rows.map((row) => (
+        {doing.map((row) => (
           <ActivityRow
             key={row.typeKey}
             row={row}
@@ -186,6 +225,43 @@ export function TodayBoard({
           />
         ))}
       </section>
+
+      {avoiding.length > 0 ? (
+        <section className="flex flex-col">
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+            className="flex items-center gap-3 border-b border-rule py-3 text-left"
+          >
+            <span className="flex-1 text-base">Things you avoid</span>
+            <span className="flex-none text-xs text-muted tabular-nums">
+              {avoiding.filter((r) => r.done).length} of {avoiding.length}
+            </span>
+            <Chevron open={open} />
+          </button>
+
+          {/* Opened, each one is an ordinary row: its own streak, its own
+              window, its own press. That is the whole reason these stayed
+              separate types rather than becoming one "daily list" with one
+              streak, where a single slip would fail the lot. */}
+          {open
+            ? avoiding.map((row) => (
+                <ActivityRow
+                  key={row.typeKey}
+                  row={row}
+                  graceLeft={graceLeft}
+                  recorded={recorded === row.typeKey}
+                  optimistic={optimistic === row.typeKey}
+                  onRecord={() => {
+                    setRecorded(row.typeKey);
+                    setPressed({ key: row.typeKey, status: row.status });
+                  }}
+                />
+              ))
+            : null}
+        </section>
+      ) : null}
 
       {justFinishedTheDay ? (
         <DayComplete dateLabel={dateLabel} icons={dueIcons} />

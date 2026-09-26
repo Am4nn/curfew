@@ -68,7 +68,7 @@ export function ActivityRow({
         "relative border-b border-rule " + (row.scheduled ? "" : "opacity-[0.42]")
       }
     >
-      <div className={"flex items-center gap-3 " + (declaring ? "pb-[11px] pt-[13px]" : "py-[13px]")}>
+      <div className={"flex items-center gap-3 " + (declaring ? "pb-[11px] pt-[13px]" : "py-3")}>
       {/* The mark for a row that just changed. Positioned rather than a border,
           so it sits out in the page margin and the divider under every row
           stays exactly where it was; always mounted, so it fades both ways

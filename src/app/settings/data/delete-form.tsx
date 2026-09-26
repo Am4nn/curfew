@@ -51,7 +51,7 @@ function Row({
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-3 border-b border-rule py-[13px] text-left"
+      className="flex items-center gap-3 border-b border-rule py-3 text-left"
     >
       <span className={"flex-1 text-sm " + (danger ? "text-penalty" : "")}>
         {label}
@@ -146,7 +146,7 @@ export function DeleteForm({
               onClick={() =>
                 setPending({ kind: "activity", typeKey: a.typeKey, name: a.name })
               }
-              className="flex items-center gap-3 border-b border-rule py-[13px] text-left"
+              className="flex items-center gap-3 border-b border-rule py-3 text-left"
             >
               <span className="flex flex-none text-muted">
                 <ActivityIcon name={a.icon} size={17} />

@@ -766,7 +766,7 @@ export function ConfigureForm({
           panel.fixed ? (
             <div
               key={panel.id}
-              className="flex flex-col gap-1 border-t border-rule py-[13px]"
+              className="flex flex-col gap-1 border-t border-rule py-3"
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sm text-muted">{panel.label}</span>
@@ -779,7 +779,7 @@ export function ConfigureForm({
               key={panel.id}
               type="button"
               onClick={() => setOpen(panel.id)}
-              className="flex items-center justify-between gap-3 border-t border-rule py-[13px] text-left"
+              className="flex items-center justify-between gap-3 border-t border-rule py-3 text-left"
             >
               <span className="text-sm">{panel.label}</span>
               <span className="flex min-w-0 items-center gap-2">

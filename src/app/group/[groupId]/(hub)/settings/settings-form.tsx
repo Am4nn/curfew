@@ -409,7 +409,7 @@ function CostPanel({ accepted, moneyOn, appMoneyOn }: Props) {
         {accepted.map((row) => (
           <div
             key={row.typeKey}
-            className="flex items-center justify-between gap-3 border-b border-rule py-[13px]"
+            className="flex items-center justify-between gap-3 border-b border-rule py-3"
           >
             <span className="text-sm">{row.name}</span>
             <span
@@ -648,7 +648,7 @@ function MembersPanel({ groupId, members, invites, viewerId }: Props) {
 function Rule({ children }: { children: React.ReactNode }) {
   return (
     <div className="border border-rule bg-surface">
-      <div className="border-b border-rule px-4 py-[13px]">
+      <div className="border-b border-rule px-4 py-3">
         <span className="text-micro tracking-label text-muted">WHERE YOU STAND</span>
       </div>
       <div className="flex flex-col gap-[11px] p-4">{children}</div>

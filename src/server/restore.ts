@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { events } from "@/db/schema";
 import {
   getActivityType,
+  measureOf,
   graceBalance,
   offerOpen,
   resetsOn,
@@ -84,7 +85,15 @@ export async function graceState(userId: string): Promise<GraceState> {
     listUserActivities(userId),
     spentIn(userId, month),
   ]);
-  const tracked = activities.filter((a) => a.enabled).length;
+  // 1.50. Two a month for each activity tracked THAT HAS A STREAK. The rule
+  // is unchanged and needs no new arithmetic: the set it counts over is
+  // smaller, because after 1.49 a repair is only offered where a streak is
+  // carried and a pool that counted the other twelve would be an allowance
+  // for something nobody can spend it on.
+  const tracked = activities.filter(
+    (a) =>
+      a.enabled && measureOf(getActivityType(a.typeKey), a.config) === "streak",
+  ).length;
   const balance = graceBalance(
     tracked,
     spent.reduce((n, s) => n + s.cost, 0),
@@ -147,6 +156,20 @@ export async function openOffers(userId: string): Promise<OpenOffer[]> {
   const out: OpenOffer[] = [];
   for (const activity of activities) {
     if (!activity.enabled) continue;
+
+    // 1.50. A REPAIR RESTORES A STREAK, so it is offered wherever one is
+    // carried and nowhere else. It needs no rule naming types, because it is
+    // a property OF a streak: after 1.49 the twelve do-something types show a
+    // percentage, which a miss does not break, so there is nothing to put
+    // back and offering it would be offering to undo something that did not
+    // happen.
+    //
+    // `activity_streaks` is still WRITTEN for those twelve, which is what
+    // makes the demotion one commit to reverse. This is the line that would
+    // come out.
+    if (measureOf(getActivityType(activity.typeKey), activity.config) !== "streak") {
+      continue;
+    }
 
     // The stored counter first, because it is a row read and `offerFor` is a
     // walk of every day since the join date. Home asks this for every activity

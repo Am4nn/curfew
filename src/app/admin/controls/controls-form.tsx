@@ -147,7 +147,7 @@ export function ControlsForm({
         <span className="text-micro tracking-label text-muted">THE APP</span>
         <div className="flex flex-col">
           {APP_SWITCHES.map(({ key, label, hint }) => (
-            <div key={key} className="flex items-center gap-3 border-b border-rule py-[13px]">
+            <div key={key} className="flex items-center gap-3 border-b border-rule py-3">
               <div className="flex flex-1 flex-col gap-[3px]">
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{label}</span>
@@ -212,7 +212,7 @@ export function ControlsForm({
 
       <section className="flex flex-col gap-2.5">
         <span className="text-micro tracking-label text-muted">EVIDENCE</span>
-        <div className="flex items-center gap-3 border-b border-rule py-[13px]">
+        <div className="flex items-center gap-3 border-b border-rule py-3">
           <div className="flex flex-1 items-center gap-2">
             <span className="text-sm">Retention</span>
             {changed("setting", "retention_days") ? UNSAVED : null}
@@ -257,7 +257,7 @@ export function ControlsForm({
       </section>
 
       {changes.length > 0 ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2.5 border-t border-rule bg-surface px-5 py-[13px]">
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2.5 border-t border-rule bg-surface px-5 py-3">
           <span className="flex-1 text-2xs text-muted">
             {changes.length} unsaved {changes.length === 1 ? "change" : "changes"}
           </span>

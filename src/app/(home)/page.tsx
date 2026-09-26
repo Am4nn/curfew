@@ -216,7 +216,7 @@ export default async function Home({
                 <Link
                   key={g.groupId}
                   href={`/group/${g.groupId}`}
-                  className="flex items-center gap-3 border-b border-rule py-[13px]"
+                  className="flex items-center gap-3 border-b border-rule py-3"
                 >
                   <span className="flex-1 text-base">{g.name}</span>
                   {g.grace ? (

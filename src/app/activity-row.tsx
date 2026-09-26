@@ -32,6 +32,53 @@ import { RestoreButton } from "./restore-sheet";
  * only ever a display: the check-in is still an explicit POST (invariant 9),
  * and if it fails the button says so and the real status comes back.
  */
+/**
+ * How established an activity is, with a caret for which way it is going.
+ *
+ * NULL draws a dash. Nought of nought is no answer rather than nought per
+ * cent, and a number about no days would be the settling-day bug again.
+ *
+ * The NUMBER stays flat white whichever way the caret points: 1.11 survives
+ * the register change, and a percentage is a number. Direction is carried by
+ * the caret and never by colour alone.
+ */
+function Established({
+  established,
+}: {
+  established: { percent: number; trend: "up" | "down" | "flat" } | null;
+}) {
+  if (!established) {
+    return <span className="text-xs leading-none text-muted">&mdash;</span>;
+  }
+  const path =
+    established.trend === "up"
+      ? "M2 8l4-4 4 4"
+      : established.trend === "down"
+        ? "M2 4l4 4 4-4"
+        : "M2 6h8";
+  return (
+    <span className="flex items-center gap-0.5">
+      <span className="text-xs font-medium leading-none text-fg tabular-nums">
+        {established.percent}%
+      </span>
+      <svg
+        width="9"
+        height="9"
+        viewBox="0 0 12 12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={established.trend === "flat" ? "text-rule" : "text-muted"}
+      >
+        <path d={path} />
+      </svg>
+    </span>
+  );
+}
+
 export function ActivityRow({
   row,
   graceLeft = 0,
@@ -89,10 +136,23 @@ export function ActivityRow({
       <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
         <div className="flex items-center gap-[9px]">
           <span className="text-base">{row.name}</span>
-          {/* A rest day is not a broken streak, so an unscheduled row still
-              carries its count. The whole row is at 0.42, so the flame dims
-              with it rather than needing a duller treatment of its own. */}
-          {row.grey ? (
+          {/*
+            1.49. ONE number, and the ACTIVITY decides which. A thing you DO
+            carries a consistency percentage, because four sessions a week for
+            a year is a stronger habit than twelve days of a daily run and a
+            streak ranks the second higher. An abstinence keeps the flame,
+            because "47 days" is the achievement there.
+
+            This row does not choose. It draws `row.measure`, and so does the
+            group hub and so does Stats.
+
+            A rest day is not a broken streak, so an unscheduled row still
+            carries its count. The whole row is at 0.42, so the flame dims with
+            it rather than needing a duller treatment of its own.
+          */}
+          {row.measure === "consistency" ? (
+            <Established established={row.established} />
+          ) : row.grey ? (
             // GREY: the run that just ended, in the same place, gone out (item
             // 19). The number has NOT fallen. A week that came short and a day
             // that was missed both hold what they earned, and the flame going

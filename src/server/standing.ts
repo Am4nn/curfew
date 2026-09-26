@@ -1,7 +1,12 @@
 import { cache } from "react";
+import { DateTime } from "luxon";
 import { listUserActivities } from "./activities";
 import { closeOutstanding } from "./scoring";
 import { allStreaks, closeStreaks, rebuildStreak } from "./streak";
+import { consistencyFor, type Established } from "./consistency-read";
+import { timezoneHistory } from "./config";
+import { getActivityType, measureOf } from "@/domain";
+import { now } from "@/lib/clock";
 
 // A user's standing in one activity: the streak and the best it has ever been.
 //
@@ -32,6 +37,16 @@ export interface Standing {
    * flame has to ask this as well, or a dead run gets a live one.
    */
   grey: boolean;
+  /**
+   * How established this is (1.49, 1.56), or NULL for a type that carries a
+   * streak, or for one with nothing scheduled yet.
+   *
+   * A surface does not choose between this and `streak`: it asks `measureOf`
+   * and draws whichever the ACTIVITY declares. Both are carried here because
+   * `activity_streaks` keeps being written for every type, so putting the
+   * demotion back is one commit rather than a migration.
+   */
+  consistency: Established | null;
 }
 
 /**
@@ -52,7 +67,21 @@ export const standingsFor = cache(
     await closeOutstanding(userId);
     await closeStreaks(userId);
 
-    const stored = await allStreaks(userId);
+    const instant = await now();
+    const timezone = (await timezoneHistory(userId)).at(instant);
+    const today = DateTime.fromJSDate(instant, { zone: timezone }).toFormat("yyyy-MM-dd");
+
+    // Only the types that carry one. A `streak` type is not asked, which keeps
+    // the read off the six abstinences and out of the query for a written
+    // condition somebody marked avoid.
+    const wantConsistency = activities.filter(
+      (a) => measureOf(getActivityType(a.typeKey), a.config) === "consistency",
+    );
+
+    const [stored, established] = await Promise.all([
+      allStreaks(userId),
+      consistencyFor(userId, wantConsistency, timezone, today),
+    ]);
 
     for (const activity of activities) {
       // Missing means this type has never been counted: a first check-in that
@@ -66,6 +95,7 @@ export const standingsFor = cache(
         streak: s.current,
         best: s.best,
         grey: s.grey,
+        consistency: established.get(activity.typeKey) ?? null,
       });
     }
     return out;

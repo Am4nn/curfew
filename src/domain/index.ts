@@ -71,6 +71,12 @@ export {
   STREAK_LOGIC_VERSION,
 } from "./streak";
 export { graceBalance, offerOpen, resetsOn, type GraceBalance } from "./grace";
+export {
+  consistency,
+  WINDOW_PERIODS,
+  type Consistency,
+  type ConsistencyPeriod,
+} from "./consistency";
 export { resolveConfig, resolveAt, resolveMoney } from "./config";
 export { splitFine, formatMoney, minorUnitExponent } from "./money";
 export { fineFor } from "./scoring";
@@ -113,6 +119,7 @@ export { ruleFor, howOften, dayStarts } from "./rule";
 export { consequencesOf, STOP_FOOTNOTE, type StopCost, type Consequence } from "./stop-cost";
 export type {
   Category,
+  Measure,
   DeclareAnswers,
   CheckinStep,
   CheckinWindow,

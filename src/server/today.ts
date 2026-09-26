@@ -2,8 +2,10 @@ import {
   getActivityType,
   displayNameOf,
   answersOf,
+  measureOf,
   periodUnit,
   type CheckinKind,
+  type Measure,
   type DeclareAnswers,
 } from "@/domain";
 import { listUserActivities } from "./activities";
@@ -32,6 +34,17 @@ export interface TodayRow {
    * sunlight, and only the module can know which.
    */
   answers: DeclareAnswers;
+  /**
+   * Which number this row draws (1.49). The ROW does not choose: it carries
+   * what `measureOf` said and the component renders that.
+   */
+  measure: Measure;
+  /**
+   * How established this is, for a `consistency` row. Null on a `streak` row,
+   * and null on a consistency row with nothing scheduled yet, which draws a
+   * dash rather than 0%.
+   */
+  established: { percent: number; trend: "up" | "down" | "flat" } | null;
   streak: number;
   /** Not one of this activity's days: shown greyed, and not counted. */
   scheduled: boolean;
@@ -176,6 +189,15 @@ export async function todayFor(userId: string): Promise<Today> {
       icon: type.icon,
       kind: type.checkin.kind,
       answers: answersOf(type, activity.config),
+      measure: measureOf(type, activity.config),
+      // 0 of 0 is not 0%, it is no answer, so a dash rather than a number
+      // about no days. `consistency()` returns null and this carries it.
+      established: standings.get(activity.typeKey)?.consistency
+        ? {
+            percent: standings.get(activity.typeKey)!.consistency!.percent,
+            trend: standings.get(activity.typeKey)!.consistency!.trend,
+          }
+        : null,
       streak: standings.get(activity.typeKey)?.streak ?? 0,
       grey: standings.get(activity.typeKey)?.grey ?? false,
       scheduled: state.scheduled,

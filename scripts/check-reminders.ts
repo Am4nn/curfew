@@ -289,10 +289,19 @@ try {
       (d) => DateTime.fromJSDate(d, { zone: ZONE }).toFormat("HH:mm"),
     );
 
+  // STEPS, not reading, and the swap is the point. This asserted the
+  // ENGINE'S fallback and used reading as its example of a type that declares
+  // no times of its own. C6 gave reading a cue on 2026-09-23, so the example
+  // stopped being one and this check went red for two days while every push
+  // said "CI runs the slow half".
+  //
+  // Steps declares none and its window is the whole day, which is the shape
+  // the fallback exists for. If it ever declares one, this fails again and
+  // says so, which is the check working rather than the check being brittle.
   check(
     "the engine counts back from the close",
-    cue([], "reading").join(",") === "18:00,19:15,19:50",
-    cue([], "reading").join(","),
+    cue([], "steps").join(",") === "18:00,19:15,19:50",
+    cue([], "steps").join(","),
   );
   check(
     "a module's own times win over the engine's",
@@ -318,7 +327,7 @@ try {
     closesAt: midnight,
     timezone: ZONE,
     instant: TUESDAY.toJSDate(),
-    typeKey: "reading",
+    typeKey: "steps",
     chosen: [],
     quiet: QUIET,
   }).map((d) => DateTime.fromJSDate(d, { zone: ZONE }).toFormat("HH:mm"));

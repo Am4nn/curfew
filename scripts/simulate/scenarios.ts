@@ -81,6 +81,8 @@ const WEEKLY3: ScheduleShape = {
 const WEEKDAY: ScheduleShape = { schedule: WEEKDAYS, dayBoundary: "midnight" };
 
 const STEPS_CONFIG = { target: 8000, direction: "atLeast" as const };
+// A gym session carries nothing but the fact it happened.
+const GYM_CONFIG = {};
 const WATER_CONFIG = { glasses: 8 };
 // Nothing of its own: how many sessions a week is the schedule's.
 const OFFICE_CONFIG = { window: { open: "10:00", close: "14:00" } };
@@ -122,6 +124,9 @@ async function soloWorld(
 }
 
 /** Log `count` steps on a day, which passes when count >= target. */
+const logGym = (date: string, who = A) =>
+  checkin(who, "gym", "session", date, "07:00", WEEKLY3);
+
 const logSteps = (date: string, count: number) =>
   checkin(A, "steps", "count", date, "20:00", DAILY, { steps: count });
 
@@ -228,7 +233,7 @@ export const SCENARIOS: Scenario[] = [
         await logSteps(d, 10000);
       }
       await scoreAll();
-      const s = await streakOf(A, "sugarfree");
+      const s = await streakOf(A, "steps");
       return {
         checks: [
           eq("streak", s?.streak, 9),
@@ -280,23 +285,27 @@ export const SCENARIOS: Scenario[] = [
     },
   },
   {
-    id: "streak-short-week",
+    id: "weekly-short-week",
     group: "Streaks",
-    title: "A weekly run that fell short",
-    question: "Does a repair keep the days a short week did earn?",
+    title: "A weekly activity that fell short",
+    question: "What happens to a percentage when a week comes short?",
     async run() {
       await wipe();
       await defaultTimezone();
       await person(A, "Ann");
-      // ON AN ABSTINENCE, not on Gym, and 1.50 is why rather than
-      // convenience. Grey and repair are properties OF a streak, Gym carries
-      // a percentage now, and a percentage has no run to be unable to save.
+      // STILL GYM, and the question changed rather than the subject.
       //
-      // WEEKLY, which is the only way grey is still reachable at all (1.54):
-      // it needs a type that carries a streak on a schedule that can come
-      // short, and all six abstinences are daily by default. Somebody CAN set
-      // one to a weekly minimum, and this is that person.
-      await track(A, "sugarfree", WEEKLY3, HELD_CONFIG, day(-35));
+      // This asked whether a repair keeps the days a short week earned. After
+      // 1.49 Gym carries a percentage, so there is no run to break and no
+      // repair to offer: a short week is a lower rate, which recovers by
+      // doing the thing rather than by paying for it.
+      //
+      // Trying to rewrite it onto an abstinence is what proved grey is dead
+      // rather than rare. Grey needs a `minimum` schedule, the only default
+      // one is Gym, and an abstinence set weekly does not work at all: its
+      // confirm window resolves against the period start, so on a Monday to
+      // Sunday period only a Monday evening declare is ever inside it.
+      await track(A, "gym", WEEKLY3, GYM_CONFIG, day(-35));
       // Gym weeks are Monday to Sunday, so the short one has to be a real week
       // rather than a slice of seven days off the end.
       const all = days(-35, -1);
@@ -319,43 +328,46 @@ export const SCENARIOS: Scenario[] = [
         if (mondayOf(d) > shortWeek) continue;
         const dow = new Date(`${d}T00:00:00Z`).getUTCDay();
         const wanted = mondayOf(d) === shortWeek ? [1, 3] : [1, 3, 5];
-        if (wanted.includes(dow)) await logHeld(d, WEEKLY3);
+        if (wanted.includes(dow)) await logGym(d);
       }
       await scoreAll();
 
-      const broken = await streakOf(A, "sugarfree");
-      const offer = await offerOf(A, "sugarfree");
-      const held = await pressRestore(A, "sugarfree");
-      const s = await streakOf(A, "sugarfree");
+      const offer = await offerOf(A, "gym");
+      const scores = await scoresOf(A, "gym");
 
       return {
         checks: [
-          // GREY, not zero. The run is over on the arithmetic and the two
-          // sessions the week did manage are still in the number: it holds at
-          // 11 rather than falling, and the flame going out is what says the
-          // run ended. Only a session in a LATER week returns it to zero.
-          holds("a week that fell short greys the run", broken?.grey === true, broken?.grey),
+          // 1.50. NO REPAIR IS OFFERED, and that is the whole assertion.
+          // Gym carries a percentage, a percentage has no run to break, and
+          // offering to put one back would be offering to undo something
+          // that did not happen.
+          holds("a short week offers no repair", offer === null, offer),
+          // The week is still SCORED and still failed, because 1.49 changed
+          // what is shown and nothing about what is judged. The fine, the
+          // standing and the outcome all still land.
           holds(
-            "and the number holds rather than falling",
-            (broken?.streak ?? 0) > 0,
-            broken?.streak,
-            "the days the short week did earn",
+            "the short week is still scored, and still failed",
+            scores.some((sc) => !sc.passed),
+            scores.filter((sc) => !sc.passed).length,
+            "at least one failed week",
           ),
-          // Three a week, two sessions managed. Two days of the thing missed,
-          // not one missed week: the price is what was actually short.
-          eq("and costs what it came short, not one", offer?.cost, 1),
-          holds("the press is taken", held.ok, JSON.stringify(held)),
           holds(
-            "and the graced week does not rewind the run",
-            (s?.streak ?? 0) >= 9,
-            s?.streak,
-            "at least the 9 from the full weeks",
+            "and the weeks that passed are still there",
+            scores.filter((sc) => sc.passed).length >= 4,
+            scores.filter((sc) => sc.passed).length,
+            "at least 4",
           ),
         ],
         notes: [
-          "The old rule rolled the run back to the value the week opened on,",
-          "so a number the user watched climb fell while grace was protecting it.",
-          "It holds where it is instead, keeping the days the short week did earn.",
+          "This asked whether a repair keeps the days a short week earned,",
+          "and after 1.49 Gym has no run to keep: a short week is a lower",
+          "rate, which recovers by doing the thing rather than paying for it.",
+          "",
+          "Rewriting it onto an abstinence is what proved GREY IS DEAD rather",
+          "than rare. Grey needs a `minimum` schedule, the only default one is",
+          "Gym, and an abstinence set weekly does not work at all: its confirm",
+          "window resolves against the period start, so on a Monday to Sunday",
+          "period only a Monday evening declare is ever inside it.",
         ],
       };
     },

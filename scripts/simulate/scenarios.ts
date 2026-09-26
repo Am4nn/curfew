@@ -351,11 +351,15 @@ export const SCENARIOS: Scenario[] = [
             scores.filter((sc) => !sc.passed).length,
             "at least one failed week",
           ),
+          // THREE, and the number is counted rather than guessed. The range
+          // is 35 days, which is five Monday-to-Sunday weeks; the one still
+          // running is not scored, and one of the four that closed is the
+          // short one. "At least 4" was a guess and CI said so.
           holds(
             "and the weeks that passed are still there",
-            scores.filter((sc) => sc.passed).length >= 4,
+            scores.filter((sc) => sc.passed).length === 3,
             scores.filter((sc) => sc.passed).length,
-            "at least 4",
+            "3: five weeks, one still open, one short",
           ),
         ],
         notes: [

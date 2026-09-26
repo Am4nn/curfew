@@ -12,6 +12,7 @@ import {
   type ScheduleConfig,
   type Schedule,
   type FieldIssue,
+  type Measure,
 } from "@/domain";
 import { CameraIcon, StreakNumber } from "../../activity-icon";
 import { saveActivityAction } from "./actions";
@@ -349,6 +350,9 @@ export function ConfigureForm({
   tracked,
   streak,
   best,
+  measure,
+  established,
+  periodUnit,
   returnTo,
 }: {
   typeKey: string;
@@ -359,6 +363,16 @@ export function ConfigureForm({
   tracked: boolean;
   streak: number;
   best: number;
+  /** 1.49. Which number this activity carries. The screen does not decide. */
+  measure: Measure;
+  /** 1.55. Null on a `streak` type, and on one with nothing scheduled yet. */
+  established: {
+    percent: number;
+    repsToAutomatic: number | null;
+    usual: { fromMinute: number; toMinute: number } | null;
+  } | null;
+  /** "day" or "week", so the countdown never calls a week a day. */
+  periodUnit: "day" | "week";
   returnTo?: string;
 }) {
   const type = getActivityType(typeKey);
@@ -720,10 +734,23 @@ export function ConfigureForm({
 
   return (
     <div className={shell}>
-      <div className="flex items-center justify-between gap-3">
-        <StreakNumber value={streak} />
-        <span className="text-2xs text-muted">days &middot; best {best}</span>
-      </div>
+      {/*
+        1.55. THE NUMBER'S DETAIL LIVES HERE, and it had nowhere else to go:
+        "Established", "Usually" and the countdown appear on no artboard, and
+        there is no activity detail screen, because this IS it.
+
+        One visit rather than two. This screen already states the rule above
+        the controls, and it is where somebody goes when they are thinking
+        about one activity.
+      */}
+      {measure === "consistency" ? (
+        <EstablishedHeader established={established} periodUnit={periodUnit} />
+      ) : (
+        <div className="flex items-center justify-between gap-3">
+          <StreakNumber value={streak} />
+          <span className="text-2xs text-muted">days &middot; best {best}</span>
+        </div>
+      )}
 
       <RuleText rule={rule} />
 
@@ -787,6 +814,75 @@ export function ConfigureForm({
 }
 
 /** The rule, stated. The one thing the old screen never did. */
+/**
+ * How established this activity is, and the two facts beside it (1.55).
+ *
+ * `usual` is stated rather than folded into the percentage, which is C1's
+ * whole shape: one number, one sentence, neither pretending to be the other.
+ * Folding cue consistency in would make the number unexplainable.
+ *
+ * The countdown is in REPETITIONS and the unit is passed in, because Gym's
+ * period is a week and calling 26 of them days is the v3.4 defect where a gym
+ * streak was counted in days. It disappears once reached, rather than reading
+ * "0 to automatic", which is a countdown that finished and kept printing.
+ */
+function EstablishedHeader({
+  established,
+  periodUnit,
+}: {
+  established: {
+    percent: number;
+    repsToAutomatic: number | null;
+    usual: { fromMinute: number; toMinute: number } | null;
+  } | null;
+  periodUnit: "day" | "week";
+}) {
+  if (!established) {
+    return (
+      <div className="flex items-baseline gap-2.5">
+        <span className="text-3xl font-semibold tabular-nums text-muted">&mdash;</span>
+        <span className="text-2xs text-muted">nothing scheduled yet</span>
+      </div>
+    );
+  }
+
+  const left = established.repsToAutomatic;
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-baseline gap-2.5">
+        <span className="text-3xl font-semibold tabular-nums text-fg">
+          {established.percent}%
+        </span>
+        <span className="text-2xs text-muted">established</span>
+      </div>
+      <div className="flex flex-col gap-0.5">
+        {established.usual ? (
+          <span className="text-2xs text-muted">
+            Usually {clock(established.usual.fromMinute)} to{" "}
+            {clock(established.usual.toMinute)}
+          </span>
+        ) : null}
+        {left !== null ? (
+          <span className="text-2xs text-muted">
+            {left} more {periodUnit}
+            {left === 1 ? "" : "s"} to automatic
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** Minutes past midnight as a 12-hour clock time, which is the house format. */
+function clock(minute: number): string {
+  const h = Math.floor(minute / 60);
+  const m = minute % 60;
+  const suffix = h < 12 ? "AM" : "PM";
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
 function RuleText({ rule }: { rule: { headline: string; notes: string[] } }) {
   return (
     <div className="flex flex-col gap-2.5 border-t border-rule pt-3.5">

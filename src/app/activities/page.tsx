@@ -4,6 +4,7 @@ import { getSessionUser, getApprovalStatus } from "@/lib/session";
 import {
   getActivityType,
   displayNameOf,
+  measureOf,
   isConditionKey,
   rankFor,
   isImmaculate,
@@ -15,7 +16,7 @@ import { standingFor } from "@/server/standing";
 import { globalScore } from "@/server/scoring";
 import { cleanRunIn } from "@/server/clean-run";
 import { QuorumMark } from "../mark";
-import { ActivityIcon, DeadFlame, Flame } from "../activity-icon";
+import { ActivityIcon, DeadFlame, Established, Flame } from "../activity-icon";
 import { RankIcon, rankText } from "../rank-icon";
 
 /** "Daily, 3 windows, photo on confirm", from the type's own declaration. */
@@ -64,6 +65,10 @@ export default async function ActivitiesPage() {
       // The label, for a condition somebody wrote (1.19).
       name: displayNameOf(getActivityType(a.typeKey), a.config),
       written: isConditionKey(a.typeKey),
+      // 1.49. This list draws whichever number the activity carries, the same
+      // as Home and the group hub. It does not decide.
+      measure: measureOf(getActivityType(a.typeKey), a.config),
+      established: (await standingFor(user.id, a.typeKey))?.consistency ?? null,
       streak: (await standingFor(user.id, a.typeKey))?.streak ?? 0,
       grey: (await standingFor(user.id, a.typeKey))?.grey ?? false,
       summary: summarise(a.typeKey, a.schedule, a.config),
@@ -123,10 +128,13 @@ export default async function ActivitiesPage() {
                   <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                     <div className="flex items-center gap-[9px]">
                       <span className="text-base">{row.name}</span>
-                      {/* Grey first, for the same reason as on Home: a run
-                          that came short holds its number, so a positive count
-                          is not enough to earn a live flame. */}
-                      {row.grey ? (
+                      {/* 1.49, and grey first among the streak branches for
+                          the same reason as on Home: a run that came short
+                          holds its number, so a positive count is not enough
+                          to earn a live flame. */}
+                      {row.measure === "consistency" ? (
+                        <Established established={row.established} />
+                      ) : row.grey ? (
                         <span className="flex items-center gap-1">
                           <DeadFlame size={13} />
                           <span className="text-xs leading-none text-muted tabular-nums">

@@ -2,7 +2,13 @@ import { DateTime } from "luxon";
 import { and, eq, gte } from "drizzle-orm";
 import { db } from "@/db";
 import { activityScores } from "@/db/schema";
-import { getActivityType, displayNameOf, graceMonth, type ChartSpec } from "@/domain";
+import {
+  getActivityType,
+  displayNameOf,
+  measureOf,
+  graceMonth,
+  type ChartSpec,
+} from "@/domain";
 import { listUserActivities } from "./activities";
 import { standingFor } from "./standing";
 import { graceState } from "./restore";
@@ -22,7 +28,16 @@ export interface Overview {
   perfectDays: number;
   daysInMonth: number;
   passRate: number;
+  /**
+   * The longest run among the types that CARRY one (1.49).
+   *
+   * It used to be the longest across everything, which after the demotion
+   * describes six of the eighteen and silently ignores the rest. The tile
+   * beside it now answers for the other twelve.
+   */
   longestStreak: number;
+  /** The most established activity: its percentage, and its own name. */
+  mostEstablished: { name: string; percent: number } | null;
   graceLeft: number;
   /**
    * Eight weeks of days, each 0..1 of what was scheduled, -1 for the future,
@@ -144,13 +159,24 @@ export async function overviewFor(userId: string): Promise<Overview> {
   const mine = (await listUserActivities(userId)).filter((a) => a.enabled);
   const byActivity: Overview["byActivity"] = [];
   let longestStreak = 0;
+  let mostEstablished: Overview["mostEstablished"] = null;
 
   for (const a of mine) {
     const type = getActivityType(a.typeKey);
     const its = last30.filter((r) => r.typeKey === a.typeKey);
     const standing = await standingFor(userId, a.typeKey);
-    if (standing) {
+    // 1.49. Each number is the best among the activities that carry it, and
+    // neither is asked of a type that carries the other. A streak of 0 from a
+    // percentage type would have dragged nothing; a percentage read off an
+    // abstinence would have been a number about the wrong thing.
+    if (standing && measureOf(type, a.config) === "streak") {
       longestStreak = Math.max(longestStreak, standing.streak);
+    }
+    if (standing?.consistency) {
+      const here = standing.consistency.percent;
+      if (!mostEstablished || here > mostEstablished.percent) {
+        mostEstablished = { name: displayNameOf(type, a.config), percent: here };
+      }
     }
     byActivity.push({
       typeKey: a.typeKey,
@@ -171,6 +197,7 @@ export async function overviewFor(userId: string): Promise<Overview> {
     daysInMonth: monthDays - awayThisMonth,
     passRate,
     longestStreak,
+    mostEstablished,
     // The account's pool, not a sum of per-activity allowances: grace is one
     // pool now and belongs to the person (item 19).
     graceLeft: (await graceState(userId)).left,

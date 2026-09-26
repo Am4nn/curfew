@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
-import { getActivityType, registeredKeys } from "@/domain";
+import { getActivityType, registeredKeys, measureOf, periodUnit } from "@/domain";
 import { getAppConfig } from "@/server/app-config";
 import { getUserActivity, defaultsFor } from "@/server/activities";
 import { standingFor } from "@/server/standing";
@@ -70,6 +70,17 @@ export default async function ConfigurePage({
         returnTo={from === "join" && invite ? `/join/${invite}` : undefined}
         streak={standing?.streak ?? 0}
         best={standing?.best ?? 0}
+        measure={measureOf(type, state.config)}
+        established={
+          standing?.consistency
+            ? {
+                percent: standing.consistency.percent,
+                repsToAutomatic: standing.consistency.repsToAutomatic,
+                usual: standing.consistency.usual,
+              }
+            : null
+        }
+        periodUnit={periodUnit(state.schedule.schedule)}
       />
     </main>
   );

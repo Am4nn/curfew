@@ -13,6 +13,9 @@ import {
 } from "@/db/schema";
 import {
   getActivityType,
+  measureOf,
+  consistency,
+  WINDOW_PERIODS,
   joiningScore,
   ceilingFor,
   START_SCORE,
@@ -170,14 +173,47 @@ export async function memberStandings(
   const out: MemberStanding[] = [];
   for (const m of members) {
     const shares = (await sharesFor(groupId, m.userId)).filter((s) => s.shared);
+    // 1.49. Whichever number the ACTIVITY carries, so this line reads
+    // "Sleep 15 · Gym 78%" and the hub knows nothing about either: Sleep
+    // declares `streak` and Gym declares `consistency`.
+    //
+    // BUILT FROM THE GROUP'S OWN OUTCOMES, not from the member's scores, and
+    // that is the important part. A group sees a shared activity only from
+    // the day somebody joined, which is a leak v3.1 closed, and reading
+    // `activity_scores` for another member would reopen it AND be a
+    // cross-member read with no `assertMember` over it (invariant 10).
+    //
+    // The consequence is honest rather than awkward: the percentage a group
+    // sees is computed over what the group may see.
     const streaks = shares
       .map((s) => {
+        const type = getActivityType(s.typeKey);
         const mine = outcomes.filter(
           (o) => o.userId === m.userId && o.typeKey === s.typeKey,
         );
+
+        // NULL config, which matters for exactly one type. A written
+        // condition answers from its config (C7), and this does not have the
+        // owner's config: `measureFor` throws on null and falls back to the
+        // module's own `measure`, so a condition always reads as a streak
+        // here. That is 1.54's known gap, the same one that makes this line
+        // say "Your own" instead of the label, and it is Phase 7's along with
+        // the rest of the sharing model.
+        if (measureOf(type, null) === "consistency") {
+          // No press times here: `activity_outcomes` has none, and `usual` is
+          // not drawn in a group anyway. The percentage does not read them.
+          const established = consistency({
+            window: mine
+              .slice(-WINDOW_PERIODS)
+              .map((o) => ({ passed: o.passed, minuteOfDay: null })),
+            lifetimePassed: mine.filter((o) => o.passed).length,
+          });
+          return established ? `${type.name} ${established.percent}%` : null;
+        }
+
         let run = 0;
         for (let i = mine.length - 1; i >= 0 && mine[i].passed; i -= 1) run += 1;
-        return run > 0 ? `${getActivityType(s.typeKey).name} ${run}` : null;
+        return run > 0 ? `${type.name} ${run}` : null;
       })
       .filter((s): s is string => s !== null)
       .join(" · ");

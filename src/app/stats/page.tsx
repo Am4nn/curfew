@@ -147,11 +147,22 @@ export default async function StatsPage({
 
             <div className="flex gap-2.5">
               <Tile value={`${stats.passRate}%`} label="PERIODS PASSED, 30 DAYS" />
-              <Tile
-                value={String(stats.longestStreak)}
-                label="LONGEST RUNNING STREAK"
-                flame
-              />
+              {/* 1.49. The longest run is a fact about the six abstinence
+                  types now, so it only appears when one of them has a run.
+                  In its place, the thing a record is about after the
+                  demotion: how established the strongest activity is. */}
+              {stats.mostEstablished ? (
+                <Tile
+                  value={`${stats.mostEstablished.percent}%`}
+                  label={`MOST ESTABLISHED, ${stats.mostEstablished.name.toUpperCase()}`}
+                />
+              ) : (
+                <Tile
+                  value={String(stats.longestStreak)}
+                  label="LONGEST RUNNING STREAK"
+                  flame
+                />
+              )}
               <Tile value={String(stats.graceLeft)} label="GRACE LEFT THIS MONTH" />
             </div>
 
